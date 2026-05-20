@@ -4,6 +4,7 @@ import time
 import numpy as np
 import re
 from io import BytesIO, StringIO
+import qrcode # <-- YE NAYI LINE ADD KAR
 
 st.set_page_config(
     page_title="VeriSame Pro",
@@ -11,6 +12,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# ============ UPI CONFIG - YE ADD KAR ============
+UPI_ID = "playwithreyansh0@okhdfcbank"
+PRO_AMOUNT = 2999
+WAIT_SECONDS = 120 # 2 minute stealth wait. 90 = 1.5 min, 180 = 3 min
 
 GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
 
@@ -31,7 +37,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     section[data-testid="stSidebar"].stRadio > div {padding: 10px 5px 10px 5px;}
-    .stButton>button {
+  .stButton>button {
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -39,24 +45,22 @@ st.markdown("""
         border-radius: 10px;
     }
     @media (max-width: 768px) {
-   .stButton>button {height: 55px; font-size: 16px;}
+ .stButton>button {height: 55px; font-size: 16px;}
     }
     </style>
 """, unsafe_allow_html=True)
 
-try:
-    RAZORPAY_LINK = st.secrets.get("RAZORPAY_LINK", "https://wa.me/919794906852")
-    RAZORPAY_LINK_USD = st.secrets.get("RAZORPAY_LINK_USD", "https://wa.me/919794906852")
-    WHATSAPP_NO = st.secrets.get("WHATSAPP_NO", "919794906852")
-except Exception:
-    RAZORPAY_LINK = "https://wa.me/919794906852"
-    RAZORPAY_LINK_USD = "https://wa.me/919794906852"
-    WHATSAPP_NO = "919794906852"
-
+# ============ SESSION STATES - YE 3 LINE ADD KAR ============
 if 'lang' not in st.session_state:
     st.session_state.lang = 'en'
 if 'plan' not in st.session_state:
     st.session_state.plan = None
+if 'show_qr' not in st.session_state:
+    st.session_state.show_qr = False
+if 'payment_done' not in st.session_state:
+    st.session_state.payment_done = False
+if 'qr_start_time' not in st.session_state:
+    st.session_state.qr_start_time = None
 
 def t(en_text, hi_text):
     return en_text if st.session_state.lang == 'en' else hi_text
@@ -66,13 +70,12 @@ def text_to_number(text):
     """Convert SIXTY THOUSAND to 60000, FIVE HUNDRED to 500 etc - FREE + PRO both"""
     if pd.isna(text):
         return text
-    
+
     text = str(text).strip().upper()
-    
-    # If already number, return as is
+
     if re.match(r'^[\d,.\s]+$', text):
         return text.replace(',', '').strip()
-    
+
     number_words = {
         'ZERO': 0, 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5,
         'SIX': 6, 'SEVEN': 7, 'EIGHT': 8, 'NINE': 9, 'TEN': 10,
@@ -81,11 +84,11 @@ def text_to_number(text):
         'THIRTY': 30, 'FORTY': 40, 'FIFTY': 50, 'SIXTY': 60, 'SEVENTY': 70,
         'EIGHTY': 80, 'NINETY': 90, 'HUNDRED': 100, 'THOUSAND': 1000, 'LAKH': 100000, 'MILLION': 1000000
     }
-    
+
     words = text.split()
     total = 0
     current = 0
-    
+
     for word in words:
         if word in number_words:
             val = number_words[word]
@@ -96,9 +99,8 @@ def text_to_number(text):
         elif word == 'AND':
             continue
         else:
-            # If word not in dictionary, return original
             return text
-    
+
     total = current if current else total
     return str(total) if total > 0 else text
 
@@ -119,6 +121,9 @@ with st.sidebar:
     if st.session_state.plan:
         if st.button(t("← Back to Plans", "← Plans पे वापस")):
             st.session_state.plan = None
+            st.session_state.show_qr = False
+            st.session_state.payment_done = False
+            st.session_state.qr_start_time = None
             if 'sample_df' in st.session_state:
                 del st.session_state['sample_df']
             st.rerun()
@@ -141,7 +146,7 @@ if st.session_state.plan is None:
             st.rerun()
 
     with col2:
-        st.subheader(t("💎 PRO Plan - ₹2999 / $36", "💎 PRO Plan - ₹2999 / $36"))
+        st.subheader(t("💎 PRO Plan - ₹2999 Lifetime", "💎 PRO Plan - ₹2999 Lifetime"))
         st.markdown(t("✅ Unlimited Rows", "✅ Unlimited Rows"))
         st.markdown(t("✅ Date Fixer + Smart Fill", "✅ Date Fixer + Smart Fill"))
         st.markdown(t("✅ Excel Export", "✅ Excel Export"))
@@ -161,11 +166,14 @@ else:
     # ============ BACK BUTTON - TOP ME ============
     if st.button(t("⬅️ Back to Plans", "⬅️ Plans पे वापस"), use_container_width=True):
         st.session_state.plan = None
+        st.session_state.show_qr = False
+        st.session_state.payment_done = False
+        st.session_state.qr_start_time = None
         if 'sample_df' in st.session_state:
             del st.session_state['sample_df']
         st.rerun()
-    
-    st.markdown("---") # Line daal de taaki alag dikhe
+
+    st.markdown("---")
 
     if is_pro:
         st.title(t("💎 VeriSame PRO", "💎 VeriSame PRO"))
@@ -222,7 +230,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     df = pd.read_excel(uploaded_file)
                 elif uploaded_file.name.endswith('.json'):
                     df = pd.read_json(uploaded_file)
-                original_row_count = len(df) # Store original count
+                original_row_count = len(df)
         except Exception as e:
             st.error(t(f"Error reading file: {e}", f"File पढ़ने में Error: {e}"))
             st.stop()
@@ -237,7 +245,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
 
         # ============ BASIC CLEANING ============
         df_cleaned = df.drop_duplicates()
-        
+
         # ============ FEATURE: TEXT TO NUMBER FOR FREE + PRO BOTH ============
         for col in df_cleaned.select_dtypes(include=['object']):
             df_cleaned[col] = df_cleaned[col].apply(text_to_number)
@@ -297,53 +305,90 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.markdown("---")
 
         if is_pro:
-            st.error(t("🔒 Full Download Locked: Pay to unlock", "🔒 फुल डाउनलोड लॉक्ड: अनलॉक करने के लिए पे करें"))
+            # ============ NAYA UPI STEALTH PAYMENT FLOW - RAZORPAY HATA DIYA ============
+            if not st.session_state.payment_done:
 
-            tab1, tab2 = st.tabs(["🇮🇳 Pay in INR", "🌍 Pay in USD"])
+                # STAGE 1: PAY BUTTON
+                if not st.session_state.show_qr:
+                    st.error(t("🔒 Download Locked - ₹2999 Lifetime", "🔒 डाउनलोड लॉक्ड - ₹2999 लाइफटाइम"))
+                    if st.button("💳 Pay ₹2999 with UPI", use_container_width=True, type="primary"):
+                        st.session_state.show_qr = True
+                        st.session_state.qr_start_time = time.time()
+                        st.rerun()
 
-            with tab1:
-                st.markdown("**₹2,999 for Indian Users**")
+                # STAGE 2: QR CODE + HIDDEN TIMER - SCAMMER KO TIMER DIKHEGA HI NAHI
+                else:
+                    st.warning(t("Step 1: Scan QR & Complete Payment", "Step 1: QR स्कैन करो और Payment करो"))
+
+                    # QR Generate
+                    upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_AMOUNT}&cu=INR"
+                    qr = qrcode.QRCode(box_size=8, border=4)
+                    qr.add_data(upi_link)
+                    qr.make(fit=True)
+                    img = qr.make_image(fill_color="black", back_color="white")
+                    buf = BytesIO(); img.save(buf)
+
+                    col1, col2 = st.columns([1,2])
+                    with col1:
+                        st.image(buf, width=250)
+                    with col2:
+                        st.markdown(f"**UPI ID:** `{UPI_ID}`")
+                        st.markdown(f"**Amount:** `₹{PRO_AMOUNT}`")
+                        st.caption("GPay / PhonePe / Paytm se scan karo")
+
+                    st.markdown("---")
+
+                    # ============ HIDDEN TIMER LOGIC ============
+                    elapsed_time = time.time() - st.session_state.qr_start_time
+
+                    if elapsed_time < WAIT_SECONDS:
+                        # Chup chaap wait - Timer nahi dikhega
+                        st.info("🔄 Verifying payment with bank... Please wait")
+                        st.caption("Do not close this page. Payment confirm hone me 1-2 min lagte hain.")
+                        time.sleep(3)
+                        st.rerun()
+                    else:
+                        # Timer complete - Ab button dikhao
+                        st.success(t("Step 2: Payment Successful! Click to Unlock", "Step 2: Payment Successful! Unlock करने के लिए क्लिक करो"))
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button("🔓 Unlock Download Now", use_container_width=True, type="primary"):
+                                st.session_state.payment_done = True
+                                st.session_state.show_qr = False
+                                st.balloons()
+                                st.rerun()
+                        with col2:
+                            if st.button("⬅️ Cancel", use_container_width=True):
+                                st.session_state.show_qr = False
+                                st.session_state.qr_start_time = None
+                                st.rerun()
+
+            # STAGE 3: PAYMENT COMPLETE - DOWNLOAD DIKHAO
+            else:
+                st.success(t("✅ Your Payment is Complete! Download Your File", "✅ आपका Payment Complete है! फाइल डाउनलोड करो"))
+
+                # FEATURE 4: EXCEL EXPORT - PRO ONLY
+                excel_buffer = BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
+
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.link_button("💳 Pay ₹2999 Now", RAZORPAY_LINK, use_container_width=True)
+                    st.download_button(
+                        t("📊 Download as Excel", "📊 Excel में डाउनलोड"),
+                        excel_buffer.getvalue(),
+                        "verisame_cleaned.xlsx",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
                 with col2:
-                    wa_msg = f"Hi, I paid ₹2999 for VeriSame Pro. My file has {len(df_cleaned)} rows."
-                    st.link_button("📱 Send Screenshot", f"https://wa.me/{WHATSAPP_NO}?text={wa_msg}", use_container_width=True)
-
-            with tab2:
-                st.markdown("**$36 for International Users**")
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.link_button("💳 Pay $36 Now", RAZORPAY_LINK_USD, use_container_width=True)
-                with col2:
-                    wa_msg_usd = f"Hi, I paid $36 for VeriSame Pro. My file has {len(df_cleaned)} rows."
-                    st.link_button("📱 Send Screenshot", f"https://wa.me/{WHATSAPP_NO}?text={wa_msg_usd}", use_container_width=True)
-
-            # FEATURE 4: EXCEL EXPORT - PRO ONLY
-            st.markdown("---")
-            st.subheader(t("📥 Download Cleaned File", "📥 साफ फाइल डाउनलोड करो"))
-
-            excel_buffer = BytesIO()
-            with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.download_button(
-                    t("📊 Download as Excel", "📊 Excel में डाउनलोड"),
-                    excel_buffer.getvalue(),
-                    "verisame_cleaned.xlsx",
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-            with col2:
-                csv_buffer = BytesIO()
-                df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
-                st.download_button(
-                    t("📄 Download as CSV", "📄 CSV में डाउनलोड"),
-                    csv_buffer.getvalue(),
-                    "verisame_cleaned.csv",
-                    "text/csv"
-                )
+                    csv_buffer = BytesIO()
+                    df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
+                    st.download_button(
+                        t("📄 Download as CSV", "📄 CSV में डाउनलोड"),
+                        csv_buffer.getvalue(),
+                        "verisame_cleaned.csv",
+                        "text/csv"
+                    )
 
         else:
             df_download = df_cleaned.head(100) if len(df_cleaned) > 100 else df_cleaned
@@ -356,5 +401,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                 "text/csv"
             )
             if len(df_cleaned) >= 100:
-                st.warning(t("Need full file? Go back and use PRO Plan ₹2999/$36",
-                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))                                            
+                st.warning(t("Need full file? Go back and use PRO Plan ₹2999",
+                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999 use करें"))
+            
