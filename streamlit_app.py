@@ -4,7 +4,7 @@ import time
 import numpy as np
 import re
 from io import BytesIO, StringIO
-import qrcode # <-- YE NAYI LINE ADD KAR
+import qrcode
 
 st.set_page_config(
     page_title="VeriSame Pro",
@@ -13,10 +13,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ============ UPI CONFIG - YE ADD KAR ============
+# ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT = 2999
-WAIT_SECONDS = 120 # 2 minute stealth wait. 90 = 1.5 min, 180 = 3 min
+WAIT_SECONDS = 60 # 1 minute stealth wait
 
 GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
 
@@ -37,7 +37,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     section[data-testid="stSidebar"].stRadio > div {padding: 10px 5px 10px 5px;}
-  .stButton>button {
+ .stButton>button {
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -45,12 +45,12 @@ st.markdown("""
         border-radius: 10px;
     }
     @media (max-width: 768px) {
- .stButton>button {height: 55px; font-size: 16px;}
+.stButton>button {height: 55px; font-size: 16px;}
     }
     </style>
 """, unsafe_allow_html=True)
 
-# ============ SESSION STATES - YE 3 LINE ADD KAR ============
+# ============ SESSION STATES ============
 if 'lang' not in st.session_state:
     st.session_state.lang = 'en'
 if 'plan' not in st.session_state:
@@ -305,7 +305,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.markdown("---")
 
         if is_pro:
-            # ============ NAYA UPI STEALTH PAYMENT FLOW - RAZORPAY HATA DIYA ============
+            # ============ UPI STEALTH PAYMENT FLOW ============
             if not st.session_state.payment_done:
 
                 # STAGE 1: PAY BUTTON
@@ -316,7 +316,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         st.session_state.qr_start_time = time.time()
                         st.rerun()
 
-                # STAGE 2: QR CODE + HIDDEN TIMER - SCAMMER KO TIMER DIKHEGA HI NAHI
+                # STAGE 2: QR CODE + HIDDEN TIMER
                 else:
                     st.warning(t("Step 1: Scan QR & Complete Payment", "Step 1: QR स्कैन करो और Payment करो"))
 
@@ -344,7 +344,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     if elapsed_time < WAIT_SECONDS:
                         # Chup chaap wait - Timer nahi dikhega
                         st.info("🔄 Verifying payment with bank... Please wait")
-                        st.caption("Do not close this page. Payment confirm hone me 1-2 min lagte hain.")
+                        st.caption("Do not close this page. Payment verification takes up to 1 minute.")
                         time.sleep(3)
                         st.rerun()
                     else:
@@ -403,4 +403,3 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             if len(df_cleaned) >= 100:
                 st.warning(t("Need full file? Go back and use PRO Plan ₹2999",
                              "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999 use करें"))
-            
