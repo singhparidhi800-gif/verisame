@@ -38,7 +38,7 @@ st.markdown("""
         border-radius: 10px;
     }
     @media (max-width: 768px) {
-    .stButton>button {height: 55px; font-size: 16px;}
+   .stButton>button {height: 55px; font-size: 16px;}
     }
     </style>
 """, unsafe_allow_html=True)
@@ -139,7 +139,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
 
     uploaded_file = st.file_uploader(
         t("Upload your CSV/Excel/JSON file", "अपनी CSV/Excel/JSON फाइल अपलोड करो"),
-        type=["csv", "xlsx", "xls", "json"] # JSON ADD KAR DIYA
+        type=["csv", "xlsx", "xls", "json"]
     )
 
     df = None
@@ -151,7 +151,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.info(t("Using: Sample Test Data", "उपयोग: सैंपल टेस्ट डेटा"))
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
             st.error(t("File > 200MB not allowed", "File > 200MB allowed नहीं"))
             st.stop()
 
@@ -163,7 +163,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             if file_source == 'sample':
                 df = st.session_state['sample_df']
             else:
-                # JSON SUPPORT ADD KIYA
                 if uploaded_file.name.endswith('.csv'):
                     df = pd.read_csv(uploaded_file)
                 elif uploaded_file.name.endswith(('.xlsx', '.xls')):
@@ -174,10 +173,11 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             st.error(t(f"Error reading file: {e}", f"File पढ़ने में Error: {e}"))
             st.stop()
 
+        # ============ FIX 1: FREE LIMIT HANDLING - 1000 SE UPAR HAI TO CUT KAR DO ============
         if not is_pro and len(df) > 1000:
-            st.error(t("FREE limit: 1000 rows only. Use PRO for bigger files.",
-                       "FREE limit: सिर्फ 1000 rows. बड़ी फाइल के लिए PRO use करें।"))
-            st.stop()
+            st.warning(t(f"FREE limit: Processing first 1000 rows out of {len(df)} rows. Upgrade to PRO for full file.",
+                         f"FREE limit: {len(df)} में से सिर्फ पहली 1000 rows process होंगी। पूरी फाइल के लिए PRO लें।"))
+            df = df.head(1000) # Pehle 1000 hi rakho, error mat do
 
         # ============ BASIC CLEANING ============
         df_cleaned = df.drop_duplicates()
@@ -235,16 +235,16 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.success(t(f"Done! Removed {len(df) - len(df_cleaned)} duplicates. Total: {len(df_cleaned)} rows",
                      f"हो गया! {len(df) - len(df_cleaned)} duplicate हटे। Total: {len(df_cleaned)} rows"))
 
-        # ============ YAHAN CHANGE KIYA - NaN KO BLANK DIKHAO ============
-        df_display = df_cleaned.fillna('') # GEMINI WALA FIX: Sirf display ke liye NaN ko blank karo
+        # ============ FIX 2: NaN KO BLANK DIKHAO - 100% WORKING ============
+        df_display = df_cleaned.fillna('').astype(str) # Sabko string bana do, NaN ab blank dikhega
 
         if is_pro:
             st.write(t("**Preview - First 10 Rows Only:**", "**प्रीव्यू - सिर्फ पहली 10 Rows:**"))
-            st.dataframe(df_display.head(10)) # df_display use karo, df_cleaned nahi
+            st.dataframe(df_display.head(10))
             st.caption("🔒 VeriSame PRO | Unlock full file to remove watermark")
         else:
             st.write(t("**Preview - First 5 Rows:**", "**Preview - First 5 Rows:**"))
-            st.dataframe(df_display.head()) # df_display use karo, df_cleaned nahi
+            st.dataframe(df_display.head())
 
         st.markdown("---")
 
@@ -277,7 +277,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
 
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData') # Yahan original df_cleaned hi use hoga
+                df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
 
             col1, col2 = st.columns(2)
             with col1:
@@ -289,7 +289,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                 )
             with col2:
                 csv_buffer = BytesIO()
-                df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8') # Yahan bhi original df_cleaned
+                df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
                 st.download_button(
                     t("📄 Download as CSV", "📄 CSV में डाउनलोड"),
                     csv_buffer.getvalue(),
@@ -307,7 +307,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                 "verisame_cleaned.csv",
                 "text/csv"
             )
-            if len(df_cleaned) > 100:
+            if len(df_cleaned) >= 100:
                 st.warning(t("Need full file? Go back and use PRO Plan ₹2999/$36",
-                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))                                    
-            
+                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))
