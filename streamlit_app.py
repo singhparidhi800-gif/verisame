@@ -158,6 +158,15 @@ if st.session_state.plan is None:
 else:
     is_pro = st.session_state.plan == 'pro'
 
+    # ============ BACK BUTTON - TOP ME ============
+    if st.button(t("⬅️ Back to Plans", "⬅️ Plans पे वापस"), use_container_width=True):
+        st.session_state.plan = None
+        if 'sample_df' in st.session_state:
+            del st.session_state['sample_df']
+        st.rerun()
+    
+    st.markdown("---") # Line daal de taaki alag dikhe
+
     if is_pro:
         st.title(t("💎 VeriSame PRO", "💎 VeriSame PRO"))
         st.info(t("PRO Mode: Advanced cleaning tools unlocked", "PRO Mode: Advanced cleaning tools unlocked"))
@@ -348,4 +357,4 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             )
             if len(df_cleaned) >= 100:
                 st.warning(t("Need full file? Go back and use PRO Plan ₹2999/$36",
-                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))                                    
+                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))                                            
