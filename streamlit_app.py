@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import time
 import numpy as np
+import re
 from io import BytesIO, StringIO
 
 st.set_page_config(
@@ -30,7 +31,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     section[data-testid="stSidebar"].stRadio > div {padding: 10px 5px 10px 5px;}
-.stButton>button {
+    .stButton>button {
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -59,6 +60,47 @@ if 'plan' not in st.session_state:
 
 def t(en_text, hi_text):
     return en_text if st.session_state.lang == 'en' else hi_text
+
+# ============ FEATURE: TEXT TO NUMBER CONVERTER ============
+def text_to_number(text):
+    """Convert SIXTY THOUSAND to 60000, FIVE HUNDRED to 500 etc - FREE + PRO both"""
+    if pd.isna(text):
+        return text
+    
+    text = str(text).strip().upper()
+    
+    # If already number, return as is
+    if re.match(r'^[\d,.\s]+$', text):
+        return text.replace(',', '').strip()
+    
+    number_words = {
+        'ZERO': 0, 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5,
+        'SIX': 6, 'SEVEN': 7, 'EIGHT': 8, 'NINE': 9, 'TEN': 10,
+        'ELEVEN': 11, 'TWELVE': 12, 'THIRTEEN': 13, 'FOURTEEN': 14, 'FIFTEEN': 15,
+        'SIXTEEN': 16, 'SEVENTEEN': 17, 'EIGHTEEN': 18, 'NINETEEN': 19, 'TWENTY': 20,
+        'THIRTY': 30, 'FORTY': 40, 'FIFTY': 50, 'SIXTY': 60, 'SEVENTY': 70,
+        'EIGHTY': 80, 'NINETY': 90, 'HUNDRED': 100, 'THOUSAND': 1000, 'LAKH': 100000, 'MILLION': 1000000
+    }
+    
+    words = text.split()
+    total = 0
+    current = 0
+    
+    for word in words:
+        if word in number_words:
+            val = number_words[word]
+            if val >= 100:
+                current = current * val if current else val
+            else:
+                current += val
+        elif word == 'AND':
+            continue
+        else:
+            # If word not in dictionary, return original
+            return text
+    
+    total = current if current else total
+    return str(total) if total > 0 else text
 
 # ==================== LANGUAGE SELECTOR TOP RIGHT ME ====================
 col1, col2, col3 = st.columns([6,2,2])
@@ -91,6 +133,7 @@ if st.session_state.plan is None:
     with col1:
         st.subheader(t("🆓 FREE Plan", "🆓 FREE Plan"))
         st.markdown(t("✅ Up to 1000 Rows", "✅ 1000 Rows तक"))
+        st.markdown(t("✅ Text to Number Converter", "✅ Text to Number Converter"))
         st.markdown(t("✅ 100 Rows Download", "✅ 100 Rows Download"))
         st.markdown(t("⏱️ 30 Second Wait", "⏱️ 30 Second Wait"))
         if st.button("Use FREE", use_container_width=True):
@@ -102,7 +145,6 @@ if st.session_state.plan is None:
         st.markdown(t("✅ Unlimited Rows", "✅ Unlimited Rows"))
         st.markdown(t("✅ Date Fixer + Smart Fill", "✅ Date Fixer + Smart Fill"))
         st.markdown(t("✅ Excel Export", "✅ Excel Export"))
-        st.markdown(t("✅ One-Click Encoding", "✅ One-Click Encoding"))
         st.markdown(t("⚡ 3 Second Speed", "⚡ 3 Second Speed"))
         if st.button("🚀 Use PRO", use_container_width=True, type="primary"):
             st.session_state.plan = 'pro'
@@ -121,8 +163,8 @@ else:
         st.info(t("PRO Mode: Advanced cleaning tools unlocked", "PRO Mode: Advanced cleaning tools unlocked"))
     else:
         st.title(t("🆓 VeriSame FREE", "🆓 VeriSame FREE"))
-        st.info(t("FREE Mode: Up to 1000 rows, 100 download free.",
-                  "FREE Mode: 1000 rows तक, 100 download फ्री।"))
+        st.info(t("FREE Mode: Up to 1000 rows, 100 download free. + Text to Number converter included",
+                  "FREE Mode: 1000 rows तक, 100 download फ्री। + Text to Number converter included"))
 
     with st.expander(t("🧪 Don't have a file? Test with sample data", "🧪 फाइल नहीं है? सैंपल डेटा से टेस्ट करें")):
         st.write(t("This is dummy data for testing only.", "यह सिर्फ टेस्टिंग के लिए डमी डेटा है।"))
@@ -143,6 +185,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
     )
 
     df = None
+    original_row_count = 0
     file_source = None
     if uploaded_file:
         file_source = uploaded_file
@@ -162,6 +205,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         try:
             if file_source == 'sample':
                 df = st.session_state['sample_df']
+                original_row_count = len(df)
             else:
                 if uploaded_file.name.endswith('.csv'):
                     df = pd.read_csv(uploaded_file)
@@ -169,20 +213,25 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     df = pd.read_excel(uploaded_file)
                 elif uploaded_file.name.endswith('.json'):
                     df = pd.read_json(uploaded_file)
+                original_row_count = len(df) # Store original count
         except Exception as e:
             st.error(t(f"Error reading file: {e}", f"File पढ़ने में Error: {e}"))
             st.stop()
 
-        # ============ FIX 1: FREE LIMIT HANDLING - 1000 SE UPAR HAI TO CUT KAR DO ============
+        # ============ FREE LIMIT + ROW COUNT DISPLAY ============
         if not is_pro and len(df) > 1000:
-            st.warning(t(f"FREE limit: Processing first 1000 rows out of {len(df)} rows. Upgrade to PRO for full file.",
-                         f"FREE limit: {len(df)} में से सिर्फ पहली 1000 rows process होंगी। पूरी फाइल के लिए PRO लें।"))
-            df = df.head(1000) # Pehle 1000 hi rakho, error mat do
+            st.warning(t(f"FREE limit: Processing first 1000 rows out of {original_row_count} rows. Upgrade to PRO for full file.",
+                         f"FREE limit: {original_row_count} में से सिर्फ पहली 1000 rows process होंगी। पूरी फाइल के लिए PRO लें।"))
+            df = df.head(1000)
+        else:
+            st.info(t(f"Original file had {original_row_count} rows", f"Original file me {original_row_count} rows thi"))
 
         # ============ BASIC CLEANING ============
         df_cleaned = df.drop_duplicates()
+        
+        # ============ FEATURE: TEXT TO NUMBER FOR FREE + PRO BOTH ============
         for col in df_cleaned.select_dtypes(include=['object']):
-            df_cleaned[col] = df_cleaned[col].astype(str).str.strip()
+            df_cleaned[col] = df_cleaned[col].apply(text_to_number)
 
         # ============ PRO FEATURES START ============
         if is_pro:
@@ -218,25 +267,15 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(custom_val)
                     st.success(t("✅ Missing values filled", "✅ खाली जगह भर दी गई"))
 
-            # FEATURE 3: ONE-CLICK ENCODING
-            cat_cols = df_cleaned.select_dtypes(include=['object']).columns.tolist()
-            if cat_cols:
-                encode_col = st.selectbox(
-                    t("3. Encode Text Column to Numbers", "3. Text Column को Numbers में बदलो"),
-                    ["None"] + cat_cols
-                )
-                if encode_col!= "None":
-                    df_cleaned[encode_col] = pd.factorize(df_cleaned[encode_col])[0]
-                    st.success(t(f"✅ {encode_col} encoded to numbers", f"✅ {encode_col} numbers में बदल गया"))
-
         # ============ PRO FEATURES END ============
 
         st.markdown("---")
         st.success(t(f"Done! Removed {len(df) - len(df_cleaned)} duplicates. Total: {len(df_cleaned)} rows",
                      f"हो गया! {len(df) - len(df_cleaned)} duplicate हटे। Total: {len(df_cleaned)} rows"))
 
-        # ============ FIX 2: NaN KO BLANK DIKHAO - 100% WORKING ============
-        df_display = df_cleaned.fillna('').astype(str) # Sabko string bana do, NaN ab blank dikhega
+        # ============ FINAL NaN CLEANING - 200% GUARANTEE ============
+        df_display = df_cleaned.fillna('').astype(str)
+        df_display = df_display.replace(['nan', 'NAN', 'NaN', 'None', 'null', 'NULL'], '', regex=False)
 
         if is_pro:
             st.write(t("**Preview - First 10 Rows Only:**", "**प्रीव्यू - सिर्फ पहली 10 Rows:**"))
@@ -309,4 +348,4 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             )
             if len(df_cleaned) >= 100:
                 st.warning(t("Need full file? Go back and use PRO Plan ₹2999/$36",
-                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))
+                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))                                    
