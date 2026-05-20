@@ -1,4 +1,4 @@
-import streamlit as st
+                                                import streamlit as st
 import pandas as pd
 import time
 import numpy as np
@@ -30,7 +30,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     section[data-testid="stSidebar"].stRadio > div {padding: 10px 5px 10px 5px;}
-  .stButton>button {
+ .stButton>button {
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -38,7 +38,7 @@ st.markdown("""
         border-radius: 10px;
     }
     @media (max-width: 768px) {
-      .stButton>button {height: 55px; font-size: 16px;}
+     .stButton>button {height: 55px; font-size: 16px;}
     }
     </style>
 """, unsafe_allow_html=True)
@@ -60,12 +60,20 @@ if 'plan' not in st.session_state:
 def t(en_text, hi_text):
     return en_text if st.session_state.lang == 'en' else hi_text
 
-with st.sidebar:
-    st.title("💼 VeriSame Pro")
-    lang_choice = st.radio("Language / भाषा", ['English', 'हिंदी'],
-                           index=0 if st.session_state.lang == 'en' else 1)
+# ==================== LANGUAGE SELECTOR TOP RIGHT ME ====================
+col1, col2, col3 = st.columns([6,2,2])
+with col3:
+    lang_choice = st.selectbox(
+        "🌐",
+        ['English', 'हिंदी'],
+        index=0 if st.session_state.lang == 'en' else 1,
+        label_visibility="collapsed",
+        key="lang_selector"
+    )
     st.session_state.lang = 'en' if lang_choice == 'English' else 'hi'
 
+with st.sidebar:
+    st.title("💼 VeriSame Pro")
     if st.session_state.plan:
         if st.button(t("← Back to Plans", "← Plans पे वापस")):
             st.session_state.plan = None
@@ -130,8 +138,8 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             st.rerun()
 
     uploaded_file = st.file_uploader(
-        t("Upload your CSV/Excel file", "अपनी CSV/Excel फाइल अपलोड करो"),
-        type=["csv", "xlsx", "xls"]
+        t("Upload your CSV/Excel/JSON file", "अपनी CSV/Excel/JSON फाइल अपलोड करो"),
+        type=["csv", "xlsx", "xls", "json"] # JSON ADD KAR DIYA
     )
 
     df = None
@@ -155,9 +163,15 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             if file_source == 'sample':
                 df = st.session_state['sample_df']
             else:
-                df = pd.read_csv(uploaded_file) if uploaded_file.name.endswith('.csv') else pd.read_excel(uploaded_file)
-        except Exception:
-            st.error(t("Error reading file", "File पढ़ने में Error"))
+                # JSON SUPPORT ADD KIYA
+                if uploaded_file.name.endswith('.csv'):
+                    df = pd.read_csv(uploaded_file)
+                elif uploaded_file.name.endswith(('.xlsx', '.xls')):
+                    df = pd.read_excel(uploaded_file)
+                elif uploaded_file.name.endswith('.json'):
+                    df = pd.read_json(uploaded_file)
+        except Exception as e:
+            st.error(t(f"Error reading file: {e}", f"File पढ़ने में Error: {e}"))
             st.stop()
 
         if not is_pro and len(df) > 1000:
