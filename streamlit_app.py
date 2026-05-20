@@ -37,7 +37,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     section[data-testid="stSidebar"].stRadio > div {padding: 10px 5px 10px 5px;}
- .stButton>button {
+.stButton>button {
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -139,7 +139,7 @@ if st.session_state.plan is None:
         st.subheader(t("🆓 FREE Plan", "🆓 FREE Plan"))
         st.markdown(t("✅ Up to 1000 Rows", "✅ 1000 Rows तक"))
         st.markdown(t("✅ Text to Number Converter", "✅ Text to Number Converter"))
-        st.markdown(t("✅ 100 Rows Download", "✅ 100 Rows Download"))
+        st.markdown(t("✅ 1000 Rows Download", "✅ 1000 Rows Download")) # CHANGE 1
         st.markdown(t("⏱️ 30 Second Wait", "⏱️ 30 Second Wait"))
         if st.button("Use FREE", use_container_width=True):
             st.session_state.plan = 'free'
@@ -180,8 +180,8 @@ else:
         st.info(t("PRO Mode: Advanced cleaning tools unlocked", "PRO Mode: Advanced cleaning tools unlocked"))
     else:
         st.title(t("🆓 VeriSame FREE", "🆓 VeriSame FREE"))
-        st.info(t("FREE Mode: Up to 1000 rows, 100 download free. + Text to Number converter included",
-                  "FREE Mode: 1000 rows तक, 100 download फ्री। + Text to Number converter included"))
+        st.info(t("FREE Mode: Up to 1000 rows, 1000 download free. + Text to Number converter included",
+                  "FREE Mode: 1000 rows तक, 1000 download फ्री। + Text to Number converter included")) # CHANGE 1
 
     with st.expander(t("🧪 Don't have a file? Test with sample data", "🧪 फाइल नहीं है? सैंपल डेटा से टेस्ट करें")):
         st.write(t("This is dummy data for testing only.", "यह सिर्फ टेस्टिंग के लिए डमी डेटा है।"))
@@ -334,7 +334,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     with col2:
                         st.markdown(f"**UPI ID:** `{UPI_ID}`")
                         st.markdown(f"**Amount:** `₹{PRO_AMOUNT}`")
-                        st.caption("GPay / PhonePe / Paytm se scan karo")
+                        st.caption(t("Scan using GPay / PhonePe / Paytm", "Scan with GPay / PhonePe / Paytm")) # CHANGE 2
 
                     st.markdown("---")
 
@@ -391,7 +391,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     )
 
         else:
-            df_download = df_cleaned.head(100) if len(df_cleaned) > 100 else df_cleaned
+            df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned # CHANGE 1
             buffer = BytesIO()
             df_download.to_csv(buffer, index=False, encoding='utf-8')
             st.download_button(
@@ -400,6 +400,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                 "verisame_cleaned.csv",
                 "text/csv"
             )
-            if len(df_cleaned) >= 100:
-                st.warning(t("Need full file? Go back and use PRO Plan ₹2999",
-                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999 use करें"))
+            if len(df_cleaned) >= 1000: # CHANGE 1
+                st.warning(t("Need more than 1000 rows? Go back and use PRO Plan ₹2999",
+                             "1000 से ज्यादा rows चाहिए? वापस जाके PRO Plan ₹2999 use करें")) # CHANGE 1            
+                
