@@ -30,7 +30,7 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     section[data-testid="stSidebar"].stRadio > div {padding: 10px 5px 10px 5px;}
- .stButton>button {
+.stButton>button {
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -38,7 +38,7 @@ st.markdown("""
         border-radius: 10px;
     }
     @media (max-width: 768px) {
-     .stButton>button {height: 55px; font-size: 16px;}
+    .stButton>button {height: 55px; font-size: 16px;}
     }
     </style>
 """, unsafe_allow_html=True)
@@ -151,7 +151,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.info(t("Using: Sample Test Data", "उपयोग: सैंपल टेस्ट डेटा"))
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
             st.error(t("File > 200MB not allowed", "File > 200MB allowed नहीं"))
             st.stop()
 
@@ -235,13 +235,16 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.success(t(f"Done! Removed {len(df) - len(df_cleaned)} duplicates. Total: {len(df_cleaned)} rows",
                      f"हो गया! {len(df) - len(df_cleaned)} duplicate हटे। Total: {len(df_cleaned)} rows"))
 
+        # ============ YAHAN CHANGE KIYA - NaN KO BLANK DIKHAO ============
+        df_display = df_cleaned.fillna('') # GEMINI WALA FIX: Sirf display ke liye NaN ko blank karo
+
         if is_pro:
             st.write(t("**Preview - First 10 Rows Only:**", "**प्रीव्यू - सिर्फ पहली 10 Rows:**"))
-            st.dataframe(df_cleaned.head(10))
+            st.dataframe(df_display.head(10)) # df_display use karo, df_cleaned nahi
             st.caption("🔒 VeriSame PRO | Unlock full file to remove watermark")
         else:
             st.write(t("**Preview - First 5 Rows:**", "**Preview - First 5 Rows:**"))
-            st.dataframe(df_cleaned.head())
+            st.dataframe(df_display.head()) # df_display use karo, df_cleaned nahi
 
         st.markdown("---")
 
@@ -274,7 +277,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
 
             excel_buffer = BytesIO()
             with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
+                df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData') # Yahan original df_cleaned hi use hoga
 
             col1, col2 = st.columns(2)
             with col1:
@@ -286,7 +289,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                 )
             with col2:
                 csv_buffer = BytesIO()
-                df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
+                df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8') # Yahan bhi original df_cleaned
                 st.download_button(
                     t("📄 Download as CSV", "📄 CSV में डाउनलोड"),
                     csv_buffer.getvalue(),
@@ -306,4 +309,5 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             )
             if len(df_cleaned) > 100:
                 st.warning(t("Need full file? Go back and use PRO Plan ₹2999/$36",
-                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))
+                             "पूरी फाइल चाहिए? वापस जाके PRO Plan ₹2999/$36 use करें"))                                    
+            
