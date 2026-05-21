@@ -105,13 +105,14 @@ def text_to_number(text):
     total = current if current else total
     return str(total) if total > 0 else text
 
+# ==================== SECRET DASHBOARD ACCESS ====================
+# URL me?admin=show likhegi tabhi dashboard khulega
+query_params = st.query_params
+if query_params.get("admin") == "show":
+    st.session_state.plan = 'dashboard'
+
 # ==================== TOP BAR ====================
-col1, col2, col3 = st.columns([4,2,2])
-with col1:
-    # SECRET DASHBOARD BUTTON - SIRF TERE LIYE
-    if st.button("📊", help="Admin Stats"):
-        st.session_state.plan = 'dashboard'
-        st.rerun()
+col1, col2, col3 = st.columns([6,2,2])
 with col3:
     lang_choice = st.selectbox(
         "🌐",
@@ -139,23 +140,24 @@ with st.sidebar:
 # ==================== SECRET DASHBOARD PAGE ====================
 if st.session_state.plan == 'dashboard':
     st.title("📊 VeriSame Pro - Live Stats")
-    st.caption("Secret Admin Page - Don't share this")
+    st.caption("Secret Admin Page - Don't share this URL")
     st.markdown("---")
 
     if st.button("⬅️ Back to App"):
         st.session_state.plan = None
+        st.query_params.clear()
         st.rerun()
 
     col1, col2, col3 = st.columns(3)
     with col1:
         st.subheader("Total Views")
-        st.markdown("![Total](https://hits.sh/verisame-pro.streamlit.app.svg?style=for-the-badge&label=Total&color=blue)")
+        st.markdown("""<img src="https://hits.sh/verisame-pro.streamlit.app.svg?style=for-the-badge&label=Total&color=blue">""", unsafe_allow_html=True)
     with col2:
         st.subheader("FREE Users")
-        st.markdown("![FREE](https://hits.sh/verisame-free-plan.svg?style=for-the-badge&label=FREE&color=green)")
+        st.markdown("""<img src="https://hits.sh/verisame-free-plan.svg?style=for-the-badge&label=FREE&color=green">""", unsafe_allow_html=True)
     with col3:
         st.subheader("PRO Users")
-        st.markdown("![PRO](https://hits.sh/verisame-pro-plan.svg?style=for-the-badge&label=PRO&color=red)")
+        st.markdown("""<img src="https://hits.sh/verisame-pro-plan.svg?style=for-the-badge&label=PRO&color=red">""", unsafe_allow_html=True)
 
     st.markdown("---")
     st.info("Auto-refresh every 10 seconds")
@@ -205,7 +207,6 @@ else:
         html("""<img src="https://hits.sh/verisame-free-plan.svg?label=FREE" style="display:none">""", height=0)
         st.session_state.counted_free = True
 
-    # ============ BACK BUTTON - TOP ME ============
     if st.button(t("⬅️ Back to Plans", "⬅️ Plans पे वापस"), use_container_width=True):
         st.session_state.plan = None
         st.session_state.show_qr = False
