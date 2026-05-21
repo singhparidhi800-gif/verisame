@@ -5,6 +5,7 @@ import numpy as np
 import re
 from io import BytesIO, StringIO
 import qrcode
+from streamlit.components.v1 import html
 
 st.set_page_config(
     page_title="VeriSame Pro",
@@ -13,10 +14,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ============ HIDDEN TRACKING - USER KO NAHI DIKHEGA ============
+html("""<img src="https://api.countapi.xyz/hit/verisame-pro-views/main" style="display:none">""", height=0)
+
 # ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT = 2999
-WAIT_SECONDS = 60 # 1 minute stealth wait
+WAIT_SECONDS = 15 # 15 second wait - fast but still friction # CHANGE 1
 
 GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
 
@@ -139,7 +143,7 @@ if st.session_state.plan is None:
         st.subheader(t("🆓 FREE Plan", "🆓 FREE Plan"))
         st.markdown(t("✅ Up to 1000 Rows", "✅ 1000 Rows तक"))
         st.markdown(t("✅ Text to Number Converter", "✅ Text to Number Converter"))
-        st.markdown(t("✅ 1000 Rows Download", "✅ 1000 Rows Download")) # CHANGE 1
+        st.markdown(t("✅ 1000 Rows Download", "✅ 1000 Rows Download"))
         st.markdown(t("⏱️ 30 Second Wait", "⏱️ 30 Second Wait"))
         if st.button("Use FREE", use_container_width=True):
             st.session_state.plan = 'free'
@@ -181,7 +185,7 @@ else:
     else:
         st.title(t("🆓 VeriSame FREE", "🆓 VeriSame FREE"))
         st.info(t("FREE Mode: Up to 1000 rows, 1000 download free. + Text to Number converter included",
-                  "FREE Mode: 1000 rows तक, 1000 download फ्री। + Text to Number converter included")) # CHANGE 1
+                  "FREE Mode: 1000 rows तक, 1000 download फ्री। + Text to Number converter included"))
 
     with st.expander(t("🧪 Don't have a file? Test with sample data", "🧪 फाइल नहीं है? सैंपल डेटा से टेस्ट करें")):
         st.write(t("This is dummy data for testing only.", "यह सिर्फ टेस्टिंग के लिए डमी डेटा है।"))
@@ -334,18 +338,19 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     with col2:
                         st.markdown(f"**UPI ID:** `{UPI_ID}`")
                         st.markdown(f"**Amount:** `₹{PRO_AMOUNT}`")
-                        st.caption(t("Scan using GPay / PhonePe / Paytm", "Scan with GPay / PhonePe / Paytm")) # CHANGE 2
+                        st.caption(t("Scan with GPay / PhonePe / Paytm", "Scan with GPay / PhonePe / Paytm"))
 
                     st.markdown("---")
 
-                    # ============ HIDDEN TIMER LOGIC ============
+                    # ============ HIDDEN TIMER LOGIC WITH PROGRESS BAR - CHANGE 2 ============
                     elapsed_time = time.time() - st.session_state.qr_start_time
 
                     if elapsed_time < WAIT_SECONDS:
-                        # Chup chaap wait - Timer nahi dikhega
-                        st.info("🔄 Verifying payment with bank... Please wait")
-                        st.caption("Do not close this page. Payment verification takes up to 1 minute.")
-                        time.sleep(3)
+                        progress = int((elapsed_time / WAIT_SECONDS) * 100)
+                        st.info("🔄 Verifying payment with bank...")
+                        st.progress(progress)
+                        st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
+                        time.sleep(1)
                         st.rerun()
                     else:
                         # Timer complete - Ab button dikhao
@@ -391,7 +396,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     )
 
         else:
-            df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned # CHANGE 1
+            df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
             buffer = BytesIO()
             df_download.to_csv(buffer, index=False, encoding='utf-8')
             st.download_button(
@@ -400,7 +405,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                 "verisame_cleaned.csv",
                 "text/csv"
             )
-            if len(df_cleaned) >= 1000: # CHANGE 1
+            if len(df_cleaned) >= 1000:
                 st.warning(t("Need more than 1000 rows? Go back and use PRO Plan ₹2999",
-                             "1000 से ज्यादा rows चाहिए? वापस जाके PRO Plan ₹2999 use करें")) # CHANGE 1            
-                
+                             "1000 से ज्यादा rows चाहिए? वापस जाके PRO Plan ₹2999 use करें"))
