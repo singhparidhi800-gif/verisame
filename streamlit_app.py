@@ -134,7 +134,7 @@ with st.sidebar:
 
 # LANDING PAGE
 if st.session_state.plan is None:
-    st.title(t("💼 Welcome to VeriSame Pro", "💼 VeriSame Pro में आपका स्वागत है"))
+    st.title(t("💼 Welcome to VeriSame", "💼 VeriSame में आपका स्वागत है"))
     st.subheader(t("The Fastest Way to Clean Your Data", "आपका डेटा साफ करने का सबसे तेज तरीका"))
     st.markdown("---")
 
