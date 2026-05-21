@@ -7,15 +7,15 @@ from io import BytesIO, StringIO
 import qrcode
 from streamlit.components.v1 import html
 
-st.set_page_config(
-    page_title="VeriSame Pro",
-    page_icon="💼",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+st.set_page_config(page_title="VeriSame Pro", page_icon="💼", layout="wide", initial_sidebar_state="collapsed")
 
-# ============ TRACKING: TOTAL VIEWS ============
-html("""<img src="https://hits.sh/verisame-pro.streamlit.app.svg?style=flat&label=views" style="display:none">""", height=0)
+# ============ ADMIN CHECK - TERA VISIT COUNT NAHI HOGA ============
+query_params = st.query_params
+IS_ADMIN = query_params.get("admin") == "reyansh123"
+
+# ============ TRACKING - SIRF USERS KA COUNT ============
+if not IS_ADMIN:
+    html("""<img src="https://hits.sh/verisame-pro-views.svg" style="display:none">""", height=0)
 
 # ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
@@ -55,77 +55,41 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============ SESSION STATES ============
-if 'lang' not in st.session_state:
-    st.session_state.lang = 'en'
-if 'plan' not in st.session_state:
-    st.session_state.plan = None
-if 'show_qr' not in st.session_state:
-    st.session_state.show_qr = False
-if 'payment_done' not in st.session_state:
-    st.session_state.payment_done = False
-if 'qr_start_time' not in st.session_state:
-    st.session_state.qr_start_time = None
-if 'counted_free' not in st.session_state:
-    st.session_state.counted_free = False
-if 'counted_pro' not in st.session_state:
-    st.session_state.counted_pro = False
+if 'lang' not in st.session_state: st.session_state.lang = 'en'
+if 'plan' not in st.session_state: st.session_state.plan = None
+if 'show_qr' not in st.session_state: st.session_state.show_qr = False
+if 'payment_done' not in st.session_state: st.session_state.payment_done = False
+if 'qr_start_time' not in st.session_state: st.session_state.qr_start_time = None
+if 'counted_free' not in st.session_state: st.session_state.counted_free = False
+if 'counted_pro' not in st.session_state: st.session_state.counted_pro = False
+if 'counted_purchase' not in st.session_state: st.session_state.counted_purchase = False
 
-def t(en_text, hi_text):
-    return en_text if st.session_state.lang == 'en' else hi_text
+def t(en_text, hi_text): return en_text if st.session_state.lang == 'en' else hi_text
 
-# ============ FEATURE: TEXT TO NUMBER CONVERTER ============
 def text_to_number(text):
-    if pd.isna(text):
-        return text
+    if pd.isna(text): return text
     text = str(text).strip().upper()
-    if re.match(r'^[\d,.\s]+$', text):
-        return text.replace(',', '').strip()
-    number_words = {
-        'ZERO': 0, 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5,
-        'SIX': 6, 'SEVEN': 7, 'EIGHT': 8, 'NINE': 9, 'TEN': 10,
-        'ELEVEN': 11, 'TWELVE': 12, 'THIRTEEN': 13, 'FOURTEEN': 14, 'FIFTEEN': 15,
-        'SIXTEEN': 16, 'SEVENTEEN': 17, 'EIGHTEEN': 18, 'NINETEEN': 19, 'TWENTY': 20,
-        'THIRTY': 30, 'FORTY': 40, 'FIFTY': 50, 'SIXTY': 60, 'SEVENTY': 70,
-        'EIGHTY': 80, 'NINETY': 90, 'HUNDRED': 100, 'THOUSAND': 1000, 'LAKH': 100000, 'MILLION': 1000000
-    }
-    words = text.split()
-    total = 0
-    current = 0
+    if re.match(r'^[\d,.\s]+$', text): return text.replace(',', '').strip()
+    number_words = {'ZERO':0,'ONE':1,'TWO':2,'THREE':3,'FOUR':4,'FIVE':5,'SIX':6,'SEVEN':7,'EIGHT':8,'NINE':9,'TEN':10,'ELEVEN':11,'TWELVE':12,'THIRTEEN':13,'FOURTEEN':14,'FIFTEEN':15,'SIXTEEN':16,'SEVENTEEN':17,'EIGHTEEN':18,'NINETEEN':19,'TWENTY':20,'THIRTY':30,'FORTY':40,'FIFTY':50,'SIXTY':60,'SEVENTY':70,'EIGHTY':80,'NINETY':90,'HUNDRED':100,'THOUSAND':1000,'LAKH':100000,'MILLION':1000000}
+    words = text.split(); current = 0
     for word in words:
         if word in number_words:
             val = number_words[word]
-            if val >= 100:
-                current = current * val if current else val
-            else:
-                current += val
-        elif word == 'AND':
-            continue
-        else:
-            return text
-    total = current if current else total
-    return str(total) if total > 0 else text
-
-# ==================== SECRET DASHBOARD ACCESS ====================
-# URL me?admin=show likhegi tabhi dashboard khulega
-query_params = st.query_params
-if query_params.get("admin") == "show":
-    st.session_state.plan = 'dashboard'
+            if val >= 100: current = current * val if current else val
+            else: current += val
+        elif word == 'AND': continue
+        else: return text
+    return str(current) if current > 0 else text
 
 # ==================== TOP BAR ====================
 col1, col2, col3 = st.columns([6,2,2])
 with col3:
-    lang_choice = st.selectbox(
-        "🌐",
-        ['English', 'हिंदी'],
-        index=0 if st.session_state.lang == 'en' else 1,
-        label_visibility="collapsed",
-        key="lang_selector"
-    )
+    lang_choice = st.selectbox("🌐", ['English', 'हिंदी'], label_visibility="collapsed")
     st.session_state.lang = 'en' if lang_choice == 'English' else 'hi'
 
 with st.sidebar:
     st.title("💼 VeriSame Pro")
-    if st.session_state.plan and st.session_state.plan!= 'dashboard':
+    if st.session_state.plan:
         if st.button(t("← Back to Plans", "← Plans पे वापस")):
             st.session_state.plan = None
             st.session_state.show_qr = False
@@ -133,39 +97,12 @@ with st.sidebar:
             st.session_state.qr_start_time = None
             st.session_state.counted_free = False
             st.session_state.counted_pro = False
-            if 'sample_df' in st.session_state:
-                del st.session_state['sample_df']
+            st.session_state.counted_purchase = False
+            if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
-# ==================== SECRET DASHBOARD PAGE ====================
-if st.session_state.plan == 'dashboard':
-    st.title("📊 VeriSame Pro - Live Stats")
-    st.caption("Secret Admin Page - Don't share this URL")
-    st.markdown("---")
-
-    if st.button("⬅️ Back to App"):
-        st.session_state.plan = None
-        st.query_params.clear()
-        st.rerun()
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.subheader("Total Views")
-        st.markdown("""<img src="https://hits.sh/verisame-pro.streamlit.app.svg?style=for-the-badge&label=Total&color=blue">""", unsafe_allow_html=True)
-    with col2:
-        st.subheader("FREE Users")
-        st.markdown("""<img src="https://hits.sh/verisame-free-plan.svg?style=for-the-badge&label=FREE&color=green">""", unsafe_allow_html=True)
-    with col3:
-        st.subheader("PRO Users")
-        st.markdown("""<img src="https://hits.sh/verisame-pro-plan.svg?style=for-the-badge&label=PRO&color=red">""", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.info("Auto-refresh every 10 seconds")
-    st.markdown("""<meta http-equiv="refresh" content="10">""", unsafe_allow_html=True)
-    st.stop()
-
 # LANDING PAGE
-elif st.session_state.plan is None:
+if st.session_state.plan is None:
     st.title(t("💼 Welcome to VeriSame Pro", "💼 VeriSame Pro में आपका स्वागत है"))
     st.subheader(t("The Fastest Way to Clean Your Data", "आपका डेटा साफ करने का सबसे तेज तरीका"))
     st.markdown("---")
@@ -199,13 +136,14 @@ elif st.session_state.plan is None:
 else:
     is_pro = st.session_state.plan == 'pro'
 
-    # ============ TRACKING: FREE vs PRO COUNT ============
-    if is_pro and not st.session_state.counted_pro:
-        html("""<img src="https://hits.sh/verisame-pro-plan.svg?label=PRO" style="display:none">""", height=0)
-        st.session_state.counted_pro = True
-    elif not is_pro and not st.session_state.counted_free:
-        html("""<img src="https://hits.sh/verisame-free-plan.svg?label=FREE" style="display:none">""", height=0)
-        st.session_state.counted_free = True
+    # ============ COUNTING LOGIC - TERA COUNT NAHI HOGA ============
+    if not IS_ADMIN:
+        if is_pro and not st.session_state.counted_pro:
+            html("""<img src="https://hits.sh/verisame-pro-clicks.svg" style="display:none">""", height=0)
+            st.session_state.counted_pro = True
+        elif not is_pro and not st.session_state.counted_free:
+            html("""<img src="https://hits.sh/verisame-free-clicks.svg" style="display:none">""", height=0)
+            st.session_state.counted_free = True
 
     if st.button(t("⬅️ Back to Plans", "⬅️ Plans पे वापस"), use_container_width=True):
         st.session_state.plan = None
@@ -214,8 +152,8 @@ else:
         st.session_state.qr_start_time = None
         st.session_state.counted_free = False
         st.session_state.counted_pro = False
-        if 'sample_df' in st.session_state:
-            del st.session_state['sample_df']
+        st.session_state.counted_purchase = False
+        if 'sample_df' in st.session_state: del st.session_state['sample_df']
         st.rerun()
 
     st.markdown("---")
@@ -377,6 +315,10 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         with col1:
                             if st.button("🔓 Unlock Download Now", use_container_width=True, type="primary"):
                                 st.session_state.payment_done = True
+                                # ============ PRO PURCHASE COUNT ============
+                                if not IS_ADMIN and not st.session_state.counted_purchase:
+                                    html("""<img src="https://hits.sh/verisame-pro-purchases.svg" style="display:none">""", height=0)
+                                    st.session_state.counted_purchase = True
                                 st.session_state.show_qr = False
                                 st.balloons()
                                 st.rerun()
