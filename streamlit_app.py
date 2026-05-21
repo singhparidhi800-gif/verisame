@@ -22,10 +22,9 @@ UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT = 2999
 WAIT_SECONDS = 15
 
+# ============ GOOGLE ANALYTICS - FIXED ============
 GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
-
-st.markdown(f"""
-<!-- Google tag (gtag.js) -->
+html(f"""
 <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -33,7 +32,7 @@ st.markdown(f"""
   gtag('js', new Date());
   gtag('config', '{GA_MEASUREMENT_ID}');
 </script>
-""", unsafe_allow_html=True)
+""", height=0)
 
 st.markdown("""
     <style>
@@ -194,7 +193,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.info(t("Using: Sample Test Data", "उपयोग: सैंपल टेस्ट डेटा"))
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
             st.error(t("File > 200MB not allowed", "File > 200MB allowed नहीं"))
             st.stop()
 
@@ -261,8 +260,8 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     st.success(t("✅ Missing values filled", "✅ खाली जगह भर दी गई"))
 
         st.markdown("---")
-        st.success(t(f"Done! Removed {len(df) - len(df_cleaned)} duplicates. Total: {len(df_cleaned)} rows",
-                     f"हो गया! {len(df) - len(df_cleaned)} duplicate हटे। Total: {len(df_cleaned)} rows"))
+        st.success(t(f"Done! Removed {original_row_count - len(df_cleaned)} duplicates. Total: {len(df_cleaned)} rows",
+                     f"हो गया! {original_row_count - len(df_cleaned)} duplicate हटे। Total: {len(df_cleaned)} rows"))
 
         df_display = df_cleaned.fillna('').astype(str)
         df_display = df_display.replace(['nan', 'NAN', 'NaN', 'None', 'null', 'NULL'], '', regex=False)
