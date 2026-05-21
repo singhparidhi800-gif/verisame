@@ -128,7 +128,7 @@ with col3:
     st.session_state.lang = 'en' if lang_choice == 'English' else 'hi'
 
 with st.sidebar:
-    st.title("💼 VeriSame Pro")
+    st.title("💼 VeriSame")
     if st.session_state.plan:
         if st.button(t("← Back to Plans", "← Plans पे वापस")):
             st.session_state.plan = None
