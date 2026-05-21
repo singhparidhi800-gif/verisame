@@ -6,34 +6,68 @@ import re
 from io import BytesIO, StringIO
 import qrcode
 from streamlit.components.v1 import html
+import json
+import os
 
 st.set_page_config(page_title="VeriSame Pro", page_icon="💼", layout="wide", initial_sidebar_state="collapsed")
 
-# ============ TRACKING - AB HAMESHA CHALEGA ============
-html("""<img src="https://hits.sh/verisame-pro-views.svg?label=Views&color=blue" style="display:none">""", height=0)
+# ============ SECRET PASSWORD WALA DASHBOARD ============
+SECRET_PASS = "reyansh999" # Is password ko change kar dena
+query_params = st.query_params
+SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
 
-# ============ UPI CONFIG ============
-UPI_ID = "playwithreyansh0@okhdfcbank"
-PRO_AMOUNT = 2999
-WAIT_SECONDS = 15
+# ============ COUNTING FILE ============
+COUNT_FILE = "counts.json"
+if not os.path.exists(COUNT_FILE):
+    with open(COUNT_FILE, 'w') as f:
+        json.dump({"views": 0, "free": 0, "pro": 0, "buy": 0}, f)
 
-# ============ GOOGLE ANALYTICS - 100% WORKING VERSION ============
-GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
-ga_code = f"""
-<html>
-  <head>
+def update_count(key):
+    with open(COUNT_FILE, 'r+') as f:
+        data = json.load(f)
+        data[key] += 1
+        f.seek(0)
+        json.dump(data, f)
+        f.truncate()
+    return data[key]
+
+def get_counts():
+    with open(COUNT_FILE) as f:
+        return json.load(f)
+
+# ============ GA + VIEWS COUNT - SIRF REAL USERS KE LIYE ============
+if not SHOW_DASHBOARD:
+    update_count("views")
+    GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
+    html(f"""
+    <!DOCTYPE html><html><head>
     <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){{dataLayer.push(arguments);}}
       gtag('js', new Date());
       gtag('config', '{GA_MEASUREMENT_ID}');
-    </script>
-  </head>
-  <body></body>
-</html>
-"""
-html(ga_code, height=0)
+    </script></head></html>
+    """, height=0)
+
+# ============ SECRET DASHBOARD - SIRF TU DEKH PAYEGA ============
+if SHOW_DASHBOARD:
+    st.title("🔒 Tera Private Dashboard")
+    counts = get_counts()
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Views", counts['views'])
+    col2.metric("FREE Clicks", counts['free'])
+    col3.metric("PRO Clicks", counts['pro'])
+    col4.metric("Purchases", counts['buy'])
+    st.caption("Ye page sirf tujhe dikh raha hai. Bookmark kar le: `?pass=reyansh999`")
+    if st.button("🔄 Refresh Counts"):
+        st.rerun()
+    st.stop()
+
+# ============ UPI CONFIG ============
+UPI_ID = "playwithreyansh0@okhdfcbank"
+PRO_AMOUNT = 2999
+WAIT_SECONDS = 15
 
 st.markdown("""
     <style>
@@ -115,6 +149,7 @@ if st.session_state.plan is None:
         st.markdown(t("✅ 1000 Rows Download", "✅ 1000 Rows Download"))
         st.markdown(t("⏱️ 30 Second Wait", "⏱️ 30 Second Wait"))
         if st.button("Use FREE", use_container_width=True):
+            update_count("free")
             st.session_state.plan = 'free'
             st.rerun()
 
@@ -125,6 +160,7 @@ if st.session_state.plan is None:
         st.markdown(t("✅ Excel Export", "✅ Excel Export"))
         st.markdown(t("⚡ 3 Second Speed", "⚡ 3 Second Speed"))
         if st.button("🚀 Use PRO", use_container_width=True, type="primary"):
+            update_count("pro")
             st.session_state.plan = 'pro'
             st.rerun()
 
@@ -135,14 +171,6 @@ if st.session_state.plan is None:
 # FREE YA PRO PLAN KA UPLOAD PAGE
 else:
     is_pro = st.session_state.plan == 'pro'
-
-    # ============ COUNTING LOGIC - AB HAMESHA HOGA ============
-    if is_pro and not st.session_state.counted_pro:
-        html("""<img src="https://hits.sh/verisame-pro-clicks.svg?label=PRO&color=green" style="display:none">""", height=0)
-        st.session_state.counted_pro = True
-    elif not is_pro and not st.session_state.counted_free:
-        html("""<img src="https://hits.sh/verisame-free-clicks.svg?label=FREE&color=orange" style="display:none">""", height=0)
-        st.session_state.counted_free = True
 
     if st.button(t("⬅️ Back to Plans", "⬅️ Plans पे वापस"), use_container_width=True):
         st.session_state.plan = None
@@ -193,7 +221,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.info(t("Using: Sample Test Data", "उपयोग: सैंपल टेस्ट डेटा"))
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
             st.error(t("File > 200MB not allowed", "File > 200MB allowed नहीं"))
             st.stop()
 
@@ -313,11 +341,8 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         col1, col2 = st.columns(2)
                         with col1:
                             if st.button("🔓 Unlock Download Now", use_container_width=True, type="primary"):
+                                update_count("buy")
                                 st.session_state.payment_done = True
-                                # ============ PRO PURCHASE COUNT ============
-                                if not st.session_state.counted_purchase:
-                                    html("""<img src="https://hits.sh/verisame-pro-purchases.svg?label=BUY&color=red" style="display:none">""", height=0)
-                                    st.session_state.counted_purchase = True
                                 st.session_state.show_qr = False
                                 st.balloons()
                                 st.rerun()
