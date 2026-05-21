@@ -1,4 +1,12 @@
 import streamlit as st
+st.set_page_config(
+    page_title="VeriSame - Free Excel & CSV Data Cleaner",
+    page_icon="📊",
+    layout="wide",
+    menu_items={
+        'About': "VeriSame cleans messy Excel & CSV files in seconds. Fix text, numbers, dates, duplicates for free."
+    }
+)
 import pandas as pd
 import time
 import numpy as np
@@ -8,8 +16,6 @@ import qrcode
 from streamlit.components.v1 import html
 import json
 import os
-
-st.set_page_config(page_title="VeriSame - Free excel data cleaning", page_icon="💼", layout="wide", initial_sidebar_state="collapsed")
 
 # ============ SECRET PASSWORD WALA DASHBOARD ============
 SECRET_PASS = "reyansh999" # Isko change kar dena
@@ -135,6 +141,7 @@ with st.sidebar:
 # LANDING PAGE
 if st.session_state.plan is None:
     st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=200)
+    st.caption("Free online tool to clean Excel & CSV files. Convert text to numbers, fix dates, remove duplicates instantly.")
     st.title(t("💼 Welcome to VeriSame", "💼 VeriSame में आपका स्वागत है"))
     st.subheader(t("The Fastest Way to Clean Your Data", "आपका डेटा साफ करने का सबसे तेज तरीका"))
     st.markdown("---")
