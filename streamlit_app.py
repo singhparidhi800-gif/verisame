@@ -14,13 +14,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ============ HIDDEN TRACKING - USER KO NAHI DIKHEGA ============
+# ============ TRACKING: TOTAL VIEWS ============
 html("""<img src="https://hits.sh/verisame-pro.streamlit.app.svg?style=flat&label=views" style="display:none">""", height=0)
 
 # ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT = 2999
-WAIT_SECONDS = 15 # 15 second wait - fast but still friction # CHANGE 1
+WAIT_SECONDS = 15
 
 GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
 
@@ -65,21 +65,21 @@ if 'payment_done' not in st.session_state:
     st.session_state.payment_done = False
 if 'qr_start_time' not in st.session_state:
     st.session_state.qr_start_time = None
+if 'counted_free' not in st.session_state:
+    st.session_state.counted_free = False
+if 'counted_pro' not in st.session_state:
+    st.session_state.counted_pro = False
 
 def t(en_text, hi_text):
     return en_text if st.session_state.lang == 'en' else hi_text
 
 # ============ FEATURE: TEXT TO NUMBER CONVERTER ============
 def text_to_number(text):
-    """Convert SIXTY THOUSAND to 60000, FIVE HUNDRED to 500 etc - FREE + PRO both"""
     if pd.isna(text):
         return text
-
     text = str(text).strip().upper()
-
     if re.match(r'^[\d,.\s]+$', text):
         return text.replace(',', '').strip()
-
     number_words = {
         'ZERO': 0, 'ONE': 1, 'TWO': 2, 'THREE': 3, 'FOUR': 4, 'FIVE': 5,
         'SIX': 6, 'SEVEN': 7, 'EIGHT': 8, 'NINE': 9, 'TEN': 10,
@@ -88,11 +88,9 @@ def text_to_number(text):
         'THIRTY': 30, 'FORTY': 40, 'FIFTY': 50, 'SIXTY': 60, 'SEVENTY': 70,
         'EIGHTY': 80, 'NINETY': 90, 'HUNDRED': 100, 'THOUSAND': 1000, 'LAKH': 100000, 'MILLION': 1000000
     }
-
     words = text.split()
     total = 0
     current = 0
-
     for word in words:
         if word in number_words:
             val = number_words[word]
@@ -104,12 +102,16 @@ def text_to_number(text):
             continue
         else:
             return text
-
     total = current if current else total
     return str(total) if total > 0 else text
 
-# ==================== LANGUAGE SELECTOR TOP RIGHT ME ====================
-col1, col2, col3 = st.columns([6,2,2])
+# ==================== TOP BAR ====================
+col1, col2, col3 = st.columns([4,2,2])
+with col1:
+    # SECRET DASHBOARD BUTTON - SIRF TERE LIYE
+    if st.button("📊", help="Admin Stats"):
+        st.session_state.plan = 'dashboard'
+        st.rerun()
 with col3:
     lang_choice = st.selectbox(
         "🌐",
@@ -122,18 +124,46 @@ with col3:
 
 with st.sidebar:
     st.title("💼 VeriSame Pro")
-    if st.session_state.plan:
+    if st.session_state.plan and st.session_state.plan!= 'dashboard':
         if st.button(t("← Back to Plans", "← Plans पे वापस")):
             st.session_state.plan = None
             st.session_state.show_qr = False
             st.session_state.payment_done = False
             st.session_state.qr_start_time = None
+            st.session_state.counted_free = False
+            st.session_state.counted_pro = False
             if 'sample_df' in st.session_state:
                 del st.session_state['sample_df']
             st.rerun()
 
+# ==================== SECRET DASHBOARD PAGE ====================
+if st.session_state.plan == 'dashboard':
+    st.title("📊 VeriSame Pro - Live Stats")
+    st.caption("Secret Admin Page - Don't share this")
+    st.markdown("---")
+
+    if st.button("⬅️ Back to App"):
+        st.session_state.plan = None
+        st.rerun()
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.subheader("Total Views")
+        st.markdown("![Total](https://hits.sh/verisame-pro.streamlit.app.svg?style=for-the-badge&label=Total&color=blue)")
+    with col2:
+        st.subheader("FREE Users")
+        st.markdown("![FREE](https://hits.sh/verisame-free-plan.svg?style=for-the-badge&label=FREE&color=green)")
+    with col3:
+        st.subheader("PRO Users")
+        st.markdown("![PRO](https://hits.sh/verisame-pro-plan.svg?style=for-the-badge&label=PRO&color=red)")
+
+    st.markdown("---")
+    st.info("Auto-refresh every 10 seconds")
+    st.markdown("""<meta http-equiv="refresh" content="10">""", unsafe_allow_html=True)
+    st.stop()
+
 # LANDING PAGE
-if st.session_state.plan is None:
+elif st.session_state.plan is None:
     st.title(t("💼 Welcome to VeriSame Pro", "💼 VeriSame Pro में आपका स्वागत है"))
     st.subheader(t("The Fastest Way to Clean Your Data", "आपका डेटा साफ करने का सबसे तेज तरीका"))
     st.markdown("---")
@@ -167,12 +197,22 @@ if st.session_state.plan is None:
 else:
     is_pro = st.session_state.plan == 'pro'
 
+    # ============ TRACKING: FREE vs PRO COUNT ============
+    if is_pro and not st.session_state.counted_pro:
+        html("""<img src="https://hits.sh/verisame-pro-plan.svg?label=PRO" style="display:none">""", height=0)
+        st.session_state.counted_pro = True
+    elif not is_pro and not st.session_state.counted_free:
+        html("""<img src="https://hits.sh/verisame-free-plan.svg?label=FREE" style="display:none">""", height=0)
+        st.session_state.counted_free = True
+
     # ============ BACK BUTTON - TOP ME ============
     if st.button(t("⬅️ Back to Plans", "⬅️ Plans पे वापस"), use_container_width=True):
         st.session_state.plan = None
         st.session_state.show_qr = False
         st.session_state.payment_done = False
         st.session_state.qr_start_time = None
+        st.session_state.counted_free = False
+        st.session_state.counted_pro = False
         if 'sample_df' in st.session_state:
             del st.session_state['sample_df']
         st.rerun()
@@ -215,7 +255,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.info(t("Using: Sample Test Data", "उपयोग: सैंपल टेस्ट डेटा"))
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
             st.error(t("File > 200MB not allowed", "File > 200MB allowed नहीं"))
             st.stop()
 
@@ -239,7 +279,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             st.error(t(f"Error reading file: {e}", f"File पढ़ने में Error: {e}"))
             st.stop()
 
-        # ============ FREE LIMIT + ROW COUNT DISPLAY ============
         if not is_pro and len(df) > 1000:
             st.warning(t(f"FREE limit: Processing first 1000 rows out of {original_row_count} rows. Upgrade to PRO for full file.",
                          f"FREE limit: {original_row_count} में से सिर्फ पहली 1000 rows process होंगी। पूरी फाइल के लिए PRO लें।"))
@@ -247,19 +286,14 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         else:
             st.info(t(f"Original file had {original_row_count} rows", f"Original file me {original_row_count} rows thi"))
 
-        # ============ BASIC CLEANING ============
         df_cleaned = df.drop_duplicates()
 
-        # ============ FEATURE: TEXT TO NUMBER FOR FREE + PRO BOTH ============
         for col in df_cleaned.select_dtypes(include=['object']):
             df_cleaned[col] = df_cleaned[col].apply(text_to_number)
 
-        # ============ PRO FEATURES START ============
         if is_pro:
             st.markdown("---")
             st.subheader(t("🔧 PRO Cleaning Tools", "🔧 PRO Cleaning Tools"))
-
-            # FEATURE 1: DATE STANDARDIZER
             date_cols = st.multiselect(
                 t("1. Select Date Columns to Standardize", "1. Date वाले Columns चुनो"),
                 df_cleaned.columns.tolist()
@@ -269,7 +303,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     df_cleaned[col] = pd.to_datetime(df_cleaned[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
                 st.success(t(f"✅ Dates standardized in {len(date_cols)} columns", f"✅ {len(date_cols)} columns में Dates fix हुई"))
 
-            # FEATURE 2: SMART FILL MISSING VALUES
             numeric_cols = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
             if numeric_cols and df_cleaned[numeric_cols].isnull().any().any():
                 fill_method = st.selectbox(
@@ -288,13 +321,10 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(custom_val)
                     st.success(t("✅ Missing values filled", "✅ खाली जगह भर दी गई"))
 
-        # ============ PRO FEATURES END ============
-
         st.markdown("---")
         st.success(t(f"Done! Removed {len(df) - len(df_cleaned)} duplicates. Total: {len(df_cleaned)} rows",
                      f"हो गया! {len(df) - len(df_cleaned)} duplicate हटे। Total: {len(df_cleaned)} rows"))
 
-        # ============ FINAL NaN CLEANING - 200% GUARANTEE ============
         df_display = df_cleaned.fillna('').astype(str)
         df_display = df_display.replace(['nan', 'NAN', 'NaN', 'None', 'null', 'NULL'], '', regex=False)
 
@@ -309,29 +339,21 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.markdown("---")
 
         if is_pro:
-            # ============ UPI STEALTH PAYMENT FLOW ============
             if not st.session_state.payment_done:
-
-                # STAGE 1: PAY BUTTON
                 if not st.session_state.show_qr:
                     st.error(t("🔒 Download Locked - ₹2999 Lifetime", "🔒 डाउनलोड लॉक्ड - ₹2999 लाइफटाइम"))
                     if st.button("💳 Pay ₹2999 with UPI", use_container_width=True, type="primary"):
                         st.session_state.show_qr = True
                         st.session_state.qr_start_time = time.time()
                         st.rerun()
-
-                # STAGE 2: QR CODE + HIDDEN TIMER
                 else:
                     st.warning(t("Step 1: Scan QR & Complete Payment", "Step 1: QR स्कैन करो और Payment करो"))
-
-                    # QR Generate
                     upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_AMOUNT}&cu=INR"
                     qr = qrcode.QRCode(box_size=8, border=4)
                     qr.add_data(upi_link)
                     qr.make(fit=True)
                     img = qr.make_image(fill_color="black", back_color="white")
                     buf = BytesIO(); img.save(buf)
-
                     col1, col2 = st.columns([1,2])
                     with col1:
                         st.image(buf, width=250)
@@ -339,12 +361,8 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         st.markdown(f"**UPI ID:** `{UPI_ID}`")
                         st.markdown(f"**Amount:** `₹{PRO_AMOUNT}`")
                         st.caption(t("Scan with GPay / PhonePe / Paytm", "Scan with GPay / PhonePe / Paytm"))
-
                     st.markdown("---")
-
-                    # ============ HIDDEN TIMER LOGIC WITH PROGRESS BAR - CHANGE 2 ============
                     elapsed_time = time.time() - st.session_state.qr_start_time
-
                     if elapsed_time < WAIT_SECONDS:
                         progress = int((elapsed_time / WAIT_SECONDS) * 100)
                         st.info("🔄 Verifying payment with bank...")
@@ -353,7 +371,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         time.sleep(1)
                         st.rerun()
                     else:
-                        # Timer complete - Ab button dikhao
                         st.success(t("Step 2: Payment Successful! Click to Unlock", "Step 2: Payment Successful! Unlock करने के लिए क्लिक करो"))
                         col1, col2 = st.columns(2)
                         with col1:
@@ -367,16 +384,11 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                                 st.session_state.show_qr = False
                                 st.session_state.qr_start_time = None
                                 st.rerun()
-
-            # STAGE 3: PAYMENT COMPLETE - DOWNLOAD DIKHAO
             else:
                 st.success(t("✅ Your Payment is Complete! Download Your File", "✅ आपका Payment Complete है! फाइल डाउनलोड करो"))
-
-                # FEATURE 4: EXCEL EXPORT - PRO ONLY
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
-
                 col1, col2 = st.columns(2)
                 with col1:
                     st.download_button(
@@ -394,7 +406,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         "verisame_cleaned.csv",
                         "text/csv"
                     )
-
         else:
             df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
             buffer = BytesIO()
