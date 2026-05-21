@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ============ HIDDEN TRACKING - USER KO NAHI DIKHEGA ============
-html("""<img src="https://api.countapi.xyz/hit/verisame-pro-views/main" style="display:none">""", height=0)
+html("""<img src="https://hits.sh/verisame-pro.streamlit.app.svg?style=flat&label=views" style="display:none">""", height=0)
 
 # ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
