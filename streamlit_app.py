@@ -9,30 +9,31 @@ from streamlit.components.v1 import html
 
 st.set_page_config(page_title="VeriSame Pro", page_icon="💼", layout="wide", initial_sidebar_state="collapsed")
 
-# ============ ADMIN CHECK - TERA VISIT COUNT NAHI HOGA ============
-query_params = st.query_params
-IS_ADMIN = query_params.get("admin") == "reyansh123"
-
-# ============ TRACKING - SIRF USERS KA COUNT ============
-if not IS_ADMIN:
-    html("""<img src="https://hits.sh/verisame-pro-views.svg" style="display:none">""", height=0)
+# ============ TRACKING - AB HAMESHA CHALEGA ============
+html("""<img src="https://hits.sh/verisame-pro-views.svg?label=Views&color=blue" style="display:none">""", height=0)
 
 # ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT = 2999
 WAIT_SECONDS = 15
 
-# ============ GOOGLE ANALYTICS - FIXED ============
+# ============ GOOGLE ANALYTICS - 100% WORKING VERSION ============
 GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
-html(f"""
-<script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){{dataLayer.push(arguments);}}
-  gtag('js', new Date());
-  gtag('config', '{GA_MEASUREMENT_ID}');
-</script>
-""", height=0)
+ga_code = f"""
+<html>
+  <head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){{dataLayer.push(arguments);}}
+      gtag('js', new Date());
+      gtag('config', '{GA_MEASUREMENT_ID}');
+    </script>
+  </head>
+  <body></body>
+</html>
+"""
+html(ga_code, height=0)
 
 st.markdown("""
     <style>
@@ -135,14 +136,13 @@ if st.session_state.plan is None:
 else:
     is_pro = st.session_state.plan == 'pro'
 
-    # ============ COUNTING LOGIC - TERA COUNT NAHI HOGA ============
-    if not IS_ADMIN:
-        if is_pro and not st.session_state.counted_pro:
-            html("""<img src="https://hits.sh/verisame-pro-clicks.svg" style="display:none">""", height=0)
-            st.session_state.counted_pro = True
-        elif not is_pro and not st.session_state.counted_free:
-            html("""<img src="https://hits.sh/verisame-free-clicks.svg" style="display:none">""", height=0)
-            st.session_state.counted_free = True
+    # ============ COUNTING LOGIC - AB HAMESHA HOGA ============
+    if is_pro and not st.session_state.counted_pro:
+        html("""<img src="https://hits.sh/verisame-pro-clicks.svg?label=PRO&color=green" style="display:none">""", height=0)
+        st.session_state.counted_pro = True
+    elif not is_pro and not st.session_state.counted_free:
+        html("""<img src="https://hits.sh/verisame-free-clicks.svg?label=FREE&color=orange" style="display:none">""", height=0)
+        st.session_state.counted_free = True
 
     if st.button(t("⬅️ Back to Plans", "⬅️ Plans पे वापस"), use_container_width=True):
         st.session_state.plan = None
@@ -193,7 +193,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.info(t("Using: Sample Test Data", "उपयोग: सैंपल टेस्ट डेटा"))
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
             st.error(t("File > 200MB not allowed", "File > 200MB allowed नहीं"))
             st.stop()
 
@@ -315,8 +315,8 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                             if st.button("🔓 Unlock Download Now", use_container_width=True, type="primary"):
                                 st.session_state.payment_done = True
                                 # ============ PRO PURCHASE COUNT ============
-                                if not IS_ADMIN and not st.session_state.counted_purchase:
-                                    html("""<img src="https://hits.sh/verisame-pro-purchases.svg" style="display:none">""", height=0)
+                                if not st.session_state.counted_purchase:
+                                    html("""<img src="https://hits.sh/verisame-pro-purchases.svg?label=BUY&color=red" style="display:none">""", height=0)
                                     st.session_state.counted_purchase = True
                                 st.session_state.show_qr = False
                                 st.balloons()
