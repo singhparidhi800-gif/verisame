@@ -9,7 +9,7 @@ from streamlit.components.v1 import html
 import json
 import os
 
-st.set_page_config(page_title="VeriSame Pro", page_icon="💼", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="VeriSame - Free excel data cleaning", page_icon="💼", layout="wide", initial_sidebar_state="collapsed")
 
 # ============ SECRET PASSWORD WALA DASHBOARD ============
 SECRET_PASS = "reyansh999" # Isko change kar dena
