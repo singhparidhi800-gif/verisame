@@ -12,7 +12,7 @@ import os
 st.set_page_config(page_title="VeriSame Pro", page_icon="💼", layout="wide", initial_sidebar_state="collapsed")
 
 # ============ SECRET PASSWORD WALA DASHBOARD ============
-SECRET_PASS = "reyansh999" # Is password ko change kar dena
+SECRET_PASS = "reyansh999" # Isko change kar dena
 query_params = st.query_params
 SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
 
@@ -35,9 +35,12 @@ def get_counts():
     with open(COUNT_FILE) as f:
         return json.load(f)
 
-# ============ GA + VIEWS COUNT - SIRF REAL USERS KE LIYE ============
+# ============ GA + VIEWS COUNT - SIRF 1 BAAR PER SESSION ============
 if not SHOW_DASHBOARD:
-    update_count("views")
+    if 'counted_session' not in st.session_state:
+        update_count("views")
+        st.session_state.counted_session = True
+
     GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
     html(f"""
     <!DOCTYPE html><html><head>
@@ -94,9 +97,6 @@ if 'plan' not in st.session_state: st.session_state.plan = None
 if 'show_qr' not in st.session_state: st.session_state.show_qr = False
 if 'payment_done' not in st.session_state: st.session_state.payment_done = False
 if 'qr_start_time' not in st.session_state: st.session_state.qr_start_time = None
-if 'counted_free' not in st.session_state: st.session_state.counted_free = False
-if 'counted_pro' not in st.session_state: st.session_state.counted_pro = False
-if 'counted_purchase' not in st.session_state: st.session_state.counted_purchase = False
 
 def t(en_text, hi_text): return en_text if st.session_state.lang == 'en' else hi_text
 
@@ -129,9 +129,6 @@ with st.sidebar:
             st.session_state.show_qr = False
             st.session_state.payment_done = False
             st.session_state.qr_start_time = None
-            st.session_state.counted_free = False
-            st.session_state.counted_pro = False
-            st.session_state.counted_purchase = False
             if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
@@ -177,9 +174,6 @@ else:
         st.session_state.show_qr = False
         st.session_state.payment_done = False
         st.session_state.qr_start_time = None
-        st.session_state.counted_free = False
-        st.session_state.counted_pro = False
-        st.session_state.counted_purchase = False
         if 'sample_df' in st.session_state: del st.session_state['sample_df']
         st.rerun()
 
