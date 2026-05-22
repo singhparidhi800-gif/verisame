@@ -1,5 +1,18 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import time
+import pandas as pd
+from io import BytesIO
+
+# SEO ke liye - Sabse pehle yahi aana chahiye
+st.set_page_config(
+    page_title="Verisame - Free Excel & CSV Data Cleaner",
+    page_icon="🧹",
+    layout="wide"
+)
+
+st.title("Verisame")
+st.write("Verisame is a free online tool to clean, convert and filter Excel & CSV files instantly. No login needed.")
 
 # Google Tag Manager - For Search Console Verification
 components.html("""
@@ -7,7 +20,7 @@ components.html("""
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+'https://www.googletagmanager.com/gtm.js?id=GTM-5CJ665XZ';f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-5CJ665XZ');</script>
 <!-- End Google Tag Manager -->
 """, height=0)
@@ -18,10 +31,6 @@ st.markdown("""
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 """, unsafe_allow_html=True)
-import time
-import pandas as pd
-from io import BytesIO
-import time
 
 # ===== SECRET ADMIN SETTINGS =====
 ADMIN_USER = "Reyansh"
