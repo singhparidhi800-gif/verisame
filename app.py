@@ -1,5 +1,19 @@
 import streamlit as st
+from pathlib import Path
+
+# Google Search Console Verification
+google_file = Path("googlef1bc5a74570309f0.html")
+if google_file.exists():
+    st.text(google_file.read_text())
+    st.stop()
+
 import pandas as pd
+from io import BytesIO
+import time
+
+# ===== SECRET ADMIN SETTINGS =====
+ADMIN_USER = "Reyansh"
+...baaki code...import pandas as pd
 from io import BytesIO
 import time
 
