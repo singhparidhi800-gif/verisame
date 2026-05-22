@@ -1,8 +1,10 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-# Google Search Console Verification - Meta Tag
-st.markdown('<meta name="google-site-verification" content="r1wzMau1uinP14S7qbYJcmve44Ih7SEO-MdK9TZjW9A" />', unsafe_allow_html=True)
-
+# Google Search Console Verification - Head Injection
+components.html("""
+<meta name="google-site-verification" content="r1wzMau1uinP14S7qbYJcmve44Ih7SEO-MdK9TZjW9A" />
+""", height=0)
 import pandas as pd
 from io import BytesIO
 import time
