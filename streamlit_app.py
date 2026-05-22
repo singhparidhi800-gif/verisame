@@ -1,5 +1,5 @@
 import streamlit as st
-st.markdown('<meta name="google-site-verification" content="TeraWalaCodeYahanDaal" />', unsafe_allow_html=True)
+st.markdown('<meta name="google-site-verification" content="azhQ1e5BOkxUQ3pEI" />', unsafe_allow_html=True)
 st.set_page_config(
     page_title="VeriSame - Free Excel & CSV D",
     page_icon="📊",
