@@ -1,5 +1,12 @@
 import streamlit as st
-st.markdown('<meta name="google-site-verification" content="r1wzMau1uinP14S7qbYJcmve44Ih7SEO-MdK9TZjW9A" />" />', unsafe_allow_html=True)
+from pathlib import Path
+
+# Google Search Console Verification
+google_file = Path("googlef1bc5a74570309f0.html")
+if google_file.exists():
+    st.text(google_file.read_text())
+    st.stop()
+
 st.set_page_config(
     page_title="VeriSame - Free Excel & CSV D",
     page_icon="📊",
