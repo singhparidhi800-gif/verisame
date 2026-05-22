@@ -1,10 +1,11 @@
 import streamlit as st
+st.markdown('<meta name="google-site-verification" content="TeraWalaCodeYahanDaal" />', unsafe_allow_html=True)
 st.set_page_config(
-    page_title="VeriSame - Free Excel & CSV Data Cleaner",
+    page_title="VeriSame - Free Excel & CSV D",
     page_icon="📊",
     layout="wide",
     menu_items={
-        'About': "VeriSame cleans messy Excel & CSV files in seconds. Fix text, numbers, dates, duplicates for free."
+        'About': "VeriSame cleans messy Excel"
     }
 )
 import pandas as pd
