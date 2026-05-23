@@ -89,6 +89,39 @@ def mark_payment_done(email):
     except:
         pass
 
+# ============ LOCALSTORAGE WITH EXPIRY ============
+def save_email_to_browser(email, expiry_date):
+    components.html(f"""
+        <script>
+        const data = {{
+            email: '{email}',
+            expiry: '{expiry_date}'
+        }};
+        localStorage.setItem('verisame_data', JSON.stringify(data));
+        </script>
+    """, height=0)
+
+def get_email_from_browser():
+    get_email_js = """
+    <script>
+    const data = localStorage.getItem('verisame_data');
+    if(data) {
+        const parsed = JSON.parse(data);
+        const expiry = new Date(parsed.expiry);
+        const now = new Date();
+        if(now < expiry) {
+            window.parent.postMessage({type: 'streamlit:setComponentValue', value: JSON.stringify(parsed)}, '*');
+        } else {
+            localStorage.removeItem('verisame_data');
+            window.parent.postMessage({type: 'streamlit:setComponentValue', value: ''}, '*');
+        }
+    } else {
+        window.parent.postMessage({type: 'streamlit:setComponentValue', value: ''}, '*');
+    }
+    </script>
+    """
+    return components.html(get_email_js, height=0)
+
 # ============ GA + VIEWS COUNT ============
 if not SHOW_DASHBOARD:
     if 'counted_session' not in st.session_state:
@@ -129,21 +162,20 @@ if SHOW_DASHBOARD:
     st.write(f"**6-Month Plan:** {counts.get('pro_half', 0)} x ₹1499 = ₹{half_revenue}")
     st.success(f"**Total Potential Revenue: ₹{monthly_revenue + half_revenue}**")
     st.caption(f"Last updated: {time.strftime('%d-%m-%Y %H:%M:%S')}")
-    st.caption("Bookmark: `?pass=reyansh999VeriSame2026CEO`")
     st.markdown("---")
     st.subheader("📊 PRO Users List - Email + Status + Plan")
     try:
         users_df = pd.read_csv(SHEET_URL)
         st.dataframe(users_df, use_container_width=True)
     except:
-        st.info("Google Sheet connect nahi hua. SHEET_ID check karo.")
+        st.info("Google Sheet connect nahi hua.")
     st.stop()
 
 # ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
-WAIT_SECONDS = 15
+WAIT_SECONDS = 25
 
 st.markdown("""
     <style>
@@ -157,14 +189,6 @@ st.markdown("""
         font-weight: bold;
         border-radius: 10px;
     }
-    button[kind="secondary"] {
-        background-color: #FFD700!important;
-        color: black!important;
-        border: 2px solid #FFC300!important;
-    }
-    button[kind="secondary"]:hover {
-        background-color: #FFC300!important;
-    }
     div[data-testid="stVerticalBlock"] div[data-testid="stContainer"]:nth-of-type(2) {
         background-color: #ffebee;
         padding: 15px;
@@ -172,14 +196,10 @@ st.markdown("""
         border: 3px solid #ff1744;
         box-shadow: 0 4px 8px rgba(255,23,68,0.3);
     }
-    @media (max-width: 768px) {
-.stButton>button {height: 55px; font-size: 16px;}
-    }
     </style>
 """, unsafe_allow_html=True)
 
 # ============ SESSION STATES ============
-if 'lang' not in st.session_state: st.session_state.lang = 'en'
 if 'plan' not in st.session_state: st.session_state.plan = None
 if 'show_qr' not in st.session_state: st.session_state.show_qr = False
 if 'payment_done' not in st.session_state: st.session_state.payment_done = False
@@ -188,8 +208,26 @@ if 'selected_pro' not in st.session_state: st.session_state.selected_pro = None
 if 'user_email' not in st.session_state: st.session_state.user_email = None
 if 'pro_expiry' not in st.session_state: st.session_state.pro_expiry = None
 if 'pro_plan_type' not in st.session_state: st.session_state.pro_plan_type = None
-if 'email_checked' not in st.session_state: st.session_state.email_checked = False
 if 'ask_email' not in st.session_state: st.session_state.ask_email = False
+if 'email_loaded' not in st.session_state: st.session_state.email_loaded = False
+if 'saved_data' not in st.session_state: st.session_state.saved_data = None
+
+# BROWSER SE EMAIL + EXPIRY LOAD KARO - PLAN KHATAM TO AUTO DELETE
+if not st.session_state.email_loaded:
+    saved_data = get_email_from_browser()
+    if saved_data:
+        try:
+            parsed = json.loads(saved_data)
+            st.session_state.user_email = parsed['email']
+            st.session_state.pro_expiry = parsed['expiry']
+            is_active, expiry, plan = check_user_in_sheet(parsed['email'])
+            if is_active:
+                st.session_state.pro_expiry = expiry
+                st.session_state.pro_plan_type = plan
+                st.session_state.payment_done = True
+        except:
+            pass
+    st.session_state.email_loaded = True
 
 def is_subscription_active():
     if st.session_state.user_email and st.session_state.pro_expiry:
@@ -201,8 +239,6 @@ def is_subscription_active():
         except:
             return False
     return False
-
-def t(en_text, hi_text): return en_text
 
 def text_to_number(text):
     if pd.isna(text): return text
@@ -219,12 +255,6 @@ def text_to_number(text):
         else: return text
     return str(current) if current > 0 else text
 
-# ==================== TOP BAR ====================
-col1, col2, col3 = st.columns([6,2,2])
-with col3:
-    lang_choice = st.selectbox("🌐", ['English'], label_visibility="collapsed")
-    st.session_state.lang = 'en'
-
 with st.sidebar:
     st.title("💼 VeriSame")
     if is_subscription_active():
@@ -236,7 +266,7 @@ with st.sidebar:
             st.session_state.pro_expiry = None
             st.session_state.pro_plan_type = None
             st.session_state.payment_done = False
-            components.html("<script>localStorage.removeItem('verisame_user_email'); localStorage.removeItem('verisame_pro_expiry');</script>", height=0)
+            components.html("<script>localStorage.removeItem('verisame_data');</script>", height=0)
             st.rerun()
     if st.session_state.plan:
         if st.button("← Back to Plans"):
@@ -249,7 +279,7 @@ with st.sidebar:
             if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
-# LANDING PAGE - FINAL
+# LANDING PAGE
 if st.session_state.plan is None:
     if is_subscription_active():
         st.session_state.plan = 'pro'
@@ -258,7 +288,6 @@ if st.session_state.plan is None:
         st.rerun()
 
     st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=200)
-    st.caption("Free online tool to clean Excel & CSV files. Convert text to numbers, fix dates, remove duplicates instantly.")
     st.title("💼 Welcome to VeriSame")
     st.subheader("The Fastest Way to Clean Your Data")
     st.markdown("---")
@@ -268,10 +297,8 @@ if st.session_state.plan is None:
         with st.container(border=True):
             st.subheader("🆓 FREE Forever")
             st.markdown("✅ 1000 Rows Lifetime")
-            st.markdown("✅ Text to Number Converter")
             st.markdown("✅ CSV Download")
             st.markdown("⏱️ 30 Second Wait")
-            st.markdown("**No Email Required**")
             if st.button("Use FREE", use_container_width=True):
                 update_count("free")
                 st.session_state.plan = 'free'
@@ -281,11 +308,9 @@ if st.session_state.plan is None:
         with st.container(border=True):
             st.subheader("🔥 Monthly Pro")
             st.markdown("✅ Unlimited Rows - 1 Month")
-            st.markdown("✅ Date Fixer + Smart Fill")
             st.markdown("✅ Excel Export")
             st.markdown("⚡ 3 Second Speed")
             st.markdown(f"**₹{PRO_AMOUNT_MONTH} / month**")
-            st.caption("Email required once")
             if st.button("⚡ ₹299 / Month", use_container_width=True):
                 update_count("pro_month")
                 st.session_state.plan = 'pro'
@@ -297,13 +322,10 @@ if st.session_state.plan is None:
         with st.container(border=True):
             st.subheader("💎 Best Value")
             st.markdown("✅ Unlimited Rows - 6 Months")
-            st.markdown("✅ Date Fixer + Smart Fill")
             st.markdown("✅ Excel Export")
             st.markdown("⚡ 3 Second Speed")
             st.markdown(f"**₹{PRO_AMOUNT_HALF} / 6 months**")
             st.success("Save ₹295 vs Monthly")
-            st.caption("Effective ₹250/month")
-            st.caption("Email required once")
             if st.button("💎 ₹1499 / 6 Months", use_container_width=True, type="primary"):
                 update_count("pro_half")
                 st.session_state.plan = 'pro'
@@ -311,10 +333,7 @@ if st.session_state.plan is None:
                 st.session_state.ask_email = True
                 st.rerun()
 
-    st.markdown("---")
-    st.caption("🔒 Security: Your data is deleted immediately after processing.")
-
-# FREE YA PRO PLAN KA UPLOAD PAGE
+# UPLOAD PAGE
 else:
     is_pro = st.session_state.plan == 'pro'
     pro_amount = PRO_AMOUNT_HALF if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
@@ -333,12 +352,12 @@ else:
     st.markdown("---")
 
     if is_pro:
-        # FIX 1: EMAIL ENGLISH ME
+        # EMAIL MANGAO - BUTTON TEXT = "Data Cleaning"
         if st.session_state.ask_email and not st.session_state.user_email:
             st.title(f"💎 VeriSame PRO - {pro_text}")
             st.warning("Enter your email before payment. One time only.")
             email_input = st.text_input("Enter your email:", placeholder="yourname@gmail.com", key="pro_email_input")
-            if st.button("Continue to Payment", use_container_width=True, type="primary"):
+            if st.button("Data Cleaning", use_container_width=True, type="primary"):
                 if email_input and "@" in email_input:
                     is_active, expiry, plan = check_user_in_sheet(email_input)
                     if is_active:
@@ -347,6 +366,7 @@ else:
                         st.session_state.pro_plan_type = plan
                         st.session_state.payment_done = True
                         st.session_state.ask_email = False
+                        save_email_to_browser(email_input, expiry)
                         st.success(f"Welcome back! PRO active till {expiry}")
                         st.balloons()
                         st.rerun()
@@ -371,17 +391,15 @@ else:
             st.info(f"Logged in as: {st.session_state.user_email}")
     else:
         st.title("🆓 VeriSame FREE")
-        st.info("FREE Mode: No email required. 1000 rows lifetime")
+
+    if is_pro and not st.session_state.user_email:
+        st.stop()
 
     with st.expander("🧪 Don't have a file? Test with sample data"):
-        st.write("This is dummy data for testing only.")
         if st.button("Load Sample Data", use_container_width=True):
             sample_data = """Ref_ID,Category,JoinDate,Value,Gender
 A101,Category_X,15-01-2024,100,Male
-A101,Category_X,01/15/2024,100,Male
-B202,Category_Y,2024-03-20,,Female
-C303,Category_Z,20/03/24,300,Male
-C303,Category_Z,Mar 20 2024,300,Male"""
+B202,Category_Y,2024-03-20,,Female"""
             st.session_state['sample_df'] = pd.read_csv(StringIO(sample_data))
             st.success("✅ Sample data loaded")
             st.rerun()
@@ -423,13 +441,12 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             st.stop()
 
         if not is_pro and len(df) > 1000:
-            st.warning(f"FREE limit: Processing first 1000 rows out of {original_row_count} rows. Upgrade to PRO for full file.")
+            st.warning(f"FREE limit: Processing first 1000 rows out of {original_row_count} rows.")
             df = df.head(1000)
         else:
             st.info(f"Original file had {original_row_count} rows")
 
         df_cleaned = df.drop_duplicates()
-
         for col in df_cleaned.select_dtypes(include=['object']):
             df_cleaned[col] = df_cleaned[col].apply(text_to_number)
 
@@ -479,7 +496,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.markdown("---")
 
         if is_pro:
-            # CEO VERIFY KARNE KE BAAD
             if is_subscription_active():
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
                 excel_buffer = BytesIO()
@@ -493,7 +509,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
                     st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
 
-            # FIX 3: PAYMENT KE BAAD THANK YOU + DOWNLOAD AS EXCEL + DOWNLOAD AS CSV
             elif st.session_state.payment_done:
                 st.title("🎉 Thank You for Payment!")
                 st.success("✅ Your payment request is sent to CEO")
@@ -501,7 +516,6 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                 st.balloons()
                 st.markdown("---")
                 st.subheader("📥 Your Cleaned File Ready")
-                st.warning("⚠️ Download enabled. Full PRO features unlock after CEO verification")
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
@@ -513,54 +527,49 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
                     st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
 
-            # FIX 2: QR + 15 SEC WAIT + ST.STOP()
-            elif not st.session_state.payment_done:
-                if st.session_state.show_qr:
-                    st.warning("Step 1: Scan QR & Complete Payment")
-                    upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
-                    qr = qrcode.QRCode(box_size=8, border=4)
-                    qr.add_data(upi_link)
-                    qr.make(fit=True)
-                    img = qr.make_image(fill_color="black", back_color="white")
-                    buf = BytesIO(); img.save(buf)
-                    col1, col2 = st.columns([1,2])
+            elif st.session_state.show_qr:
+                st.warning("Step 1: Scan QR & Complete Payment")
+                upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
+                qr = qrcode.QRCode(box_size=8, border=4)
+                qr.add_data(upi_link)
+                qr.make(fit=True)
+                img = qr.make_image(fill_color="black", back_color="white")
+                buf = BytesIO(); img.save(buf)
+                col1, col2 = st.columns([1,2])
+                with col1:
+                    st.image(buf, width=250)
+                with col2:
+                    st.markdown(f"**UPI ID:** `{UPI_ID}`")
+                    st.markdown(f"**Amount:** `₹{pro_amount}`")
+                    st.markdown(f"**Plan:** `{pro_text}`")
+                    st.markdown(f"**Email:** `{st.session_state.user_email}`")
+                st.markdown("---")
+                elapsed_time = time.time() - st.session_state.qr_start_time
+                if elapsed_time < WAIT_SECONDS:
+                    progress = int((elapsed_time / WAIT_SECONDS) * 100)
+                    st.info("🔄 Waiting for payment...")
+                    st.progress(progress)
+                    st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.success("Step 2: Payment Done? Click to Unlock")
+                    col1, col2 = st.columns(2)
                     with col1:
-                        st.image(buf, width=250)
+                        if st.button(f"🔓 I Paid ₹{pro_amount} - Activate PRO", use_container_width=True, type="primary"):
+                            update_count("buy")
+                            mark_payment_done(st.session_state.user_email)
+                            st.session_state.payment_done = True
+                            st.session_state.show_qr = False
+                            st.balloons()
+                            st.rerun()
                     with col2:
-                        st.markdown(f"**UPI ID:** `{UPI_ID}`")
-                        st.markdown(f"**Amount:** `₹{pro_amount}`")
-                        st.markdown(f"**Plan:** `{pro_text}`")
-                        st.markdown(f"**Email:** `{st.session_state.user_email}`")
-                        st.caption("Scan with GPay / PhonePe / Paytm")
-                    st.markdown("---")
-                    elapsed_time = time.time() - st.session_state.qr_start_time
-                    if elapsed_time < WAIT_SECONDS:
-                        progress = int((elapsed_time / WAIT_SECONDS) * 100)
-                        st.info("🔄 Waiting for payment...")
-                        st.progress(progress)
-                        st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
-                        time.sleep(1)
-                        st.rerun()
-                    else:
-                        st.success("Step 2: Payment Done? Click to Unlock")
-                        st.info("⚠️ Click only if you completed payment.")
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            if st.button(f"🔓 I Paid ₹{pro_amount} - Activate PRO", use_container_width=True, type="primary"):
-                                update_count("buy")
-                                mark_payment_done(st.session_state.user_email)
-                                st.session_state.payment_done = True
-                                st.session_state.show_qr = False
-                                st.balloons()
-                                st.success(f"PRO Request Sent! CEO verify karke activate kar dega 💚")
-                                st.rerun()
-                        with col2:
-                            if st.button("⬅️ Cancel", use_container_width=True):
-                                st.session_state.show_qr = False
-                                st.session_state.qr_start_time = None
-                                st.session_state.ask_email = True
-                                st.rerun()
-                    st.stop()
+                        if st.button("⬅️ Cancel", use_container_width=True):
+                            st.session_state.show_qr = False
+                            st.session_state.qr_start_time = None
+                            st.session_state.ask_email = True
+                            st.rerun()
+                st.stop()
         else:
             df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
             buffer = BytesIO()
