@@ -58,21 +58,33 @@ def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
-# ============ SUBSCRIPTION FUNCTIONS ============
+# ============ SUBSCRIPTION FUNCTIONS - FIXED ============
+@st.cache_data(ttl=60)
 def check_user_in_sheet(email):
     try:
         df = pd.read_csv(SHEET_URL)
-        user_row = df[df['email'] == email]
+        df.columns = df.columns.str.strip().str.lower()
+        user_row = df[df['email'].str.strip().str.lower() == email.lower()]
         if not user_row.empty:
-            expiry_str = user_row.iloc[0]['expiry_date']
-            if expiry_str in ['pending', 'verify_karo', 'rejected']:
-                return False, expiry_str, user_row.iloc[0]['plan']
-            expiry_date = datetime.strptime(expiry_str, '%Y-%m-%d')
-            if datetime.now() < expiry_date:
-                return True, expiry_str, user_row.iloc[0]['plan']
+            expiry_str = str(user_row.iloc[0]['expiry_date']).strip()
+            plan = str(user_row.iloc[0]['plan']).strip()
+
+            if expiry_str.lower() in ['pending', 'verify_karo', 'rejected', 'nan', '']:
+                return False, expiry_str, plan
+
+            for fmt in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y']:
+                try:
+                    expiry_date = datetime.strptime(expiry_str, fmt)
+                    if datetime.now() < expiry_date:
+                        return True, expiry_date.strftime('%Y-%m-%d'), plan
+                    else:
+                        return False, "expired", plan
+                except:
+                    continue
+            return False, "invalid_date", plan
         return False, None, None
-    except:
-        return False, None, None
+    except Exception as e:
+        return False, f"error: {e}", None
 
 def save_user_to_sheet(email, plan_type):
     plan_name = "1month" if plan_type == 'month' else "6months"
@@ -80,14 +92,26 @@ def save_user_to_sheet(email, plan_type):
         requests.post(GOOGLE_SCRIPT_URL, json={"action": "new_user", "email": email, "plan": plan_name}, timeout=5)
     except:
         pass
-    st.session_state.pro_plan_type = plan_type
-    st.session_state.user_email = email
 
 def mark_payment_done(email):
     try:
         requests.post(GOOGLE_SCRIPT_URL, json={"action": "payment_done", "email": email}, timeout=5)
     except:
         pass
+
+# ============ EMAIL MEMORY - LOCALSTORAGE ============
+st.markdown("""
+<script>
+// Email save karo localStorage me
+function saveEmail(email) {
+    localStorage.setItem('verisame_email', email);
+}
+// Email get karo
+function getEmail() {
+    return localStorage.getItem('verisame_email');
+}
+</script>
+""", unsafe_allow_html=True)
 
 # ============ GA + VIEWS COUNT ============
 if not SHOW_DASHBOARD:
@@ -103,6 +127,12 @@ if not SHOW_DASHBOARD:
       function gtag(){{dataLayer.push(arguments);}}
       gtag('js', new Date());
       gtag('config', '{GA_MEASUREMENT_ID}');
+
+      // Auto email load
+      const savedEmail = localStorage.getItem('verisame_email');
+      if(savedEmail) {{
+          window.parent.postMessage({{type: 'streamlit:setComponentValue', value: savedEmail}}, '*');
+      }}
     </script></head></html>
     """, height=0)
 
@@ -145,7 +175,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - PURA BOX RED ============
+# ============ CSS - 299 + 1499 DONO RED ============
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -158,7 +188,6 @@ st.markdown("""
         font-weight: bold;
         border-radius: 10px;
     }
-    /* FIX: nth-child use karke pura box red */
     div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: #ffebee!important;
         border: 3px solid #ff1744!important;
@@ -184,10 +213,12 @@ if 'user_email' not in st.session_state: st.session_state.user_email = None
 if 'pro_expiry' not in st.session_state: st.session_state.pro_expiry = None
 if 'pro_plan_type' not in st.session_state: st.session_state.pro_plan_type = None
 if 'ask_email' not in st.session_state: st.session_state.ask_email = False
+if 'show_pay_button' not in st.session_state: st.session_state.show_pay_button = False
+if 'df_cleaned' not in st.session_state: st.session_state.df_cleaned = None
 
 def is_subscription_active():
     if st.session_state.user_email and st.session_state.pro_expiry:
-        if st.session_state.pro_expiry in ['pending', 'verify_karo', 'rejected']:
+        if st.session_state.pro_expiry in ['pending', 'verify_karo', 'rejected', 'expired', 'invalid_date'] or 'error' in str(st.session_state.pro_expiry):
             return False
         try:
             expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
@@ -213,6 +244,7 @@ with st.sidebar:
             st.session_state.pro_expiry = None
             st.session_state.pro_plan_type = None
             st.session_state.payment_done = False
+            html("<script>localStorage.removeItem('verisame_email');</script>", height=0)
             st.rerun()
     if st.session_state.plan:
         if st.button("← Back to Plans"):
@@ -222,16 +254,23 @@ with st.sidebar:
             st.session_state.selected_pro = None
             st.session_state.ask_email = False
             st.session_state.payment_done = False
+            st.session_state.show_pay_button = False
+            st.session_state.df_cleaned = None
             if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
 # LANDING PAGE
 if st.session_state.plan is None:
-    if is_subscription_active():
-        st.session_state.plan = 'pro'
-        st.session_state.payment_done = True
-        st.session_state.selected_pro = st.session_state.pro_plan_type
-        st.rerun()
+    # AUTO LOGIN - EMAIL YAAD HAI TO
+    if st.session_state.user_email:
+        is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
+        if is_active:
+            st.session_state.pro_expiry = expiry
+            st.session_state.pro_plan_type = plan
+            st.session_state.plan = 'pro'
+            st.session_state.payment_done = True
+            st.session_state.selected_pro = plan
+            st.rerun()
 
     st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=200)
     st.title("💼 Welcome to VeriSame")
@@ -251,7 +290,6 @@ if st.session_state.plan is None:
                 st.rerun()
 
     with col2:
-        # AB PURA BOX RED HOGA - CSS SE
         with st.container(border=True):
             st.subheader("🔥 Monthly Pro")
             st.markdown("✅ Unlimited Rows - 1 Month")
@@ -266,7 +304,6 @@ if st.session_state.plan is None:
                 st.rerun()
 
     with col3:
-        # AB PURA BOX RED HOGA - CSS SE
         with st.container(border=True):
             st.subheader("💎 Best Value")
             st.markdown("✅ Unlimited Rows - 6 Months")
@@ -281,7 +318,7 @@ if st.session_state.plan is None:
                 st.session_state.ask_email = True
                 st.rerun()
 
-# UPLOAD PAGE - BAaki sab same hai
+# UPLOAD PAGE
 else:
     is_pro = st.session_state.plan == 'pro'
     pro_amount = PRO_AMOUNT_HALF if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
@@ -294,6 +331,8 @@ else:
         st.session_state.selected_pro = None
         st.session_state.ask_email = False
         st.session_state.payment_done = False
+        st.session_state.show_pay_button = False
+        st.session_state.df_cleaned = None
         if 'sample_df' in st.session_state: del st.session_state['sample_df']
         st.rerun()
 
@@ -302,13 +341,15 @@ else:
     if is_pro:
         if st.session_state.ask_email and not st.session_state.user_email:
             st.title(f"💎 VeriSame PRO - {pro_text}")
-            st.warning("Enter your email before payment. One time only.")
+            st.warning("Enter your email. We'll remember it forever.")
             email_input = st.text_input("Enter your email:", placeholder="yourname@gmail.com", key="pro_email_input")
-            if st.button("Data Cleaning", use_container_width=True, type="primary"):
+            if st.button("Continue", use_container_width=True, type="primary"):
                 if email_input and "@" in email_input:
+                    st.session_state.user_email = email_input
+                    # Save to localStorage
+                    html(f"<script>localStorage.setItem('verisame_email', '{email_input}');</script>", height=0)
                     is_active, expiry, plan = check_user_in_sheet(email_input)
                     if is_active:
-                        st.session_state.user_email = email_input
                         st.session_state.pro_expiry = expiry
                         st.session_state.pro_plan_type = plan
                         st.session_state.payment_done = True
@@ -317,10 +358,7 @@ else:
                         st.balloons()
                         st.rerun()
                     else:
-                        st.session_state.user_email = email_input
                         st.session_state.ask_email = False
-                        st.session_state.show_qr = True
-                        st.session_state.qr_start_time = time.time()
                         save_user_to_sheet(email_input, st.session_state.selected_pro)
                         st.success(f"Email saved: {email_input}")
                         st.rerun()
@@ -440,6 +478,7 @@ B202,Category_Y,2024-03-20,,Female"""
             st.dataframe(df_display.head())
 
         st.markdown("---")
+        st.session_state.df_cleaned = df_cleaned
 
         if is_pro:
             if is_subscription_active():
@@ -507,15 +546,26 @@ B202,Category_Y,2024-03-20,,Female"""
                             mark_payment_done(st.session_state.user_email)
                             st.session_state.payment_done = True
                             st.session_state.show_qr = False
+                            st.session_state.show_pay_button = False
                             st.balloons()
                             st.rerun()
                     with col2:
                         if st.button("⬅️ Cancel", use_container_width=True):
                             st.session_state.show_qr = False
                             st.session_state.qr_start_time = None
-                            st.session_state.ask_email = True
+                            st.session_state.show_pay_button = True
                             st.rerun()
                 st.stop()
+
+            else:
+                st.info("💰 Payment Required to Download Full File")
+                st.warning(f"Your cleaned file is ready with {len(df_cleaned)} rows")
+                if st.button(f"💳 Pay ₹{pro_amount} to Download - {pro_text}", use_container_width=True, type="primary"):
+                    st.session_state.show_qr = True
+                    st.session_state.qr_start_time = time.time()
+                    st.session_state.show_pay_button = False
+                    st.rerun()
+
         else:
             df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
             buffer = BytesIO()
