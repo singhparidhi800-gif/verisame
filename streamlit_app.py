@@ -187,53 +187,6 @@ if 'pro_expiry' not in st.session_state: st.session_state.pro_expiry = None
 if 'pro_plan_type' not in st.session_state: st.session_state.pro_plan_type = None
 if 'ask_email' not in st.session_state: st.session_state.ask_email = False
 
-# ============ FIX: BROWSER SE EMAIL LOAD - YE SAHI TAREEKA HAI ============
-if 'email_checked' not in st.session_state:
-    st.session_state.email_checked = True
-    components.html("""
-        <script>
-        const data = localStorage.getItem('verisame_data');
-        if(data) {
-            const parsed = JSON.parse(data);
-            const expiry = new Date(parsed.expiry);
-            const now = new Date();
-            if(now < expiry) {
-                window.parent.postMessage({
-                    type: 'streamlit:setComponentValue',
-                    value: JSON.stringify(parsed)
-                }, '*');
-            } else {
-                localStorage.removeItem('verisame_data');
-            }
-        }
-        </script>
-    """, height=0, key="load_email")
-
-# Component se value read karo
-if st.session_state.get('load_email') and not st.session_state.user_email:
-    try:
-        parsed = json.loads(st.session_state.load_email)
-        st.session_state.user_email = parsed['email']
-        st.session_state.pro_expiry = parsed['expiry']
-        is_active, expiry, plan = check_user_in_sheet(parsed['email'])
-        if is_active:
-            st.session_state.pro_expiry = expiry
-            st.session_state.pro_plan_type = plan
-            st.session_state.payment_done = True
-    except:
-        pass
-
-def save_email_to_browser(email, expiry_date):
-    components.html(f"""
-        <script>
-        const data = {{
-            email: '{email}',
-            expiry: '{expiry_date}'
-        }};
-        localStorage.setItem('verisame_data', JSON.stringify(data));
-        </script>
-    """, height=0)
-
 def is_subscription_active():
     if st.session_state.user_email and st.session_state.pro_expiry:
         if st.session_state.pro_expiry in ['pending', 'verify_karo', 'rejected']:
@@ -262,7 +215,6 @@ with st.sidebar:
             st.session_state.pro_expiry = None
             st.session_state.pro_plan_type = None
             st.session_state.payment_done = False
-            components.html("<script>localStorage.removeItem('verisame_data');</script>", height=0)
             st.rerun()
     if st.session_state.plan:
         if st.button("← Back to Plans"):
@@ -361,7 +313,6 @@ else:
                         st.session_state.pro_plan_type = plan
                         st.session_state.payment_done = True
                         st.session_state.ask_email = False
-                        save_email_to_browser(email_input, expiry)
                         st.success(f"Welcome back! PRO active till {expiry}")
                         st.balloons()
                         st.rerun()
