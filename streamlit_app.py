@@ -134,6 +134,7 @@ if SHOW_DASHBOARD:
     try:
         users_df = pd.read_csv(SHEET_URL)
         st.dataframe(users_df, use_container_width=True)
+        st.caption("💡 Payment verify karne ke liye: expiry_date column me 'verify_karo' ko 'approved' me badal de. Script auto date set kar dega.")
     except:
         st.info("Google Sheet connect nahi hua.")
     st.stop()
@@ -144,7 +145,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - 299 WALA RED ============
+# ============ CSS - 299 + 1499 DONO RED BOX ============
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -157,21 +158,12 @@ st.markdown("""
         font-weight: bold;
         border-radius: 10px;
     }
-    /* 6 Month wala Red */
-    div[data-testid="stVerticalBlock"] div[data-testid="stContainer"]:nth-of-type(3) {
-        background-color: #ffebee;
-        padding: 15px;
-        border-radius: 10px;
-        border: 3px solid #ff1744;
-        box-shadow: 0 4px 8px rgba(255,23,68,0.3);
-    }
-    /* 299 Monthly wala bhi Red */
-    div[data-testid="stVerticalBlock"] div[data-testid="stContainer"]:nth-of-type(2) {
-        background-color: #ffebee;
-        padding: 15px;
-        border-radius: 10px;
-        border: 3px solid #ff1744;
-        box-shadow: 0 4px 8px rgba(255,23,68,0.3);
+ .pro-box {
+        background-color: #ffebee!important;
+        padding: 15px!important;
+        border-radius: 10px!important;
+        border: 3px solid #ff1744!important;
+        box-shadow: 0 4px 8px rgba(255,23,68,0.3)!important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -253,7 +245,8 @@ if st.session_state.plan is None:
                 st.rerun()
 
     with col2:
-        with st.container(border=True):
+        st.markdown('<div class="pro-box">', unsafe_allow_html=True)
+        with st.container():
             st.subheader("🔥 Monthly Pro")
             st.markdown("✅ Unlimited Rows - 1 Month")
             st.markdown("✅ Excel Export")
@@ -265,9 +258,11 @@ if st.session_state.plan is None:
                 st.session_state.selected_pro = 'month'
                 st.session_state.ask_email = True
                 st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col3:
-        with st.container(border=True):
+        st.markdown('<div class="pro-box">', unsafe_allow_html=True)
+        with st.container():
             st.subheader("💎 Best Value")
             st.markdown("✅ Unlimited Rows - 6 Months")
             st.markdown("✅ Excel Export")
@@ -280,6 +275,7 @@ if st.session_state.plan is None:
                 st.session_state.selected_pro = 'half'
                 st.session_state.ask_email = True
                 st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # UPLOAD PAGE
 else:
