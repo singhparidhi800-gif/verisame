@@ -25,16 +25,20 @@ from streamlit.components.v1 import html
 import json
 import os
 
-# ============ SECRET PASSWORD WALA DASHBOARD ============
-SECRET_PASS = "reyansh999" # Isko change kar dena
+# ============ BASIC SECURITY - SCHOOL WALI KE LIYE PERFECT ============
+SECRET_PASS = "reyansh999VeriSame2026CEO" # Lamba kar diya - guess nahi hoga
 query_params = st.query_params
 SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
+
+# Bot block - Google index nahi karega
+if SHOW_DASHBOARD and 'bot' in str(query_params).lower():
+    st.stop()
 
 # ============ COUNTING FILE ============
 COUNT_FILE = "counts.json"
 if not os.path.exists(COUNT_FILE):
     with open(COUNT_FILE, 'w') as f:
-        json.dump({"views": 0, "free": 0, "pro": 0, "buy": 0}, f)
+        json.dump({"views": 0, "free": 0, "pro_month": 0, "pro_half": 0, "buy": 0}, f)
 
 def update_count(key):
     with open(COUNT_FILE, 'r+') as f:
@@ -46,7 +50,7 @@ def update_count(key):
     return data[key]
 
 def get_counts():
-    with open(COUNT_FILE) as f:
+    with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
 # ============ GA + VIEWS COUNT - SIRF 1 BAAR PER SESSION ============
@@ -70,20 +74,38 @@ if not SHOW_DASHBOARD:
 # ============ SECRET DASHBOARD - SIRF TU DEKH PAYEGA ============
 if SHOW_DASHBOARD:
     st.title("🔒 Tera Private Dashboard")
+    st.caption("⚠️ Ye stats sirf CEO ke liye hain. Kisi ko link mat dena 😂")
+
+    if st.button("🔄 Refresh Counts", type="primary", use_container_width=True):
+        st.cache_data.clear()
+        st.cache_resource.clear()
+        st.rerun()
+
     counts = get_counts()
-    col1, col2, col3, col4 = st.columns(4)
+
+    col1, col2, col3, col4, col5 = st.columns(5)
     col1.metric("Total Views", counts['views'])
     col2.metric("FREE Clicks", counts['free'])
-    col3.metric("PRO Clicks", counts['pro'])
-    col4.metric("Purchases", counts['buy'])
-    st.caption("Ye page sirf tujhe dikh raha hai. Bookmark kar le: `?pass=reyansh999`")
-    if st.button("🔄 Refresh Counts"):
-        st.rerun()
+    col3.metric("Monthly ₹299", counts.get('pro_month', 0))
+    col4.metric("6 Month ₹2000", counts.get('pro_half', 0))
+    col5.metric("Payment Done", counts['buy'])
+
+    st.markdown("---")
+    st.subheader("💰 Revenue Calculation")
+    monthly_revenue = counts.get('pro_month', 0) * 299
+    half_revenue = counts.get('pro_half', 0) * 2000
+    st.write(f"**Monthly Plan:** {counts.get('pro_month', 0)} x ₹299 = ₹{monthly_revenue}")
+    st.write(f"**6-Month Plan:** {counts.get('pro_half', 0)} x ₹2000 = ₹{half_revenue}")
+    st.success(f"**Total Potential Revenue: ₹{monthly_revenue + half_revenue}**")
+
+    st.caption(f"Last updated: {time.strftime('%d-%m-%Y %H:%M:%S')}")
+    st.caption("Bookmark kar le: `?pass=reyansh999VeriSame2026CEO`")
     st.stop()
 
 # ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
-PRO_AMOUNT = 2999
+PRO_AMOUNT_MONTH = 299
+PRO_AMOUNT_HALF = 2000
 WAIT_SECONDS = 15
 
 st.markdown("""
@@ -111,6 +133,7 @@ if 'plan' not in st.session_state: st.session_state.plan = None
 if 'show_qr' not in st.session_state: st.session_state.show_qr = False
 if 'payment_done' not in st.session_state: st.session_state.payment_done = False
 if 'qr_start_time' not in st.session_state: st.session_state.qr_start_time = None
+if 'selected_pro' not in st.session_state: st.session_state.selected_pro = None
 
 def t(en_text, hi_text): return en_text if st.session_state.lang == 'en' else hi_text
 
@@ -143,6 +166,7 @@ with st.sidebar:
             st.session_state.show_qr = False
             st.session_state.payment_done = False
             st.session_state.qr_start_time = None
+            st.session_state.selected_pro = None
             if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
@@ -154,12 +178,12 @@ if st.session_state.plan is None:
     st.subheader(t("The Fastest Way to Clean Your Data", "आपका डेटा साफ करने का सबसे तेज तरीका"))
     st.markdown("---")
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
-        st.subheader(t("🆓 FREE Plan", "🆓 FREE Plan"))
-        st.markdown(t("✅ Up to 1000 Rows", "✅ 1000 Rows तक"))
+        st.subheader(t("🆓 FREE Forever", "🆓 FREE Forever"))
+        st.markdown(t("✅ 1000 Rows Lifetime", "✅ 1000 Rows Lifetime"))
         st.markdown(t("✅ Text to Number Converter", "✅ Text to Number Converter"))
-        st.markdown(t("✅ 1000 Rows Download", "✅ 1000 Rows Download"))
+        st.markdown(t("✅ CSV Download", "✅ CSV Download"))
         st.markdown(t("⏱️ 30 Second Wait", "⏱️ 30 Second Wait"))
         if st.button("Use FREE", use_container_width=True):
             update_count("free")
@@ -167,14 +191,30 @@ if st.session_state.plan is None:
             st.rerun()
 
     with col2:
-        st.subheader(t("💎 PRO Plan - ₹2999 Lifetime", "💎 PRO Plan - ₹2999 Lifetime"))
+        st.subheader(t("💎 Monthly Pro", "💎 Monthly Pro"))
         st.markdown(t("✅ Unlimited Rows", "✅ Unlimited Rows"))
         st.markdown(t("✅ Date Fixer + Smart Fill", "✅ Date Fixer + Smart Fill"))
         st.markdown(t("✅ Excel Export", "✅ Excel Export"))
         st.markdown(t("⚡ 3 Second Speed", "⚡ 3 Second Speed"))
-        if st.button("🚀 Use PRO", use_container_width=True, type="primary"):
-            update_count("pro")
+        st.markdown(f"**₹{PRO_AMOUNT_MONTH} / month**")
+        if st.button("🚀 ₹299 / Month", use_container_width=True, type="primary"):
+            update_count("pro_month")
             st.session_state.plan = 'pro'
+            st.session_state.selected_pro = 'month'
+            st.rerun()
+
+    with col3:
+        st.subheader(t("🔥 Best Value", "🔥 Best Value"))
+        st.markdown(t("✅ Everything in Monthly", "✅ Monthly वाला सब"))
+        st.markdown(t("✅ 6 Months Access", "✅ 6 महीने Access"))
+        st.markdown(t("✅ Save ₹594 vs Monthly", "✅ ₹594 बचाओ Monthly से"))
+        st.markdown(t("⚡ 3 Second Speed", "⚡ 3 Second Speed"))
+        st.markdown(f"**₹{PRO_AMOUNT_HALF} / 6 months**")
+        st.caption(t("Only ₹333/month", "सिर्फ ₹333/month"))
+        if st.button("🔥 ₹2000 / 6 Months", use_container_width=True):
+            update_count("pro_half")
+            st.session_state.plan = 'pro'
+            st.session_state.selected_pro = 'half'
             st.rerun()
 
     st.markdown("---")
@@ -184,24 +224,27 @@ if st.session_state.plan is None:
 # FREE YA PRO PLAN KA UPLOAD PAGE
 else:
     is_pro = st.session_state.plan == 'pro'
+    pro_amount = PRO_AMOUNT_HALF if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
+    pro_text = "6 Months" if st.session_state.selected_pro == 'half' else "1 Month"
 
     if st.button(t("⬅️ Back to Plans", "⬅️ Plans पे वापस"), use_container_width=True):
         st.session_state.plan = None
         st.session_state.show_qr = False
         st.session_state.payment_done = False
         st.session_state.qr_start_time = None
+        st.session_state.selected_pro = None
         if 'sample_df' in st.session_state: del st.session_state['sample_df']
         st.rerun()
 
     st.markdown("---")
 
     if is_pro:
-        st.title(t("💎 VeriSame PRO", "💎 VeriSame PRO"))
+        st.title(t(f"💎 VeriSame PRO - {pro_text}", f"💎 VeriSame PRO - {pro_text}"))
         st.info(t("PRO Mode: Advanced cleaning tools unlocked", "PRO Mode: Advanced cleaning tools unlocked"))
     else:
         st.title(t("🆓 VeriSame FREE", "🆓 VeriSame FREE"))
-        st.info(t("FREE Mode: Up to 1000 rows, 1000 download free. + Text to Number converter included",
-                  "FREE Mode: 1000 rows तक, 1000 download फ्री। + Text to Number converter included"))
+        st.info(t("FREE Mode: 1000 rows lifetime. + Text to Number converter included",
+                  "FREE Mode: Lifetime 1000 rows. + Text to Number converter included"))
 
     with st.expander(t("🧪 Don't have a file? Test with sample data", "🧪 फाइल नहीं है? सैंपल डेटा से टेस्ट करें")):
         st.write(t("This is dummy data for testing only.", "यह सिर्फ टेस्टिंग के लिए डमी डेटा है।"))
@@ -317,14 +360,14 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         if is_pro:
             if not st.session_state.payment_done:
                 if not st.session_state.show_qr:
-                    st.error(t("🔒 Download Locked - ₹2999 Lifetime", "🔒 डाउनलोड लॉक्ड - ₹2999 लाइफटाइम"))
-                    if st.button("💳 Pay ₹2999 with UPI", use_container_width=True, type="primary"):
+                    st.error(t(f"🔒 Download Locked - ₹{pro_amount} for {pro_text}", f"🔒 डाउनलोड लॉक्ड - ₹{pro_amount} for {pro_text}"))
+                    if st.button(f"💳 Pay ₹{pro_amount} with UPI", use_container_width=True, type="primary"):
                         st.session_state.show_qr = True
                         st.session_state.qr_start_time = time.time()
                         st.rerun()
                 else:
                     st.warning(t("Step 1: Scan QR & Complete Payment", "Step 1: QR स्कैन करो और Payment करो"))
-                    upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_AMOUNT}&cu=INR"
+                    upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR"
                     qr = qrcode.QRCode(box_size=8, border=4)
                     qr.add_data(upi_link)
                     qr.make(fit=True)
@@ -335,7 +378,8 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         st.image(buf, width=250)
                     with col2:
                         st.markdown(f"**UPI ID:** `{UPI_ID}`")
-                        st.markdown(f"**Amount:** `₹{PRO_AMOUNT}`")
+                        st.markdown(f"**Amount:** `₹{pro_amount}`")
+                        st.markdown(f"**Plan:** `{pro_text}`")
                         st.caption(t("Scan with GPay / PhonePe / Paytm", "Scan with GPay / PhonePe / Paytm"))
                     st.markdown("---")
                     elapsed_time = time.time() - st.session_state.qr_start_time
@@ -347,14 +391,17 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         time.sleep(1)
                         st.rerun()
                     else:
-                        st.success(t("Step 2: Payment Successful! Click to Unlock", "Step 2: Payment Successful! Unlock करने के लिए क्लिक करो"))
+                        # TRUST SYSTEM - SCHOOL WALI KE LIYE AUTO UNLOCK
+                        st.success(t("Step 2: Payment Done? Click to Unlock", "Step 2: Payment हो गया? Unlock करो"))
+                        st.info("🙏 Honest ho to hi dabana. Bhagwan sab dekh raha hai 😇")
                         col1, col2 = st.columns(2)
                         with col1:
-                            if st.button("🔓 Unlock Download Now", use_container_width=True, type="primary"):
+                            if st.button(f"🔓 I Paid ₹{pro_amount} - Unlock Now", use_container_width=True, type="primary"):
                                 update_count("buy")
                                 st.session_state.payment_done = True
                                 st.session_state.show_qr = False
                                 st.balloons()
+                                st.success("Thanks for being honest! Download unlocked 💚")
                                 st.rerun()
                         with col2:
                             if st.button("⬅️ Cancel", use_container_width=True):
@@ -385,14 +432,4 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     )
         else:
             df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
-            buffer = BytesIO()
-            df_download.to_csv(buffer, index=False, encoding='utf-8')
-            st.download_button(
-                t(f"📥 Download {len(df_download)} Rows", f"📥 {len(df_download)} Rows Download करें"),
-                buffer.getvalue(),
-                "verisame_cleaned.csv",
-                "text/csv"
-            )
-            if len(df_cleaned) >= 1000:
-                st.warning(t("Need more than 1000 rows? Go back and use PRO Plan ₹2999",
-                             "1000 से ज्यादा rows चाहिए? वापस जाके PRO Plan ₹2999 use करें"))
+          
