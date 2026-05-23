@@ -145,7 +145,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - 299 + 1499 DONO RED ============
+# ============ CSS - PURA BOX RED ============
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -158,11 +158,17 @@ st.markdown("""
         font-weight: bold;
         border-radius: 10px;
     }
-.pro-box {
+    /* FIX: nth-child use karke pura box red */
+    div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: #ffebee!important;
-        padding: 15px!important;
-        border-radius: 10px!important;
         border: 3px solid #ff1744!important;
+        border-radius: 10px!important;
+        box-shadow: 0 4px 8px rgba(255,23,68,0.3)!important;
+    }
+    div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #ffebee!important;
+        border: 3px solid #ff1744!important;
+        border-radius: 10px!important;
         box-shadow: 0 4px 8px rgba(255,23,68,0.3)!important;
     }
     </style>
@@ -245,9 +251,8 @@ if st.session_state.plan is None:
                 st.rerun()
 
     with col2:
-        # 299 WALA RED
-        st.markdown('<div class="pro-box">', unsafe_allow_html=True)
-        with st.container():
+        # AB PURA BOX RED HOGA - CSS SE
+        with st.container(border=True):
             st.subheader("🔥 Monthly Pro")
             st.markdown("✅ Unlimited Rows - 1 Month")
             st.markdown("✅ Excel Export")
@@ -259,12 +264,10 @@ if st.session_state.plan is None:
                 st.session_state.selected_pro = 'month'
                 st.session_state.ask_email = True
                 st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with col3:
-        # 1499 WALA BHI RED
-        st.markdown('<div class="pro-box">', unsafe_allow_html=True)
-        with st.container():
+        # AB PURA BOX RED HOGA - CSS SE
+        with st.container(border=True):
             st.subheader("💎 Best Value")
             st.markdown("✅ Unlimited Rows - 6 Months")
             st.markdown("✅ Excel Export")
@@ -277,7 +280,6 @@ if st.session_state.plan is None:
                 st.session_state.selected_pro = 'half'
                 st.session_state.ask_email = True
                 st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
 # UPLOAD PAGE - BAaki sab same hai
 else:
