@@ -145,7 +145,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - 299 + 1499 DONO RED BOX ============
+# ============ CSS - 299 + 1499 DONO RED ============
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -158,7 +158,7 @@ st.markdown("""
         font-weight: bold;
         border-radius: 10px;
     }
- .pro-box {
+.pro-box {
         background-color: #ffebee!important;
         padding: 15px!important;
         border-radius: 10px!important;
@@ -245,6 +245,7 @@ if st.session_state.plan is None:
                 st.rerun()
 
     with col2:
+        # 299 WALA RED
         st.markdown('<div class="pro-box">', unsafe_allow_html=True)
         with st.container():
             st.subheader("🔥 Monthly Pro")
@@ -261,6 +262,7 @@ if st.session_state.plan is None:
         st.markdown('</div>', unsafe_allow_html=True)
 
     with col3:
+        # 1499 WALA BHI RED
         st.markdown('<div class="pro-box">', unsafe_allow_html=True)
         with st.container():
             st.subheader("💎 Best Value")
@@ -277,7 +279,7 @@ if st.session_state.plan is None:
                 st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-# UPLOAD PAGE
+# UPLOAD PAGE - BAaki sab same hai
 else:
     is_pro = st.session_state.plan == 'pro'
     pro_amount = PRO_AMOUNT_HALF if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
