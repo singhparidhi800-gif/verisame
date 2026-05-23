@@ -89,39 +89,6 @@ def mark_payment_done(email):
     except:
         pass
 
-# ============ LOCALSTORAGE WITH EXPIRY ============
-def save_email_to_browser(email, expiry_date):
-    components.html(f"""
-        <script>
-        const data = {{
-            email: '{email}',
-            expiry: '{expiry_date}'
-        }};
-        localStorage.setItem('verisame_data', JSON.stringify(data));
-        </script>
-    """, height=0)
-
-def get_email_from_browser():
-    get_email_js = """
-    <script>
-    const data = localStorage.getItem('verisame_data');
-    if(data) {
-        const parsed = JSON.parse(data);
-        const expiry = new Date(parsed.expiry);
-        const now = new Date();
-        if(now < expiry) {
-            window.parent.postMessage({type: 'streamlit:setComponentValue', value: JSON.stringify(parsed)}, '*');
-        } else {
-            localStorage.removeItem('verisame_data');
-            window.parent.postMessage({type: 'streamlit:setComponentValue', value: ''}, '*');
-        }
-    } else {
-        window.parent.postMessage({type: 'streamlit:setComponentValue', value: ''}, '*');
-    }
-    </script>
-    """
-    return components.html(get_email_js, height=0)
-
 # ============ GA + VIEWS COUNT ============
 if not SHOW_DASHBOARD:
     if 'counted_session' not in st.session_state:
@@ -177,6 +144,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
+# ============ CSS - SIRF 299 WALA RED ============
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -189,6 +157,15 @@ st.markdown("""
         font-weight: bold;
         border-radius: 10px;
     }
+    /* 6 Month wala Red */
+    div[data-testid="stVerticalBlock"] div[data-testid="stContainer"]:nth-of-type(3) {
+        background-color: #ffebee;
+        padding: 15px;
+        border-radius: 10px;
+        border: 3px solid #ff1744;
+        box-shadow: 0 4px 8px rgba(255,23,68,0.3);
+    }
+    /* 299 Monthly wala bhi Red - BAS YAHI CHANGE */
     div[data-testid="stVerticalBlock"] div[data-testid="stContainer"]:nth-of-type(2) {
         background-color: #ffebee;
         padding: 15px;
@@ -209,25 +186,59 @@ if 'user_email' not in st.session_state: st.session_state.user_email = None
 if 'pro_expiry' not in st.session_state: st.session_state.pro_expiry = None
 if 'pro_plan_type' not in st.session_state: st.session_state.pro_plan_type = None
 if 'ask_email' not in st.session_state: st.session_state.ask_email = False
-if 'email_loaded' not in st.session_state: st.session_state.email_loaded = False
-if 'saved_data' not in st.session_state: st.session_state.saved_data = None
 
-# BROWSER SE EMAIL + EXPIRY LOAD KARO - PLAN KHATAM TO AUTO DELETE
-if not st.session_state.email_loaded:
-    saved_data = get_email_from_browser()
-    if saved_data:
-        try:
-            parsed = json.loads(saved_data)
-            st.session_state.user_email = parsed['email']
-            st.session_state.pro_expiry = parsed['expiry']
-            is_active, expiry, plan = check_user_in_sheet(parsed['email'])
-            if is_active:
-                st.session_state.pro_expiry = expiry
-                st.session_state.pro_plan_type = plan
-                st.session_state.payment_done = True
-        except:
-            pass
-    st.session_state.email_loaded = True
+# BROWSER SE EMAIL LOAD KARO
+load_js = components.html("""
+    <script>
+    const data = localStorage.getItem('verisame_data');
+    if(data) {
+        const parsed = JSON.parse(data);
+        const expiry = new Date(parsed.expiry);
+        const now = new Date();
+        if(now < expiry) {
+            window.parent.postMessage({
+                type: 'streamlit:setComponentValue',
+                value: JSON.stringify(parsed)
+            }, '*');
+        } else {
+            localStorage.removeItem('verisame_data');
+            window.parent.postMessage({
+                type: 'streamlit:setComponentValue',
+                value: ''
+            }, '*');
+        }
+    } else {
+        window.parent.postMessage({
+            type: 'streamlit:setComponentValue',
+            value: ''
+        }, '*');
+    }
+    </script>
+""", height=0, key="load_email_data")
+
+if load_js and not st.session_state.user_email:
+    try:
+        parsed = json.loads(load_js)
+        st.session_state.user_email = parsed['email']
+        st.session_state.pro_expiry = parsed['expiry']
+        is_active, expiry, plan = check_user_in_sheet(parsed['email'])
+        if is_active:
+            st.session_state.pro_expiry = expiry
+            st.session_state.pro_plan_type = plan
+            st.session_state.payment_done = True
+    except:
+        pass
+
+def save_email_to_browser(email, expiry_date):
+    components.html(f"""
+        <script>
+        const data = {{
+            email: '{email}',
+            expiry: '{expiry_date}'
+        }};
+        localStorage.setItem('verisame_data', JSON.stringify(data));
+        </script>
+    """, height=0)
 
 def is_subscription_active():
     if st.session_state.user_email and st.session_state.pro_expiry:
@@ -244,16 +255,7 @@ def text_to_number(text):
     if pd.isna(text): return text
     text = str(text).strip().upper()
     if re.match(r'^[\d,.\s]+$', text): return text.replace(',', '').strip()
-    number_words = {'ZERO':0,'ONE':1,'TWO':2,'THREE':3,'FOUR':4,'FIVE':5,'SIX':6,'SEVEN':7,'EIGHT':8,'NINE':9,'TEN':10,'ELEVEN':11,'TWELVE':12,'THIRTEEN':13,'FOURTEEN':14,'FIFTEEN':15,'SIXTEEN':16,'SEVENTEEN':17,'EIGHTEEN':18,'NINETEEN':19,'TWENTY':20,'THIRTY':30,'FORTY':40,'FIFTY':50,'SIXTY':60,'SEVENTY':70,'EIGHTY':80,'NINETY':90,'HUNDRED':100,'THOUSAND':1000,'LAKH':100000,'MILLION':1000000}
-    words = text.split(); current = 0
-    for word in words:
-        if word in number_words:
-            val = number_words[word]
-            if val >= 100: current = current * val if current else val
-            else: current += val
-        elif word == 'AND': continue
-        else: return text
-    return str(current) if current > 0 else text
+    return text
 
 with st.sidebar:
     st.title("💼 VeriSame")
@@ -352,7 +354,6 @@ else:
     st.markdown("---")
 
     if is_pro:
-        # EMAIL MANGAO - BUTTON TEXT = "Data Cleaning"
         if st.session_state.ask_email and not st.session_state.user_email:
             st.title(f"💎 VeriSame PRO - {pro_text}")
             st.warning("Enter your email before payment. One time only.")
@@ -416,7 +417,7 @@ B202,Category_Y,2024-03-20,,Female"""
         st.info("Using: Sample Test Data")
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
             st.error("File > 200MB not allowed")
             st.stop()
 
@@ -426,7 +427,7 @@ B202,Category_Y,2024-03-20,,Female"""
 
         try:
             if file_source == 'sample':
-                df = st.session_state['sample_df']
+                df = st.session_state['sample_df'].copy()
                 original_row_count = len(df)
             else:
                 if uploaded_file.name.endswith('.csv'):
@@ -456,6 +457,7 @@ B202,Category_Y,2024-03-20,,Female"""
             tool_col1, tool_col2 = st.columns(2)
             with tool_col1:
                 st.markdown("**1. Date Standardizer**")
+                # PURANA WALA - SELECT KARTE HI FIX HO JAYEGA
                 date_cols = st.multiselect("Select Date Columns", df_cleaned.columns.tolist(), key="date_cols")
                 if date_cols:
                     for col in date_cols:
