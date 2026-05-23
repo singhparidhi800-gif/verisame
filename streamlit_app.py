@@ -1,5 +1,6 @@
 import streamlit as st
 from pathlib import Path
+import streamlit.components.v1 as components
 
 # Google Search Console Verification
 google_file = Path("googlef1bc5a74570309f0.html")
@@ -24,6 +25,15 @@ import qrcode
 from streamlit.components.v1 import html
 import json
 import os
+from datetime import datetime, timedelta
+import requests
+
+# ============ CONFIG ============
+SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
+SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
+
+# ✅ FINAL URL DAAL DIYA BHAI
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrgvFCfKGsYLitbVYwsh0tA2ih-BORqz7S9J2wc4BZtxshAQjjVylXuklAL4nDS4p-/exec"
 
 # ============ BASIC SECURITY ============
 SECRET_PASS = "reyansh999VeriSame2026CEO"
@@ -51,6 +61,68 @@ def update_count(key):
 def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
+
+# ============ SUBSCRIPTION FUNCTIONS ============
+def check_user_in_sheet(email):
+    """Google Sheet se check karo ki user ka plan active hai ya nahi"""
+    try:
+        df = pd.read_csv(SHEET_URL)
+        user_row = df[df['email'] == email]
+        if not user_row.empty:
+            expiry_str = user_row.iloc[0]['expiry_date']
+            # Check if pending or verify_karo
+            if expiry_str in ['pending', 'verify_karo']:
+                return False, expiry_str, user_row.iloc[0]['plan']
+            expiry_date = datetime.strptime(expiry_str, '%Y-%m-%d')
+            if datetime.now() < expiry_date:
+                return True, expiry_str, user_row.iloc[0]['plan']
+        return False, None, None
+    except:
+        return False, None, None
+
+def save_user_to_sheet(email, plan_type):
+    """Google Script ko POST call karke Sheet me save karo"""
+    if plan_type == 'month':
+        plan_name = "1month"
+    else: # half
+        plan_name = "6months"
+
+    # Google Script ko POST karo - NEW USER
+    try:
+        requests.post(GOOGLE_SCRIPT_URL, json={
+            "action": "new_user",
+            "email": email,
+            "plan": plan_name
+        }, timeout=5)
+    except:
+        pass
+
+    st.session_state.pro_plan_type = plan_type
+    st.session_state.user_email = email
+
+def mark_payment_done(email):
+    """Payment done mark karo sheet me"""
+    try:
+        requests.post(GOOGLE_SCRIPT_URL, json={
+            "action": "payment_done",
+            "email": email
+        }, timeout=5)
+    except:
+        pass
+
+def get_saved_email():
+    """Browser se saved email nikalo"""
+    get_local_storage = """
+    <script>
+    const email = localStorage.getItem('verisame_user_email');
+    if(email) {
+        window.parent.postMessage({type: 'streamlit:setComponentValue', value: email}, '*');
+    } else {
+        window.parent.postMessage({type: 'streamlit:setComponentValue', value: ''}, '*');
+    }
+    </script>
+    """
+    return components.html(get_local_storage, height=0)
 
 # ============ GA + VIEWS COUNT ============
 if not SHOW_DASHBOARD:
@@ -99,6 +171,14 @@ if SHOW_DASHBOARD:
 
     st.caption(f"Last updated: {time.strftime('%d-%m-%Y %H:%M:%S')}")
     st.caption("Bookmark: `?pass=reyansh999VeriSame2026CEO`")
+
+    st.markdown("---")
+    st.subheader("📊 PRO Users List - Email + Status + Plan")
+    try:
+        users_df = pd.read_csv(SHEET_URL)
+        st.dataframe(users_df, use_container_width=True)
+    except:
+        st.info("Google Sheet connect nahi hua. SHEET_ID check karo.")
     st.stop()
 
 # ============ UPI CONFIG ============
@@ -112,25 +192,31 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-  .stButton>button {
+ .stButton>button {
         width: 100%;
         height: 60px;
         font-size: 18px;
         font-weight: bold;
         border-radius: 10px;
     }
-    /* 299 Yellow Button */
-    div[data-testid="column"]:nth-of-type(2).stButton>button {
-        background-color: #FFD700;
-        color: black;
-        border: 2px solid #FFC300;
+    button[kind="secondary"] {
+        background-color: #FFD700!important;
+        color: black!important;
+        border: 2px solid #FFC300!important;
     }
-    div[data-testid="column"]:nth-of-type(2).stButton>button:hover {
-        background-color: #FFC300;
-        border: 2px solid #FFB000;
+    button[kind="secondary"]:hover {
+        background-color: #FFC300!important;
+    }
+    /* 🔥 299 WALA BOX RED */
+    div[data-testid="stVerticalBlock"] div[data-testid="stContainer"]:nth-of-type(2) {
+        background-color: #ffebee;
+        padding: 15px;
+        border-radius: 10px;
+        border: 3px solid #ff1744;
+        box-shadow: 0 4px 8px rgba(255,23,68,0.3);
     }
     @media (max-width: 768px) {
-      .stButton>button {height: 55px; font-size: 16px;}
+ .stButton>button {height: 55px; font-size: 16px;}
     }
     </style>
 """, unsafe_allow_html=True)
@@ -142,6 +228,28 @@ if 'show_qr' not in st.session_state: st.session_state.show_qr = False
 if 'payment_done' not in st.session_state: st.session_state.payment_done = False
 if 'qr_start_time' not in st.session_state: st.session_state.qr_start_time = None
 if 'selected_pro' not in st.session_state: st.session_state.selected_pro = None
+if 'user_email' not in st.session_state: st.session_state.user_email = None
+if 'pro_expiry' not in st.session_state: st.session_state.pro_expiry = None
+if 'pro_plan_type' not in st.session_state: st.session_state.pro_plan_type = None
+if 'email_checked' not in st.session_state: st.session_state.email_checked = False
+if 'ask_email' not in st.session_state: st.session_state.ask_email = False
+
+# Check saved email from browser
+if not st.session_state.email_checked:
+    get_saved_email()
+    st.session_state.email_checked = True
+
+# If email found, check subscription
+def is_subscription_active():
+    if st.session_state.user_email and st.session_state.pro_expiry:
+        if st.session_state.pro_expiry in ['pending', 'verify_karo']:
+            return False
+        try:
+            expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
+            return datetime.now() < expiry
+        except:
+            return False
+    return False
 
 def t(en_text, hi_text): return en_text
 
@@ -168,18 +276,37 @@ with col3:
 
 with st.sidebar:
     st.title("💼 VeriSame")
+    # Show subscription status
+    if is_subscription_active():
+        st.success(f"✅ PRO Active")
+        st.caption(f"Email: {st.session_state.user_email}")
+        st.caption(f"Till: {st.session_state.pro_expiry}")
+        if st.button("🚪 Logout"):
+            st.session_state.user_email = None
+            st.session_state.pro_expiry = None
+            st.session_state.pro_plan_type = None
+            st.session_state.payment_done = False
+            components.html("<script>localStorage.removeItem('verisame_user_email'); localStorage.removeItem('verisame_pro_expiry');</script>", height=0)
+            st.rerun()
     if st.session_state.plan:
         if st.button("← Back to Plans"):
             st.session_state.plan = None
             st.session_state.show_qr = False
-            st.session_state.payment_done = False
             st.session_state.qr_start_time = None
             st.session_state.selected_pro = None
+            st.session_state.ask_email = False
             if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
 # LANDING PAGE - FINAL
 if st.session_state.plan is None:
+    # If user has active subscription, skip to PRO directly
+    if is_subscription_active():
+        st.session_state.plan = 'pro'
+        st.session_state.payment_done = True
+        st.session_state.selected_pro = st.session_state.pro_plan_type
+        st.rerun()
+
     st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=200)
     st.caption("Free online tool to clean Excel & CSV files. Convert text to numbers, fix dates, remove duplicates instantly.")
     st.title("💼 Welcome to VeriSame")
@@ -194,6 +321,7 @@ if st.session_state.plan is None:
             st.markdown("✅ Text to Number Converter")
             st.markdown("✅ CSV Download")
             st.markdown("⏱️ 30 Second Wait")
+            st.markdown("**No Email Required**")
             if st.button("Use FREE", use_container_width=True):
                 update_count("free")
                 st.session_state.plan = 'free'
@@ -207,10 +335,12 @@ if st.session_state.plan is None:
             st.markdown("✅ Excel Export")
             st.markdown("⚡ 3 Second Speed")
             st.markdown(f"**₹{PRO_AMOUNT_MONTH} / month**")
+            st.caption("Email required once")
             if st.button("⚡ ₹299 / Month", use_container_width=True):
                 update_count("pro_month")
                 st.session_state.plan = 'pro'
                 st.session_state.selected_pro = 'month'
+                st.session_state.ask_email = True
                 st.rerun()
 
     with col3:
@@ -223,10 +353,12 @@ if st.session_state.plan is None:
             st.markdown(f"**₹{PRO_AMOUNT_HALF} / 6 months**")
             st.success("Save ₹295 vs Monthly")
             st.caption("Effective ₹250/month")
+            st.caption("Email required once")
             if st.button("💎 ₹1499 / 6 Months", use_container_width=True, type="primary"):
                 update_count("pro_half")
                 st.session_state.plan = 'pro'
                 st.session_state.selected_pro = 'half'
+                st.session_state.ask_email = True
                 st.rerun()
 
     st.markdown("---")
@@ -241,20 +373,57 @@ else:
     if st.button("⬅️ Back to Plans", use_container_width=True):
         st.session_state.plan = None
         st.session_state.show_qr = False
-        st.session_state.payment_done = False
         st.session_state.qr_start_time = None
         st.session_state.selected_pro = None
+        st.session_state.ask_email = False
         if 'sample_df' in st.session_state: del st.session_state['sample_df']
         st.rerun()
 
     st.markdown("---")
 
     if is_pro:
-        st.title(f"💎 VeriSame PRO - {pro_text}")
-        st.info("PRO Mode: Advanced cleaning tools unlocked")
+        # EMAIL EK BAAR MANGO - PAY SE PEHLE
+        if st.session_state.ask_email and not st.session_state.user_email:
+            st.title(f"💎 VeriSame PRO - {pro_text}")
+            st.warning("📧 Pay karne se pehle email dalo. Ek baar dalna hai bas.")
+
+            email_input = st.text_input("Enter your email:", placeholder="yourname@gmail.com", key="pro_email_input")
+
+            if st.button("Continue to Payment", use_container_width=True, type="primary"):
+                if email_input and "@" in email_input:
+                    # Check if email already has active plan
+                    is_active, expiry, plan = check_user_in_sheet(email_input)
+                    if is_active:
+                        st.session_state.user_email = email_input
+                        st.session_state.pro_expiry = expiry
+                        st.session_state.pro_plan_type = plan
+                        st.session_state.payment_done = True
+                        st.session_state.ask_email = False
+                        st.success(f"Welcome back! PRO active till {expiry}")
+                        st.rerun()
+                    else:
+                        st.session_state.user_email = email_input
+                        st.session_state.ask_email = False
+                        st.session_state.show_qr = True
+                        st.session_state.qr_start_time = time.time()
+                        # Sheet me pending entry daal do
+                        save_user_to_sheet(email_input, st.session_state.selected_pro)
+                        st.success(f"Email saved: {email_input}")
+                        st.rerun()
+                else:
+                    st.error("Please enter a valid email")
+            st.stop()
+
+        if is_subscription_active():
+            st.title(f"💎 VeriSame PRO - Active")
+            st.success(f"✅ Welcome {st.session_state.user_email}")
+            st.caption(f"PRO expires on: {st.session_state.pro_expiry}")
+        else:
+            st.title(f"💎 VeriSame PRO - {pro_text}")
+            st.info(f"Logged in as: {st.session_state.user_email}")
     else:
         st.title("🆓 VeriSame FREE")
-        st.info("FREE Mode: 1000 rows lifetime + Text to Number converter included")
+        st.info("FREE Mode: No email required. 1000 rows lifetime")
 
     with st.expander("🧪 Don't have a file? Test with sample data"):
         st.write("This is dummy data for testing only.")
@@ -369,7 +538,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         if is_pro:
             st.write("**Preview - First 10 Rows Only:**")
             st.dataframe(df_display.head(10))
-            st.caption("🔒 VeriSame PRO | Unlock full file to remove watermark")
+            st.caption("🔒 VeriSame PRO")
         else:
             st.write("**Preview - First 5 Rows:**")
             st.dataframe(df_display.head())
@@ -377,57 +546,9 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.markdown("---")
 
         if is_pro:
-            if not st.session_state.payment_done:
-                if not st.session_state.show_qr:
-                    st.error(f"🔒 Download Locked - ₹{pro_amount} for {pro_text}")
-                    if st.button(f"💳 Pay ₹{pro_amount} with UPI", use_container_width=True, type="primary"):
-                        st.session_state.show_qr = True
-                        st.session_state.qr_start_time = time.time()
-                        st.rerun()
-                else:
-                    st.warning("Step 1: Scan QR & Complete Payment")
-                    upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR"
-                    qr = qrcode.QRCode(box_size=8, border=4)
-                    qr.add_data(upi_link)
-                    qr.make(fit=True)
-                    img = qr.make_image(fill_color="black", back_color="white")
-                    buf = BytesIO(); img.save(buf)
-                    col1, col2 = st.columns([1,2])
-                    with col1:
-                        st.image(buf, width=250)
-                    with col2:
-                        st.markdown(f"**UPI ID:** `{UPI_ID}`")
-                        st.markdown(f"**Amount:** `₹{pro_amount}`")
-                        st.markdown(f"**Plan:** `{pro_text}`")
-                        st.caption("Scan with GPay / PhonePe / Paytm")
-                    st.markdown("---")
-                    elapsed_time = time.time() - st.session_state.qr_start_time
-                    if elapsed_time < WAIT_SECONDS:
-                        progress = int((elapsed_time / WAIT_SECONDS) * 100)
-                        st.info("🔄 Verifying payment with bank...")
-                        st.progress(progress)
-                        st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
-                        time.sleep(1)
-                        st.rerun()
-                    else:
-                        st.success("Step 2: Payment Done? Click to Unlock")
-                        st.info("⚠️ Please unlock only after successful payment. False claims may result in account ban.")
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            if st.button(f"🔓 I Paid ₹{pro_amount} - Unlock Now", use_container_width=True, type="primary"):
-                                update_count("buy")
-                                st.session_state.payment_done = True
-                                st.session_state.show_qr = False
-                                st.balloons()
-                                st.success("Payment verified! Download unlocked 💚")
-                                st.rerun()
-                        with col2:
-                            if st.button("⬅️ Cancel", use_container_width=True):
-                                st.session_state.show_qr = False
-                                st.session_state.qr_start_time = None
-                                st.rerun()
-            else:
-                st.success("✅ Your Payment is Complete! Download Your File")
+            # Check if user has active subscription
+            if is_subscription_active():
+                st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
@@ -448,6 +569,53 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                         "verisame_cleaned.csv",
                         "text/csv"
                     )
+            elif not st.session_state.payment_done:
+                if st.session_state.show_qr:
+                    st.warning("Step 1: Scan QR & Complete Payment")
+                    upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
+                    qr = qrcode.QRCode(box_size=8, border=4)
+                    qr.add_data(upi_link)
+                    qr.make(fit=True)
+                    img = qr.make_image(fill_color="black", back_color="white")
+                    buf = BytesIO(); img.save(buf)
+                    col1, col2 = st.columns([1,2])
+                    with col1:
+                        st.image(buf, width=250)
+                    with col2:
+                        st.markdown(f"**UPI ID:** `{UPI_ID}`")
+                        st.markdown(f"**Amount:** `₹{pro_amount}`")
+                        st.markdown(f"**Plan:** `{pro_text}`")
+                        st.markdown(f"**Email:** `{st.session_state.user_email}`")
+                        st.caption("Scan with GPay / PhonePe / Paytm")
+                    st.markdown("---")
+                    elapsed_time = time.time() - st.session_state.qr_start_time
+                    if elapsed_time < WAIT_SECONDS:
+                        progress = int((elapsed_time / WAIT_SECONDS) * 100)
+                        st.info("🔄 Waiting for payment...")
+                        st.progress(progress)
+                        st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.success("Step 2: Payment Done? Click to Unlock")
+                        st.info("⚠️ Click only if you completed payment.")
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            if st.button(f"🔓 I Paid ₹{pro_amount} - Activate PRO", use_container_width=True, type="primary"):
+                                update_count("buy")
+                                # Sheet me payment_done mark karo
+                                mark_payment_done(st.session_state.user_email)
+                                st.session_state.payment_done = True
+                                st.session_state.show_qr = False
+                                st.balloons()
+                                st.success(f"PRO Request Sent! CEO verify karke activate kar dega 💚")
+                                st.rerun()
+                        with col2:
+                            if st.button("⬅️ Cancel", use_container_width=True):
+                                st.session_state.show_qr = False
+                                st.session_state.qr_start_time = None
+                                st.session_state.ask_email = True
+                                st.rerun()
         else:
             df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
             buffer = BytesIO()
