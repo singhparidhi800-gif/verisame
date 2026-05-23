@@ -2,6 +2,7 @@ import streamlit as st
 from pathlib import Path
 import streamlit.components.v1 as components
 
+# Google Search Console Verification
 google_file = Path("googlef1bc5a74570309f0.html")
 if google_file.exists():
     st.text(google_file.read_text())
@@ -25,10 +26,12 @@ import os
 from datetime import datetime, timedelta
 import requests
 
+# ============ CONFIG ============
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrgvFCfKGsYLitbVYwsh0tA2ih-BORqz7S9J2wc4BZtxshAQjjVylXuklAL4nDS4p-/exec"
 
+# ============ BASIC SECURITY ============
 SECRET_PASS = "reyansh999VeriSame2026CEO"
 query_params = st.query_params
 SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
@@ -36,6 +39,7 @@ SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
 if SHOW_DASHBOARD and 'bot' in str(query_params).lower():
     st.stop()
 
+# ============ COUNTING FILE ============
 COUNT_FILE = "counts.json"
 if not os.path.exists(COUNT_FILE):
     with open(COUNT_FILE, 'w') as f:
@@ -54,13 +58,14 @@ def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
+# ============ SUBSCRIPTION FUNCTIONS ============
 def check_user_in_sheet(email):
     try:
         df = pd.read_csv(SHEET_URL)
         user_row = df[df['email'] == email]
         if not user_row.empty:
             expiry_str = user_row.iloc[0]['expiry_date']
-            if expiry_str in ['pending', 'verify_karo']:
+            if expiry_str in ['pending', 'verify_karo', 'rejected']:
                 return False, expiry_str, user_row.iloc[0]['plan']
             expiry_date = datetime.strptime(expiry_str, '%Y-%m-%d')
             if datetime.now() < expiry_date:
@@ -84,24 +89,11 @@ def mark_payment_done(email):
     except:
         pass
 
-def get_saved_email():
-    get_local_storage = """
-    <script>
-    const email = localStorage.getItem('verisame_user_email');
-    if(email) {
-        window.parent.postMessage({type: 'streamlit:setComponentValue', value: email}, '*');
-    } else {
-        window.parent.postMessage({type: 'streamlit:setComponentValue', value: ''}, '*');
-    }
-    </script>
-    """
-    return components.html(get_local_storage, height=0)
-
+# ============ GA + VIEWS COUNT ============
 if not SHOW_DASHBOARD:
     if 'counted_session' not in st.session_state:
         update_count("views")
         st.session_state.counted_session = True
-
     GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
     html(f"""
     <!DOCTYPE html><html><head>
@@ -114,6 +106,7 @@ if not SHOW_DASHBOARD:
     </script></head></html>
     """, height=0)
 
+# ============ SECRET DASHBOARD ============
 if SHOW_DASHBOARD:
     st.title("🔒 Private Dashboard")
     st.caption("⚠️ CEO Only - Do not share this link")
@@ -136,6 +129,7 @@ if SHOW_DASHBOARD:
     st.write(f"**6-Month Plan:** {counts.get('pro_half', 0)} x ₹1499 = ₹{half_revenue}")
     st.success(f"**Total Potential Revenue: ₹{monthly_revenue + half_revenue}**")
     st.caption(f"Last updated: {time.strftime('%d-%m-%Y %H:%M:%S')}")
+    st.caption("Bookmark: `?pass=reyansh999VeriSame2026CEO`")
     st.markdown("---")
     st.subheader("📊 PRO Users List - Email + Status + Plan")
     try:
@@ -145,6 +139,7 @@ if SHOW_DASHBOARD:
         st.info("Google Sheet connect nahi hua. SHEET_ID check karo.")
     st.stop()
 
+# ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
@@ -183,6 +178,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# ============ SESSION STATES ============
 if 'lang' not in st.session_state: st.session_state.lang = 'en'
 if 'plan' not in st.session_state: st.session_state.plan = None
 if 'show_qr' not in st.session_state: st.session_state.show_qr = False
@@ -195,13 +191,9 @@ if 'pro_plan_type' not in st.session_state: st.session_state.pro_plan_type = Non
 if 'email_checked' not in st.session_state: st.session_state.email_checked = False
 if 'ask_email' not in st.session_state: st.session_state.ask_email = False
 
-if not st.session_state.email_checked:
-    get_saved_email()
-    st.session_state.email_checked = True
-
 def is_subscription_active():
     if st.session_state.user_email and st.session_state.pro_expiry:
-        if st.session_state.pro_expiry in ['pending', 'verify_karo']:
+        if st.session_state.pro_expiry in ['pending', 'verify_karo', 'rejected']:
             return False
         try:
             expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
@@ -227,6 +219,7 @@ def text_to_number(text):
         else: return text
     return str(current) if current > 0 else text
 
+# ==================== TOP BAR ====================
 col1, col2, col3 = st.columns([6,2,2])
 with col3:
     lang_choice = st.selectbox("🌐", ['English'], label_visibility="collapsed")
@@ -256,6 +249,7 @@ with st.sidebar:
             if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
+# LANDING PAGE - FINAL
 if st.session_state.plan is None:
     if is_subscription_active():
         st.session_state.plan = 'pro'
@@ -320,6 +314,7 @@ if st.session_state.plan is None:
     st.markdown("---")
     st.caption("🔒 Security: Your data is deleted immediately after processing.")
 
+# FREE YA PRO PLAN KA UPLOAD PAGE
 else:
     is_pro = st.session_state.plan == 'pro'
     pro_amount = PRO_AMOUNT_HALF if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
@@ -338,7 +333,7 @@ else:
     st.markdown("---")
 
     if is_pro:
-        # FIX 1: ENGLISH ME KAR DIYA
+        # FIX 1: EMAIL ENGLISH ME
         if st.session_state.ask_email and not st.session_state.user_email:
             st.title(f"💎 VeriSame PRO - {pro_text}")
             st.warning("Enter your email before payment. One time only.")
@@ -434,6 +429,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
             st.info(f"Original file had {original_row_count} rows")
 
         df_cleaned = df.drop_duplicates()
+
         for col in df_cleaned.select_dtypes(include=['object']):
             df_cleaned[col] = df_cleaned[col].apply(text_to_number)
 
@@ -483,6 +479,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
         st.markdown("---")
 
         if is_pro:
+            # CEO VERIFY KARNE KE BAAD
             if is_subscription_active():
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
                 excel_buffer = BytesIO()
@@ -495,6 +492,28 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                     csv_buffer = BytesIO()
                     df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
                     st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
+
+            # FIX 3: PAYMENT KE BAAD THANK YOU + DOWNLOAD AS EXCEL + DOWNLOAD AS CSV
+            elif st.session_state.payment_done:
+                st.title("🎉 Thank You for Payment!")
+                st.success("✅ Your payment request is sent to CEO")
+                st.info("⏳ VeriSame PRO will be activated within 5 minutes after verification")
+                st.balloons()
+                st.markdown("---")
+                st.subheader("📥 Your Cleaned File Ready")
+                st.warning("⚠️ Download enabled. Full PRO features unlock after CEO verification")
+                excel_buffer = BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.download_button("📊 Download as Excel", excel_buffer.getvalue(), "verisame_cleaned.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                with col2:
+                    csv_buffer = BytesIO()
+                    df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
+                    st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
+
+            # FIX 2: QR + 15 SEC WAIT + ST.STOP()
             elif not st.session_state.payment_done:
                 if st.session_state.show_qr:
                     st.warning("Step 1: Scan QR & Complete Payment")
@@ -541,14 +560,7 @@ C303,Category_Z,Mar 20 2024,300,Male"""
                                 st.session_state.qr_start_time = None
                                 st.session_state.ask_email = True
                                 st.rerun()
-                    # FIX 2: YE STOP ZARURI HAI - QR KE BAAD UPLOAD PAGE NAHI KHULEGA
                     st.stop()
-            elif st.session_state.payment_done:
-                # FIX 3: THANK YOU + BALLOONS YAHAN HAI
-                st.title("🎉 Thank You for Payment!")
-                st.success("✅ Your payment request is sent to CEO")
-                st.info("⏳ VeriSame PRO will be activated within 5 minutes after verification")
-                st.balloons()
         else:
             df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
             buffer = BytesIO()
