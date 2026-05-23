@@ -144,7 +144,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - SIRF 299 WALA RED ============
+# ============ CSS - 299 WALA RED ============
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -165,7 +165,7 @@ st.markdown("""
         border: 3px solid #ff1744;
         box-shadow: 0 4px 8px rgba(255,23,68,0.3);
     }
-    /* 299 Monthly wala bhi Red - BAS YAHI CHANGE */
+    /* 299 Monthly wala bhi Red */
     div[data-testid="stVerticalBlock"] div[data-testid="stContainer"]:nth-of-type(2) {
         background-color: #ffebee;
         padding: 15px;
@@ -187,38 +187,32 @@ if 'pro_expiry' not in st.session_state: st.session_state.pro_expiry = None
 if 'pro_plan_type' not in st.session_state: st.session_state.pro_plan_type = None
 if 'ask_email' not in st.session_state: st.session_state.ask_email = False
 
-# BROWSER SE EMAIL LOAD KARO
-load_js = components.html("""
-    <script>
-    const data = localStorage.getItem('verisame_data');
-    if(data) {
-        const parsed = JSON.parse(data);
-        const expiry = new Date(parsed.expiry);
-        const now = new Date();
-        if(now < expiry) {
-            window.parent.postMessage({
-                type: 'streamlit:setComponentValue',
-                value: JSON.stringify(parsed)
-            }, '*');
-        } else {
-            localStorage.removeItem('verisame_data');
-            window.parent.postMessage({
-                type: 'streamlit:setComponentValue',
-                value: ''
-            }, '*');
+# ============ FIX: BROWSER SE EMAIL LOAD - YE SAHI TAREEKA HAI ============
+if 'email_checked' not in st.session_state:
+    st.session_state.email_checked = True
+    components.html("""
+        <script>
+        const data = localStorage.getItem('verisame_data');
+        if(data) {
+            const parsed = JSON.parse(data);
+            const expiry = new Date(parsed.expiry);
+            const now = new Date();
+            if(now < expiry) {
+                window.parent.postMessage({
+                    type: 'streamlit:setComponentValue',
+                    value: JSON.stringify(parsed)
+                }, '*');
+            } else {
+                localStorage.removeItem('verisame_data');
+            }
         }
-    } else {
-        window.parent.postMessage({
-            type: 'streamlit:setComponentValue',
-            value: ''
-        }, '*');
-    }
-    </script>
-""", height=0, key="load_email_data")
+        </script>
+    """, height=0, key="load_email")
 
-if load_js and not st.session_state.user_email:
+# Component se value read karo
+if st.session_state.get('load_email') and not st.session_state.user_email:
     try:
-        parsed = json.loads(load_js)
+        parsed = json.loads(st.session_state.load_email)
         st.session_state.user_email = parsed['email']
         st.session_state.pro_expiry = parsed['expiry']
         is_active, expiry, plan = check_user_in_sheet(parsed['email'])
@@ -457,7 +451,6 @@ B202,Category_Y,2024-03-20,,Female"""
             tool_col1, tool_col2 = st.columns(2)
             with tool_col1:
                 st.markdown("**1. Date Standardizer**")
-                # PURANA WALA - SELECT KARTE HI FIX HO JAYEGA
                 date_cols = st.multiselect("Select Date Columns", df_cleaned.columns.tolist(), key="date_cols")
                 if date_cols:
                     for col in date_cols:
