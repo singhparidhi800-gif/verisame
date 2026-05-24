@@ -359,7 +359,7 @@ with st.sidebar:
             st.rerun()
 
 # LANDING PAGE
-st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=400)
+st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=300)
 st.title("💼 Welcome to VeriSame")
 st.subheader("The Fastest Way to Clean Your Data")
 
