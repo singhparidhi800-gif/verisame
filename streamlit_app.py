@@ -1,6 +1,7 @@
 import streamlit as st
 from pathlib import Path
 import streamlit.components.v1 as components
+from streamlit_javascript import st_javascript
 
 # Google Search Console Verification
 google_file = Path("googlef1bc5a74570309f0.html")
@@ -39,6 +40,14 @@ SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
 if SHOW_DASHBOARD and 'bot' in str(query_params).lower():
     st.stop()
 
+# ============ EMAIL MEMORY - 100% WORKING ============
+# Browser se email nikalo
+saved_email = st_javascript("localStorage.getItem('verisame_email');")
+
+# Agar email mila aur session me nahi hai to set kar do
+if saved_email and 'user_email' not in st.session_state:
+    st.session_state.user_email = saved_email
+
 # ============ COUNTING FILE ============
 COUNT_FILE = "counts.json"
 if not os.path.exists(COUNT_FILE):
@@ -58,33 +67,37 @@ def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
-# ============ SUBSCRIPTION FUNCTIONS - FIXED ============
-@st.cache_data(ttl=60)
+# ============ SUBSCRIPTION FUNCTIONS - 100% FIXED ============
+@st.cache_data(ttl=30)
 def check_user_in_sheet(email):
     try:
         df = pd.read_csv(SHEET_URL)
         df.columns = df.columns.str.strip().str.lower()
         user_row = df[df['email'].str.strip().str.lower() == email.lower()]
+
         if not user_row.empty:
             expiry_str = str(user_row.iloc[0]['expiry_date']).strip()
             plan = str(user_row.iloc[0]['plan']).strip()
 
+            # PENDING = PRO Nahi hai, paisa maango
             if expiry_str.lower() in ['pending', 'verify_karo', 'rejected', 'nan', '']:
-                return False, expiry_str, plan
+                return False, "not_verified", plan
 
-            for fmt in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y']:
+            # Date check karo
+            for fmt in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y', '%m/%d/%Y']:
                 try:
                     expiry_date = datetime.strptime(expiry_str, fmt)
-                    if datetime.now() < expiry_date:
+                    # FUTURE DATE = PRO ACTIVE, PAISA MAT MAANGO
+                    if datetime.now().date() <= expiry_date.date():
                         return True, expiry_date.strftime('%Y-%m-%d'), plan
                     else:
                         return False, "expired", plan
                 except:
                     continue
             return False, "invalid_date", plan
-        return False, None, None
-    except Exception as e:
-        return False, f"error: {e}", None
+        return False, "not_found", None
+    except:
+        return False, "sheet_error", None
 
 def save_user_to_sheet(email, plan_type):
     plan_name = "1month" if plan_type == 'month' else "6months"
@@ -98,20 +111,6 @@ def mark_payment_done(email):
         requests.post(GOOGLE_SCRIPT_URL, json={"action": "payment_done", "email": email}, timeout=5)
     except:
         pass
-
-# ============ EMAIL MEMORY - LOCALSTORAGE ============
-st.markdown("""
-<script>
-// Email save karo localStorage me
-function saveEmail(email) {
-    localStorage.setItem('verisame_email', email);
-}
-// Email get karo
-function getEmail() {
-    return localStorage.getItem('verisame_email');
-}
-</script>
-""", unsafe_allow_html=True)
 
 # ============ GA + VIEWS COUNT ============
 if not SHOW_DASHBOARD:
@@ -127,12 +126,6 @@ if not SHOW_DASHBOARD:
       function gtag(){{dataLayer.push(arguments);}}
       gtag('js', new Date());
       gtag('config', '{GA_MEASUREMENT_ID}');
-
-      // Auto email load
-      const savedEmail = localStorage.getItem('verisame_email');
-      if(savedEmail) {{
-          window.parent.postMessage({{type: 'streamlit:setComponentValue', value: savedEmail}}, '*');
-      }}
     </script></head></html>
     """, height=0)
 
@@ -164,7 +157,7 @@ if SHOW_DASHBOARD:
     try:
         users_df = pd.read_csv(SHEET_URL)
         st.dataframe(users_df, use_container_width=True)
-        st.caption("💡 Payment verify karne ke liye: expiry_date column me 'verify_karo' ko 'approved' me badal de. Script auto date set kar dega.")
+        st.caption("💡 Payment verify karne ke liye: expiry_date column me 'pending' ko '2026-12-31' jaisi date me badal de.")
     except:
         st.info("Google Sheet connect nahi hua.")
     st.stop()
@@ -215,14 +208,14 @@ if 'pro_plan_type' not in st.session_state: st.session_state.pro_plan_type = Non
 if 'ask_email' not in st.session_state: st.session_state.ask_email = False
 if 'show_pay_button' not in st.session_state: st.session_state.show_pay_button = False
 if 'df_cleaned' not in st.session_state: st.session_state.df_cleaned = None
+if 'pro_status_checked' not in st.session_state: st.session_state.pro_status_checked = False
 
 def is_subscription_active():
-    if st.session_state.user_email and st.session_state.pro_expiry:
-        if st.session_state.pro_expiry in ['pending', 'verify_karo', 'rejected', 'expired', 'invalid_date'] or 'error' in str(st.session_state.pro_expiry):
-            return False
+    # Real date hai aur future ki hai = PRO ACTIVE
+    if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error']:
         try:
             expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
-            return datetime.now() < expiry
+            return datetime.now().date() <= expiry.date()
         except:
             return False
     return False
@@ -244,6 +237,7 @@ with st.sidebar:
             st.session_state.pro_expiry = None
             st.session_state.pro_plan_type = None
             st.session_state.payment_done = False
+            st.session_state.pro_status_checked = False
             html("<script>localStorage.removeItem('verisame_email');</script>", height=0)
             st.rerun()
     if st.session_state.plan:
@@ -261,15 +255,16 @@ with st.sidebar:
 
 # LANDING PAGE
 if st.session_state.plan is None:
-    # AUTO LOGIN - EMAIL YAAD HAI TO
-    if st.session_state.user_email:
+    # AUTO CHECK: Email hai to sheet check karo - EK HI BAAR
+    if st.session_state.user_email and not st.session_state.pro_status_checked:
         is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
+        st.session_state.pro_expiry = expiry
+        st.session_state.pro_plan_type = plan
+        st.session_state.pro_status_checked = True
         if is_active:
-            st.session_state.pro_expiry = expiry
-            st.session_state.pro_plan_type = plan
             st.session_state.plan = 'pro'
             st.session_state.payment_done = True
-            st.session_state.selected_pro = plan
+            st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
             st.rerun()
 
     st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=200)
@@ -301,6 +296,7 @@ if st.session_state.plan is None:
                 st.session_state.plan = 'pro'
                 st.session_state.selected_pro = 'month'
                 st.session_state.ask_email = True
+                st.session_state.pro_status_checked = False
                 st.rerun()
 
     with col3:
@@ -316,6 +312,7 @@ if st.session_state.plan is None:
                 st.session_state.plan = 'pro'
                 st.session_state.selected_pro = 'half'
                 st.session_state.ask_email = True
+                st.session_state.pro_status_checked = False
                 st.rerun()
 
 # UPLOAD PAGE
@@ -339,19 +336,24 @@ else:
     st.markdown("---")
 
     if is_pro:
+        # EMAIL MAANGO - SIRF EK BAAR LIFETIME ME
         if st.session_state.ask_email and not st.session_state.user_email:
             st.title(f"💎 VeriSame PRO - {pro_text}")
-            st.warning("Enter your email. We'll remember it forever.")
+            st.warning("Enter your email once. We'll remember it forever.")
             email_input = st.text_input("Enter your email:", placeholder="yourname@gmail.com", key="pro_email_input")
             if st.button("Continue", use_container_width=True, type="primary"):
                 if email_input and "@" in email_input:
                     st.session_state.user_email = email_input
-                    # Save to localStorage
+                    # Browser me permanently save karo
                     html(f"<script>localStorage.setItem('verisame_email', '{email_input}');</script>", height=0)
+
+                    # Sheet check karo
                     is_active, expiry, plan = check_user_in_sheet(email_input)
+                    st.session_state.pro_expiry = expiry
+                    st.session_state.pro_plan_type = plan
+                    st.session_state.pro_status_checked = True
+
                     if is_active:
-                        st.session_state.pro_expiry = expiry
-                        st.session_state.pro_plan_type = plan
                         st.session_state.payment_done = True
                         st.session_state.ask_email = False
                         st.success(f"Welcome back! PRO active till {expiry}")
@@ -481,7 +483,12 @@ B202,Category_Y,2024-03-20,,Female"""
         st.session_state.df_cleaned = df_cleaned
 
         if is_pro:
-            if is_subscription_active():
+            # HAR BAAR SHEET SE REAL TIME CHECK - DATE HAI TO PAISA MAT MAANGO
+            is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
+            st.session_state.pro_expiry = expiry
+            st.session_state.pro_plan_type = plan
+
+            if is_active:
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
