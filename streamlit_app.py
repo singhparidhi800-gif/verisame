@@ -171,7 +171,7 @@ WAIT_SECONDS = 25
 # ============ CSS - SUNDAR DESIGN + CORNER HELP + TOOLS BANNER ============
 st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
 
     html, body, [class*="css"] {{
         font-family: 'Poppins', sans-serif;
@@ -181,100 +181,117 @@ st.markdown(f"""
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
 
-    /* Main container padding */
+    /* PURA BACKGROUND GRADIENT */
+   .stApp {{
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-attachment: fixed;
+    }}
+
+    /* Main container - WHITE CARD */
   .block-container {{
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        max-width: 1200px;
+        padding: 2rem 3rem;
+        max-width: 1300px;
+        background: rgba(255,255,255,0.98);
+        border-radius: 30px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        margin-top: 2rem;
+        margin-bottom: 2rem;
     }}
 
  .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
-        font-weight: 600;
-        border-radius: 12px;
+        font-weight: 700;
+        border-radius: 15px;
         transition: all 0.3s ease;
         border: none;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }}
  .stButton>button:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
 
     /* Plan Cards - Gradient Design */
     div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)!important;
         border: none!important;
-        border-radius: 20px!important;
-        padding: 15px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1)!important;
+        border-radius: 25px!important;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15)!important;
     }}
     div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)!important;
         border: none!important;
-        border-radius: 20px!important;
-        padding: 15px;
-        box-shadow: 0 8px 25px rgba(255,154,158,0.4)!important;
+        border-radius: 25px!important;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(255,154,158,0.4)!important;
     }}
     div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)!important;
-        border: 3px solid #ff6b6b!important;
-        border-radius: 20px!important;
-        padding: 15px;
-        box-shadow: 0 8px 25px rgba(252,182,159,0.5)!important;
-        transform: scale(1.02);
+        border: 4px solid #ff6b6b!important;
+        border-radius: 25px!important;
+        padding: 20px;
+        box-shadow: 0 15px 40px rgba(252,182,159,0.6)!important;
+        transform: scale(1.03);
     }}
 
     /* 7 Tools Banner */
-  .tools-banner {{
+ .tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        padding: 30px;
-        border-radius: 20px;
-        margin: 25px 0;
-        color: white;
-        box-shadow: 0 10px 30px rgba(102,126,234,0.3);
-    }}
-  .tool-item {{
-        display: inline-block;
-        background: rgba(255,255,255,0.2);
-        padding: 10px 18px;
+        padding: 35px;
         border-radius: 25px;
-        margin: 6px;
-        font-size: 14px;
-        font-weight: 600;
-        backdrop-filter: blur(10px);
+        margin: 30px 0;
+        color: white;
+        box-shadow: 0 15px 40px rgba(102,126,234,0.4);
+    }}
+ .tool-item {{
+        display: inline-block;
+        background: rgba(255,255,255,0.25);
+        padding: 12px 20px;
+        border-radius: 30px;
+        margin: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        backdrop-filter: blur(15px);
     }}
 
     /* WhatsApp Help Button - Corner Fixed */
-  .help-float {{
+ .help-float {{
         position: fixed;
-        bottom: 30px;
-        right: 30px;
+        bottom: 35px;
+        right: 35px;
         z-index: 9999;
     }}
-  .help-float a {{
+ .help-float a {{
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 65px;
-        height: 65px;
+        width: 70px;
+        height: 70px;
         background: #25D366;
         border-radius: 50%;
-        box-shadow: 0 5px 25px rgba(37,211,102,0.5);
+        box-shadow: 0 8px 30px rgba(37,211,102,0.6);
         text-decoration: none;
-        font-size: 32px;
+        font-size: 35px;
         transition: all 0.3s;
+        animation: pulse 2s infinite;
     }}
-  .help-float a:hover {{
-        transform: scale(1.1) rotate(10deg);
-        box-shadow: 0 8px 30px rgba(37,211,102,0.7);
+ .help-float a:hover {{
+        transform: scale(1.15) rotate(15deg);
+        box-shadow: 0 10px 40px rgba(37,211,102,0.8);
+    }}
+    
+    @keyframes pulse {{
+        0% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
+        50% {{ box-shadow: 0 8px 40px rgba(37,211,102,0.9); }}
+        100% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
     }}
 
-    /* Logo bigger */
+    /* LOGO BADA */
     img[src*="VeriSame-logo"] {{
-        width: 180px!important;
+        width: 250px!important;
     }}
     </style>
 
@@ -361,7 +378,7 @@ if st.session_state.plan is None:
 
     col_logo, col_title = st.columns([1,5])
     with col_logo:
-        st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=180)
+        st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=250)
     with col_title:
         st.title("💼 Welcome to VeriSame")
         st.subheader("The Fastest Way to Clean Your Data")
