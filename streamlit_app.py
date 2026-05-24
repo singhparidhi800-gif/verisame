@@ -31,7 +31,7 @@ import requests
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrgvFCfKGsYLitbVYwsh0tA2ih-BORqz7S9J2wc4BZtxshAQjjVylXuklAL4nDS4p-/exec"
-WHATSAPP_NUMBER = "919794906852" # <-- YAHAN APNA NUMBER DAAL DE
+WHATSAPP_NUMBER = "919876543210" # <-- YAHAN APNA NUMBER DAAL DE
 
 # ============ BASIC SECURITY ============
 SECRET_PASS = "reyansh999VeriSame2026CEO"
@@ -181,7 +181,14 @@ st.markdown(f"""
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
 
-  .stButton>button {{
+    /* Main container padding */
+  .block-container {{
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        max-width: 1200px;
+    }}
+
+ .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -191,7 +198,7 @@ st.markdown(f"""
         border: none;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }}
-  .stButton>button:hover {{
+ .stButton>button:hover {{
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     }}
@@ -201,67 +208,73 @@ st.markdown(f"""
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)!important;
         border: none!important;
         border-radius: 20px!important;
-        padding: 10px;
+        padding: 15px;
         box-shadow: 0 8px 25px rgba(0,0,0,0.1)!important;
     }}
     div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)!important;
         border: none!important;
         border-radius: 20px!important;
-        padding: 10px;
+        padding: 15px;
         box-shadow: 0 8px 25px rgba(255,154,158,0.4)!important;
     }}
     div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)!important;
         border: 3px solid #ff6b6b!important;
         border-radius: 20px!important;
-        padding: 10px;
+        padding: 15px;
         box-shadow: 0 8px 25px rgba(252,182,159,0.5)!important;
         transform: scale(1.02);
     }}
 
     /* 7 Tools Banner */
-   .tools-banner {{
+  .tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        padding: 25px;
-        border-radius: 15px;
-        margin: 20px 0;
+        padding: 30px;
+        border-radius: 20px;
+        margin: 25px 0;
         color: white;
         box-shadow: 0 10px 30px rgba(102,126,234,0.3);
     }}
-   .tool-item {{
+  .tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.2);
-        padding: 8px 15px;
-        border-radius: 20px;
-        margin: 5px;
+        padding: 10px 18px;
+        border-radius: 25px;
+        margin: 6px;
         font-size: 14px;
         font-weight: 600;
+        backdrop-filter: blur(10px);
     }}
 
     /* WhatsApp Help Button - Corner Fixed */
-   .help-float {{
+  .help-float {{
         position: fixed;
-        bottom: 25px;
-        right: 25px;
+        bottom: 30px;
+        right: 30px;
         z-index: 9999;
     }}
-   .help-float a {{
+  .help-float a {{
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 60px;
-        height: 60px;
+        width: 65px;
+        height: 65px;
         background: #25D366;
         border-radius: 50%;
-        box-shadow: 0 5px 20px rgba(37,211,102,0.4);
+        box-shadow: 0 5px 25px rgba(37,211,102,0.5);
         text-decoration: none;
-        font-size: 30px;
+        font-size: 32px;
         transition: all 0.3s;
     }}
-   .help-float a:hover {{
-        transform: scale(1.1);
-        box-shadow: 0 8px 25px rgba(37,211,102,0.6);
+  .help-float a:hover {{
+        transform: scale(1.1) rotate(10deg);
+        box-shadow: 0 8px 30px rgba(37,211,102,0.7);
+    }}
+
+    /* Logo bigger */
+    img[src*="VeriSame-logo"] {{
+        width: 180px!important;
     }}
     </style>
 
@@ -315,6 +328,11 @@ with st.sidebar:
             st.query_params.clear()
             html("<script>localStorage.removeItem('verisame_email');</script>", height=0)
             st.rerun()
+    st.markdown("---")
+    st.markdown("### 📞 Need Help?")
+    st.markdown(f"[💬 WhatsApp Chat](https://wa.me/{WHATSAPP_NUMBER})")
+    st.markdown("📧 support@verisame.com")
+    st.markdown("---")
     if st.session_state.plan:
         if st.button("← Back to Plans"):
             st.session_state.plan = None
@@ -341,9 +359,9 @@ if st.session_state.plan is None:
             st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
             st.rerun()
 
-    col_logo, col_title = st.columns([1,4])
+    col_logo, col_title = st.columns([1,5])
     with col_logo:
-        st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=100)
+        st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=180)
     with col_title:
         st.title("💼 Welcome to VeriSame")
         st.subheader("The Fastest Way to Clean Your Data")
@@ -499,7 +517,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
         st.info("Using: Sample Test Data")
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
             st.error("File > 200MB not allowed")
             st.stop()
 
@@ -747,17 +765,4 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
             df_download.to_csv(buffer, index=False, encoding='utf-8')
             st.download_button(f"📥 Download {len(df_download)} Rows", buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
             if len(df_cleaned) >= 1000:
-                                st.warning("Need more than 1000 rows? Go back and choose Monthly ₹299 or 6-Month ₹1499")
-
-# ============ FOOTER ============
-st.markdown("---")
-col1, col2, col3 = st.columns(3)
-with col1:
-    st.markdown("**VeriSame**")
-    st.caption("Clean Data, Clean Business")
-with col2:
-    st.markdown("**Support**")
-    st.markdown(f"[💬 WhatsApp](https://wa.me/{WHATSAPP_NUMBER})")
-with col3:
-    st.markdown("**Contact**")
-    st.caption("support@verisame.com")
+                st.warning("Need more than 1000 rows? Go back and choose Monthly ₹299 or 6-Month ₹1499")
