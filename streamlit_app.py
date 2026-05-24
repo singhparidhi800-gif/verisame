@@ -40,13 +40,13 @@ SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
 if SHOW_DASHBOARD and 'bot' in str(query_params).lower():
     st.stop()
 
-# ============ EMAIL MEMORY - 100% WORKING ============
-# Browser se email nikalo
+# ============ EMAIL MEMORY - DOUBLE JUGAAD ============
 saved_email = st_javascript("localStorage.getItem('verisame_email');")
+url_email = query_params.get("user")
+final_email = saved_email or url_email
 
-# Agar email mila aur session me nahi hai to set kar do
-if saved_email and 'user_email' not in st.session_state:
-    st.session_state.user_email = saved_email
+if final_email and 'user_email' not in st.session_state:
+    st.session_state.user_email = final_email.strip()
 
 # ============ COUNTING FILE ============
 COUNT_FILE = "counts.json"
@@ -67,27 +67,27 @@ def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
-# ============ SUBSCRIPTION FUNCTIONS - 100% FIXED ============
-@st.cache_data(ttl=30)
+# ============ SUBSCRIPTION FUNCTIONS - FINAL FIX ============
+@st.cache_data(ttl=10) # 10 sec me refresh
 def check_user_in_sheet(email):
     try:
         df = pd.read_csv(SHEET_URL)
         df.columns = df.columns.str.strip().str.lower()
-        user_row = df[df['email'].str.strip().str.lower() == email.lower()]
+        df['email'] = df['email'].str.strip().str.lower()
+        user_rows = df[df['email'] == email.lower().strip()]
 
-        if not user_row.empty:
-            expiry_str = str(user_row.iloc[0]['expiry_date']).strip()
-            plan = str(user_row.iloc[0]['plan']).strip()
+        if not user_rows.empty:
+            # SABSE NAYI ROW UTHAO - DUPLICATE IGNORE
+            user_row = user_rows.iloc[-1]
+            expiry_str = str(user_row['expiry_date']).strip()
+            plan = str(user_row['plan']).strip()
 
-            # PENDING = PRO Nahi hai, paisa maango
             if expiry_str.lower() in ['pending', 'verify_karo', 'rejected', 'nan', '']:
                 return False, "not_verified", plan
 
-            # Date check karo
             for fmt in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y', '%m/%d/%Y']:
                 try:
                     expiry_date = datetime.strptime(expiry_str, fmt)
-                    # FUTURE DATE = PRO ACTIVE, PAISA MAT MAANGO
                     if datetime.now().date() <= expiry_date.date():
                         return True, expiry_date.strftime('%Y-%m-%d'), plan
                     else:
@@ -96,7 +96,7 @@ def check_user_in_sheet(email):
                     continue
             return False, "invalid_date", plan
         return False, "not_found", None
-    except:
+    except Exception as e:
         return False, "sheet_error", None
 
 def save_user_to_sheet(email, plan_type):
@@ -157,7 +157,7 @@ if SHOW_DASHBOARD:
     try:
         users_df = pd.read_csv(SHEET_URL)
         st.dataframe(users_df, use_container_width=True)
-        st.caption("💡 Payment verify karne ke liye: expiry_date column me 'pending' ko '2026-12-31' jaisi date me badal de.")
+        st.caption("💡 IMPORTANT: Purane duplicate rows delete kar de. Sirf latest date wali rakho.")
     except:
         st.info("Google Sheet connect nahi hua.")
     st.stop()
@@ -211,7 +211,6 @@ if 'df_cleaned' not in st.session_state: st.session_state.df_cleaned = None
 if 'pro_status_checked' not in st.session_state: st.session_state.pro_status_checked = False
 
 def is_subscription_active():
-    # Real date hai aur future ki hai = PRO ACTIVE
     if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error']:
         try:
             expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
@@ -238,6 +237,7 @@ with st.sidebar:
             st.session_state.pro_plan_type = None
             st.session_state.payment_done = False
             st.session_state.pro_status_checked = False
+            st.query_params.clear()
             html("<script>localStorage.removeItem('verisame_email');</script>", height=0)
             st.rerun()
     if st.session_state.plan:
@@ -255,7 +255,6 @@ with st.sidebar:
 
 # LANDING PAGE
 if st.session_state.plan is None:
-    # AUTO CHECK: Email hai to sheet check karo - EK HI BAAR
     if st.session_state.user_email and not st.session_state.pro_status_checked:
         is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
         st.session_state.pro_expiry = expiry
@@ -336,19 +335,17 @@ else:
     st.markdown("---")
 
     if is_pro:
-        # EMAIL MAANGO - SIRF EK BAAR LIFETIME ME
         if st.session_state.ask_email and not st.session_state.user_email:
             st.title(f"💎 VeriSame PRO - {pro_text}")
             st.warning("Enter your email once. We'll remember it forever.")
             email_input = st.text_input("Enter your email:", placeholder="yourname@gmail.com", key="pro_email_input")
             if st.button("Continue", use_container_width=True, type="primary"):
                 if email_input and "@" in email_input:
-                    st.session_state.user_email = email_input
-                    # Browser me permanently save karo
-                    html(f"<script>localStorage.setItem('verisame_email', '{email_input}');</script>", height=0)
+                    st.session_state.user_email = email_input.strip()
+                    st.query_params["user"] = email_input.strip()
+                    html(f"<script>localStorage.setItem('verisame_email', '{email_input.strip()}');</script>", height=0)
 
-                    # Sheet check karo
-                    is_active, expiry, plan = check_user_in_sheet(email_input)
+                    is_active, expiry, plan = check_user_in_sheet(email_input.strip())
                     st.session_state.pro_expiry = expiry
                     st.session_state.pro_plan_type = plan
                     st.session_state.pro_status_checked = True
@@ -361,7 +358,7 @@ else:
                         st.rerun()
                     else:
                         st.session_state.ask_email = False
-                        save_user_to_sheet(email_input, st.session_state.selected_pro)
+                        save_user_to_sheet(email_input.strip(), st.session_state.selected_pro)
                         st.success(f"Email saved: {email_input}")
                         st.rerun()
                 else:
@@ -483,7 +480,6 @@ B202,Category_Y,2024-03-20,,Female"""
         st.session_state.df_cleaned = df_cleaned
 
         if is_pro:
-            # HAR BAAR SHEET SE REAL TIME CHECK - DATE HAI TO PAISA MAT MAANGO
             is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
             st.session_state.pro_expiry = expiry
             st.session_state.pro_plan_type = plan
