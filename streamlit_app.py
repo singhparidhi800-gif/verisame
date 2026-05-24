@@ -168,36 +168,107 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - BETTER DESIGN ============
-st.markdown("""
+# ============ CSS - SUNDAR DESIGN + CORNER HELP + TOOLS BANNER ============
+st.markdown(f"""
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-   .stButton>button {
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+    html, body, [class*="css"] {{
+        font-family: 'Poppins', sans-serif;
+    }}
+
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
+
+  .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
-        font-weight: bold;
-        border-radius: 10px;
-        transition: all 0.3s;
-    }
-   .stButton>button:hover {
+        font-weight: 600;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }}
+  .stButton>button:hover {{
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }}
+
+    /* Plan Cards - Gradient Design */
+    div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"] {{
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)!important;
+        border: none!important;
+        border-radius: 20px!important;
+        padding: 10px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1)!important;
+    }}
+    div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {{
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)!important;
+        border: none!important;
+        border-radius: 20px!important;
+        padding: 10px;
+        box-shadow: 0 8px 25px rgba(255,154,158,0.4)!important;
+    }}
+    div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"] {{
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)!important;
+        border: 3px solid #ff6b6b!important;
+        border-radius: 20px!important;
+        padding: 10px;
+        box-shadow: 0 8px 25px rgba(252,182,159,0.5)!important;
         transform: scale(1.02);
-    }
-    div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%)!important;
-        border: 3px solid #ff1744!important;
-        border-radius: 15px!important;
-        box-shadow: 0 6px 12px rgba(255,23,68,0.3)!important;
-    }
-    div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%)!important;
-        border: 3px solid #ff1744!important;
-        border-radius: 15px!important;
-        box-shadow: 0 6px 12px rgba(255,23,68,0.3)!important;
-    }
+    }}
+
+    /* 7 Tools Banner */
+   .tools-banner {{
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        padding: 25px;
+        border-radius: 15px;
+        margin: 20px 0;
+        color: white;
+        box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+    }}
+   .tool-item {{
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        padding: 8px 15px;
+        border-radius: 20px;
+        margin: 5px;
+        font-size: 14px;
+        font-weight: 600;
+    }}
+
+    /* WhatsApp Help Button - Corner Fixed */
+   .help-float {{
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 9999;
+    }}
+   .help-float a {{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        background: #25D366;
+        border-radius: 50%;
+        box-shadow: 0 5px 20px rgba(37,211,102,0.4);
+        text-decoration: none;
+        font-size: 30px;
+        transition: all 0.3s;
+    }}
+   .help-float a:hover {{
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(37,211,102,0.6);
+    }}
     </style>
+
+    <!-- WhatsApp Help Button Fixed Corner -->
+    <div class="help-float">
+        <a href="https://wa.me/{WHATSAPP_NUMBER}?text=Hi%20VeriSame%20Team,%20I%20need%20help" target="_blank">💬</a>
+    </div>
 """, unsafe_allow_html=True)
 
 # ============ SESSION STATES ============
@@ -244,10 +315,6 @@ with st.sidebar:
             st.query_params.clear()
             html("<script>localStorage.removeItem('verisame_email');</script>", height=0)
             st.rerun()
-    st.markdown("---")
-    st.markdown("📞 **Need Help?**")
-    st.markdown(f"[💬 WhatsApp Us](https://wa.me/{WHATSAPP_NUMBER})")
-    st.markdown("📧 support@verisame.com")
     if st.session_state.plan:
         if st.button("← Back to Plans"):
             st.session_state.plan = None
@@ -274,10 +341,28 @@ if st.session_state.plan is None:
             st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
             st.rerun()
 
-    st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=200)
-    st.title("💼 Welcome to VeriSame")
-    st.subheader("The Fastest Way to Clean Your Data")
-    st.markdown("---")
+    col_logo, col_title = st.columns([1,4])
+    with col_logo:
+        st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=100)
+    with col_title:
+        st.title("💼 Welcome to VeriSame")
+        st.subheader("The Fastest Way to Clean Your Data")
+
+    # 7 TOOLS BANNER - SUNDAR
+    st.markdown("""
+    <div class="tools-banner">
+        <h3 style='margin:0 0 15px 0; text-align:center;'>🚀 PRO Includes 7 Advanced Tools</h3>
+        <div style='text-align:center;'>
+            <span class="tool-item">📅 Date Standardizer</span>
+            <span class="tool-item">🔢 Smart Fill Missing</span>
+            <span class="tool-item">📧 Email Validator</span>
+            <span class="tool-item">📱 Phone Formatter</span>
+            <span class="tool-item">🔤 Text Case Converter</span>
+            <span class="tool-item">✨ Remove Special Chars</span>
+            <span class="tool-item">✏️ Column Renamer</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -285,7 +370,7 @@ if st.session_state.plan is None:
             st.subheader("🆓 FREE Forever")
             st.markdown("✅ 1000 Rows Lifetime")
             st.markdown("✅ CSV Download")
-            st.markdown("✅ 5 Cleaning Tools")
+            st.markdown("✅ 5 Basic Tools")
             st.markdown("⏱️ 30 Second Wait")
             if st.button("Use FREE", use_container_width=True):
                 update_count("free")
@@ -414,7 +499,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
         st.info("Using: Sample Test Data")
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
             st.error("File > 200MB not allowed")
             st.stop()
 
@@ -662,7 +747,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
             df_download.to_csv(buffer, index=False, encoding='utf-8')
             st.download_button(f"📥 Download {len(df_download)} Rows", buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
             if len(df_cleaned) >= 1000:
-                st.warning("Need more than 1000 rows? Go back and choose Monthly ₹299 or 6-Month ₹1499")
+                                st.warning("Need more than 1000 rows? Go back and choose Monthly ₹299 or 6-Month ₹1499")
 
 # ============ FOOTER ============
 st.markdown("---")
