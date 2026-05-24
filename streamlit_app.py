@@ -31,6 +31,7 @@ import requests
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrgvFCfKGsYLitbVYwsh0tA2ih-BORqz7S9J2wc4BZtxshAQjjVylXuklAL4nDS4p-/exec"
+WHATSAPP_NUMBER = "919794906852"
 
 # ============ BASIC SECURITY ============
 SECRET_PASS = "reyansh999VeriSame2026CEO"
@@ -67,7 +68,7 @@ def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
-# ============ SUBSCRIPTION FUNCTIONS - FINAL FIX ============
+# ============ SUBSCRIPTION FUNCTIONS ============
 @st.cache_data(ttl=10)
 def check_user_in_sheet(email):
     try:
@@ -167,7 +168,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - 299 + 1499 DONO RED ============
+# ============ CSS - SUNDAR DESIGN ============
 st.markdown("""
     <style>
     #MainMenu {visibility: hidden;}
@@ -179,18 +180,40 @@ st.markdown("""
         font-size: 18px;
         font-weight: bold;
         border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+.stButton>button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
     div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #ffebee!important;
+        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)!important;
         border: 3px solid #ff1744!important;
-        border-radius: 10px!important;
-        box-shadow: 0 4px 8px rgba(255,23,68,0.3)!important;
+        border-radius: 15px!important;
+        box-shadow: 0 8px 16px rgba(255,23,68,0.4)!important;
+        transition: all 0.3s ease;
+    }
+    div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(255,23,68,0.5)!important;
     }
     div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"] {
-        background-color: #ffebee!important;
-        border: 3px solid #ff1744!important;
-        border-radius: 10px!important;
-        box-shadow: 0 4px 8px rgba(255,23,68,0.3)!important;
+        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)!important;
+        border: 3px solid #ff6f00!important;
+        border-radius: 15px!important;
+        box-shadow: 0 8px 16px rgba(255,111,0,0.4)!important;
+        transition: all 0.3s ease;
+    }
+    div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(255,111,0,0.5)!important;
+    }
+.tool-card {
+        background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 4px solid #2196F3;
+        margin: 10px 0;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -218,6 +241,12 @@ def is_subscription_active():
             return False
     return False
 
+def days_until_expiry():
+    if is_subscription_active():
+        expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d').date()
+        return (expiry - datetime.now().date()).days
+    return None
+
 def text_to_number(text):
     if pd.isna(text): return text
     text = str(text).strip().upper()
@@ -230,6 +259,14 @@ with st.sidebar:
         st.success(f"✅ PRO Active")
         st.caption(f"Email: {st.session_state.user_email}")
         st.caption(f"Till: {st.session_state.pro_expiry}")
+
+        days_left = days_until_expiry()
+        if days_left is not None and days_left <= 7:
+            st.warning(f"⏰ PRO expires in {days_left} days! Renew now.")
+
+        wa_text = f"Hi, I need help with VeriSame PRO. My email: {st.session_state.user_email}"
+        st.link_button("💬 WhatsApp Support", f"https://wa.me/{WHATSAPP_NUMBER}?text={wa_text}", use_container_width=True)
+
         if st.button("🚪 Logout"):
             st.session_state.user_email = None
             st.session_state.pro_expiry = None
@@ -268,6 +305,28 @@ if st.session_state.plan is None:
     st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=200)
     st.title("💼 Welcome to VeriSame")
     st.subheader("The Fastest Way to Clean Your Data")
+
+    st.markdown("""
+    <div style='background: linear-gradient(90deg, #2196F3 0%, #21CBF3 100%); padding: 20px; border-radius: 15px; text-align: center; margin: 20px 0;'>
+        <h2 style='color: white; margin: 0;'>🚀 7 POWERFUL CLEANING TOOLS</h2>
+        <p style='color: white; font-size: 18px; margin: 10px 0 0 0;'>Sabse sasta. Sabse tez. Sabse asaan.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col_t1, col_t2, col_t3, col_t4 = st.columns(4)
+    with col_t1:
+        st.markdown("**📅 Date Fixer**<br>Dates ko standard format me badlo", unsafe_allow_html=True)
+        st.markdown("**🔢 Smart Fill**<br>Missing values auto bharo", unsafe_allow_html=True)
+    with col_t2:
+        st.markdown("**✂️ Space Cleaner**<br>Extra spaces hatao", unsafe_allow_html=True)
+        st.markdown("**🔤 Case Changer**<br>UPPER/lower/Title case", unsafe_allow_html=True)
+    with col_t3:
+        st.markdown("**🔍 Find Replace**<br>Text ko bulk me badlo", unsafe_allow_html=True)
+        st.markdown("**🗑️ Drop Columns**<br>Faltu columns delete karo", unsafe_allow_html=True)
+    with col_t4:
+        st.markdown("**🔄 Type Convert**<br>Number/Text/Date me badlo", unsafe_allow_html=True)
+        st.markdown("**🧹 Duplicate Remover**<br>Duplicate rows hatao", unsafe_allow_html=True)
+
     st.markdown("---")
 
     col1, col2, col3 = st.columns(3)
@@ -276,7 +335,9 @@ if st.session_state.plan is None:
             st.subheader("🆓 FREE Forever")
             st.markdown("✅ 1000 Rows Lifetime")
             st.markdown("✅ CSV Download")
+            st.markdown("✅ Duplicate Remover Only")
             st.markdown("⏱️ 30 Second Wait")
+            st.markdown("❌ No PRO Tools")
             if st.button("Use FREE", use_container_width=True):
                 update_count("free")
                 st.session_state.plan = 'free'
@@ -285,10 +346,13 @@ if st.session_state.plan is None:
     with col2:
         with st.container(border=True):
             st.subheader("🔥 Monthly Pro")
-            st.markdown("✅ Unlimited Rows - 1 Month")
-            st.markdown("✅ Excel Export")
-            st.markdown("⚡ 3 Second Speed")
-            st.markdown(f"**₹{PRO_AMOUNT_MONTH} / month**")
+            st.markdown("✅ **Unlimited Rows - 1 Month**")
+            st.markdown("✅ **Excel + CSV Export**")
+            st.markdown("✅ **All 7 Cleaning Tools** 🔥")
+            st.markdown("✅ **Remove Duplicates**")
+            st.markdown("⚡ **3 Second Speed**")
+            st.markdown(f"**💰 Only ₹{PRO_AMOUNT_MONTH} / month**")
+            st.caption("Best for: Students, Freelancers")
             if st.button("⚡ ₹299 / Month", use_container_width=True):
                 update_count("pro_month")
                 st.session_state.plan = 'pro'
@@ -300,11 +364,15 @@ if st.session_state.plan is None:
     with col3:
         with st.container(border=True):
             st.subheader("💎 Best Value")
-            st.markdown("✅ Unlimited Rows - 6 Months")
-            st.markdown("✅ Excel Export")
-            st.markdown("⚡ 3 Second Speed")
-            st.markdown(f"**₹{PRO_AMOUNT_HALF} / 6 months**")
-            st.success("Save ₹295 vs Monthly")
+            st.markdown("✅ **Unlimited Rows - 6 Months**")
+            st.markdown("✅ **Excel + CSV Export**")
+            st.markdown("✅ **All 7 Cleaning Tools** 🔥")
+            st.markdown("✅ **Priority WhatsApp Support**")
+            st.markdown("✅ **Remove Duplicates**")
+            st.markdown("⚡ **3 Second Speed**")
+            st.markdown(f"**💰 Only ₹{PRO_AMOUNT_HALF} / 6 months**")
+            st.success("🎁 Save ₹295 vs Monthly")
+            st.caption("Best for: Businesses, Agencies")
             if st.button("💎 ₹1499 / 6 Months", use_container_width=True, type="primary"):
                 update_count("pro_half")
                 st.session_state.plan = 'pro'
@@ -436,17 +504,18 @@ B202,Category_Y,2024-03-20,,Female"""
 
         if is_pro:
             st.markdown("---")
-            st.subheader("🔧 PRO Cleaning Tools")
+            st.subheader("🔧 PRO Cleaning Tools - 7 Powerful Tools")
+
             tool_col1, tool_col2 = st.columns(2)
             with tool_col1:
-                st.markdown("**1. Date Standardizer**")
+                st.markdown("<div class='tool-card'><b>1. 📅 Date Standardizer</b><br>Convert all date formats to YYYY-MM-DD</div>", unsafe_allow_html=True)
                 date_cols = st.multiselect("Select Date Columns", df_cleaned.columns.tolist(), key="date_cols")
                 if date_cols:
                     for col in date_cols:
                         df_cleaned[col] = pd.to_datetime(df_cleaned[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
                     st.success(f"✅ Dates standardized in {len(date_cols)} columns")
             with tool_col2:
-                st.markdown("**2. Smart Fill Missing Values**")
+                st.markdown("<div class='tool-card'><b>2. 🔢 Smart Fill Missing Values</b><br>Auto-fill empty cells with Mean/Median/Zero</div>", unsafe_allow_html=True)
                 numeric_cols = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
                 if numeric_cols:
                     fill_method = st.selectbox("Fill Missing Numbers Using:", ["None", "Mean", "Median", "Zero", "Custom Value"], key="fill_method")
@@ -463,6 +532,64 @@ B202,Category_Y,2024-03-20,,Female"""
                         st.success("✅ Missing values filled")
                 else:
                     st.info("No numeric columns found")
+
+            tool_col3, tool_col4, tool_col5 = st.columns(3)
+            with tool_col3:
+                st.markdown("<div class='tool-card'><b>3. ✂️ Remove Extra Spaces</b><br>Trim spaces from text</div>", unsafe_allow_html=True)
+                space_cols = st.multiselect("Select Text Columns", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="space_cols")
+                if space_cols and st.button("Clean Spaces", key="btn_space"):
+                    for col in space_cols:
+                        df_cleaned[col] = df_cleaned[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                    st.success(f"✅ Extra spaces removed from {len(space_cols)} columns")
+
+            with tool_col4:
+                st.markdown("<div class='tool-card'><b>4. 🔤 Change Text Case</b><br>UPPER/lower/Title Case</div>", unsafe_allow_html=True)
+                case_cols = st.multiselect("Select Columns", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="case_cols")
+                case_type = st.selectbox("Case Type:", ["None", "UPPERCASE", "lowercase", "Title Case"], key="case_type")
+                if case_cols and case_type!= "None" and st.button("Change Case", key="btn_case"):
+                    for col in case_cols:
+                        if case_type == "UPPERCASE":
+                            df_cleaned[col] = df_cleaned[col].astype(str).str.upper()
+                        elif case_type == "lowercase":
+                            df_cleaned[col] = df_cleaned[col].astype(str).str.lower()
+                        elif case_type == "Title Case":
+                            df_cleaned[col] = df_cleaned[col].astype(str).str.title()
+                    st.success(f"✅ Case changed for {len(case_cols)} columns")
+
+            with tool_col5:
+                st.markdown("<div class='tool-card'><b>5. 🔍 Find & Replace</b><br>Bulk text replacement</div>", unsafe_allow_html=True)
+                replace_col = st.selectbox("Select Column", ["None"] + df_cleaned.columns.tolist(), key="replace_col")
+                if replace_col!= "None":
+                    find_text = st.text_input("Find:", key="find_text")
+                    replace_text = st.text_input("Replace with:", key="replace_text")
+                    if st.button("Replace All", key="btn_replace") and find_text:
+                        df_cleaned[replace_col] = df_cleaned[replace_col].astype(str).str.replace(find_text, replace_text, regex=False)
+                        st.success(f"✅ Replaced '{find_text}' with '{replace_text}'")
+
+            tool_col6, tool_col7 = st.columns(2)
+            with tool_col6:
+                st.markdown("<div class='tool-card'><b>6. 🗑️ Drop Columns</b><br>Delete unwanted columns</div>", unsafe_allow_html=True)
+                drop_cols = st.multiselect("Select Columns to Delete", df_cleaned.columns.tolist(), key="drop_cols")
+                if drop_cols and st.button("Delete Columns", key="btn_drop", type="secondary"):
+                    df_cleaned = df_cleaned.drop(columns=drop_cols)
+                    st.success(f"✅ Deleted {len(drop_cols)} columns")
+                    st.rerun()
+
+            with tool_col7:
+                st.markdown("<div class='tool-card'><b>7. 🔄 Convert Data Type</b><br>Change to Number/Text/Date</div>", unsafe_allow_html=True)
+                type_col = st.selectbox("Select Column", ["None"] + df_cleaned.columns.tolist(), key="type_col")
+                type_new = st.selectbox("Convert To:", ["None", "Number", "Text", "Date"], key="type_new")
+                if type_col!= "None" and type_new!= "None" and st.button("Convert", key="btn_type"):
+                    try:
+                        if type_new == "Number":
+                            df_cleaned[type_col] = pd.to_numeric(df_cleaned[type_col], errors='coerce')
+                        elif type_new == "Text":
+                            df_cleaned[type_col] = df_cleaned[type_col].astype(str)
+                        elif type_new == "Date":
+                            df_cleaned[type_col] = pd.to_datetime(df_cleaned[type_col], errors='coerce').dt.strftime('%Y-%m-%d')
+                        st.success(f"✅ {type_col} converted to {type_new}")
+                    except:
+                        st.error("Conversion failed")
 
         st.markdown("---")
         st.success(f"Done! Removed {original_row_count - len(df_cleaned)} duplicates. Total: {len(df_cleaned)} rows")
@@ -485,13 +612,11 @@ B202,Category_Y,2024-03-20,,Female"""
             st.session_state.pro_expiry = expiry
             st.session_state.pro_plan_type = plan
 
-            # PLAN CHECK: 299 wala 1499 me upgrade kare to paisa maango
             user_has_month = plan == '1month'
             user_has_half = plan == '6months'
             selected_is_month = st.session_state.selected_pro == 'month'
             selected_is_half = st.session_state.selected_pro == 'half'
 
-            # Agar user ne 299 liya hai aur 1499 click kiya = paisa maango
             if is_active and user_has_month and selected_is_half:
                 st.warning("⚠️ You have 1 Month plan active. To upgrade to 6 Months, please pay ₹1499.")
                 st.session_state.payment_done = False
@@ -509,7 +634,6 @@ B202,Category_Y,2024-03-20,,Female"""
                     df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
                     st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
 
-                # YE NAYA MESSAGE ADD KIYA - DOWNLOAD KE NICHE
                 plan_duration = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
                 st.info(f"🎉 You purchased {plan_duration} plan. PRO active till {st.session_state.pro_expiry}")
 
@@ -548,6 +672,38 @@ B202,Category_Y,2024-03-20,,Female"""
                     st.markdown(f"**Plan:** `{pro_text}`")
                     st.markdown(f"**Email:** `{st.session_state.user_email}`")
                 st.markdown("---")
+                elapsed_time = time.time() - st.session_state.qr_start_time
+                if elapsed_time < WAIT_SECONDS:
+                    progress = int((elapsed_time / WAIT_SECONDS) * 100)
+                    st.info("🔄 Waiting for payment...")
+                    st.progress(progress)
+                    st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.success("Step 2: Payment Done? Click to Unlock")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button(f"🔓 I Paid ₹{pro_amount} - Activate PRO", use_container_width=True, type="primary"):
+                            update_count("buy")
+                            mark_payment_done(st.session_state.user_email)
+                            st.session_state.payment_done = True
+                            st.session_state.show_qr = False
+                            st.session_state.show_pay_button = False
+                            st.balloons()
+                            st.rerun()
+                    with col2:
+                        if st.button("⬅️ Cancel", use_container_width=True):
+                            st.session_state.show_qr = False
+                            st.session_state.qr_start_time = None
+                            st.session_state.show_pay_button = True
+                            st.rerun()
+                st.stop()
+
+            else:
+                st.info("💰 Payment Required to Download Full File")
+                st.warning(f"Your cleaned file is ready with {len(df_cleaned
+                                st.markdown("---")
                 elapsed_time = time.time() - st.session_state.qr_start_time
                 if elapsed_time < WAIT_SECONDS:
                     progress = int((elapsed_time / WAIT_SECONDS) * 100)
