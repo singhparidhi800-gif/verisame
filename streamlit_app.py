@@ -68,7 +68,7 @@ def get_counts():
         return json.load(f)
 
 # ============ SUBSCRIPTION FUNCTIONS - FINAL FIX ============
-@st.cache_data(ttl=10) # 10 sec me refresh
+@st.cache_data(ttl=10)
 def check_user_in_sheet(email):
     try:
         df = pd.read_csv(SHEET_URL)
@@ -77,7 +77,6 @@ def check_user_in_sheet(email):
         user_rows = df[df['email'] == email.lower().strip()]
 
         if not user_rows.empty:
-            # SABSE NAYI ROW UTHAO - DUPLICATE IGNORE
             user_row = user_rows.iloc[-1]
             expiry_str = str(user_row['expiry_date']).strip()
             plan = str(user_row['plan']).strip()
@@ -353,6 +352,7 @@ else:
                     if is_active:
                         st.session_state.payment_done = True
                         st.session_state.ask_email = False
+                        st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
                         st.success(f"Welcome back! PRO active till {expiry}")
                         st.balloons()
                         st.rerun()
@@ -366,6 +366,7 @@ else:
             st.stop()
 
         if is_subscription_active():
+            plan_name = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
             st.title(f"💎 VeriSame PRO - Active")
             st.success(f"✅ Welcome {st.session_state.user_email}")
             st.caption(f"PRO expires on: {st.session_state.pro_expiry}")
@@ -484,7 +485,18 @@ B202,Category_Y,2024-03-20,,Female"""
             st.session_state.pro_expiry = expiry
             st.session_state.pro_plan_type = plan
 
-            if is_active:
+            # PLAN CHECK: 299 wala 1499 me upgrade kare to paisa maango
+            user_has_month = plan == '1month'
+            user_has_half = plan == '6months'
+            selected_is_month = st.session_state.selected_pro == 'month'
+            selected_is_half = st.session_state.selected_pro == 'half'
+
+            # Agar user ne 299 liya hai aur 1499 click kiya = paisa maango
+            if is_active and user_has_month and selected_is_half:
+                st.warning("⚠️ You have 1 Month plan active. To upgrade to 6 Months, please pay ₹1499.")
+                st.session_state.payment_done = False
+
+            if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
@@ -496,6 +508,10 @@ B202,Category_Y,2024-03-20,,Female"""
                     csv_buffer = BytesIO()
                     df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
                     st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
+
+                # YE NAYA MESSAGE ADD KIYA - DOWNLOAD KE NICHE
+                plan_duration = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
+                st.info(f"🎉 You purchased {plan_duration} plan. PRO active till {st.session_state.pro_expiry}")
 
             elif st.session_state.payment_done:
                 st.title("🎉 Thank You for Payment!")
