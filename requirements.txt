@@ -4,3 +4,4 @@ openpyxl
 numpy
 qrcode[pil]
 streamlit-javascript
+requests
