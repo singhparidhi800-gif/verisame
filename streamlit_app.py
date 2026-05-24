@@ -700,9 +700,14 @@ B202,Category_Y,2024-03-20,,Female"""
                             st.rerun()
                 st.stop()
 
-            else:
+              else:
                 st.info("💰 Payment Required to Download Full File")
-                st.warning(f"Your cleaned file is ready with {len(df_cleaned
+                st.warning(f"Your cleaned file is ready with {len(df_cleaned)} rows")
+                if st.button(f"💳 Pay ₹{pro_amount} to Download - {pro_text}", use_container_width=True, type="primary"):
+                    st.session_state.show_qr = True
+                    st.session_state.qr_start_time = time.time()
+                    st.session_state.show_pay_button = False
+                    st.rerun()
                                 st.markdown("---")
                 elapsed_time = time.time() - st.session_state.qr_start_time
                 if elapsed_time < WAIT_SECONDS:
