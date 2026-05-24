@@ -359,12 +359,12 @@ with st.sidebar:
             st.rerun()
 
 # LANDING PAGE
-        st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=400)
-        st.title("💼 Welcome to VeriSame")
-        st.subheader("The Fastest Way to Clean Your Data")
+st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=400)
+st.title("💼 Welcome to VeriSame")
+st.subheader("The Fastest Way to Clean Your Data")
 
-        if st.session_state.plan is None:
-        if st.session_state.user_email and not st.session_state.pro_status_checked:
+if st.session_state.plan is None:
+    if st.session_state.user_email and not st.session_state.pro_status_checked:
         is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
         st.session_state.pro_expiry = expiry
         st.session_state.pro_plan_type = plan
