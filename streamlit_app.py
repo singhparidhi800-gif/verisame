@@ -378,7 +378,7 @@ if st.session_state.plan is None:
 
     col_logo, col_title = st.columns([1,5])
     with col_logo:
-        st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=250)
+        st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=400)
     with col_title:
         st.title("💼 Welcome to VeriSame")
         st.subheader("The Fastest Way to Clean Your Data")
