@@ -288,11 +288,6 @@ st.markdown(f"""
         50% {{ box-shadow: 0 8px 40px rgba(37,211,102,0.9); }}
         100% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
     }}
-
-    /* LOGO BADA */
-    img[src*="VeriSame-logo"] {{
-        width: 250px!important;
-    }}
     </style>
 
     <!-- WhatsApp Help Button Fixed Corner -->
@@ -375,11 +370,7 @@ if st.session_state.plan is None:
             st.session_state.payment_done = True
             st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
             st.rerun()
-
-    col_logo, col_title = st.columns([1,5])
-    with col_logo:
         st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=400)
-    with col_title:
         st.title("💼 Welcome to VeriSame")
         st.subheader("The Fastest Way to Clean Your Data")
 
