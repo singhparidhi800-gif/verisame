@@ -30,8 +30,9 @@ import requests
 # ============ CONFIG ============
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuVovrQ-hptvu8GTjDRTl0uiU5iLJom71E3dNipB93Dom-N6frbrNxNhWCOnYbxLAttA/exec"
-WHATSAPP_NUMBER = "919876543210" # <-- YAHAN APNA NUMBER DAAL DE
+# ✅ NAYA URL DAAL DIYA - YAHI GALTI THI
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCvBO7LqDVviVucBwlStrCuF3pAIb51FxGKTf8srHHXM7ghtyurExlWFD136WOTEe9KQ/exec"
+WHATSAPP_NUMBER = "919794906852" # <-- YAHAN APNA NUMBER DAAL DE
 
 # ============ BASIC SECURITY ============
 SECRET_PASS = "reyansh999VeriSame2026CEO"
@@ -168,7 +169,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - SUNDAR DESIGN + CORNER HELP + TOOLS BANNER + EXTRA BEAUTY ============
+# ============ CSS - SUNDAR DESIGN + SIDE PATTERNS ============
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
@@ -181,14 +182,50 @@ st.markdown(f"""
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
 
-    /* PURA BACKGROUND GRADIENT + ANIMATION */
-  .stApp {{
+    /* PURA BACKGROUND GRADIENT + ANIMATION + SIDE DESIGN */
+ .stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 15s ease infinite;
         background-attachment: fixed;
+        position: relative;
     }}
-    
+
+    /* SIDE ME DESIGN - LEFT RIGHT PATTERN */
+ .stApp::before {{
+        content: '';
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100px;
+        height: 100%;
+        background: repeating-linear-gradient(
+            45deg,
+            rgba(255,255,255,0.03),
+            rgba(255,255,255,0.03) 10px,
+            transparent 10px,
+            transparent 20px
+        );
+        z-index: 0;
+    }}
+
+ .stApp::after {{
+        content: '';
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 100px;
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            rgba(255,255,255,0.03),
+            rgba(255,255,255,0.03) 10px,
+            transparent 10px,
+            transparent 20px
+        );
+        z-index: 0;
+    }}
+
     @keyframes gradientBG {{
         0% {{ background-position: 0% 50%; }}
         50% {{ background-position: 100% 50%; }}
@@ -196,7 +233,7 @@ st.markdown(f"""
     }}
 
     /* Main container - GLASSMORPHISM CARD */
- .block-container {{
+.block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
         background: rgba(255,255,255,0.95);
@@ -206,6 +243,8 @@ st.markdown(f"""
         margin-top: 2rem;
         margin-bottom: 2rem;
         border: 1px solid rgba(255,255,255,0.3);
+        position: relative;
+        z-index: 1;
     }}
 
 .stButton>button {{
@@ -223,7 +262,7 @@ st.markdown(f"""
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
 
-    /* Plan Cards - Gradient Design + HOVER EFFECT */
+    /* Plan Cards - Gradient Design + HOVER EFFECT + GLOW */
     div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)!important;
         border: none!important;
@@ -256,10 +295,16 @@ st.markdown(f"""
         box-shadow: 0 15px 40px rgba(252,182,159,0.6)!important;
         transform: scale(1.03);
         transition: all 0.3s ease;
+        animation: glow 2s ease-in-out infinite;
     }}
     div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
         transform: scale(1.05) translateY(-5px);
         box-shadow: 0 20px 50px rgba(252,182,159,0.8)!important;
+    }}
+
+    @keyframes glow {{
+        0%, 100% {{ box-shadow: 0 15px 40px rgba(252,182,159,0.6); }}
+        50% {{ box-shadow: 0 15px 50px rgba(252,182,159,0.9); }}
     }}
 
     /* 7 Tools Banner */
@@ -312,21 +357,21 @@ st.markdown(f"""
         transform: scale(1.15) rotate(15deg);
         box-shadow: 0 10px 40px rgba(37,211,102,0.8);
     }}
-    
+
     @keyframes pulse {{
         0% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
         50% {{ box-shadow: 0 8px 40px rgba(37,211,102,0.9); }}
         100% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
     }}
-    
+
     /* Input field styling */
-   .stTextInput>div>div>input {{
+  .stTextInput>div>div>input {{
         border-radius: 12px;
         border: 2px solid #e0e0e0;
         padding: 12px;
         font-size: 16px;
     }}
-   .stTextInput>div>div>input:focus {{
+  .stTextInput>div>div>input:focus {{
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
     }}
@@ -720,7 +765,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                 st.warning("⚠️ You have 1 Month plan active. To upgrade to 6 Months, please pay ₹1499.")
                 st.session_state.payment_done = False
 
-            if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
+                        if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
@@ -733,7 +778,6 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
                     st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
 
-                # DOWNLOAD KE NICHE MESSAGE
                 plan_duration = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
                 st.info(f"🎉 You purchased {plan_duration} plan. PRO active till {st.session_state.pro_expiry}")
 
