@@ -30,7 +30,7 @@ import requests
 # ============ CONFIG ============
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrgvFCfKGsYLitbVYwsh0tA2ih-BORqz7S9J2wc4BZtxshAQjjVylXuklAL4nDS4p-/exec"
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuVovrQ-hptvu8GTjDRTl0uiU5iLJom71E3dNipB93Dom-N6frbrNxNhWCOnYbxLAttA/exec"
 WHATSAPP_NUMBER = "919876543210" # <-- YAHAN APNA NUMBER DAAL DE
 
 # ============ BASIC SECURITY ============
@@ -168,7 +168,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - SUNDAR DESIGN + CORNER HELP + TOOLS BANNER ============
+# ============ CSS - SUNDAR DESIGN + CORNER HELP + TOOLS BANNER + EXTRA BEAUTY ============
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
@@ -181,24 +181,34 @@ st.markdown(f"""
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
 
-    /* PURA BACKGROUND GRADIENT */
-   .stApp {{
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    /* PURA BACKGROUND GRADIENT + ANIMATION */
+  .stApp {{
+        background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
         background-attachment: fixed;
     }}
+    
+    @keyframes gradientBG {{
+        0% {{ background-position: 0% 50%; }}
+        50% {{ background-position: 100% 50%; }}
+        100% {{ background-position: 0% 50%; }}
+    }}
 
-    /* Main container - WHITE CARD */
-  .block-container {{
+    /* Main container - GLASSMORPHISM CARD */
+ .block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
-        background: rgba(255,255,255,0.98);
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(20px);
         border-radius: 30px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         margin-top: 2rem;
         margin-bottom: 2rem;
+        border: 1px solid rgba(255,255,255,0.3);
     }}
 
- .stButton>button {{
+.stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -208,18 +218,23 @@ st.markdown(f"""
         border: none;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }}
- .stButton>button:hover {{
-        transform: translateY(-3px);
+.stButton>button:hover {{
+        transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
 
-    /* Plan Cards - Gradient Design */
+    /* Plan Cards - Gradient Design + HOVER EFFECT */
     div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)!important;
         border: none!important;
         border-radius: 25px!important;
         padding: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.15)!important;
+        transition: all 0.3s ease;
+    }}
+    div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2)!important;
     }}
     div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)!important;
@@ -227,6 +242,11 @@ st.markdown(f"""
         border-radius: 25px!important;
         padding: 20px;
         box-shadow: 0 10px 30px rgba(255,154,158,0.4)!important;
+        transition: all 0.3s ease;
+    }}
+    div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(255,154,158,0.6)!important;
     }}
     div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)!important;
@@ -235,10 +255,15 @@ st.markdown(f"""
         padding: 20px;
         box-shadow: 0 15px 40px rgba(252,182,159,0.6)!important;
         transform: scale(1.03);
+        transition: all 0.3s ease;
+    }}
+    div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        transform: scale(1.05) translateY(-5px);
+        box-shadow: 0 20px 50px rgba(252,182,159,0.8)!important;
     }}
 
     /* 7 Tools Banner */
- .tools-banner {{
+.tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 35px;
         border-radius: 25px;
@@ -246,7 +271,7 @@ st.markdown(f"""
         color: white;
         box-shadow: 0 15px 40px rgba(102,126,234,0.4);
     }}
- .tool-item {{
+.tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.25);
         padding: 12px 20px;
@@ -255,16 +280,21 @@ st.markdown(f"""
         font-size: 15px;
         font-weight: 700;
         backdrop-filter: blur(15px);
+        transition: all 0.3s;
+    }}
+.tool-item:hover {{
+        background: rgba(255,255,255,0.4);
+        transform: scale(1.05);
     }}
 
     /* WhatsApp Help Button - Corner Fixed */
- .help-float {{
+.help-float {{
         position: fixed;
         bottom: 35px;
         right: 35px;
         z-index: 9999;
     }}
- .help-float a {{
+.help-float a {{
         display: flex;
         align-items: center;
         justify-content: center;
@@ -278,7 +308,7 @@ st.markdown(f"""
         transition: all 0.3s;
         animation: pulse 2s infinite;
     }}
- .help-float a:hover {{
+.help-float a:hover {{
         transform: scale(1.15) rotate(15deg);
         box-shadow: 0 10px 40px rgba(37,211,102,0.8);
     }}
@@ -287,6 +317,18 @@ st.markdown(f"""
         0% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
         50% {{ box-shadow: 0 8px 40px rgba(37,211,102,0.9); }}
         100% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
+    }}
+    
+    /* Input field styling */
+   .stTextInput>div>div>input {{
+        border-radius: 12px;
+        border: 2px solid #e0e0e0;
+        padding: 12px;
+        font-size: 16px;
+    }}
+   .stTextInput>div>div>input:focus {{
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
     }}
     </style>
 
@@ -526,7 +568,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
         st.info("Using: Sample Test Data")
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
             st.error("File > 200MB not allowed")
             st.stop()
 
@@ -715,7 +757,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
 
             elif st.session_state.show_qr:
                 st.warning("Step 1: Scan QR & Complete Payment")
-                upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
+                upi_link = f"upi://pay?pa={UPI_ID}&pn=Abha%20Singh&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
                 qr = qrcode.QRCode(box_size=8, border=4)
                 qr.add_data(upi_link)
                 qr.make(fit=True)
