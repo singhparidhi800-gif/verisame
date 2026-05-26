@@ -773,9 +773,9 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                 st.warning("⚠️ You have 1 Month plan active. To upgrade to 6 Months, please pay ₹1499.")
                 st.session_state.payment_done = False
 
-            if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
+             if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
-                                excel_buffer = BytesIO()
+                excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
                 col1, col2 = st.columns(2)
