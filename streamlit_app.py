@@ -122,29 +122,23 @@ def save_user_to_sheet(email, plan_type):
         st.sidebar.info("1. Request bhejne wala hun...")
         time.sleep(0.5) # ruk ja 0.5 sec
         
-        r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
+                r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
         
-        st.sidebar.success(f"2. Status Code: {r.status_code}") # Ye line sabse important
-        st.sidebar.warning(f"3. Reply: {r.text}") # Ye line bhi
-        time.sleep(2) # 2 sec tak sidebar me dikhega
-        
+        st.sidebar.success(f"2. Status Code: {r.status_code}")
+        st.sidebar.warning(f"3. Reply: {r.text}")
+        time.sleep(2) # 2 sec tak sidebar me
+        st.stop()  # <-- NAYI LINE 1
+
         if r.status_code == 200 and "Success" in r.text:
             return True
         else:
             return False
-            
+
     except Exception as e:
         st.sidebar.error(f"4. ERROR: {e}")
         time.sleep(5) # Error 5 sec dikhega
-        return False
-        
-        if r.status_code == 200 and "Success" in r.text:
-            return True
-        else:
-            st.sidebar.error("Sheet me save nahi hua")
-            return False
-    except Exception as e:
-        st.sidebar.error(f"Sheet Error: {e}")
+        st.stop()  # <-- NAYI LINE 2
+    
         return False
 def request_payment_verification(email):
     try:
