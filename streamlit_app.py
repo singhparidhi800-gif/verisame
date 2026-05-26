@@ -28,7 +28,7 @@ import requests
 # ============ CONFIG ============
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdVnCZi91JhBR4L9kt2H1KbpOoxiWNqNXGcoth459Q486m84tjSYzlFYkHC3Fl7AXbZg/exec"
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtz-CV6D5lTUWCb12newzOqSRg0I-INIKXZETmR7MtxHWjQfIIbYHoaAiatZz_13w/exec"
 WHATSAPP_NUMBER = "919794906852"
 
 # ============ UPI CONFIG ============
@@ -86,7 +86,8 @@ def check_user_in_sheet(email):
 
             if status == 'verification_pending':
                 return False, "verification_pending", plan
-
+            if status == 'rejected':
+                return False, "rejected", plan
             if status!= 'paid':
                 return False, "not_verified", plan
 
@@ -282,7 +283,7 @@ if 'pro_status_checked' not in st.session_state: st.session_state.pro_status_che
 if 'payment_log_done' not in st.session_state: st.session_state.payment_log_done = False
 
 def is_subscription_active():
-    if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error', 'verification_pending']:
+    if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error', 'verification_pending', 'rejected']:
         try:
             expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
             return datetime.now().date() <= expiry.date()
@@ -314,6 +315,8 @@ with st.sidebar:
             if st.button("🔄 Refresh Status", use_container_width=True):
                 st.session_state.pro_status_checked = False
                 st.rerun()
+        elif st.session_state.pro_expiry == 'rejected':
+            st.error("❌ Payment Not Found")
         else:
             st.info("PRO inactive - Complete payment")
 
@@ -696,11 +699,36 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
 
             # CONDITION 2: VERIFICATION PENDING - NO U-TURN ✅
             elif expiry == 'verification_pending':
-                st.warning("⏳ **Verification Pending**")
-                st.info("Payment request received. Admin will verify and activate within 5-10 minutes.")
-                st.caption("Refresh page after admin approves to download.")
-                if st.button("🔄 Refresh Status", use_container_width=True):
+                st.warning("⏳ Payment Verification Pending")
+                st.info("👋 Admin 5-10 min me payment verify karega. Paise milte hi download unlock ho jayega.")
+                st.success("✅ Page refresh karte raho. Jaise hi verify hoga, download button yahin dikh jayega.")
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("🔄 Check Status Now", use_container_width=True):
+                        st.cache_data.clear()
+                        st.rerun()
+                with col2:
+                    st.caption("Auto-refresh in 30 seconds...")
+                    time.sleep(30)
+                    st.rerun()
+
+            # CONDITION 2B: REJECTED ✅
+            elif expiry == 'rejected':
+                st.error("❌ Payment Not Found")
+                st.warning("Humare account me aapka payment nahi mila. Agar aapne pay kiya hai to UTR ke saath contact kare: verisame.help@gmail.com")
+                if st.button("🔄 Try Again", use_container_width=True):
                     st.cache_data.clear()
+                    st.session_state.show_qr = False
+                    st.session_state.qr_start_time = None
+                    st.rerun()
+
+            # CONDITION 2C: EXPIRED ✅
+            elif expiry == 'expired':
+                st.error("⏰ Your PRO plan has expired. Please renew to continue.")
+                if st.button("🔄 Renew Now", use_container_width=True):
+                    st.session_state.show_qr = True
+                    st.session_state.qr_start_time = time.time()
                     st.rerun()
 
             # CONDITION 3: SHOW QR CODE ✅
@@ -735,17 +763,26 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.success("Step 2: Payment Done? Click to Unlock")
                     col1, col2 = st.columns(2)
                     with col1:
-                        if st.button(f"🔓 I Paid ₹{pro_amount} - Verify", use_container_width=True, type="primary"):
-                            update_count("buy")
-                            request_payment_verification(st.session_state.user_email)
-                            st.session_state.show_qr = False
-                            st.cache_data.clear()
-                            st.success("Request submitted! Admin will verify and activate in 5-10 min")
-                            st.balloons()
-                            time.sleep(2)
-                            st.rerun()
+                        if st.button(f"🔓 I Paid ₹{pro_amount}", use_container_width=True, type="primary"):
+                            try:
+                                    payload = {
+                                        "email": st.session_state.user_email,
+                                        "plan": pro_plan,
+                                        "amount": pro_amount
+                                    }
+                                    requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), timeout=5)
+                                except:
+                                    pass
+                                
+                                update_count("buy")
+                                st.cache_data.clear()
+                                st.success("✅ Request submitted! Admin will verify payment in 5-10 min")
+                                st.balloons()
+                                time.sleep(2)
+                                st.rerun()
+                                
                     with col2:
-                        if st.button("⬅️ Cancel", use_container_width=True):
+                        if st.button("🚫 Cancel Payment", use_container_width=True):
                             st.session_state.show_qr = False
                             st.session_state.qr_start_time = None
                             st.session_state.show_pay_button = True
