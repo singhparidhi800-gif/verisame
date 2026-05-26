@@ -772,14 +772,14 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                                     }
                                     requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), timeout=5)
                             except:
-                                    pass
+                                pass
                                 
-                                update_count("buy")
-                                st.cache_data.clear()
-                                st.success("✅ Request submitted! Admin will verify payment in 5-10 min")
-                                st.balloons()
-                                time.sleep(2)
-                                st.rerun()
+                            update_count("buy")
+                            st.cache_data.clear()
+                            st.success("✅ Request submitted! Admin will verify payment in 5-10 min")
+                            st.balloons()
+                            time.sleep(2)
+                            st.rerun()
                                 
                     with col2:
                         if st.button("🚫 Cancel Payment", use_container_width=True):
