@@ -113,7 +113,7 @@ def mark_payment_done(email):
     except:
         pass
 
-# ============ GA + VIEWS COUNT - FIXED IFRAME ERROR ✅ ============
+# ============ GA + VIEWS COUNT - FIXED ✅ ============
 if not SHOW_DASHBOARD:
     if 'counted_session' not in st.session_state:
         update_count("views")
@@ -436,7 +436,7 @@ with st.sidebar:
             st.session_state.pro_status_checked = False
             st.session_state.payment_log_done = False
             st.query_params.clear()
-            html("<script>localStorage.removeItem('verisame_email');</script>", height=0)
+            st.markdown("<script>localStorage.removeItem('verisame_email');</script>", unsafe_allow_html=True)
             st.rerun()
     st.markdown("---")
     st.markdown("### 📞 Need Help?")
@@ -566,7 +566,7 @@ else:
                 if email_input and "@" in email_input:
                     st.session_state.user_email = email_input.strip()
                     st.query_params["user"] = email_input.strip()
-                    html(f"<script>localStorage.setItem('verisame_email', '{email_input.strip()}');</script>", height=0)
+                    st.markdown(f"<script>localStorage.setItem('verisame_email', '{email_input.strip()}');</script>", unsafe_allow_html=True)
 
                     is_active, expiry, plan = check_user_in_sheet(email_input.strip())
                     st.session_state.pro_expiry = expiry
@@ -757,7 +757,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
             st.caption("🔒 VeriSame PRO")
         else:
             st.write("**Preview - First 5 Rows:**")
-            st.dataframe(df_display.head())
+            st.dataframe(df_display.head(5))
 
         st.markdown("---")
         st.session_state.df_cleaned = df_cleaned
