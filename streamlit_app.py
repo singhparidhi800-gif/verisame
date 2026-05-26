@@ -706,7 +706,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                 plan_duration = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
                 st.info(f"🎉 You purchased {plan_duration} plan. PRO active till {st.session_state.pro_expiry}")
 
-                        elif st.session_state.payment_done:
+            elif st.session_state.payment_done:
                 st.title("🎉 Thank You for Payment!")
                 st.success("✅ Your payment request is sent to CEO")
                 st.info("⏳ VeriSame PRO will be activated within 5 minutes after verification")
