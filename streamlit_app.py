@@ -745,7 +745,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                         if st.button(f"🔓 I Paid ₹{pro_amount} - Verify Karo", use_container_width=True, type="primary"):
                             update_count("buy")
                             request_payment_verification(st.session_state.user_email) # 👈 NAYA CALL
-                                                        st.session_state.payment_done = False
+                            st.session_state.payment_done = False
                             st.session_state.show_qr = False
                             st.session_state.show_pay_button = False
                             st.session_state.payment_log_done = False
