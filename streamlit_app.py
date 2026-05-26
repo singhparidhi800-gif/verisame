@@ -771,7 +771,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                                         "amount": pro_amount
                                     }
                                     requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), timeout=5)
-                                except:
+                            except:
                                     pass
                                 
                                 update_count("buy")
