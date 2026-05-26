@@ -108,8 +108,8 @@ def check_user_in_sheet(email):
         return False, "sheet_error", None
 
 def save_user_to_sheet(email, plan_type):
-    plan_name = "1month" if plan_type == 'month' else "6months"
-    amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_HALF
+    plan_name = "1month" if plan_type == 'month' else "3month"
+    amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_3MONTH
     try:
         payload = {
             "action": "new_user",
@@ -118,10 +118,18 @@ def save_user_to_sheet(email, plan_type):
             "amount": amount
         }
         headers = {'Content-Type': 'text/plain'}
-        requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=5)
+        st.sidebar.info("Sheet ko request bhej rahe hain...")
+        r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
+        st.sidebar.write(f"Status: {r.status_code}, Reply: {r.text}")
+        
+        if r.status_code == 200 and "Success" in r.text:
+            return True
+        else:
+            st.sidebar.error("Sheet me save nahi hua")
+            return False
     except Exception as e:
-        st.error(f"Sheet me save nahi hua: {e}")
-
+        st.sidebar.error(f"Sheet Error: {e}")
+        return False
 def request_payment_verification(email):
     try:
         payload = {"action": "payment_request", "email": email}
