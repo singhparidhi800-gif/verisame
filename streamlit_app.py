@@ -31,7 +31,7 @@ import requests
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
 # ✅ NAYA URL DAAL DIYA - YAHI GALTI THI
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzCvBO7LqDVviVucBwlStrCuF3pAIb51FxGKTf8srHHXM7ghtyurExlWFD136WOTEe9KQ/exec"
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdVnCZi91JhBR4L9kt2H1KbpOoxiWNqNXGcoth459Q486m84tjSYzlFYkHC3Fl7AXbZg/exec"
 WHATSAPP_NUMBER = "919794906852" # <-- YAHAN APNA NUMBER DAAL DE
 
 # ============ BASIC SECURITY ============
