@@ -183,7 +183,7 @@ st.markdown(f"""
     header {{visibility: hidden;}}
 
     /* PURA BACKGROUND GRADIENT + ANIMATION + SIDE DESIGN */
- .stApp {{
+.stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 15s ease infinite;
@@ -192,7 +192,7 @@ st.markdown(f"""
     }}
 
     /* SIDE ME DESIGN - LEFT RIGHT PATTERN */
- .stApp::before {{
+.stApp::before {{
         content: '';
         position: fixed;
         left: 0;
@@ -209,7 +209,7 @@ st.markdown(f"""
         z-index: 0;
     }}
 
- .stApp::after {{
+.stApp::after {{
         content: '';
         position: fixed;
         right: 0;
@@ -256,6 +256,10 @@ st.markdown(f"""
         transition: all 0.3s ease;
         border: none;
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }}
 .stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
@@ -365,13 +369,13 @@ st.markdown(f"""
     }}
 
     /* Input field styling */
-  .stTextInput>div>div>input {{
+ .stTextInput>div>div>input {{
         border-radius: 12px;
         border: 2px solid #e0e0e0;
         padding: 12px;
         font-size: 16px;
     }}
-  .stTextInput>div>div>input:focus {{
+ .stTextInput>div>div>input:focus {{
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
     }}
@@ -396,6 +400,7 @@ if 'ask_email' not in st.session_state: st.session_state.ask_email = False
 if 'show_pay_button' not in st.session_state: st.session_state.show_pay_button = False
 if 'df_cleaned' not in st.session_state: st.session_state.df_cleaned = None
 if 'pro_status_checked' not in st.session_state: st.session_state.pro_status_checked = False
+if 'payment_log_done' not in st.session_state: st.session_state.payment_log_done = False
 
 def is_subscription_active():
     if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error']:
@@ -424,6 +429,7 @@ with st.sidebar:
             st.session_state.pro_plan_type = None
             st.session_state.payment_done = False
             st.session_state.pro_status_checked = False
+            st.session_state.payment_log_done = False
             st.query_params.clear()
             html("<script>localStorage.removeItem('verisame_email');</script>", height=0)
             st.rerun()
@@ -442,6 +448,7 @@ with st.sidebar:
             st.session_state.payment_done = False
             st.session_state.show_pay_button = False
             st.session_state.df_cleaned = None
+            st.session_state.payment_log_done = False
             if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
@@ -539,6 +546,7 @@ else:
         st.session_state.payment_done = False
         st.session_state.show_pay_button = False
         st.session_state.df_cleaned = None
+        st.session_state.payment_log_done = False
         if 'sample_df' in st.session_state: del st.session_state['sample_df']
         st.rerun()
 
@@ -767,7 +775,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
 
             if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
-                excel_buffer = BytesIO()
+                                excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
                 col1, col2 = st.columns(2)
@@ -816,6 +824,26 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.markdown(f"**Plan:** `{pro_text}`")
                     st.markdown(f"**Email:** `{st.session_state.user_email}`")
                     st.markdown(f"**Support:** [WhatsApp](https://wa.me/{WHATSAPP_NUMBER})")
+                
+                # ---- GOOGLE SHEET ME PENDING ENTRY DAALO ----
+                if not st.session_state.payment_log_done:
+                    plan_duration = 1 if st.session_state.selected_pro == 'month' else 6
+                    payment_amount = PRO_AMOUNT_MONTH if plan_duration == 1 else PRO_AMOUNT_HALF
+                    
+                    log_payload = {
+                        "email": st.session_state.user_email,
+                        "plan": f"{plan_duration}month",
+                        "amount": payment_amount,
+                        "activation_code": "",
+                        "status": "Pending"
+                    }
+                    try:
+                        requests.post(GOOGLE_SCRIPT_URL, json=log_payload, timeout=5)
+                        st.session_state.payment_log_done = True
+                    except:
+                        pass
+                # ---- SHEET CODE KHATAM ----
+                
                 st.markdown("---")
                 elapsed_time = time.time() - st.session_state.qr_start_time
                 if elapsed_time < WAIT_SECONDS:
@@ -832,6 +860,19 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                         if st.button(f"🔓 I Paid ₹{pro_amount} - Activate PRO", use_container_width=True, type="primary"):
                             update_count("buy")
                             mark_payment_done(st.session_state.user_email)
+                            
+                            # ---- SHEET ME PAID UPDATE KARO ----
+                            try:
+                                update_payload = {
+                                    "email": st.session_state.user_email,
+                                    "activation_code": "",
+                                    "status": "Paid"
+                                }
+                                requests.post(GOOGLE_SCRIPT_URL, json=update_payload, timeout=5)
+                            except:
+                                pass
+                            # ---- UPDATE KHATAM ----
+                            
                             st.session_state.payment_done = True
                             st.session_state.show_qr = False
                             st.session_state.show_pay_button = False
@@ -842,6 +883,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             st.session_state.show_qr = False
                             st.session_state.qr_start_time = None
                             st.session_state.show_pay_button = True
+                            st.session_state.payment_log_done = False
                             st.rerun()
                 st.stop()
 
@@ -852,6 +894,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.session_state.show_qr = True
                     st.session_state.qr_start_time = time.time()
                     st.session_state.show_pay_button = False
+                    st.session_state.payment_log_done = False
                     st.rerun()
 
         else:
