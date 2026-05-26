@@ -118,9 +118,25 @@ def save_user_to_sheet(email, plan_type):
             "amount": amount
         }
         headers = {'Content-Type': 'text/plain'}
-        st.sidebar.info("Sheet ko request bhej rahe hain...")
+        
+        st.sidebar.info("1. Request bhejne wala hun...")
+        time.sleep(0.5) # ruk ja 0.5 sec
+        
         r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
-        st.sidebar.write(f"Status: {r.status_code}, Reply: {r.text}")
+        
+        st.sidebar.success(f"2. Status Code: {r.status_code}") # Ye line sabse important
+        st.sidebar.warning(f"3. Reply: {r.text}") # Ye line bhi
+        time.sleep(2) # 2 sec tak sidebar me dikhega
+        
+        if r.status_code == 200 and "Success" in r.text:
+            return True
+        else:
+            return False
+            
+    except Exception as e:
+        st.sidebar.error(f"4. ERROR: {e}")
+        time.sleep(5) # Error 5 sec dikhega
+        return False
         
         if r.status_code == 200 and "Success" in r.text:
             return True
