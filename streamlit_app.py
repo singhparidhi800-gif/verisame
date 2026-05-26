@@ -111,7 +111,6 @@ def save_user_to_sheet(email, plan_type):
     plan_name = "1month" if plan_type == 'month' else "6months"
     amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_HALF
     try:
-        # 👇 YAHAN FIX KIYA - json= ki jagah data= + text/plain
         payload = {
             "action": "new_user",
             "email": email,
@@ -125,7 +124,6 @@ def save_user_to_sheet(email, plan_type):
 
 def request_payment_verification(email):
     try:
-        # 👇 YAHAN BHI FIX KIYA
         payload = {"action": "payment_request", "email": email}
         headers = {'Content-Type': 'text/plain'}
         requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=5)
@@ -189,7 +187,7 @@ st.markdown(f"""
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
-.stApp {{
+   .stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
@@ -200,7 +198,7 @@ st.markdown(f"""
         50% {{ background-position: 100% 50%; }}
         100% {{ background-position: 0% 50%; }}
     }}
-.block-container {{
+   .block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
         background: rgba(255,255,255,0.95);
@@ -210,7 +208,7 @@ st.markdown(f"""
         margin-top: 2rem;
         margin-bottom: 2rem;
     }}
-.stButton>button {{
+   .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -222,7 +220,7 @@ st.markdown(f"""
         color: white;
         text-transform: uppercase;
     }}
-.stButton>button:hover {{
+   .stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
@@ -245,14 +243,14 @@ st.markdown(f"""
         padding: 20px;
         transform: scale(1.03);
     }}
-.tools-banner {{
+   .tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 35px;
         border-radius: 25px;
         margin: 30px 0;
         color: white;
     }}
-.tool-item {{
+   .tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.25);
         padding: 12px 20px;
@@ -261,13 +259,13 @@ st.markdown(f"""
         font-size: 15px;
         font-weight: 700;
     }}
-.help-float {{
+   .help-float {{
         position: fixed;
         bottom: 35px;
         right: 35px;
         z-index: 9999;
     }}
-.help-float a {{
+   .help-float a {{
         display: flex;
         align-items: center;
         justify-content: center;
@@ -315,33 +313,49 @@ def text_to_number(text):
     if re.match(r'^[\d,.\s]+$', text): return text.replace(',', '').strip()
     return text
 
+# 👇 SIDEBAR ME EMAIL + LOGOUT FIX KIYA
 with st.sidebar:
     st.title("💼 VeriSame")
-    if is_subscription_active():
-        st.success(f"✅ PRO Active")
-        st.caption(f"Email: {st.session_state.user_email}")
-        st.caption(f"Till: {st.session_state.pro_expiry}")
-        if st.button("🚪 Logout"):
+
+    if st.session_state.user_email:
+        st.success(f"✅ Logged in")
+        st.caption(f"📧 Email: {st.session_state.user_email}")
+
+        if is_subscription_active():
+            st.caption(f"PRO till: {st.session_state.pro_expiry}")
+            plan_text = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
+            st.caption(f"Plan: {plan_text}")
+        elif st.session_state.pro_expiry == 'verification_pending':
+            st.warning("⏳ Verification Pending")
+            st.caption("Admin 5-10 min me activate kar dega")
+            if st.button("🔄 Refresh Status", use_container_width=True):
+                st.session_state.pro_status_checked = False
+                st.rerun()
+        else:
+            st.info("PRO inactive - Payment karo")
+
+        st.markdown("---")
+        if st.button("🚪 Logout", use_container_width=True):
             st.session_state.user_email = None
             st.session_state.pro_expiry = None
             st.session_state.pro_plan_type = None
             st.session_state.payment_done = False
             st.session_state.pro_status_checked = False
             st.session_state.payment_log_done = False
+            st.session_state.plan = None
             st.query_params.clear()
+            st.success("Logged out successfully!")
+            time.sleep(1)
             st.rerun()
-    elif st.session_state.pro_expiry == 'verification_pending':
-        st.warning("⏳ Verification Pending")
-        st.caption(f"Email: {st.session_state.user_email}")
-        st.caption("Admin approval ka wait karo")
-        if st.button("🔄 Refresh Status"):
-            st.session_state.pro_status_checked = False
-            st.rerun()
+    else:
+        st.info("Login karo PRO lene ke liye")
+
     st.markdown("---")
     st.markdown("### 📞 Need Help?")
     st.markdown(f"[💬 WhatsApp Chat](https://wa.me/{WHATSAPP_NUMBER})")
     st.markdown("📧 support@verisame.com")
     st.markdown("---")
+
     if st.session_state.plan:
         if st.button("← Back to Plans"):
             st.session_state.plan = None
@@ -532,7 +546,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
         st.info("Using: Sample Test Data")
 
     if file_source:
-        if file_source!= 'sample' and uploaded_file.size > 200 * 1024:
+        if file_source!= 'sample' and uploaded_file.size > 200 * 1024 * 1024:
             st.error("File > 200MB not allowed")
             st.stop()
 
@@ -692,7 +706,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                 plan_duration = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
                 st.info(f"🎉 You purchased {plan_duration} plan. PRO active till {st.session_state.pro_expiry}")
 
-            elif st.session_state.payment_done:
+                        elif st.session_state.payment_done:
                 st.title("🎉 Thank You for Payment!")
                 st.success("✅ Your payment request is sent to CEO")
                 st.info("⏳ VeriSame PRO will be activated within 5 minutes after verification")
