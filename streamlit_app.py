@@ -1,7 +1,6 @@
 import streamlit as st
 from pathlib import Path
 import streamlit.components.v1 as components
-from streamlit_javascript import st_javascript
 
 # Google Search Console Verification
 google_file = Path("googlef1bc5a74570309f0.html")
@@ -21,7 +20,6 @@ import numpy as np
 import re
 from io import BytesIO, StringIO
 import qrcode
-from streamlit.components.v1 import html
 import json
 import os
 from datetime import datetime, timedelta
@@ -30,9 +28,8 @@ import requests
 # ============ CONFIG ============
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
-# ✅ NAYA URL DAAL DIYA - YAHI GALTI THI
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdVnCZi91JhBR4L9kt2H1KbpOoxiWNqNXGcoth459Q486m84tjSYzlFYkHC3Fl7AXbZg/exec"
-WHATSAPP_NUMBER = "919794906852" # <-- YAHAN APNA NUMBER DAAL DE
+WHATSAPP_NUMBER = "919794906852"
 
 # ============ BASIC SECURITY ============
 SECRET_PASS = "reyansh999VeriSame2026CEO"
@@ -42,13 +39,10 @@ SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
 if SHOW_DASHBOARD and 'bot' in str(query_params).lower():
     st.stop()
 
-# ============ EMAIL MEMORY - DOUBLE JUGAAD ============
-saved_email = st_javascript("localStorage.getItem('verisame_email');")
+# ============ EMAIL MEMORY - SIRF URL SE ✅ ============
 url_email = query_params.get("user")
-final_email = saved_email or url_email
-
-if final_email and 'user_email' not in st.session_state:
-    st.session_state.user_email = final_email.strip()
+if url_email and 'user_email' not in st.session_state:
+    st.session_state.user_email = url_email.strip()
 
 # ============ COUNTING FILE ============
 COUNT_FILE = "counts.json"
@@ -69,7 +63,7 @@ def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
-# ============ SUBSCRIPTION FUNCTIONS - FINAL FIX ============
+# ============ SUBSCRIPTION FUNCTIONS ============
 @st.cache_data(ttl=10)
 def check_user_in_sheet(email):
     try:
@@ -168,71 +162,26 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - SUNDAR DESIGN + SIDE PATTERNS + GLOW ✅ ============
+# ============ CSS ============
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
-
-    html, body, [class*="css"] {{
-        font-family: 'Poppins', sans-serif;
-    }}
-
+    html, body, [class*="css"] {{ font-family: 'Poppins', sans-serif; }}
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
-
-    /* PURA BACKGROUND GRADIENT + ANIMATION + SIDE DESIGN */
-.stApp {{
+   .stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
         background-attachment: fixed;
-        position: relative;
     }}
-
-    /* SIDE ME DESIGN - LEFT RIGHT PATTERN */
-.stApp::before {{
-        content: '';
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 100px;
-        height: 100%;
-        background: repeating-linear-gradient(
-            45deg,
-            rgba(255,255,255,0.03),
-            rgba(255,255,255,0.03) 10px,
-            transparent 10px,
-            transparent 20px
-        );
-        z-index: 0;
-    }}
-
-.stApp::after {{
-        content: '';
-        position: fixed;
-        right: 0;
-        top: 0;
-        width: 100px;
-        height: 100%;
-        background: repeating-linear-gradient(
-            -45deg,
-            rgba(255,255,255,0.03),
-            rgba(255,255,255,0.03) 10px,
-            transparent 10px,
-            transparent 20px
-        );
-        z-index: 0;
-    }}
-
     @keyframes gradientBG {{
         0% {{ background-position: 0% 50%; }}
         50% {{ background-position: 100% 50%; }}
         100% {{ background-position: 0% 50%; }}
     }}
-
-    /* Main container - GLASSMORPHISM CARD */
-.block-container {{
+   .block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
         background: rgba(255,255,255,0.95);
@@ -241,12 +190,8 @@ st.markdown(f"""
         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         margin-top: 2rem;
         margin-bottom: 2rem;
-        border: 1px solid rgba(255,255,255,0.3);
-        position: relative;
-        z-index: 1;
     }}
-
-.stButton>button {{
+   .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -254,78 +199,41 @@ st.markdown(f"""
         border-radius: 15px;
         transition: all 0.3s ease;
         border: none;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        animation: buttonGlow 3s ease-in-out infinite;
     }}
-.stButton>button:hover {{
+   .stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }}
-
-    @keyframes buttonGlow {{
-        0%, 100% {{ box-shadow: 0 4px 15px rgba(102,126,234,0.3); }}
-        50% {{ box-shadow: 0 4px 25px rgba(102,126,234,0.6); }}
-    }}
-
-    /* Plan Cards - Gradient Design + HOVER EFFECT + GLOW */
-    div[data-testid="stVerticalBlockBorderWrapper"] {{
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1)!important;
     }}
     div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)!important;
         border: none!important;
         border-radius: 25px!important;
         padding: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15)!important;
-    }}
-    div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.2)!important;
     }}
     div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)!important;
         border: none!important;
         border-radius: 25px!important;
         padding: 20px;
-        box-shadow: 0 10px 30px rgba(255,154,158,0.4)!important;
-    }}
-    div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(255,154,158,0.6)!important;
     }}
     div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)!important;
         border: 4px solid #ff6b6b!important;
         border-radius: 25px!important;
         padding: 20px;
-        box-shadow: 0 15px 40px rgba(252,182,159,0.6)!important;
         transform: scale(1.03);
-        animation: glow 2s ease-in-out infinite;
     }}
-    div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
-        transform: scale(1.05) translateY(-5px);
-        box-shadow: 0 20px 50px rgba(252,182,159,0.8)!important;
-    }}
-
-    @keyframes glow {{
-        0%, 100% {{ box-shadow: 0 15px 40px rgba(252,182,159,0.6); }}
-        50% {{ box-shadow: 0 15px 50px rgba(252,182,159,0.9); }}
-    }}
-
-    /* 7 Tools Banner */
-.tools-banner {{
+   .tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 35px;
         border-radius: 25px;
         margin: 30px 0;
         color: white;
-        box-shadow: 0 15px 40px rgba(102,126,234,0.4);
     }}
-.tool-item {{
+   .tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.25);
         padding: 12px 20px;
@@ -333,22 +241,14 @@ st.markdown(f"""
         margin: 8px;
         font-size: 15px;
         font-weight: 700;
-        backdrop-filter: blur(15px);
-        transition: all 0.3s;
     }}
-.tool-item:hover {{
-        background: rgba(255,255,255,0.4);
-        transform: scale(1.05);
-    }}
-
-    /* WhatsApp Help Button - Corner Fixed */
-.help-float {{
+   .help-float {{
         position: fixed;
         bottom: 35px;
         right: 35px;
         z-index: 9999;
     }}
-.help-float a {{
+   .help-float a {{
         display: flex;
         align-items: center;
         justify-content: center;
@@ -359,34 +259,8 @@ st.markdown(f"""
         box-shadow: 0 8px 30px rgba(37,211,102,0.6);
         text-decoration: none;
         font-size: 35px;
-        transition: all 0.3s;
-        animation: pulse 2s infinite;
-    }}
-.help-float a:hover {{
-        transform: scale(1.15) rotate(15deg);
-        box-shadow: 0 10px 40px rgba(37,211,102,0.8);
-    }}
-
-    @keyframes pulse {{
-        0% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
-        50% {{ box-shadow: 0 8px 40px rgba(37,211,102,0.9); }}
-        100% {{ box-shadow: 0 8px 30px rgba(37,211,102,0.6); }}
-    }}
-
-    /* Input field styling */
-.stTextInput>div>div>input {{
-        border-radius: 12px;
-        border: 2px solid #e0e0e0;
-        padding: 12px;
-        font-size: 16px;
-    }}
-.stTextInput>div>div>input:focus {{
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
     }}
     </style>
-
-    <!-- WhatsApp Help Button Fixed Corner -->
     <div class="help-float">
         <a href="https://wa.me/{WHATSAPP_NUMBER}?text=Hi%20VeriSame%20Team,%20I%20need%20help" target="_blank">💬</a>
     </div>
@@ -436,7 +310,6 @@ with st.sidebar:
             st.session_state.pro_status_checked = False
             st.session_state.payment_log_done = False
             st.query_params.clear()
-            st.markdown("<script>localStorage.removeItem('verisame_email');</script>", unsafe_allow_html=True)
             st.rerun()
     st.markdown("---")
     st.markdown("### 📞 Need Help?")
@@ -474,7 +347,6 @@ if st.session_state.plan is None:
             st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
             st.rerun()
 
-    # 7 TOOLS BANNER - SUNDAR
     st.markdown("""
     <div class="tools-banner">
         <h3 style='margin:0 0 15px 0; text-align:center;'>🚀 PRO Includes 7 Advanced Tools</h3>
@@ -560,13 +432,12 @@ else:
     if is_pro:
         if st.session_state.ask_email and not st.session_state.user_email:
             st.title(f"💎 VeriSame PRO - {pro_text}")
-            st.warning("Enter your email once. We'll remember it forever.")
+            st.warning("Enter your email once.")
             email_input = st.text_input("Enter your email:", placeholder="yourname@gmail.com", key="pro_email_input")
             if st.button("Continue", use_container_width=True, type="primary"):
                 if email_input and "@" in email_input:
                     st.session_state.user_email = email_input.strip()
                     st.query_params["user"] = email_input.strip()
-                    st.markdown(f"<script>localStorage.setItem('verisame_email', '{email_input.strip()}');</script>", unsafe_allow_html=True)
 
                     is_active, expiry, plan = check_user_in_sheet(email_input.strip())
                     st.session_state.pro_expiry = expiry
@@ -656,16 +527,13 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
         else:
             st.info(f"Original file had {original_row_count} rows")
 
-        # ============ BASIC CLEANING ============
         df_cleaned = df.drop_duplicates()
         for col in df_cleaned.select_dtypes(include=['object']):
             df_cleaned[col] = df_cleaned[col].apply(text_to_number)
 
-        # ============ 7 PRO TOOLS ============
         if is_pro:
             st.markdown("---")
             st.subheader("🔧 PRO Cleaning Tools - 7 Advanced Features")
-
             tab1, tab2, tab3 = st.tabs(["📅 Dates & Numbers", "📧 Email & Phone", "🎯 Advanced"])
 
             with tab1:
@@ -677,7 +545,6 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                         for col in date_cols:
                             df_cleaned[col] = pd.to_datetime(df_cleaned[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
                         st.success(f"✅ Dates standardized")
-
                 with col2:
                     st.markdown("**2. Smart Fill Missing**")
                     numeric_cols = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
@@ -704,7 +571,6 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                         for col in email_cols:
                             df_cleaned[f'{col}_valid'] = df_cleaned[col].str.contains(r'^[\w\.-]+@[\w\.-]+\.\w+$', na=False)
                         st.success(f"✅ Email validated")
-
                 with col2:
                     st.markdown("**4. Phone Formatter**")
                     phone_cols = st.multiselect("Phone Columns", df_cleaned.columns.tolist(), key="phone_cols")
@@ -728,7 +594,6 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             elif case_option == "Title Case":
                                 df_cleaned[col] = df_cleaned[col].str.title()
                         st.success(f"✅ Text converted")
-
                 with col2:
                     st.markdown("**6. Remove Special Chars**")
                     special_cols = st.multiselect("Columns to Clean", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="special_cols")
@@ -767,13 +632,11 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
             st.session_state.pro_expiry = expiry
             st.session_state.pro_plan_type = plan
 
-            # PLAN CHECK: 299 wala 1499 me upgrade kare to paisa maango
             user_has_month = plan == '1month'
             user_has_half = plan == '6months'
             selected_is_month = st.session_state.selected_pro == 'month'
             selected_is_half = st.session_state.selected_pro == 'half'
 
-            # Agar user ne 299 liya hai aur 1499 click kiya = paisa maango
             if is_active and user_has_month and selected_is_half:
                 st.warning("⚠️ You have 1 Month plan active. To upgrade to 6 Months, please pay ₹1499.")
                 st.session_state.payment_done = False
@@ -829,12 +692,11 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.markdown(f"**Plan:** `{pro_text}`")
                     st.markdown(f"**Email:** `{st.session_state.user_email}`")
                     st.markdown(f"**Support:** [WhatsApp](https://wa.me/{WHATSAPP_NUMBER})")
-                
-                # ---- GOOGLE SHEET ME PENDING ENTRY DAALO ----
+
                 if not st.session_state.payment_log_done:
                     plan_duration = 1 if st.session_state.selected_pro == 'month' else 6
                     payment_amount = PRO_AMOUNT_MONTH if plan_duration == 1 else PRO_AMOUNT_HALF
-                    
+
                     log_payload = {
                         "email": st.session_state.user_email,
                         "plan": f"{plan_duration}month",
@@ -847,8 +709,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                         st.session_state.payment_log_done = True
                     except:
                         pass
-                # ---- SHEET CODE KHATAM ----
-                
+
                 st.markdown("---")
                 elapsed_time = time.time() - st.session_state.qr_start_time
                 if elapsed_time < WAIT_SECONDS:
@@ -865,8 +726,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                         if st.button(f"🔓 I Paid ₹{pro_amount} - Activate PRO", use_container_width=True, type="primary"):
                             update_count("buy")
                             mark_payment_done(st.session_state.user_email)
-                            
-                            # ---- SHEET ME PAID UPDATE KARO ----
+
                             try:
                                 update_payload = {
                                     "email": st.session_state.user_email,
@@ -876,8 +736,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                                 requests.post(GOOGLE_SCRIPT_URL, json=update_payload, timeout=5)
                             except:
                                 pass
-                            # ---- UPDATE KHATAM ----
-                            
+
                             st.session_state.payment_done = True
                             st.session_state.show_qr = False
                             st.session_state.show_pay_button = False
