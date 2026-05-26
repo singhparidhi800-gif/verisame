@@ -113,22 +113,21 @@ def mark_payment_done(email):
     except:
         pass
 
-# ============ GA + VIEWS COUNT ============
+# ============ GA + VIEWS COUNT - FIXED IFRAME ERROR ✅ ============
 if not SHOW_DASHBOARD:
     if 'counted_session' not in st.session_state:
         update_count("views")
         st.session_state.counted_session = True
     GA_MEASUREMENT_ID = "G-7E6HS2Q6Q3"
-    html(f"""
-    <!DOCTYPE html><html><head>
+    st.markdown(f"""
     <script async src="https://www.googletagmanager.com/gtag/js?id={GA_MEASUREMENT_ID}"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){{dataLayer.push(arguments);}}
       gtag('js', new Date());
       gtag('config', '{GA_MEASUREMENT_ID}');
-    </script></head></html>
-    """, height=0)
+    </script>
+    """, unsafe_allow_html=True)
 
 # ============ SECRET DASHBOARD ============
 if SHOW_DASHBOARD:
@@ -169,7 +168,7 @@ PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_HALF = 1499
 WAIT_SECONDS = 25
 
-# ============ CSS - SUNDAR DESIGN + SIDE PATTERNS ============
+# ============ CSS - SUNDAR DESIGN + SIDE PATTERNS + GLOW ✅ ============
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
@@ -186,7 +185,7 @@ st.markdown(f"""
 .stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
+        animation: gradientBG 25s ease infinite;
         background-attachment: fixed;
         position: relative;
     }}
@@ -260,20 +259,28 @@ st.markdown(f"""
         color: white;
         text-transform: uppercase;
         letter-spacing: 1px;
+        animation: buttonGlow 3s ease-in-out infinite;
     }}
 .stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
 
+    @keyframes buttonGlow {{
+        0%, 100% {{ box-shadow: 0 4px 15px rgba(102,126,234,0.3); }}
+        50% {{ box-shadow: 0 4px 25px rgba(102,126,234,0.6); }}
+    }}
+
     /* Plan Cards - Gradient Design + HOVER EFFECT + GLOW */
+    div[data-testid="stVerticalBlockBorderWrapper"] {{
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1)!important;
+    }}
     div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"] {{
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)!important;
         border: none!important;
         border-radius: 25px!important;
         padding: 20px;
         box-shadow: 0 10px 30px rgba(0,0,0,0.15)!important;
-        transition: all 0.3s ease;
     }}
     div[data-testid="column"]:nth-of-type(1) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
         transform: translateY(-5px);
@@ -285,7 +292,6 @@ st.markdown(f"""
         border-radius: 25px!important;
         padding: 20px;
         box-shadow: 0 10px 30px rgba(255,154,158,0.4)!important;
-        transition: all 0.3s ease;
     }}
     div[data-testid="column"]:nth-of-type(2) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
         transform: translateY(-5px);
@@ -298,7 +304,6 @@ st.markdown(f"""
         padding: 20px;
         box-shadow: 0 15px 40px rgba(252,182,159,0.6)!important;
         transform: scale(1.03);
-        transition: all 0.3s ease;
         animation: glow 2s ease-in-out infinite;
     }}
     div[data-testid="column"]:nth-of-type(3) > div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
@@ -369,13 +374,13 @@ st.markdown(f"""
     }}
 
     /* Input field styling */
- .stTextInput>div>div>input {{
+.stTextInput>div>div>input {{
         border-radius: 12px;
         border: 2px solid #e0e0e0;
         padding: 12px;
         font-size: 16px;
     }}
- .stTextInput>div>div>input:focus {{
+.stTextInput>div>div>input:focus {{
         border-color: #667eea;
         box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
     }}
