@@ -34,7 +34,7 @@ WHATSAPP_NUMBER = "919794906852"
 # ============ UPI CONFIG ============
 UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT_MONTH = 299
-PRO_AMOUNT_HALF = 1499
+PRO_AMOUNT_3MONTH = 1499
 WAIT_SECONDS = 25
 
 # ============ BASIC SECURITY ============
@@ -45,7 +45,7 @@ SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
 if SHOW_DASHBOARD and 'bot' in str(query_params).lower():
     st.stop()
 
-# ============ EMAIL MEMORY - SIRF URL SE ✅ ============
+# ============ EMAIL MEMORY - FROM URL ONLY ✅ ============
 url_email = query_params.get("user")
 if url_email and 'user_email' not in st.session_state:
     st.session_state.user_email = url_email.strip()
@@ -69,7 +69,7 @@ def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
-# ============ SUBSCRIPTION FUNCTIONS - FIXED ✅ ============
+# ============ SUBSCRIPTION FUNCTIONS ============
 @st.cache_data(ttl=10)
 def check_user_in_sheet(email):
     try:
@@ -118,28 +118,17 @@ def save_user_to_sheet(email, plan_type):
             "amount": amount
         }
         headers = {'Content-Type': 'text/plain'}
-        
-        st.sidebar.info("1. Request bhejne wala hun...")
-        time.sleep(0.5) # ruk ja 0.5 sec
-        
-        r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
-        
-        st.sidebar.success(f"2. Status Code: {r.status_code}")
-        st.sidebar.warning(f"3. Reply: {r.text}")
-        time.sleep(2) # 2 sec tak sidebar me
-        st.stop()  # <-- NAYI LINE 1
 
-        if r.status_code == 200 and "Success" in r.text:
+        r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
+
+        if r.status_code == 200 and "success" in r.text.lower():
             return True
         else:
             return False
 
     except Exception as e:
-        st.sidebar.error(f"4. ERROR: {e}")
-        time.sleep(5) # Error 5 sec dikhega
-        st.stop()  # <-- NAYI LINE 2
-    
         return False
+
 def request_payment_verification(email):
     try:
         payload = {"action": "payment_request", "email": email}
@@ -148,7 +137,7 @@ def request_payment_verification(email):
     except:
         pass
 
-# ============ GA + VIEWS COUNT - FIXED ✅ ============
+# ============ GA + VIEWS COUNT ============
 if not SHOW_DASHBOARD:
     if 'counted_session' not in st.session_state:
         update_count("views")
@@ -192,12 +181,12 @@ if SHOW_DASHBOARD:
     try:
         users_df = pd.read_csv(SHEET_URL)
         st.dataframe(users_df, use_container_width=True)
-        st.caption("💡 IMPORTANT: Purane duplicate rows delete kar de. Sirf latest date wali rakho.")
+        st.caption("💡 IMPORTANT: Delete old duplicate rows. Keep only latest.")
     except:
-        st.info("Google Sheet connect nahi hua.")
+        st.info("Google Sheet not connected.")
     st.stop()
 
-# ============ CSS ============
+# ============ CSS - REMOVED FLOATING WHATSAPP ICON ============
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
@@ -205,7 +194,7 @@ st.markdown(f"""
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
-   .stApp {{
+  .stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
@@ -216,7 +205,7 @@ st.markdown(f"""
         50% {{ background-position: 100% 50%; }}
         100% {{ background-position: 0% 50%; }}
     }}
-   .block-container {{
+  .block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
         background: rgba(255,255,255,0.95);
@@ -226,7 +215,7 @@ st.markdown(f"""
         margin-top: 2rem;
         margin-bottom: 2rem;
     }}
-   .stButton>button {{
+  .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -238,7 +227,7 @@ st.markdown(f"""
         color: white;
         text-transform: uppercase;
     }}
-   .stButton>button:hover {{
+  .stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
@@ -261,14 +250,14 @@ st.markdown(f"""
         padding: 20px;
         transform: scale(1.03);
     }}
-   .tools-banner {{
+  .tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 35px;
         border-radius: 25px;
         margin: 30px 0;
         color: white;
     }}
-   .tool-item {{
+  .tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.25);
         padding: 12px 20px;
@@ -277,28 +266,7 @@ st.markdown(f"""
         font-size: 15px;
         font-weight: 700;
     }}
-   .help-float {{
-        position: fixed;
-        bottom: 35px;
-        right: 35px;
-        z-index: 9999;
-    }}
-   .help-float a {{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 70px;
-        height: 70px;
-        background: #25D366;
-        border-radius: 50%;
-        box-shadow: 0 8px 30px rgba(37,211,102,0.6);
-        text-decoration: none;
-        font-size: 35px;
-    }}
     </style>
-    <div class="help-float">
-        <a href="https://wa.me/{WHATSAPP_NUMBER}?text=Hi%20VeriSame%20Team,%20I%20need%20help" target="_blank">💬</a>
-    </div>
 """, unsafe_allow_html=True)
 
 # ============ SESSION STATES ============
@@ -331,7 +299,7 @@ def text_to_number(text):
     if re.match(r'^[\d,.\s]+$', text): return text.replace(',', '').strip()
     return text
 
-# 👇 SIDEBAR ME EMAIL + LOGOUT FIX KIYA
+# SIDEBAR - ENGLISH ONLY
 with st.sidebar:
     st.title("💼 VeriSame")
 
@@ -345,12 +313,12 @@ with st.sidebar:
             st.caption(f"Plan: {plan_text}")
         elif st.session_state.pro_expiry == 'verification_pending':
             st.warning("⏳ Verification Pending")
-            st.caption("Admin 5-10 min me activate kar dega")
+            st.caption("Admin will activate in 5-10 min")
             if st.button("🔄 Refresh Status", use_container_width=True):
                 st.session_state.pro_status_checked = False
                 st.rerun()
         else:
-            st.info("PRO inactive - Payment karo")
+            st.info("PRO inactive - Complete payment")
 
         st.markdown("---")
         if st.button("🚪 Logout", use_container_width=True):
@@ -366,11 +334,11 @@ with st.sidebar:
             time.sleep(1)
             st.rerun()
     else:
-        st.info("Login karo PRO lene ke liye")
+        st.info("Login to get PRO access")
 
     st.markdown("---")
     st.markdown("### 📞 Need Help?")
-    st.markdown(f"[💬 WhatsApp Chat](https://wa.me/{WHATSAPP_NUMBER})")
+    st.markdown(f"[💬 WhatsApp Support](https://wa.me/{WHATSAPP_NUMBER})")
     st.markdown("📧 support@verisame.com")
     st.markdown("---")
 
@@ -456,7 +424,7 @@ if st.session_state.plan is None:
             st.markdown("✅ Excel + CSV Export")
             st.markdown("✅ All 7 PRO Tools")
             st.markdown("⚡ 3 Second Speed")
-            st.markdown(f"**₹{PRO_AMOUNT_HALF} / 6 months**")
+            st.markdown(f"**₹{PRO_AMOUNT_3MONTH} / 6 months**")
             st.success("Save ₹295 vs Monthly")
             if st.button("💎 ₹1499 / 6 Months", use_container_width=True, type="primary"):
                 update_count("pro_half")
@@ -469,7 +437,7 @@ if st.session_state.plan is None:
 # UPLOAD PAGE
 else:
     is_pro = st.session_state.plan == 'pro'
-    pro_amount = PRO_AMOUNT_HALF if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
+    pro_amount = PRO_AMOUNT_3MONTH if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
     pro_text = "6 Months" if st.session_state.selected_pro == 'half' else "1 Month"
 
     if st.button("⬅️ Back to Plans", use_container_width=True):
@@ -511,8 +479,11 @@ else:
                         st.rerun()
                     else:
                         st.session_state.ask_email = False
-                        save_user_to_sheet(email_input.strip(), st.session_state.selected_pro)
-                        st.success(f"Email saved: {email_input}")
+                        save_result = save_user_to_sheet(email_input.strip(), st.session_state.selected_pro)
+                        if save_result:
+                            st.success(f"Request sent! Complete payment to activate PRO.")
+                        else:
+                            st.error("Error saving request. Please try again.")
                         st.rerun()
                 else:
                     st.error("Please enter a valid email")
@@ -527,7 +498,7 @@ else:
             st.title(f"💎 VeriSame PRO - {pro_text}")
             st.warning("⏳ **Verification Pending**")
             st.info(f"Logged in as: {st.session_state.user_email}")
-            st.write("Aapka payment request mil gaya hai. Admin 5-10 minute me verify karke activate kar dega.")
+            st.write("Payment request received. Admin will verify and activate within 5-10 minutes.")
             if st.button("🔄 Refresh Status", use_container_width=True):
                 st.session_state.pro_status_checked = False
                 st.rerun()
@@ -700,7 +671,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
             st.session_state.pro_plan_type = plan
 
             user_has_month = plan == '1month'
-            user_has_half = plan == '6months'
+            user_has_half = plan == '3month'
             selected_is_month = st.session_state.selected_pro == 'month'
             selected_is_half = st.session_state.selected_pro == 'half'
 
@@ -773,14 +744,14 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.success("Step 2: Payment Done? Click to Unlock")
                     col1, col2 = st.columns(2)
                     with col1:
-                        if st.button(f"🔓 I Paid ₹{pro_amount} - Verify Karo", use_container_width=True, type="primary"):
+                        if st.button(f"🔓 I Paid ₹{pro_amount} - Verify", use_container_width=True, type="primary"):
                             update_count("buy")
                             request_payment_verification(st.session_state.user_email)
                             st.session_state.payment_done = False
                             st.session_state.show_qr = False
                             st.session_state.show_pay_button = False
                             st.session_state.payment_log_done = False
-                            st.success("Request submit! Admin 5-10 min me verify karke activate kar dega")
+                            st.success("Request submitted! Admin will verify and activate in 5-10 min")
                             st.balloons()
                             st.rerun()
                     with col2:
@@ -790,7 +761,55 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             st.session_state.show_pay_button = True
                             st.session_state.payment_log_done = False
                             st.rerun()
-                st.stop()
+
+            elif st.session_state.show_qr:
+                st.warning("Step 1: Scan QR & Complete Payment")
+                upi_link = f"upi://pay?pa={UPI_ID}&pn=Abha%20Singh&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
+                qr = qrcode.QRCode(box_size=8, border=4)
+                qr.add_data(upi_link)
+                qr.make(fit=True)
+                img = qr.make_image(fill_color="black", back_color="white")
+                buf = BytesIO(); img.save(buf)
+                col1, col2 = st.columns([1,2])
+                with col1:
+                    st.image(buf, width=250)
+                with col2:
+                    st.markdown(f"**UPI ID:** `{UPI_ID}`")
+                    st.markdown(f"**Amount:** `₹{pro_amount}`")
+                    st.markdown(f"**Plan:** `{pro_text}`")
+                    st.markdown(f"**Email:** `{st.session_state.user_email}`")
+                    st.markdown(f"**Support:** [WhatsApp](https://wa.me/{WHATSAPP_NUMBER})")
+
+                st.markdown("---")
+                elapsed_time = time.time() - st.session_state.qr_start_time
+                if elapsed_time < WAIT_SECONDS:
+                    progress = int((elapsed_time / WAIT_SECONDS) * 100)
+                    st.info("🔄 Waiting for payment...")
+                    st.progress(progress)
+                    st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.success("Step 2: Payment Done? Click to Unlock")
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button(f"🔓 I Paid ₹{pro_amount} - Verify", use_container_width=True, type="primary"):
+                            update_count("buy")
+                            request_payment_verification(st.session_state.user_email)
+                            st.session_state.payment_done = False
+                            st.session_state.show_qr = False
+                            st.session_state.show_pay_button = False
+                            st.session_state.payment_log_done = False
+                            st.success("Request submitted! Admin will verify and activate in 5-10 min")
+                            st.balloons()
+                            st.rerun()
+                    with col2:
+                        if st.button("⬅️ Cancel", use_container_width=True):
+                            st.session_state.show_qr = False
+                            st.session_state.qr_start_time = None
+                            st.session_state.show_pay_button = True
+                            st.session_state.payment_log_done = False
+                            st.rerun()
 
             else:
                 st.info("💰 Payment Required to Download Full File")
@@ -809,3 +828,5 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
             st.download_button(f"📥 Download {len(df_download)} Rows", buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
             if len(df_cleaned) >= 1000:
                 st.warning("Need more than 1000 rows? Go back and choose Monthly ₹299 or 6-Month ₹1499")
+
+                    
