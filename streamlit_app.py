@@ -63,7 +63,7 @@ def get_counts():
     with open(COUNT_FILE, 'r') as f:
         return json.load(f)
 
-# ============ SUBSCRIPTION FUNCTIONS ============
+# ============ SUBSCRIPTION FUNCTIONS - UPDATED ✅ ============
 @st.cache_data(ttl=10)
 def check_user_in_sheet(email):
     try:
@@ -74,8 +74,17 @@ def check_user_in_sheet(email):
 
         if not user_rows.empty:
             user_row = user_rows.iloc[-1]
+            status = str(user_row['status']).strip()
             expiry_str = str(user_row['expiry_date']).strip()
             plan = str(user_row['plan']).strip()
+
+            # 👈 NAYA: Verification_Pending check
+            if status == 'Verification_Pending':
+                return False, "verification_pending", plan
+
+            # 👈 NAYA: Status = Paid hona chahiye
+            if status!= 'Paid':
+                return False, "not_verified", plan
 
             if expiry_str.lower() in ['pending', 'verify_karo', 'rejected', 'nan', '']:
                 return False, "not_verified", plan
@@ -96,14 +105,23 @@ def check_user_in_sheet(email):
 
 def save_user_to_sheet(email, plan_type):
     plan_name = "1month" if plan_type == 'month' else "6months"
+    amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_HALF # 👈 AMOUNT ADD
     try:
-        requests.post(GOOGLE_SCRIPT_URL, json={"action": "new_user", "email": email, "plan": plan_name}, timeout=5)
+        requests.post(GOOGLE_SCRIPT_URL, json={
+            "action": "new_user",
+            "email": email,
+            "plan": plan_name,
+            "amount": amount # 👈 AMOUNT BHEJ RAHA
+        }, timeout=5)
     except:
         pass
 
-def mark_payment_done(email):
+def request_payment_verification(email): # 👈 NAYA FUNCTION - mark_payment_done HATA DIYA
     try:
-        requests.post(GOOGLE_SCRIPT_URL, json={"action": "payment_done", "email": email}, timeout=5)
+        requests.post(GOOGLE_SCRIPT_URL, json={
+            "action": "payment_request", # 👈 NAYA ACTION
+            "email": email
+        }, timeout=5)
     except:
         pass
 
@@ -170,7 +188,7 @@ st.markdown(f"""
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
-   .stApp {{
+  .stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
@@ -181,7 +199,7 @@ st.markdown(f"""
         50% {{ background-position: 100% 50%; }}
         100% {{ background-position: 0% 50%; }}
     }}
-   .block-container {{
+  .block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
         background: rgba(255,255,255,0.95);
@@ -191,7 +209,7 @@ st.markdown(f"""
         margin-top: 2rem;
         margin-bottom: 2rem;
     }}
-   .stButton>button {{
+  .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -203,7 +221,7 @@ st.markdown(f"""
         color: white;
         text-transform: uppercase;
     }}
-   .stButton>button:hover {{
+  .stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
@@ -226,14 +244,14 @@ st.markdown(f"""
         padding: 20px;
         transform: scale(1.03);
     }}
-   .tools-banner {{
+  .tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 35px;
         border-radius: 25px;
         margin: 30px 0;
         color: white;
     }}
-   .tool-item {{
+  .tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.25);
         padding: 12px 20px;
@@ -242,13 +260,13 @@ st.markdown(f"""
         font-size: 15px;
         font-weight: 700;
     }}
-   .help-float {{
+  .help-float {{
         position: fixed;
         bottom: 35px;
         right: 35px;
         z-index: 9999;
     }}
-   .help-float a {{
+  .help-float a {{
         display: flex;
         align-items: center;
         justify-content: center;
@@ -282,7 +300,7 @@ if 'pro_status_checked' not in st.session_state: st.session_state.pro_status_che
 if 'payment_log_done' not in st.session_state: st.session_state.payment_log_done = False
 
 def is_subscription_active():
-    if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error']:
+    if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error', 'verification_pending']:
         try:
             expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
             return datetime.now().date() <= expiry.date()
@@ -310,6 +328,14 @@ with st.sidebar:
             st.session_state.pro_status_checked = False
             st.session_state.payment_log_done = False
             st.query_params.clear()
+            st.rerun()
+    # 👈 NAYA: Verification Pending status dikhao
+    elif st.session_state.pro_expiry == 'verification_pending':
+        st.warning("⏳ Verification Pending")
+        st.caption(f"Email: {st.session_state.user_email}")
+        st.caption("Admin approval ka wait karo")
+        if st.button("🔄 Refresh Status"):
+            st.session_state.pro_status_checked = False
             st.rerun()
     st.markdown("---")
     st.markdown("### 📞 Need Help?")
@@ -465,6 +491,16 @@ else:
             st.title(f"💎 VeriSame PRO - Active")
             st.success(f"✅ Welcome {st.session_state.user_email}")
             st.caption(f"PRO expires on: {st.session_state.pro_expiry}")
+        # 👈 NAYA: Verification Pending screen
+        elif st.session_state.pro_expiry == 'verification_pending':
+            st.title(f"💎 VeriSame PRO - {pro_text}")
+            st.warning("⏳ **Verification Pending**")
+            st.info(f"Logged in as: {st.session_state.user_email}")
+            st.write("Aapka payment request mil gaya hai. Admin 5-10 minute me verify karke activate kar dega.")
+            if st.button("🔄 Refresh Status", use_container_width=True):
+                st.session_state.pro_status_checked = False
+                st.rerun()
+            st.stop()
         else:
             st.title(f"💎 VeriSame PRO - {pro_text}")
             st.info(f"Logged in as: {st.session_state.user_email}")
@@ -693,23 +729,6 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.markdown(f"**Email:** `{st.session_state.user_email}`")
                     st.markdown(f"**Support:** [WhatsApp](https://wa.me/{WHATSAPP_NUMBER})")
 
-                if not st.session_state.payment_log_done:
-                    plan_duration = 1 if st.session_state.selected_pro == 'month' else 6
-                    payment_amount = PRO_AMOUNT_MONTH if plan_duration == 1 else PRO_AMOUNT_HALF
-
-                    log_payload = {
-                        "email": st.session_state.user_email,
-                        "plan": f"{plan_duration}month",
-                        "amount": payment_amount,
-                        "activation_code": "",
-                        "status": "Pending"
-                    }
-                    try:
-                        requests.post(GOOGLE_SCRIPT_URL, json=log_payload, timeout=5)
-                        st.session_state.payment_log_done = True
-                    except:
-                        pass
-
                 st.markdown("---")
                 elapsed_time = time.time() - st.session_state.qr_start_time
                 if elapsed_time < WAIT_SECONDS:
@@ -723,23 +742,14 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.success("Step 2: Payment Done? Click to Unlock")
                     col1, col2 = st.columns(2)
                     with col1:
-                        if st.button(f"🔓 I Paid ₹{pro_amount} - Activate PRO", use_container_width=True, type="primary"):
+                        if st.button(f"🔓 I Paid ₹{pro_amount} - Verify Karo", use_container_width=True, type="primary"):
                             update_count("buy")
-                            mark_payment_done(st.session_state.user_email)
-
-                            try:
-                                update_payload = {
-                                    "email": st.session_state.user_email,
-                                    "activation_code": "",
-                                    "status": "Paid"
-                                }
-                                requests.post(GOOGLE_SCRIPT_URL, json=update_payload, timeout=5)
-                            except:
-                                pass
-
-                            st.session_state.payment_done = True
+                            request_payment_verification(st.session_state.user_email) # 👈 NAYA CALL
+                                                        st.session_state.payment_done = False
                             st.session_state.show_qr = False
                             st.session_state.show_pay_button = False
+                            st.session_state.payment_log_done = False
+                            st.success("Request submit! Admin 5-10 min me verify karke activate kar dega")
                             st.balloons()
                             st.rerun()
                     with col2:
