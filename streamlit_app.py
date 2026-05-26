@@ -80,14 +80,14 @@ def check_user_in_sheet(email):
 
         if not user_rows.empty:
             user_row = user_rows.iloc[-1]
-            status = str(user_row['status']).strip()
+            status = str(user_row['status']).strip().lower()
             expiry_str = str(user_row['expiry_date']).strip()
             plan = str(user_row['plan']).strip()
 
-            if status == 'Verification_Pending':
+            if status == 'verification_pending':
                 return False, "verification_pending", plan
 
-            if status!= 'Paid':
+            if status!= 'paid':
                 return False, "not_verified", plan
 
             if expiry_str.lower() in ['pending', 'verify_karo', 'rejected', 'nan', '']:
@@ -118,14 +118,11 @@ def save_user_to_sheet(email, plan_type):
             "amount": amount
         }
         headers = {'Content-Type': 'text/plain'}
-
         r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
-
         if r.status_code == 200 and "success" in r.text.lower():
             return True
         else:
             return False
-
     except Exception as e:
         return False
 
@@ -194,7 +191,7 @@ st.markdown(f"""
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
-  .stApp {{
+.stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
@@ -205,7 +202,7 @@ st.markdown(f"""
         50% {{ background-position: 100% 50%; }}
         100% {{ background-position: 0% 50%; }}
     }}
-  .block-container {{
+.block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
         background: rgba(255,255,255,0.95);
@@ -215,7 +212,7 @@ st.markdown(f"""
         margin-top: 2rem;
         margin-bottom: 2rem;
     }}
-  .stButton>button {{
+.stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -227,7 +224,7 @@ st.markdown(f"""
         color: white;
         text-transform: uppercase;
     }}
-  .stButton>button:hover {{
+.stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
@@ -250,14 +247,14 @@ st.markdown(f"""
         padding: 20px;
         transform: scale(1.03);
     }}
-  .tools-banner {{
+.tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 35px;
         border-radius: 25px;
         margin: 30px 0;
         color: white;
     }}
-  .tool-item {{
+.tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.25);
         padding: 12px 20px;
@@ -666,6 +663,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
         st.session_state.df_cleaned = df_cleaned
 
         if is_pro:
+            # CHECK LATEST STATUS FROM SHEET EVERY TIME
             is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
             st.session_state.pro_expiry = expiry
             st.session_state.pro_plan_type = plan
@@ -679,6 +677,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                 st.warning("⚠️ You have 1 Month plan active. To upgrade to 6 Months, please pay ₹1499.")
                 st.session_state.payment_done = False
 
+            # CONDITION 1: PRO ACTIVE - SHOW DOWNLOAD ✅
             if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
                 excel_buffer = BytesIO()
@@ -695,24 +694,16 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                 plan_duration = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
                 st.info(f"🎉 You purchased {plan_duration} plan. PRO active till {st.session_state.pro_expiry}")
 
-            elif st.session_state.payment_done:
-                st.title("🎉 Thank You for Payment!")
-                st.success("✅ Your payment request is sent to CEO")
-                st.info("⏳ VeriSame PRO will be activated within 5 minutes after verification")
-                st.balloons()
-                st.markdown("---")
-                st.subheader("📥 Your Cleaned File Ready")
-                excel_buffer = BytesIO()
-                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                    df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.download_button("📊 Download as Excel", excel_buffer.getvalue(), "verisame_cleaned.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                with col2:
-                    csv_buffer = BytesIO()
-                    df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
-                    st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
+            # CONDITION 2: VERIFICATION PENDING - NO U-TURN ✅
+            elif expiry == 'verification_pending':
+                st.warning("⏳ **Verification Pending**")
+                st.info("Payment request received. Admin will verify and activate within 5-10 minutes.")
+                st.caption("Refresh page after admin approves to download.")
+                if st.button("🔄 Refresh Status", use_container_width=True):
+                    st.cache_data.clear()
+                    st.rerun()
 
+            # CONDITION 3: SHOW QR CODE ✅
             elif st.session_state.show_qr:
                 st.warning("Step 1: Scan QR & Complete Payment")
                 upi_link = f"upi://pay?pa={UPI_ID}&pn=Abha%20Singh&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
@@ -747,12 +738,11 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                         if st.button(f"🔓 I Paid ₹{pro_amount} - Verify", use_container_width=True, type="primary"):
                             update_count("buy")
                             request_payment_verification(st.session_state.user_email)
-                            st.session_state.payment_done = False
                             st.session_state.show_qr = False
-                            st.session_state.show_pay_button = False
-                            st.session_state.payment_log_done = False
+                            st.cache_data.clear()
                             st.success("Request submitted! Admin will verify and activate in 5-10 min")
                             st.balloons()
+                            time.sleep(2)
                             st.rerun()
                     with col2:
                         if st.button("⬅️ Cancel", use_container_width=True):
@@ -762,55 +752,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             st.session_state.payment_log_done = False
                             st.rerun()
 
-            elif st.session_state.show_qr:
-                st.warning("Step 1: Scan QR & Complete Payment")
-                upi_link = f"upi://pay?pa={UPI_ID}&pn=Abha%20Singh&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
-                qr = qrcode.QRCode(box_size=8, border=4)
-                qr.add_data(upi_link)
-                qr.make(fit=True)
-                img = qr.make_image(fill_color="black", back_color="white")
-                buf = BytesIO(); img.save(buf)
-                col1, col2 = st.columns([1,2])
-                with col1:
-                    st.image(buf, width=250)
-                with col2:
-                    st.markdown(f"**UPI ID:** `{UPI_ID}`")
-                    st.markdown(f"**Amount:** `₹{pro_amount}`")
-                    st.markdown(f"**Plan:** `{pro_text}`")
-                    st.markdown(f"**Email:** `{st.session_state.user_email}`")
-                    st.markdown(f"**Support:** [WhatsApp](https://wa.me/{WHATSAPP_NUMBER})")
-
-                st.markdown("---")
-                elapsed_time = time.time() - st.session_state.qr_start_time
-                if elapsed_time < WAIT_SECONDS:
-                    progress = int((elapsed_time / WAIT_SECONDS) * 100)
-                    st.info("🔄 Waiting for payment...")
-                    st.progress(progress)
-                    st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
-                    time.sleep(1)
-                    st.rerun()
-                else:
-                    st.success("Step 2: Payment Done? Click to Unlock")
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.button(f"🔓 I Paid ₹{pro_amount} - Verify", use_container_width=True, type="primary"):
-                            update_count("buy")
-                            request_payment_verification(st.session_state.user_email)
-                            st.session_state.payment_done = False
-                            st.session_state.show_qr = False
-                            st.session_state.show_pay_button = False
-                            st.session_state.payment_log_done = False
-                            st.success("Request submitted! Admin will verify and activate in 5-10 min")
-                            st.balloons()
-                            st.rerun()
-                    with col2:
-                        if st.button("⬅️ Cancel", use_container_width=True):
-                            st.session_state.show_qr = False
-                            st.session_state.qr_start_time = None
-                            st.session_state.show_pay_button = True
-                            st.session_state.payment_log_done = False
-                            st.rerun()
-
+            # CONDITION 4: SHOW PAY BUTTON - DEFAULT ✅
             else:
                 st.info("💰 Payment Required to Download Full File")
                 st.warning(f"Your cleaned file is ready with {len(df_cleaned)} rows")
@@ -828,5 +770,3 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
             st.download_button(f"📥 Download {len(df_download)} Rows", buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
             if len(df_cleaned) >= 1000:
                 st.warning("Need more than 1000 rows? Go back and choose Monthly ₹299 or 6-Month ₹1499")
-
-                    
