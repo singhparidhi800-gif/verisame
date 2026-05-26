@@ -31,6 +31,12 @@ SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:
 GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdVnCZi91JhBR4L9kt2H1KbpOoxiWNqNXGcoth459Q486m84tjSYzlFYkHC3Fl7AXbZg/exec"
 WHATSAPP_NUMBER = "919794906852"
 
+# ============ UPI CONFIG ============ 👈 YE UPAR LE AAYA
+UPI_ID = "playwithreyansh0@okhdfcbank"
+PRO_AMOUNT_MONTH = 299
+PRO_AMOUNT_HALF = 1499
+WAIT_SECONDS = 25
+
 # ============ BASIC SECURITY ============
 SECRET_PASS = "reyansh999VeriSame2026CEO"
 query_params = st.query_params
@@ -105,21 +111,21 @@ def check_user_in_sheet(email):
 
 def save_user_to_sheet(email, plan_type):
     plan_name = "1month" if plan_type == 'month' else "6months"
-    amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_HALF # 👈 AMOUNT ADD
+    amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_HALF # AB YE CHALEGA
     try:
         requests.post(GOOGLE_SCRIPT_URL, json={
             "action": "new_user",
             "email": email,
             "plan": plan_name,
-            "amount": amount # 👈 AMOUNT BHEJ RAHA
+            "amount": amount
         }, timeout=5)
-    except:
-        pass
+    except Exception as e:
+        st.error(f"Sheet me save nahi hua: {e}") # AB ERROR DIKHEGA AGAR AAYA TO
 
-def request_payment_verification(email): # 👈 NAYA FUNCTION - mark_payment_done HATA DIYA
+def request_payment_verification(email):
     try:
         requests.post(GOOGLE_SCRIPT_URL, json={
-            "action": "payment_request", # 👈 NAYA ACTION
+            "action": "payment_request",
             "email": email
         }, timeout=5)
     except:
@@ -174,11 +180,7 @@ if SHOW_DASHBOARD:
         st.info("Google Sheet connect nahi hua.")
     st.stop()
 
-# ============ UPI CONFIG ============
-UPI_ID = "playwithreyansh0@okhdfcbank"
-PRO_AMOUNT_MONTH = 299
-PRO_AMOUNT_HALF = 1499
-WAIT_SECONDS = 25
+# UPI CONFIG WALA BLOCK YAHAN SE HATA DIYA HAI KYUNKI UPAR MOVE KAR DIYA
 
 # ============ CSS ============
 st.markdown(f"""
@@ -188,7 +190,7 @@ st.markdown(f"""
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
-  .stApp {{
+ .stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
@@ -199,7 +201,7 @@ st.markdown(f"""
         50% {{ background-position: 100% 50%; }}
         100% {{ background-position: 0% 50%; }}
     }}
-  .block-container {{
+ .block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
         background: rgba(255,255,255,0.95);
@@ -209,7 +211,7 @@ st.markdown(f"""
         margin-top: 2rem;
         margin-bottom: 2rem;
     }}
-  .stButton>button {{
+ .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -221,7 +223,7 @@ st.markdown(f"""
         color: white;
         text-transform: uppercase;
     }}
-  .stButton>button:hover {{
+ .stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
@@ -244,14 +246,14 @@ st.markdown(f"""
         padding: 20px;
         transform: scale(1.03);
     }}
-  .tools-banner {{
+ .tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 35px;
         border-radius: 25px;
         margin: 30px 0;
         color: white;
     }}
-  .tool-item {{
+ .tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.25);
         padding: 12px 20px;
@@ -260,13 +262,13 @@ st.markdown(f"""
         font-size: 15px;
         font-weight: 700;
     }}
-  .help-float {{
+ .help-float {{
         position: fixed;
         bottom: 35px;
         right: 35px;
         z-index: 9999;
     }}
-  .help-float a {{
+ .help-float a {{
         display: flex;
         align-items: center;
         justify-content: center;
@@ -744,7 +746,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     with col1:
                         if st.button(f"🔓 I Paid ₹{pro_amount} - Verify Karo", use_container_width=True, type="primary"):
                             update_count("buy")
-                            request_payment_verification(st.session_state.user_email) # 👈 NAYA CALL
+                            request_payment_verification(st.session_state.user_email)
                             st.session_state.payment_done = False
                             st.session_state.show_qr = False
                             st.session_state.show_pay_button = False
