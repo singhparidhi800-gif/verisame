@@ -122,7 +122,7 @@ def save_user_to_sheet(email, plan_type):
         st.sidebar.info("1. Request bhejne wala hun...")
         time.sleep(0.5) # ruk ja 0.5 sec
         
-                r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
+        r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
         
         st.sidebar.success(f"2. Status Code: {r.status_code}")
         st.sidebar.warning(f"3. Reply: {r.text}")
