@@ -281,10 +281,9 @@ if 'show_pay_button' not in st.session_state: st.session_state.show_pay_button =
 if 'df_cleaned' not in st.session_state: st.session_state.df_cleaned = None
 if 'pro_status_checked' not in st.session_state: st.session_state.pro_status_checked = False
 if 'payment_log_done' not in st.session_state: st.session_state.payment_log_done = False
-if 'is_pro' not in st.session_state: st.session_state.is_pro = False
 
 def is_subscription_active():
-    if st.session_state.get("pro_expiry") and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error', 'verification_pending', 'rejected', None, '']:
+    if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error', 'verification_pending', 'rejected']:
         try:
             expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
             return datetime.now().date() <= expiry.date()
@@ -330,7 +329,6 @@ with st.sidebar:
             st.session_state.pro_status_checked = False
             st.session_state.payment_log_done = False
             st.session_state.plan = None
-            st.session_state.is_pro = False
             st.query_params.clear()
             st.success("Logged out successfully!")
             time.sleep(1)
@@ -373,7 +371,6 @@ if st.session_state.plan is None:
             st.session_state.plan = 'pro'
             st.session_state.payment_done = True
             st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
-            st.session_state.is_pro = True
             st.rerun()
 
     st.markdown("""
@@ -477,7 +474,6 @@ else:
                         st.session_state.payment_done = True
                         st.session_state.ask_email = False
                         st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
-                        st.session_state.is_pro = True
                         st.success(f"Welcome back! PRO active till {expiry}")
                         st.balloons()
                         st.rerun()
@@ -779,7 +775,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             except:
                                 pass
                             
-                            # ✅ FIX 1: PRO ACTIVATE KARO YAHA PE
+                            # ✅ BALLOON FIX: time.sleep add kiya + show_qr false kiya
                             update_count("buy")
                             st.session_state.is_pro = True
                             st.session_state.pro_expiry = (datetime.now() + timedelta(days=180 if st.session_state.selected_pro == 'half' else 30)).strftime('%Y-%m-%d')
@@ -787,7 +783,8 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             st.cache_data.clear()
                             st.success("✅ Request submitted! Pro activated")
                             st.balloons()
-                            time.sleep(2)
+                            time.sleep(2.5)  # 👈 Balloons ko 2.5 sec udne ka time do
+                            st.session_state.show_qr = False
                             st.rerun()
                                 
                     with col2:
@@ -798,7 +795,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             st.session_state.payment_log_done = False
                             st.rerun()
 
-            # CONDITION 4: CHECK PRO STATUS BEFORE SHOWING PAY BUTTON ✅ FIX 2
+            # CONDITION 4: CHECK PRO STATUS BEFORE SHOWING PAY BUTTON ✅
             elif not is_subscription_active():
                 st.info("💰 Payment Required to Download Full File")
                 st.warning(f"Your cleaned file is ready with {len(df_cleaned)} rows")
