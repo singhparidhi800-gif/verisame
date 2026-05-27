@@ -329,6 +329,7 @@ with st.sidebar:
             st.session_state.pro_status_checked = False
             st.session_state.payment_log_done = False
             st.session_state.plan = None
+            st.session_state.welcome_shown = False
             st.query_params.clear()
             st.success("Logged out successfully!")
             time.sleep(1)
@@ -356,8 +357,8 @@ with st.sidebar:
             if 'sample_df' in st.session_state: del st.session_state['sample_df']
             st.rerun()
 
-# LANDING PAGE
-st.image("https://i.ibb.co/W43B7drG/VeriSame-1", width=300)
+# LANDING PAGE - IMAGE FIXED ✅
+st.image("https://raw.githubusercontent.com/streamlit/brand/main/logos/mark/streamlit-mark-color.png", width=100)
 st.title("💼 Welcome to VeriSame")
 st.subheader("The Fastest Way to Clean Your Data")
 
@@ -373,6 +374,7 @@ if st.session_state.plan is None:
             st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
             st.session_state.is_pro = True
             if 'welcome_shown' not in st.session_state:
+                st.toast('🎉 Welcome Back! PRO Active', icon='✅')
                 st.balloons()
                 st.session_state.welcome_shown = True
             st.rerun()
@@ -687,6 +689,13 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
             # CONDITION 1: PRO ACTIVE - SHOW DOWNLOAD ✅
             if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
+
+                # Purane customer ke liye bhi ek baar balloon + toast ✅
+                if 'welcome_shown' not in st.session_state:
+                    st.toast('🎉 PRO Active! Welcome Back', icon='✅')
+                    st.balloons()
+                    st.session_state.welcome_shown = True
+
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
@@ -779,17 +788,19 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             except:
                                 pass
                             
-                            # BALLOON FIX + PURANE CUSTOMER KE LIYE BHI ✅
+                            # BALLOON FIX + TOAST - AB 100% UDEGA ✅
                             update_count("buy")
                             st.session_state.is_pro = True
                             st.session_state.pro_expiry = (datetime.now() + timedelta(days=180 if st.session_state.selected_pro == 'half' else 30)).strftime('%Y-%m-%d')
                             st.session_state.pro_plan_type = '3month' if st.session_state.selected_pro == 'half' else '1month'
-                            st.session_state.welcome_shown = False  # Reset kiya taaki balloon ude
+                            st.session_state.welcome_shown = False  # Reset kiya
                             st.cache_data.clear()
-                            st.success("✅ Request submitted! Pro activated")
+                            st.success("✅ Payment Success! Pro Activated 🎉")
+                            st.toast('🎉 PRO Activated Successfully!', icon='🎊')
                             st.balloons()
-                            time.sleep(2.5)  # Balloon ko udne ka time do
+                            time.sleep(3)  # 3 sec ruk, balloon dikhne de
                             st.session_state.show_qr = False
+                            st.session_state.payment_done = True
                             st.rerun()
                                 
                     with col2:
@@ -814,8 +825,9 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                 # PRO ACTIVE HAI TO DOWNLOAD DIKHEGA + BALLOON ✅
                 st.success(f"✅ PRO Active till {st.session_state.pro_expiry}")
                 
-                # Purane customer ke liye bhi ek baar balloon
+                # Purane customer ke liye bhi ek baar balloon + toast ✅
                 if 'welcome_shown' not in st.session_state:
+                    st.toast('🎉 Welcome Back! PRO Active', icon='✅')
                     st.balloons()
                     st.session_state.welcome_shown = True
                 
@@ -829,6 +841,9 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     csv_buffer = BytesIO()
                     df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
                     st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
+
+                plan_duration = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
+                st.info(f"🎉 You purchased {plan_duration} plan. PRO active till {st.session_state.pro_expiry}")
 
         else:
             df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
