@@ -778,7 +778,7 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             st.cache_data.clear()
                             st.success("✅ Request submitted! Admin will verify payment in 5-10 min")
                             st.balloons()
-                            st.rerun()
+                           #st.rerun()
                                 
                     with col2:
                         if st.button("🚫 Cancel Payment", use_container_width=True):
