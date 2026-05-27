@@ -353,16 +353,17 @@ with st.sidebar:
             st.session_state.show_pay_button = False
             st.session_state.df_cleaned = None
             st.session_state.payment_log_done = False
-            if 'sample_df' in st.session_state:
-                st.rerun()
+            if 'sample_df' in st.session_state: del st.session_state['sample_df']
+            st.rerun()
 
 # LANDING PAGE
-st.image("https://i.ibb.co/W43B7drG/VeriSame-1")
+st.image("https://i.ibb.co/W43B7drG/VeriSame-1", width=300)
 st.title("💼 Welcome to VeriSame")
 st.subheader("The Fastest Way to Clean Your Data")
+
 if st.session_state.plan is None:
     if st.session_state.user_email and not st.session_state.pro_status_checked:
-        is_active, expiry, plan = check_user_status(st.session_state.user_email)
+        is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
         st.session_state.pro_expiry = expiry
         st.session_state.pro_plan_type = plan
         st.session_state.pro_status_checked = True
@@ -375,6 +376,7 @@ if st.session_state.plan is None:
                 st.balloons()
                 st.session_state.welcome_shown = True
             st.rerun()
+
     st.markdown("""
     <div class="tools-banner">
         <h3 style='margin:0 0 15px 0; text-align:center;'>🚀 PRO Includes 7 Advanced Tools</h3>
@@ -777,15 +779,16 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                             except:
                                 pass
                             
-                            # ✅ BALLOON FIX: time.sleep add kiya + show_qr false kiya
+                            # BALLOON FIX + PURANE CUSTOMER KE LIYE BHI ✅
                             update_count("buy")
                             st.session_state.is_pro = True
                             st.session_state.pro_expiry = (datetime.now() + timedelta(days=180 if st.session_state.selected_pro == 'half' else 30)).strftime('%Y-%m-%d')
                             st.session_state.pro_plan_type = '3month' if st.session_state.selected_pro == 'half' else '1month'
+                            st.session_state.welcome_shown = False  # Reset kiya taaki balloon ude
                             st.cache_data.clear()
                             st.success("✅ Request submitted! Pro activated")
                             st.balloons()
-                            time.sleep(2.5)  # 👈 Balloons ko 2.5 sec udne ka time do
+                            time.sleep(2.5)  # Balloon ko udne ka time do
                             st.session_state.show_qr = False
                             st.rerun()
                                 
@@ -808,8 +811,14 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.session_state.payment_log_done = False
                     st.rerun()
             else:
-                # PRO ACTIVE HAI TO DOWNLOAD DIKHEGA ✅
+                # PRO ACTIVE HAI TO DOWNLOAD DIKHEGA + BALLOON ✅
                 st.success(f"✅ PRO Active till {st.session_state.pro_expiry}")
+                
+                # Purane customer ke liye bhi ek baar balloon
+                if 'welcome_shown' not in st.session_state:
+                    st.balloons()
+                    st.session_state.welcome_shown = True
+                
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
                     df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
