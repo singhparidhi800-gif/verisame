@@ -368,10 +368,14 @@ if st.session_state.plan is None:
         st.session_state.pro_plan_type = plan
         st.session_state.pro_status_checked = True
         if is_active:
-            st.session_state.plan = 'pro'
-            st.session_state.payment_done = True
-            st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
-            st.rerun()
+        st.session_state.plan = 'pro'
+        st.session_state.payment_done = True
+        st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
+        st.session_state.is_pro = True  # 👈 Ye line add karna mat bhoolna
+        if 'welcome_shown' not in st.session_state:  # 👈 NEW LINE 1
+        st.balloons()  # 👈 NEW LINE 2
+        st.session_state.welcome_shown = True  # 👈    
+        st.rerun()  # 👈 Ye ab line 378 ban jayegi
 
     st.markdown("""
     <div class="tools-banner">
