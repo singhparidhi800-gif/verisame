@@ -184,7 +184,7 @@ if SHOW_DASHBOARD:
         st.info("Google Sheet not connected.")
     st.stop()
 
-# ============ CSS - REMOVED FLOATING WHATSAPP ICON ============
+# ============ CSS ============
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
@@ -192,7 +192,7 @@ st.markdown(f"""
     #MainMenu {{visibility: hidden;}}
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
-.stApp {{
+   .stApp {{
         background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
@@ -203,7 +203,7 @@ st.markdown(f"""
         50% {{ background-position: 100% 50%; }}
         100% {{ background-position: 0% 50%; }}
     }}
-.block-container {{
+   .block-container {{
         padding: 2rem 3rem;
         max-width: 1300px;
         background: rgba(255,255,255,0.95);
@@ -213,7 +213,7 @@ st.markdown(f"""
         margin-top: 2rem;
         margin-bottom: 2rem;
     }}
-.stButton>button {{
+   .stButton>button {{
         width: 100%;
         height: 60px;
         font-size: 18px;
@@ -225,7 +225,7 @@ st.markdown(f"""
         color: white;
         text-transform: uppercase;
     }}
-.stButton>button:hover {{
+   .stButton>button:hover {{
         transform: translateY(-3px) scale(1.02);
         box-shadow: 0 8px 25px rgba(0,0,0,0.2);
     }}
@@ -248,14 +248,14 @@ st.markdown(f"""
         padding: 20px;
         transform: scale(1.03);
     }}
-.tools-banner {{
+   .tools-banner {{
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         padding: 35px;
         border-radius: 25px;
         margin: 30px 0;
         color: white;
     }}
-.tool-item {{
+   .tool-item {{
         display: inline-block;
         background: rgba(255,255,255,0.25);
         padding: 12px 20px;
@@ -297,7 +297,7 @@ def text_to_number(text):
     if re.match(r'^[\d,.\s]+$', text): return text.replace(',', '').strip()
     return text
 
-# SIDEBAR - ENGLISH ONLY
+# SIDEBAR
 with st.sidebar:
     st.title("💼 VeriSame")
 
@@ -329,7 +329,6 @@ with st.sidebar:
             st.session_state.pro_status_checked = False
             st.session_state.payment_log_done = False
             st.session_state.plan = None
-            st.session_state.welcome_shown = False
             st.query_params.clear()
             st.success("Logged out successfully!")
             time.sleep(1)
@@ -373,10 +372,6 @@ if st.session_state.plan is None:
             st.session_state.payment_done = True
             st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
             st.session_state.is_pro = True
-            if 'welcome_shown' not in st.session_state:
-                st.toast('🎉 Welcome Back! PRO Active', icon='✅')
-                st.balloons()
-                st.session_state.welcome_shown = True
             st.rerun()
 
     st.markdown("""
@@ -657,6 +652,9 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
 
         st.markdown("---")
         st.success(f"Done! Removed {original_row_count - len(df_cleaned)} duplicates. Total: {len(df_cleaned)} rows")
+        st.balloons() # BALLOON HAR BAAR FILE CLEAN HONE PE ✅
+        st.toast('🎉 File Cleaned Successfully!', icon='✨')
+
         df_display = df_cleaned.fillna('').astype(str)
         df_display = df_display.replace(['nan', 'NAN', 'NaN', 'None', 'null', 'NULL'], '', regex=False)
 
@@ -686,15 +684,12 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                 st.warning("⚠️ You have 1 Month plan active. To upgrade to 6 Months, please pay ₹1499.")
                 st.session_state.payment_done = False
 
-            # CONDITION 1: PRO ACTIVE - SHOW DOWNLOAD ✅
+            # CONDITION 1: PRO ACTIVE - SHOW DOWNLOAD + BALLOON HAR BAAR ✅
             if is_active and ((user_has_month and selected_is_month) or (user_has_half)):
                 st.success(f"✅ Download Unlocked till {st.session_state.pro_expiry}")
 
-                # Purane customer ke liye bhi ek baar balloon + toast ✅
-                if 'welcome_shown' not in st.session_state:
-                    st.toast('🎉 PRO Active! Welcome Back', icon='✅')
-                    st.balloons()
-                    st.session_state.welcome_shown = True
+                st.balloons() # HAR BAAR BALLOON - KOI CHECK NAHI ✅
+                st.toast('🎊 Ready to Download!', icon='📥')
 
                 excel_buffer = BytesIO()
                 with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
@@ -764,91 +759,91 @@ C303,Category_Z,01/04/2024,200,MALE,another@test.in,9988776655"""
                     st.markdown(f"**Support:** [WhatsApp](https://wa.me/{WHATSAPP_NUMBER})")
 
                 st.markdown("---")
-                elapsed_time = time.time() - st.session_state.qr_start_time
-                if elapsed_time < WAIT_SECONDS:
-                    progress = int((elapsed_time / WAIT_SECONDS) * 100)
-                    st.info("🔄 Waiting for payment...")
-                    st.progress(progress)
-                    st.caption(f"Please wait... {int(WAIT_SECONDS - elapsed_time)} seconds remaining")
-                    time.sleep(1)
-                    st.rerun()
-                else:
-                    st.success("Step 2: Payment Done? Click to Unlock")
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        if st.button(f"🔓 I Paid ₹{pro_amount}", use_container_width=True, type="primary"):
-                            try:
-                                pro_plan = "3month" if st.session_state.selected_pro == 'half' else "1month"
-                                payload = {
-                                    "email": st.session_state.user_email,
-                                    "plan": pro_plan,
-                                    "amount": pro_amount
-                                }
-                                requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), timeout=5)
-                            except:
-                                pass
-                            
-                            # BALLOON FIX + TOAST - AB 100% UDEGA ✅
-                            update_count("buy")
-                            st.session_state.is_pro = True
-                            st.session_state.pro_expiry = (datetime.now() + timedelta(days=180 if st.session_state.selected_pro == 'half' else 30)).strftime('%Y-%m-%d')
-                            st.session_state.pro_plan_type = '3month' if st.session_state.selected_pro == 'half' else '1month'
-                            st.session_state.welcome_shown = False  # Reset kiya
-                            st.cache_data.clear()
-                            st.success("✅ Payment Success! Pro Activated 🎉")
-                            st.toast('🎉 PRO Activated Successfully!', icon='🎊')
-                            st.balloons()
-                            time.sleep(3)  # 3 sec ruk, balloon dikhne de
-                            st.session_state.show_qr = False
-                            st.session_state.payment_done = True
-                            st.rerun()
-                                
-                    with col2:
-                        if st.button("🚫 Cancel Payment", use_container_width=True):
-                            st.session_state.show_qr = False
-                            st.session_state.qr_start_time = None
-                            st.session_state.show_pay_button = True
-                            st.session_state.payment_log_done = False
-                            st.rerun()
 
-            # CONDITION 4: CHECK PRO STATUS BEFORE SHOWING PAY BUTTON ✅
-            elif not is_subscription_active():
-                st.info("💰 Payment Required to Download Full File")
-                st.warning(f"Your cleaned file is ready with {len(df_cleaned)} rows")
-                if st.button(f"💳 Pay ₹{pro_amount} to Download - {pro_text}", use_container_width=True, type="primary"):
+                # QR Timer Logic
+                if st.session_state.qr_start_time:
+                    elapsed = time.time() - st.session_state.qr_start_time
+                    if elapsed < WAIT_SECONDS:
+                        remaining = int(WAIT_SECONDS - elapsed)
+                        st.warning(f"⏳ Step 2: Please complete payment in {remaining} seconds")
+                        st.progress((WAIT_SECONDS - remaining) / WAIT_SECONDS)
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.success("✅ Step 3: Payment window completed!")
+                        st.session_state.show_pay_button = True
+
+                # Payment Done Button
+                if st.session_state.show_pay_button:
+                    st.markdown("---")
+                    st.info("💡 **Important:** Payment karne ke baad neeche button dabana zaroori hai")
+                    
+                    if st.button("✅ I Have Completed Payment", type="primary", use_container_width=True):
+                        if not st.session_state.payment_log_done:
+                            update_count("buy")
+                            request_payment_verification(st.session_state.user_email)
+                            st.session_state.payment_log_done = True
+                        
+                        st.cache_data.clear()
+                        st.session_state.pro_expiry = 'verification_pending'
+                        st.session_state.show_qr = False
+                        st.session_state.qr_start_time = None
+                        st.session_state.show_pay_button = False
+                        
+                        st.success("🎉 Payment request sent! Admin will verify in 5-10 minutes.")
+                        st.balloons()  # PAYMENT KE BAAD BALLOON ✅
+                        st.toast('⏳ Verification Started!', icon='✅')
+                        time.sleep(2)
+                        st.rerun()
+
+            # CONDITION 4: NOT VERIFIED / NOT FOUND - SHOW QR ✅
+            else:
+                st.warning("⚠️ PRO Payment Required to Download")
+                st.info(f"💳 Pay ₹{pro_amount} for {pro_text} plan to unlock Excel download")
+                
+                if st.button("💳 Pay Now & Activate PRO", type="primary", use_container_width=True):
                     st.session_state.show_qr = True
                     st.session_state.qr_start_time = time.time()
-                    st.session_state.show_pay_button = False
-                    st.session_state.payment_log_done = False
                     st.rerun()
-            else:
-                # PRO ACTIVE HAI TO DOWNLOAD DIKHEGA + BALLOON ✅
-                st.success(f"✅ PRO Active till {st.session_state.pro_expiry}")
-                
-                # Purane customer ke liye bhi ek baar balloon + toast ✅
-                if 'welcome_shown' not in st.session_state:
-                    st.toast('🎉 Welcome Back! PRO Active', icon='✅')
-                    st.balloons()
-                    st.session_state.welcome_shown = True
-                
-                excel_buffer = BytesIO()
-                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-                    df_cleaned.to_excel(writer, index=False, sheet_name='CleanedData')
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.download_button("📊 Download as Excel", excel_buffer.getvalue(), "verisame_cleaned.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                with col2:
-                    csv_buffer = BytesIO()
-                    df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
-                    st.download_button("📄 Download as CSV", csv_buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
 
-                plan_duration = "1 Month" if st.session_state.pro_plan_type == '1month' else "6 Months"
-                st.info(f"🎉 You purchased {plan_duration} plan. PRO active till {st.session_state.pro_expiry}")
-
+        # FREE DOWNLOAD SECTION
         else:
-            df_download = df_cleaned.head(1000) if len(df_cleaned) > 1000 else df_cleaned
-            buffer = BytesIO()
-            df_download.to_csv(buffer, index=False, encoding='utf-8')
-            st.download_button(f"📥 Download {len(df_download)} Rows", buffer.getvalue(), "verisame_cleaned.csv", "text/csv")
-            if len(df_cleaned) >= 1000:
-                st.warning("Need more than 1000 rows? Go back and choose Monthly ₹299 or 6-Month ₹1499")
+            st.markdown("---")
+            st.success("✅ Your file is ready!")
+            
+            st.balloons()  # FREE ME BHI BALLOON ✅
+            st.toast('🎉 FREE Version Ready!', icon='✨')
+            
+            csv_buffer = BytesIO()
+            df_cleaned.to_csv(csv_buffer, index=False, encoding='utf-8')
+            st.download_button(
+                "📄 Download as CSV (FREE)", 
+                csv_buffer.getvalue(), 
+                "verisame_free_cleaned.csv", 
+                "text/csv",
+                use_container_width=True
+            )
+            
+            st.info("💡 Upgrade to PRO for Excel export + 7 advanced tools + Unlimited rows")
+            
+            if st.button("💎 Upgrade to PRO Now", type="primary", use_container_width=True):
+                st.session_state.plan = 'pro'
+                st.session_state.selected_pro = 'month'
+                st.session_state.ask_email = True
+                st.rerun()
+
+    else:
+        if not is_pro:
+            st.info("👆 Upload a CSV, Excel or JSON file to get started")
+        else:
+            st.info("👆 Upload your file to clean data with PRO tools")
+
+# FOOTER
+st.markdown("---")
+st.markdown("""
+<div style='text-align: center; color: #666; padding: 20px;'>
+    <p><strong>VeriSame</strong> - The Fastest Way to Clean Your Data</p>
+    <p>Made with ❤️ for Data Professionals | © 2026 VeriSame</p>
+    <p><a href='https://wa.me/919794906852'>WhatsApp Support</a> | support@verisame.com</p>
+</div>
+""", unsafe_allow_html=True)
