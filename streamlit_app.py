@@ -353,8 +353,8 @@ with st.sidebar:
             st.session_state.show_pay_button = False
             st.session_state.df_cleaned = None
             st.session_state.payment_log_done = False
-            if 'sample_df' in st.session_state: del st.session_state['sample_df']
-            st.rerun()
+            if 'sample_df' in st.session_state:
+                st.rerun()
 
 # LANDING PAGE
 st.image("https://i.ibb.co/W43B7drG/VeriSame-1")
