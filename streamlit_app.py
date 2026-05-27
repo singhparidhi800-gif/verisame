@@ -363,20 +363,19 @@ st.subheader("The Fastest Way to Clean Your Data")
 
 if st.session_state.plan is None:
     if st.session_state.user_email and not st.session_state.pro_status_checked:
-        is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
-        st.session_state.pro_expiry = expiry
-        st.session_state.pro_plan_type = plan
-        st.session_state.pro_status_checked = True
-   if is_active:
+    is_active, expiry, plan = check_user_status(st.session_state.user_email)
+    st.session_state.pro_expiry = expiry
+    st.session_state.pro_plan_type = plan
+    st.session_state.pro_status_checked = True
+    if is_active:
         st.session_state.plan = 'pro'
         st.session_state.payment_done = True
         st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
-        st.session_state.is_pro = True  
-        if 'welcome_shown' not in st.session_state:  
-            st.balloons()  
-            st.session_state.welcome_shown = True    
-        st.rerun() 
-
+        st.session_state.is_pro = True
+        if 'welcome_shown' not in st.session_state:
+            st.balloons()
+            st.session_state.welcome_shown = True
+        st.rerun()
     st.markdown("""
     <div class="tools-banner">
         <h3 style='margin:0 0 15px 0; text-align:center;'>🚀 PRO Includes 7 Advanced Tools</h3>
