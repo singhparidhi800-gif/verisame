@@ -358,7 +358,7 @@ with st.sidebar:
             st.rerun()
 
 # LANDING PAGE - IMAGE FIXED ✅
-st.image("https://raw.githubusercontent.com/streamlit/brand/main/logos/mark/streamlit-mark-color.png", width=100)
+st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=300)
 st.title("💼 Welcome to VeriSame")
 st.subheader("The Fastest Way to Clean Your Data")
 
