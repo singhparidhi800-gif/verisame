@@ -357,10 +357,9 @@ with st.sidebar:
             st.rerun()
 
 # LANDING PAGE
-st.image("https://i.ibb.co/W43B7drG/VeriSame-logo.png", width=300)
+st.image("https://i.ibb.co/W43B7drG/VeriSame-1")
 st.title("💼 Welcome to VeriSame")
 st.subheader("The Fastest Way to Clean Your Data")
-
 if st.session_state.plan is None:
     if st.session_state.user_email and not st.session_state.pro_status_checked:
         is_active, expiry, plan = check_user_status(st.session_state.user_email)
@@ -373,9 +372,9 @@ if st.session_state.plan is None:
             st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
             st.session_state.is_pro = True
             if 'welcome_shown' not in st.session_state:
-            st.balloons()
-            st.session_state.welcome_shown = True
-        st.rerun()
+                st.balloons()
+                st.session_state.welcome_shown = True
+            st.rerun()
     st.markdown("""
     <div class="tools-banner">
         <h3 style='margin:0 0 15px 0; text-align:center;'>🚀 PRO Includes 7 Advanced Tools</h3>
