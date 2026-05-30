@@ -82,6 +82,39 @@ def get_counts():
     except:
         return {"views": 0, "free": 0, "pro_month": 0, "pro_half": 0, "buy": 0}
 
+# ============ TEXT TO NUMBER ENGINE ============
+def words_to_number_simple(text):
+    if pd.isna(text): return ""
+    text_str = str(text).strip().lower()
+    
+    # Common English words dictionary for numbers
+    num_dict = {
+        "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
+        "six": "6", "seven": "7", "eight": "8", "nine": "9", "ten": "10",
+        "eleven": "11", "twelve": "12", "thirteen": "13", "fourteen": "14", "fifteen": "15",
+        "sixteen": "16", "seventeen": "17", "eighteen": "18", "nineteen": "19", "twenty": "20",
+        "thirty": "30", "forty": "40", "fifty": "50", "sixty": "60", "seventy": "70",
+        "eighty": "80", "ninety": "90", "hundred": "100"
+    }
+    
+    # Check for compound words like sixty four or sixty-four
+    text_str = text_str.replace("-", " ")
+    parts = text_str.split()
+    
+    if len(parts) == 2 and parts[0] in num_dict and parts[1] in num_dict:
+        val1 = int(num_dict[parts[0]])
+        val2 = int(num_dict[parts[1]])
+        if "twenty" in parts[0] or "thirty" in parts[0] or "forty" in parts[0] or "fifty" in parts[0] or "sixty" in parts[0] or "seventy" in parts[0] or "eighty" in parts[0] or "ninety" in parts[0]:
+            return str(val1 + val2)
+            
+    if text_str in num_dict:
+        return num_dict[text_str]
+        
+    if re.match(r'^[\d,.\s]+$', text_str): 
+        return text_str.replace(',', '').strip()
+        
+    return str(text).strip()
+
 # ============ SUBSCRIPTION FUNCTIONS ============
 @st.cache_data(ttl=10)
 def check_user_in_sheet(email):
@@ -186,7 +219,7 @@ if SHOW_DASHBOARD:
         st.info("Google Sheet not connected.")
     st.stop()
 
-# ============ CSS DESIGN (PURPLE GRADIANT THEME) ============
+# ============ CSS DESIGN (PINK PREMIUM THEME) ============
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
@@ -195,7 +228,7 @@ st.markdown(f"""
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
    .stApp {{
-        background: linear-gradient(-45deg, #4c1d95, #2e1065, #5b21b6, #1e1b4b);
+        background: linear-gradient(-45deg, #db2777, #831843, #9d174d, #4c0519);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
         background-attachment: fixed;
@@ -222,12 +255,12 @@ st.markdown(f"""
         border-radius: 12px;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         border: none;
-        background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%);
+        background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
         color: white;
     }}
    .stButton>button:hover {{
         transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+        box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
     }}
     .metric-card {{
         background: #f8fafc;
@@ -237,7 +270,7 @@ st.markdown(f"""
         text-align: center;
     }}
    .tools-banner {{
-        background: linear-gradient(90deg, #7c3aed 0%, #6d28d9 100%);
+        background: linear-gradient(90deg, #ec4899 0%, #be185d 100%);
         padding: 30px;
         border-radius: 20px;
         margin: 25px 0;
@@ -265,13 +298,18 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ============ SESSION STATES ============
-for state_key in ['plan', 'selected_pro', 'user_email', 'pro_expiry', 'pro_plan_type', 'df_cleaned']:
+for state_key in ['plan', 'selected_pro', 'user_email', 'pro_expiry', 'pro_plan_type', 'df_cleaned', 'balloon_trigger']:
     if state_key not in st.session_state: st.session_state[state_key] = None
 
 for bool_key in ['show_qr', 'payment_done', 'ask_email', 'show_pay_button', 'pro_status_checked', 'payment_log_done']:
-    if bool_key not in st.session_state: st.session_state[bool_key] = False
+    if bool_key not in st.session_state in st.session_state: st.session_state[bool_key] = False
 
 if 'qr_start_time' not in st.session_state: st.session_state.qr_start_time = None
+
+# Smart Balloons State Checker
+if st.session_state.balloon_trigger == True:
+    st.balloons()
+    st.session_state.balloon_trigger = False
 
 def is_subscription_active():
     if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error', 'verification_pending', 'rejected']:
@@ -281,12 +319,6 @@ def is_subscription_active():
         except:
             return False
     return False
-
-def text_to_number(text):
-    if pd.isna(text): return text
-    text = str(text).strip().upper()
-    if re.match(r'^[\d,.\s]+$', text): return text.replace(',', '').strip()
-    return text
 
 # SIDEBAR
 with st.sidebar:
@@ -308,8 +340,8 @@ with st.sidebar:
 
 # LANDING PAGE
 st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=260)
-st.title("💼 VeriSame Studio")
-st.subheader("Instant Excel & CSV Data Cleaner")
+st.title("💼 VeriSame")
+st.subheader("The fastest way to clean your data")
 
 if st.session_state.plan is None:
     if st.session_state.user_email and not st.session_state.pro_status_checked:
@@ -334,6 +366,7 @@ if st.session_state.plan is None:
             <span class="tool-item">🔤 Capital/Small Letters (FREE/PRO)</span>
             <span class="tool-item">✨ Bad Symbol Remover (PRO)</span>
             <span class="tool-item">✏️ Change Column Name (PRO)</span>
+            <span class="tool-item">🔢 English Words to Numbers Fixer (FREE/PRO)</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -342,7 +375,7 @@ if st.session_state.plan is None:
     with col1:
         with st.container(border=True):
             st.subheader("🆓 FREE Tier")
-            st.markdown("• Max 1000 rows limit\n• CSV File Download only\n• Auto-Delete Duplicates\n• Text Case Changer\n• Extra Space Cleaner\n• 15 Seconds processing wait")
+            st.markdown("• Max 1000 rows limit\n• CSV File Download only\n• Auto-Delete Duplicates\n• Text Case Changer\n• Extra Space Cleaner\n• **Auto Word-to-Number Engine (e.g. sixty four ➡️ 64)**\n• 15 Seconds processing wait")
             if st.button("Access Free Tier", use_container_width=True):
                 update_count("free")
                 st.session_state.plan = 'free'
@@ -445,9 +478,13 @@ else:
             st.warning("⚠️ FREE Tier Limit Active: Processing only the first 1000 rows.")
         
         df_cleaned = df.drop_duplicates()
-        for col in df_cleaned.select_dtypes(include=['object']):
-            df_cleaned[col] = df_cleaned[col].apply(text_to_number)
-            df_cleaned[col] = df_cleaned[col].astype(str).str.strip()
+        
+        # Apply strict cleaning and word-to-number transformation (FREE & PRO)
+        for col in df_cleaned.columns:
+            # Convert text words like 'sixty four' to real numbers 64
+            df_cleaned[col] = df_cleaned[col].apply(words_to_number_simple)
+            if df_cleaned[col].dtype == 'object':
+                df_cleaned[col] = df_cleaned[col].astype(str).str.strip()
 
         dups_removed = orig_len - len(df_cleaned)
         
@@ -559,7 +596,7 @@ else:
 
         st.markdown("---")
         
-        # ================= CLEANING NAN OUT OF DISPLAY =================
+        # ================= 🛡️ STRICT ANTI-NAN GRID FIXER =================
         df_display = df_cleaned.copy()
         for col in df_display.columns:
             df_display[col] = df_display[col].astype(str).replace(['nan', 'NaN', 'None', '<NA>', 'nat', 'NaT'], '', regex=True)
@@ -567,7 +604,7 @@ else:
         st.write("**Data Output Preview:**")
         st.dataframe(df_display.head(10 if is_pro_user else 5))
 
-        # ================= 📥 BALLOONS ON DOWNLOAD =================
+        # ================= 📥 BALLOONS ON DOWNLOAD IMPLEMENTATION =================
         if st.session_state.plan == 'pro':
             is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
             if is_active:
@@ -576,13 +613,17 @@ else:
                 with pd.ExcelWriter(ex_buf, engine='openpyxl') as w: df_cleaned.to_excel(w, index=False)
                 c1, c2 = st.columns(2)
                 
+                # Excel Download Button
                 if c1.download_button("📊 Download Cleaned Excel (.xlsx)", ex_buf.getvalue(), "verisame_pro.xlsx", use_container_width=True):
-                    st.balloons()
+                    st.session_state.balloon_trigger = True
+                    st.rerun()
                     
                 csv_buf = BytesIO()
                 df_cleaned.to_csv(csv_buf, index=False)
+                # CSV Download Button
                 if c2.download_button("📄 Download Cleaned CSV (.csv)", csv_buf.getvalue(), "verisame_pro.csv", use_container_width=True):
-                    st.balloons()
+                    st.session_state.balloon_trigger = True
+                    st.rerun()
             elif st.session_state.show_qr:
                 st.info("Render Gateway Signature Node")
                 upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
@@ -611,9 +652,10 @@ else:
             csv_buf = BytesIO()
             df_cleaned.to_csv(csv_buf, index=False)
             if st.download_button("📥 Download Cleaned CSV File", csv_buf.getvalue(), "verisame_free.csv", use_container_width=True):
-                st.balloons()
+                st.session_state.balloon_trigger = True
+                st.rerun()
             st.info("💡 Upgrade to PRO to download Excel (.xlsx) files and unlock unlimited row uploads.")
 
 # FOOTER SYSTEM SIGNALS
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #c084fc; font-size:12px;'>VeriSame Suite v1.6 | Purple Premium Edition © 2026</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #f43f5e; font-size:12px;'>VeriSame Suite v1.7 | Pink Premium Edition © 2026</div>", unsafe_allow_html=True)
