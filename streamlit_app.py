@@ -159,7 +159,7 @@ if not SHOW_DASHBOARD:
 # ============ SECRET DASHBOARD ============
 if SHOW_DASHBOARD:
     st.title("🔒 Private Dashboard")
-    st.caption("⚠️ CEO Only - Secure Encrypted Mode")
+    st.caption("⚠️ CEO Only")
     if st.button("🔄 Refresh Counts", type="primary", use_container_width=True):
         st.cache_data.clear()
         st.cache_resource.clear()
@@ -177,7 +177,7 @@ if SHOW_DASHBOARD:
     half_revenue = counts.get('pro_half', 0) * 1499
     st.write(f"**Monthly Plan:** {counts.get('pro_month', 0)} x ₹299 = ₹{monthly_revenue}")
     st.write(f"**6-Month Plan:** {counts.get('pro_half', 0)} x ₹1499 = ₹{half_revenue}")
-    st.success(f"**Total Potential Revenue: ₹{monthly_revenue + half_revenue}**")
+    st.success(f"**Total Revenue: ₹{monthly_revenue + half_revenue}**")
     st.markdown("---")
     try:
         users_df = pd.read_csv(SHEET_URL)
@@ -186,7 +186,7 @@ if SHOW_DASHBOARD:
         st.info("Google Sheet not connected.")
     st.stop()
 
-# ============ CSS DESIGN ============
+# ============ CSS DESIGN (PURPLE GRADIANT THEME) ============
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
@@ -195,7 +195,7 @@ st.markdown(f"""
     footer {{visibility: hidden;}}
     header {{visibility: hidden;}}
    .stApp {{
-        background: linear-gradient(-45deg, #1e293b, #0f172a, #1e1b4b, #0f172a);
+        background: linear-gradient(-45deg, #4c1d95, #2e1065, #5b21b6, #1e1b4b);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
         background-attachment: fixed;
@@ -222,7 +222,7 @@ st.markdown(f"""
         border-radius: 12px;
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         border: none;
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%);
         color: white;
     }}
    .stButton>button:hover {{
@@ -237,7 +237,7 @@ st.markdown(f"""
         text-align: center;
     }}
    .tools-banner {{
-        background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+        background: linear-gradient(90deg, #7c3aed 0%, #6d28d9 100%);
         padding: 30px;
         border-radius: 20px;
         margin: 25px 0;
@@ -309,7 +309,7 @@ with st.sidebar:
 # LANDING PAGE
 st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=260)
 st.title("💼 VeriSame Studio")
-st.subheader("The Professional Cloud Data Cleaner")
+st.subheader("Instant Excel & CSV Data Cleaner")
 
 if st.session_state.plan is None:
     if st.session_state.user_email and not st.session_state.pro_status_checked:
@@ -325,15 +325,15 @@ if st.session_state.plan is None:
 
     st.markdown("""
     <div class="tools-banner">
-        <h3 style='margin:0 0 12px 0; text-align:center;'>🚀 FREE vs PRO System Capability Map</h3>
+        <h3 style='margin:0 0 12px 0; text-align:center;'>🚀 FREE vs PRO Features List</h3>
         <div style='text-align:center;'>
             <span class="tool-item">📅 Date Format Engine (PRO)</span>
-            <span class="tool-item">🔢 Smart Analytics Reporter (FREE/PRO)</span>
-            <span class="tool-item">📧 Regex Email Validator (PRO)</span>
-            <span class="tool-item">📱 Phone Normalizer (PRO)</span>
-            <span class="tool-item">🔤 String Case Standardizer (FREE/PRO)</span>
-            <span class="tool-item">✨ Special Character Stripper (PRO)</span>
-            <span class="tool-item">✏️ Column Hot-Swap Renamer (PRO)</span>
+            <span class="tool-item">🔢 Smart Live Analytics (FREE/PRO)</span>
+            <span class="tool-item">📧 Email Format Checker (PRO)</span>
+            <span class="tool-item">📱 Phone Number Fixer (PRO)</span>
+            <span class="tool-item">🔤 Capital/Small Letters (FREE/PRO)</span>
+            <span class="tool-item">✨ Bad Symbol Remover (PRO)</span>
+            <span class="tool-item">✏️ Change Column Name (PRO)</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -342,7 +342,7 @@ if st.session_state.plan is None:
     with col1:
         with st.container(border=True):
             st.subheader("🆓 FREE Tier")
-            st.markdown("• Up to 1000 rows limit\n• CSV Export only\n• Auto-Duplicate Filter\n• Basic Case Standardizer\n• Whitespace Trimmer\n• 15s process latency")
+            st.markdown("• Max 1000 rows limit\n• CSV File Download only\n• Auto-Delete Duplicates\n• Text Case Changer\n• Extra Space Cleaner\n• 15 Seconds processing wait")
             if st.button("Access Free Tier", use_container_width=True):
                 update_count("free")
                 st.session_state.plan = 'free'
@@ -350,7 +350,7 @@ if st.session_state.plan is None:
     with col2:
         with st.container(border=True):
             st.subheader("🔥 Monthly Pro")
-            st.markdown("• Unlimited matrix depth\n• Native Excel + CSV Export\n• Complete 7 Tool Pack\n• Smart Auto-Detection\n• Instant cloud engine\n• **₹299 / Month**")
+            st.markdown("• Unlimited rows & size\n• Download Excel + CSV formats\n• Access all 7 Smart Tools\n• Automatic Column Detector\n• Super fast processing\n• **₹299 / Month**")
             if st.button("Buy Monthly Pro", use_container_width=True):
                 update_count("pro_month")
                 st.session_state.plan = 'pro'
@@ -361,7 +361,7 @@ if st.session_state.plan is None:
     with col3:
         with st.container(border=True):
             st.subheader("💎 Best Value")
-            st.markdown("• 6 Month global license\n• Full business tool access\n• Dedicated priority engine\n• Custom template memory\n• **₹1499 / 6 Months**")
+            st.markdown("• 6 Months complete license\n• Access all 7 Smart Tools\n• Priority processing queue\n• Custom template memory\n• **₹1499 / 6 Months**")
             if st.button("Unlock 6 Months", use_container_width=True, type="primary"):
                 update_count("pro_half")
                 st.session_state.plan = 'pro'
@@ -376,7 +376,7 @@ else:
     pro_amount = PRO_AMOUNT_3MONTH if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
     pro_text = "6 Months License" if st.session_state.selected_pro == 'half' else "1 Month License"
 
-    if st.button("⬅️ Return to Studio Mainframe", key="main_back", use_container_width=True):
+    if st.button("⬅️ Back to Main Screen", key="main_back", use_container_width=True):
         st.session_state.plan = None
         st.session_state.show_qr = False
         st.session_state.qr_start_time = None
@@ -387,9 +387,9 @@ else:
 
     if st.session_state.plan == 'pro':
         if st.session_state.ask_email and not st.session_state.user_email:
-            st.title(f"💎 Gateway Identity Setup - {pro_text}")
-            email_input = st.text_input("Register Enterprise Email:", placeholder="username@domain.com")
-            if st.button("Initialize Pipeline", use_container_width=True, type="primary"):
+            st.title(f"💎 Identity Setup - {pro_text}")
+            email_input = st.text_input("Enter Your Registered Email:", placeholder="name@email.com")
+            if st.button("Login & Continue", use_container_width=True, type="primary"):
                 cleaned_email = email_input.strip().lower() if email_input else ""
                 if cleaned_email and "@" in cleaned_email and "." in cleaned_email:
                     st.session_state.user_email = cleaned_email
@@ -408,177 +408,181 @@ else:
                         save_user_to_sheet(cleaned_email, st.session_state.selected_pro)
                         st.rerun()
                 else:
-                    st.error("Invalid email string format detected.")
+                    st.error("Please enter a valid email format.")
             st.stop()
 
         if is_subscription_active():
-            st.success(f"🔒 Authenticated: {st.session_state.user_email} (PRO Plan Active)")
+            st.success(f"🔒 Account Active: {st.session_state.user_email} (PRO Plan Unlocked)")
         elif st.session_state.pro_expiry == 'verification_pending':
-            st.warning("⏳ Verification Protocol Initialized. Please stand by for admin verification (5 mins).")
-            if st.button("🔄 Check Authorization Logs", use_container_width=True):
+            st.warning("⏳ Payment verification in progress. Please wait 5 minutes.")
+            if st.button("🔄 Check Payment Status Again", use_container_width=True):
                 st.session_state.pro_status_checked = False
                 st.rerun()
             st.stop()
         else:
-            st.error("⚠️ Plan Inactive / Awaiting Ledger Verification.")
+            st.error("⚠️ Plan Inactive / Awaiting Verification.")
 
-    uploaded_file = st.file_uploader("Drop document format data matrix (CSV, XLSX, JSON)", type=["csv", "xlsx", "xls", "json"])
+    uploaded_file = st.file_uploader("Upload Your File Here (CSV, XLSX, XLS, JSON)", type=["csv", "xlsx", "xls", "json"])
 
     df = None
     if uploaded_file:
         wait_time = 3 if is_pro_user else 15
-        with st.spinner(f"🧬 Parsing matrix streams... ({wait_time}s)"):
+        with st.spinner(f"🧬 Cleaning and scanning rows... Please wait ({wait_time}s)"):
             time.sleep(wait_time)
         try:
             if uploaded_file.name.endswith('.csv'): df = pd.read_csv(uploaded_file)
             elif uploaded_file.name.endswith(('.xlsx', '.xls')): df = pd.read_excel(uploaded_file)
             elif uploaded_file.name.endswith('.json'): df = pd.read_json(uploaded_file)
         except Exception as e:
-            st.error(f"Matrix read failure: {e}")
+            st.error(f"Error reading file: {e}")
             st.stop()
 
     if df is not None:
         orig_len = len(df)
         
-        # Free account automatically cuts off at 1000 rows
         if not is_pro_user and orig_len > 1000:
             df = df.head(1000)
-            st.warning("⚠️ FREE Tier Limit Active: Processing only first 1000 rows.")
+            st.warning("⚠️ FREE Tier Limit Active: Processing only the first 1000 rows.")
         
-        # Auto-clean duplicates and spaces for both
         df_cleaned = df.drop_duplicates()
         for col in df_cleaned.select_dtypes(include=['object']):
             df_cleaned[col] = df_cleaned[col].apply(text_to_number)
-            df_cleaned[col] = df_cleaned[col].astype(str).str.strip() # Whitespace Trimmer (FREE/PRO)
+            df_cleaned[col] = df_cleaned[col].astype(str).str.strip()
 
         dups_removed = orig_len - len(df_cleaned)
         
         # ================= 📊 LIVE DATA ANALYTICS DASHBOARD =================
-        st.markdown("### 📊 Live Diagnostic Analytics")
+        st.markdown("### 📊 Live File Summary")
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            st.markdown(f"<div class='metric-card'><span style='color:#64748b;font-size:14px;'>Total Loaded Rows</span><br><b style='font-size:24px;color:#1e293b;'>{orig_len}</b></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-card'><span style='color:#64748b;font-size:14px;'>Total Uploaded Rows</span><br><b style='font-size:24px;color:#1e293b;'>{orig_len}</b></div>", unsafe_allow_html=True)
         with c2:
-            st.markdown(f"<div class='metric-card'><span style='color:#64748b;font-size:14px;'>Clean Extracted Rows</span><br><b style='font-size:24px;color:#10b981;'>{len(df_cleaned)}</b></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-card'><span style='color:#64748b;font-size:14px;'>Clean Rows Left</span><br><b style='font-size:24px;color:#10b981;'>{len(df_cleaned)}</b></div>", unsafe_allow_html=True)
         with c3:
-            st.markdown(f"<div class='metric-card'><span style='color:#64748b;font-size:14px;'>Auto-Removed Duplicates</span><br><b style='font-size:24px;color:#ef4444;'>{dups_removed}</b></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-card'><span style='color:#64748b;font-size:14px;'>Deleted Duplicate Rows</span><br><b style='font-size:24px;color:#ef4444;'>{dups_removed}</b></div>", unsafe_allow_html=True)
         with c4:
-            missing_cells = df_cleaned.isna().sum().sum()
-            st.markdown(f"<div class='metric-card'><span style='color:#64748b;font-size:14px;'>Empty Matrix Cells</span><br><b style='font-size:24px;color:#f59e0b;'>{missing_cells}</b></div>", unsafe_allow_html=True)
+            missing_cells = df.isna().sum().sum()
+            st.markdown(f"<div class='metric-card'><span style='color:#64748b;font-size:14px;'>Empty Boxes Found</span><br><b style='font-size:24px;color:#f59e0b;'>{missing_cells}</b></div>", unsafe_allow_html=True)
 
-        # Smart Auto-Detection Mapping
         all_cols = df_cleaned.columns.tolist()
         detected_emails = [c for c in all_cols if 'email' in c.lower() or 'mail' in c.lower()]
         detected_phones = [c for c in all_cols if 'phone' in c.lower() or 'mobile' in c.lower() or 'contact' in c.lower()]
         detected_dates = [c for c in all_cols if 'date' in c.lower() or 'time' in c.lower()]
 
         st.markdown("---")
-        st.subheader("🔧 System Utility Toolkit")
+        st.subheader("🔧 Advanced Tools Menu")
         
-        # Split into tabs where certain operations check for active PRO subscription
-        tab1, tab2, tab3 = st.tabs(["📅 Formats & Math", "📧 Communications Array", "🎯 Advanced String Parsers"])
+        tab1, tab2, tab3 = st.tabs(["📅 Date & Empty Boxes", "📧 Email & Phone", "🎯 Advanced Text Cleaners"])
 
         with tab1:
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("**1. Intelligent Date Normalizer (PRO)**")
+                st.markdown("**1. Auto Date Normalizer (PRO)**")
                 if is_pro_user:
-                    date_cols = st.multiselect("Select Target Columns", all_cols, default=detected_dates, key="date_cols")
+                    date_cols = st.multiselect("Select Date Columns", all_cols, default=detected_dates, key="date_cols")
                     if date_cols:
                         for col in date_cols:
                             df_cleaned[col] = pd.to_datetime(df_cleaned[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
-                        st.success("Target structures normalized to YYYY-MM-DD")
+                        st.success("Dates fixed to standard YYYY-MM-DD format!")
                 else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to automate mixed Date Formats.</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to auto-fix messy Date formats.</div>", unsafe_allow_html=True)
             with col2:
-                st.markdown("**2. Matrix Empty-Cell Filler (PRO)**")
+                st.markdown("**2. Fill Empty Boxes (PRO)**")
                 if is_pro_user:
                     numeric_cols = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
                     if numeric_cols:
-                        fill_method = st.selectbox("Imputation Variable Structure:", ["None", "Mean", "Median", "Zero"], key="fill_method")
+                        fill_method = st.selectbox("Fill Empty Boxes Method:", ["None", "Mean", "Median", "Zero"], key="fill_method")
                         if fill_method != "None":
                             if fill_method == "Mean": df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].mean())
                             elif fill_method == "Median": df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].median())
                             elif fill_method == "Zero": df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(0)
-                            st.success("Matrix cell imputation complete.")
+                            st.success("Empty boxes filled completely!")
                 else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to autofill missing/empty boxes with Mean/Median values.</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to fill empty cells automatically.</div>", unsafe_allow_html=True)
 
         with tab2:
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("**3. Email Format Engine (PRO)**")
+                st.markdown("**3. Email Format Checker (PRO)**")
                 if is_pro_user:
-                    email_cols = st.multiselect("Target Email Tracks", all_cols, default=detected_emails, key="email_cols")
+                    email_cols = st.multiselect("Select Email Columns", all_cols, default=detected_emails, key="email_cols")
                     if email_cols:
                         for col in email_cols:
                             df_cleaned[f'{col}_valid_log'] = df_cleaned[col].str.contains(r'^[\w\.-]+@[\w\.-]+\.\w+$', na=False)
-                        st.success("Regular expression string analysis applied.")
+                        st.success("Invalid emails flagged successfully!")
                 else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to flag invalid email addresses instantly.</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to detect fake/wrong emails.</div>", unsafe_allow_html=True)
             with col2:
-                st.markdown("**4. ISO Mobile Vector Normalizer (PRO)**")
+                st.markdown("**4. Phone Number Fixer (PRO)**")
                 if is_pro_user:
-                    phone_cols = st.multiselect("Target Mobile Vectors", all_cols, default=detected_phones, key="phone_cols")
+                    phone_cols = st.multiselect("Select Phone Columns", all_cols, default=detected_phones, key="phone_cols")
                     if phone_cols:
                         for col in phone_cols:
                             df_cleaned[col] = df_cleaned[col].astype(str).str.replace(r'\D', '', regex=True)
-                        st.success("Stripped non-integer structures from phone blocks.")
+                        st.success("Fixed phone numbers formats.")
                 else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to fix messy phone number styling.</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to clean phone number spacing.</div>", unsafe_allow_html=True)
 
         with tab3:
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("**5. Case Array Standardizer (FREE / PRO)**")
-                # Available to everyone!
-                text_cols = st.multiselect("Target Strings", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="text_cols")
-                case_option = st.selectbox("Apply Case Standard:", ["None", "UPPER", "lower"], key="case_opt")
+                st.markdown("**5. Capital/Small Letters (FREE / PRO)**")
+                text_cols = st.multiselect("Select Text Columns", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="text_cols")
+                case_option = st.selectbox("Choose Style:", ["None", "UPPER CASE", "lower case"], key="case_opt")
                 if text_cols and case_option != "None":
                     for col in text_cols:
-                        if case_option == "UPPER": df_cleaned[col] = df_cleaned[col].str.upper()
-                        elif case_option == "lower": df_cleaned[col] = df_cleaned[col].str.lower()
-                    st.success("Case transformations committed.")
+                        if case_option == "UPPER CASE": df_cleaned[col] = df_cleaned[col].str.upper()
+                        elif case_option == "lower case": df_cleaned[col] = df_cleaned[col].str.lower()
+                    st.success("Text style transformed!")
             with col2:
-                st.markdown("**6. Special Character Purge (PRO)**")
+                st.markdown("**6. Bad Symbol Remover (PRO)**")
                 if is_pro_user:
-                    special_cols = st.multiselect("Target Matrix Blocks", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="special_cols")
+                    special_cols = st.multiselect("Select Columns to Clean", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="special_cols")
                     if special_cols:
                         for col in special_cols:
                             df_cleaned[col] = df_cleaned[col].astype(str).str.replace(r'[^\w\s]', '', regex=True)
-                        st.success("Cleaned high-ascii symbols.")
+                        st.success("Emojis and bad symbols removed!")
                 else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to strip emojis, hashes, and broken symbols.</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to remove emojis and bad icons.</div>", unsafe_allow_html=True)
 
-        st.markdown("**7. Realtime Hot-Swap Renamer (PRO)**")
+        st.markdown("**7. Change Column Name (PRO)**")
         if is_pro_user:
-            rename_col = st.selectbox("Target Node:", ["None"] + all_cols, key="rename_col")
+            rename_col = st.selectbox("Select Column to Rename:", ["None"] + all_cols, key="rename_col")
             if rename_col != "None":
-                new_name = st.text_input(f"Replace label '{rename_col}' with:")
-                if st.button("Execute Label Swap"):
+                new_name = st.text_input(f"Enter new name for '{rename_col}':")
+                if st.button("Apply Name Change"):
                     df_cleaned = df_cleaned.rename(columns={rename_col: new_name})
-                    st.success("Column signature updated.")
+                    st.success("Column name updated!")
                     st.rerun()
         else:
-            st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to instantly swap column headers.</div>", unsafe_allow_html=True)
+            st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to rename columns instantly.</div>", unsafe_allow_html=True)
 
         st.markdown("---")
-        df_display = df_cleaned.fillna('').astype(str).replace(['nan', 'NaN', 'None'], '', regex=False)
-        st.write("**Processed Matrix Stream Output Preview:**")
+        
+        # ================= CLEANING NAN OUT OF DISPLAY =================
+        df_display = df_cleaned.copy()
+        for col in df_display.columns:
+            df_display[col] = df_display[col].astype(str).replace(['nan', 'NaN', 'None', '<NA>', 'nat', 'NaT'], '', regex=True)
+            
+        st.write("**Data Output Preview:**")
         st.dataframe(df_display.head(10 if is_pro_user else 5))
 
-        # ================= 📥 SECURE DOWNLOAD GATEWAYS =================
+        # ================= 📥 BALLOONS ON DOWNLOAD =================
         if st.session_state.plan == 'pro':
             is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
             if is_active:
-                st.success("⚡ PRO Cloud Data Mainframe Pipe Unlocked")
+                st.success("⚡ PRO Network Access Granted")
                 ex_buf = BytesIO()
                 with pd.ExcelWriter(ex_buf, engine='openpyxl') as w: df_cleaned.to_excel(w, index=False)
                 c1, c2 = st.columns(2)
-                c1.download_button("📊 Fetch Production Excel (.xlsx)", ex_buf.getvalue(), "verisame_prod.xlsx", use_container_width=True)
+                
+                if c1.download_button("📊 Download Cleaned Excel (.xlsx)", ex_buf.getvalue(), "verisame_pro.xlsx", use_container_width=True):
+                    st.balloons()
+                    
                 csv_buf = BytesIO()
                 df_cleaned.to_csv(csv_buf, index=False)
-                c2.download_button("📄 Fetch Standard CSV (.csv)", csv_buf.getvalue(), "verisame_prod.csv", use_container_width=True)
+                if c2.download_button("📄 Download Cleaned CSV (.csv)", csv_buf.getvalue(), "verisame_pro.csv", use_container_width=True):
+                    st.balloons()
             elif st.session_state.show_qr:
                 st.info("Render Gateway Signature Node")
                 upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
@@ -590,7 +594,7 @@ else:
                 
                 col1, col2 = st.columns([1,2])
                 col1.image(buf, width=200)
-                col2.markdown(f"**Gateway Asset Node:** `{UPI_ID}`\n\n**Fee Structure:** `₹{pro_amount}`\n\n**Identity Verification Key:** `{st.session_state.user_email}`")
+                col2.markdown(f"**UPI ID:** `{UPI_ID}`\n\n**Price:** `₹{pro_amount}`\n\n**Verification Key:** `{st.session_state.user_email}`")
                 
                 if st.button("Verify Complete Payment Ledger Entry", type="primary", use_container_width=True):
                     update_count("buy")
@@ -599,17 +603,17 @@ else:
                     st.session_state.show_qr = False
                     st.rerun()
             else:
-                if st.button("💳 Provision Premium Network Node Access", type="primary", use_container_width=True):
+                if st.button("💳 Activate Premium Version", type="primary", use_container_width=True):
                     st.session_state.show_qr = True
                     st.rerun()
         
-        # Free Download Block (Only CSV, up to 1000 rows, no excel)
         else:
             csv_buf = BytesIO()
             df_cleaned.to_csv(csv_buf, index=False)
-            st.download_button("📥 Extract Free Tier Analytics Matrix (CSV)", csv_buf.getvalue(), "verisame_free.csv", use_container_width=True)
-            st.info("💡 Pro Tip: Upgrade to PRO to unlock premium Excel (.xlsx) formats and eliminate the 1,000-row pipeline limitation.")
+            if st.download_button("📥 Download Cleaned CSV File", csv_buf.getvalue(), "verisame_free.csv", use_container_width=True):
+                st.balloons()
+            st.info("💡 Upgrade to PRO to download Excel (.xlsx) files and unlock unlimited row uploads.")
 
 # FOOTER SYSTEM SIGNALS
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #94a3b8; font-size:12px;'>VeriSame Data Matrix Suite v1.5 | Protected Pipeline Architecture © 2026</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #c084fc; font-size:12px;'>VeriSame Suite v1.6 | Purple Premium Edition © 2026</div>", unsafe_allow_html=True)
