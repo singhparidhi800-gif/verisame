@@ -146,11 +146,10 @@ def save_user_to_sheet(email, plan_type):
     plan_name = "1month" if plan_type == 'month' else "3month"
     amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_3MONTH
     try:
-        # Pata karo ki banda pehle se sheet mein hai ya nahi taaki duplicate entry na ho
         df = pd.read_csv(SHEET_URL)
         df.columns = df.columns.str.strip().str.lower()
         if email.lower().strip() in df['email'].str.strip().str.lower().values:
-            return True # Pehle se hai, dubara nahi bhejenge
+            return True 
             
         payload = {"action": "new_user", "email": email, "plan": plan_name, "amount": amount}
         headers = {'Content-Type': 'text/plain'}
@@ -289,7 +288,7 @@ for state_key in ['plan', 'selected_pro', 'user_email', 'pro_expiry', 'pro_plan_
 for bool_key in ['show_qr', 'ask_email']:
     if bool_key not in st.session_state: st.session_state[bool_key] = False
 
-# Smart Persistent Balloons Controller
+# 🎈 UNIVERSAL BALLOONS CONTROLLER (Top execution guarantees it always triggers)
 if st.session_state.balloon_trigger == True:
     st.balloons()
     st.session_state.balloon_trigger = False
@@ -417,7 +416,6 @@ else:
 
     st.markdown("---")
 
-    # Ask email once - saves to google sheet only on first submit
     if st.session_state.plan == 'pro' and st.session_state.ask_email and not st.session_state.user_email:
         st.subheader("💎 Pro Workspace Environment Setup")
         email_input = st.text_input("Enter Your Account Email Id To Unlock Testing:", placeholder="name@email.com")
@@ -427,7 +425,6 @@ else:
                 st.session_state.user_email = cleaned_email
                 st.query_params["user"] = cleaned_email
                 
-                # Check server and send data once
                 is_active, expiry, plan = check_user_in_sheet(cleaned_email)
                 if expiry == 'not_found':
                     save_user_to_sheet(cleaned_email, st.session_state.selected_pro)
@@ -651,11 +648,12 @@ else:
                 """)
                 
                 if st.button("I Paid! Click to Verify", type="primary", use_container_width=True):
-                    # Direct cloud check loop without writing backend server scripts again
                     is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
                     if is_active:
                         st.session_state.pro_expiry = expiry
                         st.session_state.balloon_trigger = True
+                        st.balloons() # Immediate direct animation trigger
+                        time.sleep(0.5) # Gives Streamlit engine a fraction of second to render full waves
                         st.success("👑 Payment Verified! Your download access is now open.")
                     else:
                         st.error("⏳ Abhi tak aapka payment clear nahi dikh raha hai sheet mein. Please admin ke status update karne ka wait karein aur fir se check karein.")
