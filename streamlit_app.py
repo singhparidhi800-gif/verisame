@@ -10,12 +10,11 @@ import os
 from datetime import datetime
 import requests
 import hashlib
-import fcntl # Thread-safe file lock ke liye
 from word2number import w2n # AI accurate number conversion
 
 st.set_page_config(
     page_title="VeriSame - Free Excel & CSV Cleaner",
-    icon="📊",
+    page_icon="📊",
     layout="wide",
     menu_items={'About': "VeriSame cleans messy Excel files instantly"}
 )
