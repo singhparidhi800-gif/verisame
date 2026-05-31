@@ -87,7 +87,6 @@ def words_to_number_simple(text):
     if pd.isna(text): return ""
     text_str = str(text).strip().lower()
     
-    # Common English words dictionary for numbers
     num_dict = {
         "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
         "six": "6", "seven": "7", "eight": "8", "nine": "9", "ten": "10",
@@ -97,7 +96,6 @@ def words_to_number_simple(text):
         "eighty": "80", "ninety": "90", "hundred": "100"
     }
     
-    # Check for compound words like sixty four or sixty-four
     text_str = text_str.replace("-", " ")
     parts = text_str.split()
     
@@ -301,8 +299,9 @@ st.markdown(f"""
 for state_key in ['plan', 'selected_pro', 'user_email', 'pro_expiry', 'pro_plan_type', 'df_cleaned', 'balloon_trigger']:
     if state_key not in st.session_state: st.session_state[state_key] = None
 
+# FIXED THE TYPO HERE
 for bool_key in ['show_qr', 'payment_done', 'ask_email', 'show_pay_button', 'pro_status_checked', 'payment_log_done']:
-    if bool_key not in st.session_state in st.session_state: st.session_state[bool_key] = False
+    if bool_key not in st.session_state: st.session_state[bool_key] = False
 
 if 'qr_start_time' not in st.session_state: st.session_state.qr_start_time = None
 
@@ -479,16 +478,13 @@ else:
         
         df_cleaned = df.drop_duplicates()
         
-        # Apply strict cleaning and word-to-number transformation (FREE & PRO)
         for col in df_cleaned.columns:
-            # Convert text words like 'sixty four' to real numbers 64
             df_cleaned[col] = df_cleaned[col].apply(words_to_number_simple)
             if df_cleaned[col].dtype == 'object':
                 df_cleaned[col] = df_cleaned[col].astype(str).str.strip()
 
         dups_removed = orig_len - len(df_cleaned)
         
-        # ================= 📊 LIVE DATA ANALYTICS DASHBOARD =================
         st.markdown("### 📊 Live File Summary")
         c1, c2, c3, c4 = st.columns(4)
         with c1:
@@ -596,7 +592,6 @@ else:
 
         st.markdown("---")
         
-        # ================= 🛡️ STRICT ANTI-NAN GRID FIXER =================
         df_display = df_cleaned.copy()
         for col in df_display.columns:
             df_display[col] = df_display[col].astype(str).replace(['nan', 'NaN', 'None', '<NA>', 'nat', 'NaT'], '', regex=True)
@@ -604,7 +599,6 @@ else:
         st.write("**Data Output Preview:**")
         st.dataframe(df_display.head(10 if is_pro_user else 5))
 
-        # ================= 📥 BALLOONS ON DOWNLOAD IMPLEMENTATION =================
         if st.session_state.plan == 'pro':
             is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
             if is_active:
@@ -613,14 +607,12 @@ else:
                 with pd.ExcelWriter(ex_buf, engine='openpyxl') as w: df_cleaned.to_excel(w, index=False)
                 c1, c2 = st.columns(2)
                 
-                # Excel Download Button
                 if c1.download_button("📊 Download Cleaned Excel (.xlsx)", ex_buf.getvalue(), "verisame_pro.xlsx", use_container_width=True):
                     st.session_state.balloon_trigger = True
                     st.rerun()
                     
                 csv_buf = BytesIO()
                 df_cleaned.to_csv(csv_buf, index=False)
-                # CSV Download Button
                 if c2.download_button("📄 Download Cleaned CSV (.csv)", csv_buf.getvalue(), "verisame_pro.csv", use_container_width=True):
                     st.session_state.balloon_trigger = True
                     st.rerun()
@@ -658,4 +650,4 @@ else:
 
 # FOOTER SYSTEM SIGNALS
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #f43f5e; font-size:12px;'>VeriSame Suite v1.7 | Pink Premium Edition © 2026</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #f43f5e; font-size:12px;'>VeriSame Suite v1.8 | Pink Premium Edition © 2026</div>", unsafe_allow_html=True)
