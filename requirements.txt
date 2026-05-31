@@ -5,3 +5,4 @@ numpy
 qrcode[pil]
 streamlit-javascript
 requests
+word2number
