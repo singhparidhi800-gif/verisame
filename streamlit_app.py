@@ -35,7 +35,6 @@ WHATSAPP_NUMBER = "919794906852"
 UPI_ID = st.secrets.get("UPI_ID", "playwithreyansh0@okhdfcbank")
 PRO_AMOUNT_MONTH = 299
 PRO_AMOUNT_3MONTH = 1499
-WAIT_SECONDS = 5 
 
 def make_hashes(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
@@ -55,7 +54,7 @@ if SHOW_DASHBOARD and 'bot' in str(query_params).lower():
 # ============ EMAIL MEMORY ============
 url_email = query_params.get("user")
 if url_email and 'user_email' not in st.session_state:
-    st.session_state.user_email = url_email.strip()
+    st.session_state.user_email = url_email.strip().lower()
 
 # ============ COUNTING FILE ============
 COUNT_FILE = "counts.json"
@@ -114,8 +113,8 @@ def words_to_number_simple(text):
     return str(text).strip()
 
 # ============ SUBSCRIPTION FUNCTIONS ============
-@st.cache_data(ttl=10)
 def check_user_in_sheet(email):
+    if not email: return False, "not_found", None
     try:
         df = pd.read_csv(SHEET_URL)
         df.columns = df.columns.str.strip().str.lower()
@@ -193,7 +192,6 @@ if SHOW_DASHBOARD:
     st.caption("⚠️ CEO Only")
     if st.button("🔄 Refresh Counts", type="primary", use_container_width=True):
         st.cache_data.clear()
-        st.cache_resource.clear()
         st.rerun()
     counts = get_counts()
     col1, col2, col3, col4, col5 = st.columns(5)
@@ -299,13 +297,10 @@ st.markdown(f"""
 for state_key in ['plan', 'selected_pro', 'user_email', 'pro_expiry', 'pro_plan_type', 'df_cleaned', 'balloon_trigger']:
     if state_key not in st.session_state: st.session_state[state_key] = None
 
-# FIXED THE TYPO HERE
 for bool_key in ['show_qr', 'payment_done', 'ask_email', 'show_pay_button', 'pro_status_checked', 'payment_log_done']:
     if bool_key not in st.session_state: st.session_state[bool_key] = False
 
-if 'qr_start_time' not in st.session_state: st.session_state.qr_start_time = None
-
-# Smart Balloons State Checker
+# Smart Persistent Balloons Controller
 if st.session_state.balloon_trigger == True:
     st.balloons()
     st.session_state.balloon_trigger = False
@@ -319,41 +314,43 @@ def is_subscription_active():
             return False
     return False
 
-# SIDEBAR
+# Real-Time Silent Sync Loop
+if st.session_state.user_email:
+    is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
+    st.session_state.pro_expiry = expiry
+    st.session_state.pro_plan_type = plan
+
+# SIDEBAR COGNITIVE STATUS (Quiet Mode)
 with st.sidebar:
     st.title("💼 VeriSame")
     if st.session_state.user_email:
         st.success(f"✅ Logged in")
         st.caption(f"📧 {st.session_state.user_email}")
+        
+        # Shows real-time validation without breaking workspace screens
         if is_subscription_active():
-            st.caption(f"PRO active till: {st.session_state.pro_expiry}")
+            st.success(f"👑 PRO Status: Active\n(Expires: {st.session_state.pro_expiry})")
+        elif st.session_state.pro_expiry == 'verification_pending':
+            st.warning("⏳ Status: Payment Pending Admin Verification")
+        else:
+            st.error("❌ Status: Unpaid / Trial Testing Mode")
+            
         st.markdown("---")
         if st.button("🚪 Logout", use_container_width=True):
             for k in list(st.session_state.keys()): del st.session_state[k]
             st.query_params.clear()
             st.rerun()
     else:
-        st.info("Login for PRO features")
+        st.info("Login to sync workspace environments.")
     st.markdown("---")
     st.markdown(f"[💬 WhatsApp Support](https://wa.me/{WHATSAPP_NUMBER})")
 
-# LANDING PAGE
+# LANDING GRAPHICS
 st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=260)
 st.title("💼 VeriSame")
 st.subheader("The fastest way to clean your data")
 
 if st.session_state.plan is None:
-    if st.session_state.user_email and not st.session_state.pro_status_checked:
-        is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
-        st.session_state.pro_expiry = expiry
-        st.session_state.pro_plan_type = plan
-        st.session_state.pro_status_checked = True
-        if is_active:
-            st.session_state.plan = 'pro'
-            st.session_state.payment_done = True
-            st.session_state.selected_pro = 'month' if plan == '1month' else 'half'
-            st.rerun()
-
     st.markdown("""
     <div class="tools-banner">
         <h3 style='margin:0 0 12px 0; text-align:center;'>🚀 FREE vs PRO Features List</h3>
@@ -374,7 +371,15 @@ if st.session_state.plan is None:
     with col1:
         with st.container(border=True):
             st.subheader("🆓 FREE Tier")
-            st.markdown("• Max 1000 rows limit\n• CSV File Download only\n• Auto-Delete Duplicates\n• Text Case Changer\n• Extra Space Cleaner\n• **Auto Word-to-Number Engine (e.g. sixty four ➡️ 64)**\n• 15 Seconds processing wait")
+            st.markdown("""
+            . Max 1000 rows limit
+            . CSV File Download only
+            . Auto-Delete Duplicates
+            . Text Case Changer
+            . Extra Space Cleaner
+            . **Auto Word-to-Number Engine (e.g. sixty four ➡️ 64)**
+            . 3 Seconds instant processing wait
+            """)
             if st.button("Access Free Tier", use_container_width=True):
                 update_count("free")
                 st.session_state.plan = 'free'
@@ -382,85 +387,75 @@ if st.session_state.plan is None:
     with col2:
         with st.container(border=True):
             st.subheader("🔥 Monthly Pro")
-            st.markdown("• Unlimited rows & size\n• Download Excel + CSV formats\n• Access all 7 Smart Tools\n• Automatic Column Detector\n• Super fast processing\n• **₹299 / Month**")
+            st.markdown("""
+            . Unlimited rows & size
+            . Download Excel + CSV formats
+            . Access all 7 Smart Tools
+            . Automatic Column Detector
+            . Super fast 3s processing
+            . **₹299 / Month**
+            """)
             if st.button("Buy Monthly Pro", use_container_width=True):
                 update_count("pro_month")
                 st.session_state.plan = 'pro'
                 st.session_state.selected_pro = 'month'
                 st.session_state.ask_email = True
-                st.session_state.pro_status_checked = False
                 st.rerun()
     with col3:
         with st.container(border=True):
             st.subheader("💎 Best Value")
-            st.markdown("• 6 Months complete license\n• Access all 7 Smart Tools\n• Priority processing queue\n• Custom template memory\n• **₹1499 / 6 Months**")
+            st.markdown("""
+            . 6 Months complete license
+            . Access all 7 Smart Tools
+            . Priority processing queue
+            . Custom template memory
+            . Super fast 3s processing
+            . **₹1499 / 6 Months**
+            """)
             if st.button("Unlock 6 Months", use_container_width=True, type="primary"):
                 update_count("pro_half")
                 st.session_state.plan = 'pro'
                 st.session_state.selected_pro = 'half'
                 st.session_state.ask_email = True
-                st.session_state.pro_status_checked = False
                 st.rerun()
 
-# PROCESSING SEGMENT
+# REALTIME PIPELINE CONTROLLER
 else:
-    is_pro_user = (st.session_state.plan == 'pro' and is_subscription_active())
-    pro_amount = PRO_AMOUNT_3MONTH if st.session_state.selected_pro == 'half' else PRO_AMOUNT_MONTH
-    pro_text = "6 Months License" if st.session_state.selected_pro == 'half' else "1 Month License"
-
     if st.button("⬅️ Back to Main Screen", key="main_back", use_container_width=True):
         st.session_state.plan = None
         st.session_state.show_qr = False
-        st.session_state.qr_start_time = None
         st.session_state.df_cleaned = None
         st.rerun()
 
     st.markdown("---")
 
-    if st.session_state.plan == 'pro':
-        if st.session_state.ask_email and not st.session_state.user_email:
-            st.title(f"💎 Identity Setup - {pro_text}")
-            email_input = st.text_input("Enter Your Registered Email:", placeholder="name@email.com")
-            if st.button("Login & Continue", use_container_width=True, type="primary"):
-                cleaned_email = email_input.strip().lower() if email_input else ""
-                if cleaned_email and "@" in cleaned_email and "." in cleaned_email:
-                    st.session_state.user_email = cleaned_email
-                    st.query_params["user"] = cleaned_email
-                    is_active, expiry, plan = check_user_in_sheet(cleaned_email)
-                    st.session_state.pro_expiry = expiry
-                    st.session_state.pro_plan_type = plan
-                    st.session_state.pro_status_checked = True
-
-                    if is_active:
-                        st.session_state.payment_done = True
-                        st.session_state.ask_email = False
-                        st.rerun()
-                    else:
-                        st.session_state.ask_email = False
-                        save_user_to_sheet(cleaned_email, st.session_state.selected_pro)
-                        st.rerun()
-                else:
-                    st.error("Please enter a valid email format.")
-            st.stop()
-
-        if is_subscription_active():
-            st.success(f"🔒 Account Active: {st.session_state.user_email} (PRO Plan Unlocked)")
-        elif st.session_state.pro_expiry == 'verification_pending':
-            st.warning("⏳ Payment verification in progress. Please wait 5 minutes.")
-            if st.button("🔄 Check Payment Status Again", use_container_width=True):
-                st.session_state.pro_status_checked = False
+    # Quiet Identity Mapping Flow (No warnings, directly drops details into sidebar structure)
+    if st.session_state.plan == 'pro' and st.session_state.ask_email and not st.session_state.user_email:
+        st.subheader("💎 Pro Workspace Environment Setup")
+        email_input = st.text_input("Enter Your Account Email Id To Unlock Testing:", placeholder="name@email.com")
+        if st.button("Verify & Open Workspace", use_container_width=True, type="primary"):
+            cleaned_email = email_input.strip().lower() if email_input else ""
+            if cleaned_email and "@" in cleaned_email and "." in cleaned_email:
+                st.session_state.user_email = cleaned_email
+                st.query_params["user"] = cleaned_email
+                is_active, expiry, plan = check_user_in_sheet(cleaned_email)
+                st.session_state.pro_expiry = expiry
+                st.session_state.pro_plan_type = plan
+                if not is_active and expiry == 'not_found':
+                    save_user_to_sheet(cleaned_email, st.session_state.selected_pro)
+                st.session_state.ask_email = False
                 st.rerun()
-            st.stop()
-        else:
-            st.error("⚠️ Plan Inactive / Awaiting Verification.")
+            else:
+                st.error("Please insert a valid email address.")
+        st.stop()
 
     uploaded_file = st.file_uploader("Upload Your File Here (CSV, XLSX, XLS, JSON)", type=["csv", "xlsx", "xls", "json"])
 
     df = None
     if uploaded_file:
-        wait_time = 3 if is_pro_user else 15
-        with st.spinner(f"🧬 Cleaning and scanning rows... Please wait ({wait_time}s)"):
-            time.sleep(wait_time)
+        # Uniform 3-seconds speed metrics across ALL channels
+        with st.spinner("🧬 Synchronizing clean rows database engine... Please wait (3s)"):
+            time.sleep(3)
         try:
             if uploaded_file.name.endswith('.csv'): df = pd.read_csv(uploaded_file)
             elif uploaded_file.name.endswith(('.xlsx', '.xls')): df = pd.read_excel(uploaded_file)
@@ -472,12 +467,13 @@ else:
     if df is not None:
         orig_len = len(df)
         
-        if not is_pro_user and orig_len > 1000:
+        if st.session_state.plan == 'free' and orig_len > 1000:
             df = df.head(1000)
             st.warning("⚠️ FREE Tier Limit Active: Processing only the first 1000 rows.")
         
         df_cleaned = df.drop_duplicates()
         
+        # Automatic Core Normalization (Words-To-Numbers operates universally)
         for col in df_cleaned.columns:
             df_cleaned[col] = df_cleaned[col].apply(words_to_number_simple)
             if df_cleaned[col].dtype == 'object':
@@ -485,6 +481,7 @@ else:
 
         dups_removed = orig_len - len(df_cleaned)
         
+        # METRIC COUNTERS
         st.markdown("### 📊 Live File Summary")
         c1, c2, c3, c4 = st.columns(4)
         with c1:
@@ -505,13 +502,16 @@ else:
         st.markdown("---")
         st.subheader("🔧 Advanced Tools Menu")
         
+        # DYNAMIC ACCESS CONTROLLERS (Unlocked for ALL Pro workspace entries, locked for Free)
+        is_pro_workspace = (st.session_state.plan == 'pro')
+        
         tab1, tab2, tab3 = st.tabs(["📅 Date & Empty Boxes", "📧 Email & Phone", "🎯 Advanced Text Cleaners"])
 
         with tab1:
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown("**1. Auto Date Normalizer (PRO)**")
-                if is_pro_user:
+                if is_pro_workspace:
                     date_cols = st.multiselect("Select Date Columns", all_cols, default=detected_dates, key="date_cols")
                     if date_cols:
                         for col in date_cols:
@@ -521,7 +521,7 @@ else:
                     st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to auto-fix messy Date formats.</div>", unsafe_allow_html=True)
             with col2:
                 st.markdown("**2. Fill Empty Boxes (PRO)**")
-                if is_pro_user:
+                if is_pro_workspace:
                     numeric_cols = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
                     if numeric_cols:
                         fill_method = st.selectbox("Fill Empty Boxes Method:", ["None", "Mean", "Median", "Zero"], key="fill_method")
@@ -537,7 +537,7 @@ else:
             col1, col2 = st.columns(2)
             with col1:
                 st.markdown("**3. Email Format Checker (PRO)**")
-                if is_pro_user:
+                if is_pro_workspace:
                     email_cols = st.multiselect("Select Email Columns", all_cols, default=detected_emails, key="email_cols")
                     if email_cols:
                         for col in email_cols:
@@ -547,7 +547,7 @@ else:
                     st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to detect fake/wrong emails.</div>", unsafe_allow_html=True)
             with col2:
                 st.markdown("**4. Phone Number Fixer (PRO)**")
-                if is_pro_user:
+                if is_pro_workspace:
                     phone_cols = st.multiselect("Select Phone Columns", all_cols, default=detected_phones, key="phone_cols")
                     if phone_cols:
                         for col in phone_cols:
@@ -569,7 +569,7 @@ else:
                     st.success("Text style transformed!")
             with col2:
                 st.markdown("**6. Bad Symbol Remover (PRO)**")
-                if is_pro_user:
+                if is_pro_workspace:
                     special_cols = st.multiselect("Select Columns to Clean", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="special_cols")
                     if special_cols:
                         for col in special_cols:
@@ -579,7 +579,7 @@ else:
                     st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to remove emojis and bad icons.</div>", unsafe_allow_html=True)
 
         st.markdown("**7. Change Column Name (PRO)**")
-        if is_pro_user:
+        if is_pro_workspace:
             rename_col = st.selectbox("Select Column to Rename:", ["None"] + all_cols, key="rename_col")
             if rename_col != "None":
                 new_name = st.text_input(f"Enter new name for '{rename_col}':")
@@ -592,62 +592,85 @@ else:
 
         st.markdown("---")
         
+        # String Output Cleanser
         df_display = df_cleaned.copy()
         for col in df_display.columns:
             df_display[col] = df_display[col].astype(str).replace(['nan', 'NaN', 'None', '<NA>', 'nat', 'NaT'], '', regex=True)
             
-        st.write("**Data Output Preview:**")
-        st.dataframe(df_display.head(10 if is_pro_user else 5))
+        st.write("**Data Output Preview (Audit Window Locked to 10 Rows Max):**")
+        st.dataframe(df_display.head(10))
 
-        if st.session_state.plan == 'pro':
-            is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
-            if is_active:
-                st.success("⚡ PRO Network Access Granted")
-                ex_buf = BytesIO()
-                with pd.ExcelWriter(ex_buf, engine='openpyxl') as w: df_cleaned.to_excel(w, index=False)
-                c1, c2 = st.columns(2)
+        # ================= DOWNLOADS & PRO PAYMENTS ENGINE =================
+        
+        # CASE 1: Completely Free Stream
+        if st.session_state.plan == 'free':
+            csv_buf = BytesIO()
+            df_cleaned.to_csv(csv_buf, index=False)
+            if st.download_button("📥 Download Cleaned CSV File", csv_buf.getvalue(), "verisame_free.csv", use_container_width=True):
+                st.session_state.balloon_trigger = True
+                st.rerun()
+
+        # CASE 2: Fully Verified Paid PRO Users
+        elif st.session_state.plan == 'pro' and is_subscription_active():
+            ex_buf = BytesIO()
+            with pd.ExcelWriter(ex_buf, engine='openpyxl') as w: df_cleaned.to_excel(w, index=False)
+            c1, c2 = st.columns(2)
+            
+            if c1.download_button("📊 Download Premium Excel (.xlsx)", ex_buf.getvalue(), "verisame_pro.xlsx", use_container_width=True):
+                st.session_state.balloon_trigger = True
+                st.rerun()
                 
-                if c1.download_button("📊 Download Cleaned Excel (.xlsx)", ex_buf.getvalue(), "verisame_pro.xlsx", use_container_width=True):
-                    st.session_state.balloon_trigger = True
+            csv_buf = BytesIO()
+            df_cleaned.to_csv(csv_buf, index=False)
+            if c2.download_button("📄 Download Premium CSV (.csv)", csv_buf.csv_buf.getvalue(), "verisame_pro.csv", use_container_width=True):
+                st.session_state.balloon_trigger = True
+                st.rerun()
+
+        # CASE 3: Pro Trial Stream (New Users / Unpaid Entries)
+        else:
+            st.markdown("### 🔒 Premium Download Locked")
+            st.info("Your dataset is fully processed and modified using premium cloud node operations! To unlock downloading beyond the 10 rows restriction, choose a license profile below.")
+            
+            pay_col1, pay_col2 = st.columns(2)
+            with pay_col1:
+                if st.button("💳 Pay ₹299 (1 Month Access Key)", use_container_width=True):
+                    st.session_state.show_qr = True
+                    st.session_state.current_pay_amt = 299
                     st.rerun()
-                    
-                csv_buf = BytesIO()
-                df_cleaned.to_csv(csv_buf, index=False)
-                if c2.download_button("📄 Download Cleaned CSV (.csv)", csv_buf.getvalue(), "verisame_pro.csv", use_container_width=True):
-                    st.session_state.balloon_trigger = True
+            with pay_col2:
+                if st.button("💎 Pay ₹1499 (6 Months Platinum Pass)", use_container_width=True, type="primary"):
+                    st.session_state.show_qr = True
+                    st.session_state.current_pay_amt = 1499
                     st.rerun()
-            elif st.session_state.show_qr:
-                st.info("Render Gateway Signature Node")
-                upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pro_amount}&cu=INR&tn={st.session_state.user_email}"
+
+            # Dynamic QR Canvas Render
+            if st.session_state.show_qr:
+                amt = st.session_state.get('current_pay_amt', 299)
+                upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={amt}&cu=INR&tn={st.session_state.user_email}"
                 qr = qrcode.QRCode(box_size=5, border=1)
                 qr.add_data(upi_link)
                 qr.make(fit=True)
                 buf = BytesIO()
                 qr.make_image().save(buf)
                 
-                col1, col2 = st.columns([1,2])
-                col1.image(buf, width=200)
-                col2.markdown(f"**UPI ID:** `{UPI_ID}`\n\n**Price:** `₹{pro_amount}`\n\n**Verification Key:** `{st.session_state.user_email}`")
+                st.markdown("---")
+                col_qr, col_txt = st.columns([1,2])
+                col_qr.image(buf, width=220)
+                col_txt.markdown(f"""
+                ### 📲 Scan QR To Make Instant Activation Payment
+                * **UPI Address Target:** `{UPI_ID}`
+                * **Amount Set:** `₹{amt}`
+                * **Verification Account Key (Email):** `{st.session_state.user_email}`
                 
-                if st.button("Verify Complete Payment Ledger Entry", type="primary", use_container_width=True):
+                *Once the payment ledger has cleared, click the secure sync query node below.*
+                """)
+                
+                if st.button("I Paid! Verify My Access Key Logs", type="primary", use_container_width=True):
                     update_count("buy")
                     request_payment_verification(st.session_state.user_email)
-                    st.session_state.pro_expiry = 'verification_pending'
-                    st.session_state.show_qr = False
+                    st.success("🔄 Syncing Request Submitted! As soon as you set 'paid' and expiration date on the main server sheets, your client dashboard will automatically refresh to premium download modes.")
                     st.rerun()
-            else:
-                if st.button("💳 Activate Premium Version", type="primary", use_container_width=True):
-                    st.session_state.show_qr = True
-                    st.rerun()
-        
-        else:
-            csv_buf = BytesIO()
-            df_cleaned.to_csv(csv_buf, index=False)
-            if st.download_button("📥 Download Cleaned CSV File", csv_buf.getvalue(), "verisame_free.csv", use_container_width=True):
-                st.session_state.balloon_trigger = True
-                st.rerun()
-            st.info("💡 Upgrade to PRO to download Excel (.xlsx) files and unlock unlimited row uploads.")
 
-# FOOTER SYSTEM SIGNALS
+# FOOTER METRICS
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #f43f5e; font-size:12px;'>VeriSame Suite v1.8 | Pink Premium Edition © 2026</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #f43f5e; font-size:12px;'>VeriSame Suite v2.1 | Pink Premium Edition © 2026</div>", unsafe_allow_html=True)
