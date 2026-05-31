@@ -143,8 +143,13 @@ def check_user_in_sheet(email):
         return False, "sheet_error", None
 
 def save_user_to_sheet(email, plan_type):
-    plan_name = "1month" if plan_type == 'month' else "3month"
-    amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_3MONTH
+    if plan_type == 'free':
+        plan_name = "free"
+        amount = 0
+    else:
+        plan_name = "1month" if plan_type == 'month' else "3month"
+        amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_3MONTH
+        
     try:
         df = pd.read_csv(SHEET_URL)
         df.columns = df.columns.str.strip().str.lower()
@@ -288,12 +293,14 @@ for state_key in ['plan', 'selected_pro', 'user_email', 'pro_expiry', 'pro_plan_
 for bool_key in ['show_qr', 'ask_email']:
     if bool_key not in st.session_state: st.session_state[bool_key] = False
 
-# 🎈 UNIVERSAL BALLOONS CONTROLLER (Top execution guarantees it always triggers)
+# 🎈 IMMEDIATE BALLOON TRIGGER (Rerun safe setup)
 if st.session_state.balloon_trigger == True:
     st.balloons()
     st.session_state.balloon_trigger = False
 
 def is_subscription_active():
+    if st.session_state.plan == 'free':
+        return False
     if st.session_state.pro_expiry and st.session_state.pro_expiry not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error', 'verification_pending', 'rejected']:
         try:
             expiry = datetime.strptime(st.session_state.pro_expiry, '%Y-%m-%d')
@@ -303,7 +310,7 @@ def is_subscription_active():
     return False
 
 # Live Sync State
-if st.session_state.user_email:
+if st.session_state.user_email and st.session_state.plan != 'free':
     is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
     st.session_state.pro_expiry = expiry
     st.session_state.pro_plan_type = plan
@@ -315,7 +322,9 @@ with st.sidebar:
         st.success(f"✅ Logged in")
         st.caption(f"📧 {st.session_state.user_email}")
         
-        if is_subscription_active():
+        if st.session_state.plan == 'free':
+            st.info("🆓 Plan: Free Tier")
+        elif is_subscription_active():
             st.success(f"👑 PRO Status: Active\n(Expires: {st.session_state.pro_expiry})")
         elif st.session_state.pro_expiry == 'verification_pending':
             st.warning("⏳ Status: Verification Pending")
@@ -370,6 +379,7 @@ if st.session_state.plan is None:
             if st.button("Access Free Tier", use_container_width=True):
                 update_count("free")
                 st.session_state.plan = 'free'
+                st.session_state.ask_email = True  # FIX: Free user ka bhi email mangenge ab!
                 st.rerun()
     with col2:
         with st.container(border=True):
@@ -416,22 +426,26 @@ else:
 
     st.markdown("---")
 
-    if st.session_state.plan == 'pro' and st.session_state.ask_email and not st.session_state.user_email:
-        st.subheader("💎 Pro Workspace Environment Setup")
-        email_input = st.text_input("Enter Your Account Email Id To Unlock Testing:", placeholder="name@email.com")
+    # FIX: Email input section dono plans (Free & Pro) ke liye chalega ab aur Google Sheet me data bhejega
+    if st.session_state.ask_email and not st.session_state.user_email:
+        st.subheader("⚙️ Workspace Environment Setup")
+        email_input = st.text_input("Enter Your Account Email Id To Continue:", placeholder="name@email.com")
         if st.button("Verify & Open Workspace", use_container_width=True, type="primary"):
             cleaned_email = email_input.strip().lower() if email_input else ""
             if cleaned_email and "@" in cleaned_email and "." in cleaned_email:
                 st.session_state.user_email = cleaned_email
                 st.query_params["user"] = cleaned_email
                 
-                is_active, expiry, plan = check_user_in_sheet(cleaned_email)
-                if expiry == 'not_found':
-                    save_user_to_sheet(cleaned_email, st.session_state.selected_pro)
-                    
-                st.session_state.pro_expiry = expiry
-                st.session_state.pro_plan_type = plan
-                st.session_state.ask_email = False
+                if st.session_state.plan == 'free':
+                    save_user_to_sheet(cleaned_email, 'free')  # Save Free User to sheet
+                    st.session_state.ask_email = False
+                else:
+                    is_active, expiry, plan = check_user_in_sheet(cleaned_email)
+                    if expiry == 'not_found':
+                        save_user_to_sheet(cleaned_email, st.session_state.selected_pro)
+                    st.session_state.pro_expiry = expiry
+                    st.session_state.pro_plan_type = plan
+                    st.session_state.ask_email = False
                 st.rerun()
             else:
                 st.error("Please insert a valid email address.")
@@ -584,7 +598,7 @@ else:
 
         # ================= DOWNLOADS & PRO PAYMENTS ENGINE =================
         
-        # CASE 1: Free Tier
+        # FIX: Balloons immediate triggering on click by setting trigger inside conditional check right before rerun.
         if st.session_state.plan == 'free':
             csv_buf = BytesIO()
             df_cleaned.to_csv(csv_buf, index=False)
@@ -592,7 +606,6 @@ else:
                 st.session_state.balloon_trigger = True
                 st.rerun()
 
-        # CASE 2: Paid Active Users
         elif st.session_state.plan == 'pro' and is_subscription_active():
             ex_buf = BytesIO()
             with pd.ExcelWriter(ex_buf, engine='openpyxl') as w: df_cleaned.to_excel(w, index=False)
@@ -608,7 +621,6 @@ else:
                 st.session_state.balloon_trigger = True
                 st.rerun()
 
-        # CASE 3: Trial / Unpaid Mode
         else:
             st.markdown("### 🔒 Premium Download Locked")
             st.info("To unlock full file download, click on one of the payment plans below.")
@@ -625,7 +637,6 @@ else:
                     st.session_state.current_pay_amt = 1499
                     st.rerun()
 
-            # Live QR Rendering Block
             if st.session_state.show_qr:
                 amt = st.session_state.current_pay_amt if st.session_state.current_pay_amt else 299
                 upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={amt}&cu=INR&tn={st.session_state.user_email}"
@@ -652,12 +663,9 @@ else:
                     if is_active:
                         st.session_state.pro_expiry = expiry
                         st.session_state.balloon_trigger = True
-                        st.balloons() # Immediate direct animation trigger
-                        time.sleep(0.5) # Gives Streamlit engine a fraction of second to render full waves
-                        st.success("👑 Payment Verified! Your download access is now open.")
+                        st.rerun()
                     else:
                         st.error("⏳ Abhi tak aapka payment clear nahi dikh raha hai sheet mein. Please admin ke status update karne ka wait karein aur fir se check karein.")
-                    st.rerun()
 
 # FOOTER METRICS
 st.markdown("---")
