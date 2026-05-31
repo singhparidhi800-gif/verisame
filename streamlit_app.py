@@ -1,11 +1,10 @@
 import streamlit as st
 from pathlib import Path
-import streamlit.components.v1 as components
 import pandas as pd
 import time
 import numpy as np
 import re
-from io import BytesIO, StringIO
+from io import BytesIO
 import qrcode
 import json
 import os
@@ -127,26 +126,18 @@ def check_user_in_sheet(email):
             expiry_str = str(user_row['expiry_date']).strip()
             plan = str(user_row['plan']).strip()
 
-            if status == 'verification_pending':
-                return False, "verification_pending", plan
-            if status == 'rejected':
-                return False, "rejected", plan
-            if status != 'paid':
-                return False, "not_verified", plan
-
-            if expiry_str.lower() in ['pending', 'verify_karo', 'rejected', 'nan', '']:
-                return False, "not_verified", plan
-
-            for fmt in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y', '%m/%d/%Y']:
-                try:
-                    expiry_date = datetime.strptime(expiry_str, fmt)
-                    if datetime.now().date() <= expiry_date.date():
-                        return True, expiry_date.strftime('%Y-%m-%d'), plan
-                    else:
-                        return False, "expired", plan
-                except:
-                    continue
-            return False, "invalid_date", plan
+            if status == 'paid':
+                for fmt in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y', '%m/%d/%Y']:
+                    try:
+                        expiry_date = datetime.strptime(expiry_str, fmt)
+                        if datetime.now().date() <= expiry_date.date():
+                            return True, expiry_date.strftime('%Y-%m-%d'), plan
+                        else:
+                            return False, "expired", plan
+                    except:
+                        continue
+                return False, "invalid_date", plan
+            return False, status, plan
         return False, "not_found", None
     except Exception as e:
         return False, "sheet_error", None
@@ -155,20 +146,18 @@ def save_user_to_sheet(email, plan_type):
     plan_name = "1month" if plan_type == 'month' else "3month"
     amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_3MONTH
     try:
+        # Pata karo ki banda pehle se sheet mein hai ya nahi taaki duplicate entry na ho
+        df = pd.read_csv(SHEET_URL)
+        df.columns = df.columns.str.strip().str.lower()
+        if email.lower().strip() in df['email'].str.strip().str.lower().values:
+            return True # Pehle se hai, dubara nahi bhejenge
+            
         payload = {"action": "new_user", "email": email, "plan": plan_name, "amount": amount}
         headers = {'Content-Type': 'text/plain'}
         r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
         return r.status_code == 200 and "success" in r.text.lower()
     except:
         return False
-
-def request_payment_verification(email):
-    try:
-        payload = {"action": "payment_request", "email": email}
-        headers = {'Content-Type': 'text/plain'}
-        requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=5)
-    except:
-        pass
 
 # GA SYSTEM
 if not SHOW_DASHBOARD:
@@ -294,10 +283,10 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ============ SESSION STATES ============
-for state_key in ['plan', 'selected_pro', 'user_email', 'pro_expiry', 'pro_plan_type', 'df_cleaned', 'balloon_trigger']:
+for state_key in ['plan', 'selected_pro', 'user_email', 'pro_expiry', 'pro_plan_type', 'df_cleaned', 'balloon_trigger', 'current_pay_amt']:
     if state_key not in st.session_state: st.session_state[state_key] = None
 
-for bool_key in ['show_qr', 'payment_done', 'ask_email', 'show_pay_button', 'pro_status_checked', 'payment_log_done']:
+for bool_key in ['show_qr', 'ask_email']:
     if bool_key not in st.session_state: st.session_state[bool_key] = False
 
 # Smart Persistent Balloons Controller
@@ -314,26 +303,25 @@ def is_subscription_active():
             return False
     return False
 
-# Real-Time Silent Sync Loop
+# Live Sync State
 if st.session_state.user_email:
     is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
     st.session_state.pro_expiry = expiry
     st.session_state.pro_plan_type = plan
 
-# SIDEBAR COGNITIVE STATUS (Quiet Mode)
+# SIDEBAR STATUS
 with st.sidebar:
     st.title("💼 VeriSame")
     if st.session_state.user_email:
         st.success(f"✅ Logged in")
         st.caption(f"📧 {st.session_state.user_email}")
         
-        # Shows real-time validation without breaking workspace screens
         if is_subscription_active():
             st.success(f"👑 PRO Status: Active\n(Expires: {st.session_state.pro_expiry})")
         elif st.session_state.pro_expiry == 'verification_pending':
-            st.warning("⏳ Status: Payment Pending Admin Verification")
+            st.warning("⏳ Status: Verification Pending")
         else:
-            st.error("❌ Status: Unpaid / Trial Testing Mode")
+            st.error("❌ Status: Testing Mode (Unpaid)")
             
         st.markdown("---")
         if st.button("🚪 Logout", use_container_width=True):
@@ -372,13 +360,13 @@ if st.session_state.plan is None:
         with st.container(border=True):
             st.subheader("🆓 FREE Tier")
             st.markdown("""
-            . Max 1000 rows limit
-            . CSV File Download only
-            . Auto-Delete Duplicates
-            . Text Case Changer
-            . Extra Space Cleaner
-            . **Auto Word-to-Number Engine (e.g. sixty four ➡️ 64)**
-            . 3 Seconds instant processing wait
+            * Max 1000 rows limit
+            * CSV File Download only
+            * Auto-Delete Duplicates
+            * Text Case Changer
+            * Extra Space Cleaner
+            * Auto Word-to-Number Engine
+            * 3 Seconds instant processing wait
             """)
             if st.button("Access Free Tier", use_container_width=True):
                 update_count("free")
@@ -388,12 +376,12 @@ if st.session_state.plan is None:
         with st.container(border=True):
             st.subheader("🔥 Monthly Pro")
             st.markdown("""
-            . Unlimited rows & size
-            . Download Excel + CSV formats
-            . Access all 7 Smart Tools
-            . Automatic Column Detector
-            . Super fast 3s processing
-            . **₹299 / Month**
+            * Unlimited rows & size
+            * Download Excel + CSV formats
+            * Access all 7 Smart Tools
+            * Automatic Column Detector
+            * Super fast 3s processing
+            * **₹299 / Month**
             """)
             if st.button("Buy Monthly Pro", use_container_width=True):
                 update_count("pro_month")
@@ -405,12 +393,12 @@ if st.session_state.plan is None:
         with st.container(border=True):
             st.subheader("💎 Best Value")
             st.markdown("""
-            . 6 Months complete license
-            . Access all 7 Smart Tools
-            . Priority processing queue
-            . Custom template memory
-            . Super fast 3s processing
-            . **₹1499 / 6 Months**
+            * 6 Months complete license
+            * Access all 7 Smart Tools
+            * Priority processing queue
+            * Custom template memory
+            * Super fast 3s processing
+            * **₹1499 / 6 Months**
             """)
             if st.button("Unlock 6 Months", use_container_width=True, type="primary"):
                 update_count("pro_half")
@@ -429,7 +417,7 @@ else:
 
     st.markdown("---")
 
-    # Quiet Identity Mapping Flow (No warnings, directly drops details into sidebar structure)
+    # Ask email once - saves to google sheet only on first submit
     if st.session_state.plan == 'pro' and st.session_state.ask_email and not st.session_state.user_email:
         st.subheader("💎 Pro Workspace Environment Setup")
         email_input = st.text_input("Enter Your Account Email Id To Unlock Testing:", placeholder="name@email.com")
@@ -438,11 +426,14 @@ else:
             if cleaned_email and "@" in cleaned_email and "." in cleaned_email:
                 st.session_state.user_email = cleaned_email
                 st.query_params["user"] = cleaned_email
+                
+                # Check server and send data once
                 is_active, expiry, plan = check_user_in_sheet(cleaned_email)
+                if expiry == 'not_found':
+                    save_user_to_sheet(cleaned_email, st.session_state.selected_pro)
+                    
                 st.session_state.pro_expiry = expiry
                 st.session_state.pro_plan_type = plan
-                if not is_active and expiry == 'not_found':
-                    save_user_to_sheet(cleaned_email, st.session_state.selected_pro)
                 st.session_state.ask_email = False
                 st.rerun()
             else:
@@ -453,7 +444,6 @@ else:
 
     df = None
     if uploaded_file:
-        # Uniform 3-seconds speed metrics across ALL channels
         with st.spinner("🧬 Synchronizing clean rows database engine... Please wait (3s)"):
             time.sleep(3)
         try:
@@ -473,7 +463,6 @@ else:
         
         df_cleaned = df.drop_duplicates()
         
-        # Automatic Core Normalization (Words-To-Numbers operates universally)
         for col in df_cleaned.columns:
             df_cleaned[col] = df_cleaned[col].apply(words_to_number_simple)
             if df_cleaned[col].dtype == 'object':
@@ -481,7 +470,6 @@ else:
 
         dups_removed = orig_len - len(df_cleaned)
         
-        # METRIC COUNTERS
         st.markdown("### 📊 Live File Summary")
         c1, c2, c3, c4 = st.columns(4)
         with c1:
@@ -502,9 +490,7 @@ else:
         st.markdown("---")
         st.subheader("🔧 Advanced Tools Menu")
         
-        # DYNAMIC ACCESS CONTROLLERS (Unlocked for ALL Pro workspace entries, locked for Free)
         is_pro_workspace = (st.session_state.plan == 'pro')
-        
         tab1, tab2, tab3 = st.tabs(["📅 Date & Empty Boxes", "📧 Email & Phone", "🎯 Advanced Text Cleaners"])
 
         with tab1:
@@ -592,7 +578,6 @@ else:
 
         st.markdown("---")
         
-        # String Output Cleanser
         df_display = df_cleaned.copy()
         for col in df_display.columns:
             df_display[col] = df_display[col].astype(str).replace(['nan', 'NaN', 'None', '<NA>', 'nat', 'NaT'], '', regex=True)
@@ -602,7 +587,7 @@ else:
 
         # ================= DOWNLOADS & PRO PAYMENTS ENGINE =================
         
-        # CASE 1: Completely Free Stream
+        # CASE 1: Free Tier
         if st.session_state.plan == 'free':
             csv_buf = BytesIO()
             df_cleaned.to_csv(csv_buf, index=False)
@@ -610,7 +595,7 @@ else:
                 st.session_state.balloon_trigger = True
                 st.rerun()
 
-        # CASE 2: Fully Verified Paid PRO Users
+        # CASE 2: Paid Active Users
         elif st.session_state.plan == 'pro' and is_subscription_active():
             ex_buf = BytesIO()
             with pd.ExcelWriter(ex_buf, engine='openpyxl') as w: df_cleaned.to_excel(w, index=False)
@@ -622,30 +607,30 @@ else:
                 
             csv_buf = BytesIO()
             df_cleaned.to_csv(csv_buf, index=False)
-            if c2.download_button("📄 Download Premium CSV (.csv)", csv_buf.csv_buf.getvalue(), "verisame_pro.csv", use_container_width=True):
+            if c2.download_button("📄 Download Premium CSV (.csv)", csv_buf.getvalue(), "verisame_pro.csv", use_container_width=True):
                 st.session_state.balloon_trigger = True
                 st.rerun()
 
-        # CASE 3: Pro Trial Stream (New Users / Unpaid Entries)
+        # CASE 3: Trial / Unpaid Mode
         else:
             st.markdown("### 🔒 Premium Download Locked")
-            st.info("Your dataset is fully processed and modified using premium cloud node operations! To unlock downloading beyond the 10 rows restriction, choose a license profile below.")
+            st.info("To unlock full file download, click on one of the payment plans below.")
             
             pay_col1, pay_col2 = st.columns(2)
             with pay_col1:
-                if st.button("💳 Pay ₹299 (1 Month Access Key)", use_container_width=True):
+                if st.button("💳 Pay ₹299", use_container_width=True):
                     st.session_state.show_qr = True
                     st.session_state.current_pay_amt = 299
                     st.rerun()
             with pay_col2:
-                if st.button("💎 Pay ₹1499 (6 Months Platinum Pass)", use_container_width=True, type="primary"):
+                if st.button("💎 Pay ₹1499", use_container_width=True, type="primary"):
                     st.session_state.show_qr = True
                     st.session_state.current_pay_amt = 1499
                     st.rerun()
 
-            # Dynamic QR Canvas Render
+            # Live QR Rendering Block
             if st.session_state.show_qr:
-                amt = st.session_state.get('current_pay_amt', 299)
+                amt = st.session_state.current_pay_amt if st.session_state.current_pay_amt else 299
                 upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={amt}&cu=INR&tn={st.session_state.user_email}"
                 qr = qrcode.QRCode(box_size=5, border=1)
                 qr.add_data(upi_link)
@@ -657,20 +642,25 @@ else:
                 col_qr, col_txt = st.columns([1,2])
                 col_qr.image(buf, width=220)
                 col_txt.markdown(f"""
-                ### 📲 Scan QR To Make Instant Activation Payment
-                * **UPI Address Target:** `{UPI_ID}`
-                * **Amount Set:** `₹{amt}`
-                * **Verification Account Key (Email):** `{st.session_state.user_email}`
+                ### 📲 Scan QR to Pay
+                * **UPI ID:** `{UPI_ID}`
+                * **Amount:** `₹{amt}`
+                * **Your Registered Email:** `{st.session_state.user_email}`
                 
-                *Once the payment ledger has cleared, click the secure sync query node below.*
+                *Pay karne ke baad niche button dabayein verification ke liye.*
                 """)
                 
-                if st.button("I Paid! Verify My Access Key Logs", type="primary", use_container_width=True):
-                    update_count("buy")
-                    request_payment_verification(st.session_state.user_email)
-                    st.success("🔄 Syncing Request Submitted! As soon as you set 'paid' and expiration date on the main server sheets, your client dashboard will automatically refresh to premium download modes.")
+                if st.button("I Paid! Click to Verify", type="primary", use_container_width=True):
+                    # Direct cloud check loop without writing backend server scripts again
+                    is_active, expiry, plan = check_user_in_sheet(st.session_state.user_email)
+                    if is_active:
+                        st.session_state.pro_expiry = expiry
+                        st.session_state.balloon_trigger = True
+                        st.success("👑 Payment Verified! Your download access is now open.")
+                    else:
+                        st.error("⏳ Abhi tak aapka payment clear nahi dikh raha hai sheet mein. Please admin ke status update karne ka wait karein aur fir se check karein.")
                     st.rerun()
 
 # FOOTER METRICS
 st.markdown("---")
-st.markdown("<div style='text-align: center; color: #f43f5e; font-size:12px;'>VeriSame Suite v2.1 | Pink Premium Edition © 2026</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; color: #f43f5e; font-size:12px;'>VeriSame Suite v2.2 | Pink Premium Edition © 2026</div>", unsafe_allow_html=True)
