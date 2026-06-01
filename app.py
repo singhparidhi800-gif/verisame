@@ -27,9 +27,16 @@ if 'counted' not in st.session_state:
     st.session_state.visitor_count += 1
     st.session_state.counted = True
 
-# ===== ADMIN DASHBOARD - PEHLE YE CHECK HOGA =====
-params = st.query_params
-if params.get("admin") == ADMIN_USER and params.get("key") == ADMIN_SECRET:
+# ===== ADMIN DASHBOARD - FORCE CHECK =====
+params = st.experimental_get_query_params()
+
+# Debug line - baad me hata dena
+# st.write("URL Params:", params)
+
+admin_val = params.get("admin", [""])[0]
+key_val = params.get("key", [""])[0]
+
+if admin_val == ADMIN_USER and key_val == ADMIN_SECRET:
     st.title("🔐 Admin Dashboard - VeriSame Pro")
     st.divider()
 
