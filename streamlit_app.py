@@ -27,7 +27,7 @@ st.set_page_config(
 # ============ 🔐 CONFIG - DIRECT LIKHA HAI ============
 SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxtz-CV6D5lTUWCb12newzOqSRg0I-INIKXZETmR7MtxHWjQfIIbYHoaAiatZz_13w/exec"
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKOGIdCIE8C3JFsjNNBLr03hqI2_nEdsw_PVpuTGlIRYiX8fdzDzDC3_hwXnG48_yP/exec"
 WHATSAPP_NUMBER = "919794906852"
 
 UPI_ID = "playwithreyansh0@okhdfcbank"
