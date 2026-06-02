@@ -144,13 +144,15 @@ def save_user_to_sheet(email, plan_type):
 
     try:
         payload = {"action": "new_user", "email": email, "plan": plan_name, "amount": amount}
-        headers = {'Content-Type': 'text/plain'}
-        r = requests.post(GOOGLE_SCRIPT_URL, data=json.dumps(payload), headers=headers, timeout=10)
+        # YAHI BADLA HAI - data= hata ke json= kar diya
+        r = requests.post(GOOGLE_SCRIPT_URL, json=payload, timeout=15)
+        st.write(f"Sheet Response: {r.text}") # Ye debug ke liye
         return r.status_code == 200
     except Exception as e:
         st.error(f"Sheet Error: {e}")
         return False
 
+# BAaki ka pura code same rahega...
 # GA SYSTEM
 if not SHOW_DASHBOARD:
     if 'counted_session' not in st.session_state:
@@ -204,7 +206,7 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-  .stApp {
+ .stApp {
         background: linear-gradient(-45deg, #db2777, #831843, #9d174d, #4c0519);
         background-size: 400% 400%;
         animation: gradientBG 25s ease infinite;
@@ -215,7 +217,7 @@ st.markdown("""
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
     }
-  .block-container {
+ .block-container {
         padding: 2.5rem 3.5rem;
         max-width: 1350px;
         background: rgba(255,255,255,0.98);
@@ -224,7 +226,7 @@ st.markdown("""
         margin-top: 2rem;
         margin-bottom: 2rem;
     }
-  .stButton>button {
+ .stButton>button {
         width: 100%;
         height: 55px;
         font-size: 16px;
@@ -235,25 +237,25 @@ st.markdown("""
         background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
         color: white;
     }
-  .stButton>button:hover {
+ .stButton>button:hover {
         transform: translateY(-2px);
         box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
     }
-   .metric-card {
+  .metric-card {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
         padding: 15px;
         border-radius: 12px;
         text-align: center;
     }
-  .tools-banner {
+ .tools-banner {
         background: linear-gradient(90deg, #ec4899 0%, #be185d 100%);
         padding: 30px;
         border-radius: 20px;
         margin: 25px 0;
         color: white;
     }
-  .tool-item {
+ .tool-item {
         display: inline-block;
         background: rgba(255,255,255,0.15);
         padding: 10px 18px;
@@ -262,7 +264,7 @@ st.markdown("""
         font-size: 14px;
         font-weight: 600;
     }
-   .pro-lock-msg {
+  .pro-lock-msg {
         background: #fef2f2;
         border-left: 5px solid #ef4444;
         padding: 15px;
