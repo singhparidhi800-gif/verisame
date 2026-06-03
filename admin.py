@@ -9,7 +9,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 # ===== SECURITY LOCK =====
-ADMIN_PASSWORD = "sherni@123"  # Ye password tu badal dena apna wala daal ke
+ADMIN_PASSWORD = st.secrets["admin_password"]  # Ye password tu badal dena apna wala daal ke
 
 pwd = st.text_input("Admin Password Daalo", type="password")
 if pwd != ADMIN_PASSWORD:
