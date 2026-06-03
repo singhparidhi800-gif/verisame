@@ -1,4 +1,6 @@
 import streamlit as st
+import firebase_admin
+from firebase_admin import credentials, firestore
 from pathlib import Path
 import pandas as pd
 import time
@@ -8,8 +10,13 @@ from io import BytesIO
 import qrcode
 import json
 import os
-from datetime import datetime
-import requests
+from datetime import datetime, timedelta
+
+# ============ FIREBASE CONNECT ============
+if not firebase_admin._apps:
+    cred = credentials.Certificate(st.secrets["firebase"])
+    firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 # Google Search Console Verification
 google_file = Path("googlef1bc5a74570309f0.html")
@@ -24,17 +31,13 @@ st.set_page_config(
     menu_items={'About': "VeriSame cleans messy Excel files instantly"}
 )
 
-# ============ 🔐 CONFIG - DIRECT LIKHA HAI ============
-SHEET_ID = "1qwXIK_CLS32Rt4g21QeMs_fmVXK66Mxl0Z7IHBCU8nQ"
-SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv"
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKOGIdCIE8C3JFsjNNBLr03hqI2_nEdsw_PVpuTGlIRYiX8fdzDzDC3_hwXnG48_yP/exec"
+# ============ 🔐 CONFIG ============
 WHATSAPP_NUMBER = "919794906852"
-
 UPI_ID = "playwithreyansh0@okhdfcbank"
 PRO_AMOUNT_MONTH = 299
-PRO_AMOUNT_3MONTH = 1499
+PRO_AMOUNT_6MONTH = 1499
 
-# ============ BASIC SECURITY - DIRECT PASS ============
+# ============ BASIC SECURITY ============
 SECRET_PASS = "reyansh999VeriSame2026CEO"
 query_params = st.query_params
 SHOW_DASHBOARD = query_params.get("pass") == SECRET_PASS
@@ -103,56 +106,58 @@ def words_to_number_simple(text):
 
     return str(text).strip()
 
-# ============ SUBSCRIPTION FUNCTIONS ============
-def check_user_in_sheet(email):
-    if not email: return False, "not_found", None
+# ============ FIRESTORE FUNCTIONS ============
+def check_user_in_firestore(email):
+    if not email:
+        return False, "not_found", None
     try:
-        df = pd.read_csv(SHEET_URL)
-        df.columns = df.columns.str.strip().str.lower()
-        df['email'] = df['email'].str.strip().str.lower()
-        user_rows = df[df['email'] == email.lower().strip()]
-
-        if not user_rows.empty:
-            user_row = user_rows.iloc[-1]
-            status = str(user_row['status']).strip().lower()
-            expiry_str = str(user_row['expiry_date']).strip()
-            plan = str(user_row['plan']).strip()
-
+        doc_ref = db.collection("users").document(email.lower().strip())
+        doc = doc_ref.get()
+        if doc.exists:
+            data = doc.to_dict()
+            status = str(data.get('status', '')).strip().lower()
+            expiry_str = str(data.get('expiry_date', ''))
+            plan = str(data.get('plan', ''))
             if status == 'paid':
-                for fmt in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y', '%m/%d/%Y']:
-                    try:
-                        expiry_date = datetime.strptime(expiry_str, fmt)
-                        if datetime.now().date() <= expiry_date.date():
-                            return True, expiry_date.strftime('%Y-%m-%d'), plan
-                        else:
-                            return False, "expired", plan
-                    except:
-                        continue
-                return False, "invalid_date", plan
+                try:
+                    expiry_date = datetime.strptime(expiry_str, '%Y-%m-%d')
+                    if datetime.now().date() <= expiry_date.date():
+                        return True, expiry_str, plan
+                    else:
+                        return False, "expired", plan
+                except:
+                    return False, "invalid_date", plan
             return False, status, plan
         return False, "not_found", None
-    except Exception as e:
-        return False, "sheet_error", None
+    except Exception:
+        return False, "firestore_error", None
 
-def save_user_to_sheet(email, plan_type):
+def save_user_to_firestore(email, plan_type):
     if plan_type == 'free':
         plan_name = "free"
         amount = 0
+        days = 0
     else:
-        plan_name = "1month" if plan_type == 'month' else "3month"
-        amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_3MONTH
+        plan_name = "1month" if plan_type == 'month' else "6month"
+        amount = PRO_AMOUNT_MONTH if plan_type == 'month' else PRO_AMOUNT_6MONTH
+        days = 30 if plan_type == 'month' else 180
 
+    expiry_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
     try:
-        payload = {"action": "new_user", "email": email, "plan": plan_name, "amount": amount}
-        # YAHI BADLA HAI - data= hata ke json= kar diya
-        r = requests.post(GOOGLE_SCRIPT_URL, json=payload, timeout=15)
-        st.write(f"Sheet Response: {r.text}") # Ye debug ke liye
-        return r.status_code == 200
+        doc_ref = db.collection("users").document(email.lower().strip())
+        doc_ref.set({
+            "email": email.lower().strip(),
+            "plan": plan_name,
+            "amount": amount,
+            "status": "paid" if plan_type!= 'free' else "free",
+            "expiry_date": expiry_date,
+            "created_at": firestore.SERVER_TIMESTAMP
+        })
+        return True
     except Exception as e:
-        st.error(f"Sheet Error: {e}")
+        st.error(f"Firestore Error: {e}")
         return False
 
-# BAaki ka pura code same rahega...
 # GA SYSTEM
 if not SHOW_DASHBOARD:
     if 'counted_session' not in st.session_state:
@@ -192,10 +197,15 @@ if SHOW_DASHBOARD:
     st.success(f"**Total Revenue: ₹{monthly_revenue + half_revenue}**")
     st.markdown("---")
     try:
-        users_df = pd.read_csv(SHEET_URL)
-        st.dataframe(users_df, use_container_width=True)
+        users_ref = db.collection("users").stream()
+        users_list = [doc.to_dict() for doc in users_ref]
+        if users_list:
+            df_users = pd.DataFrame(users_list)
+            st.dataframe(df_users, use_container_width=True)
+        else:
+            st.info("Abhi koi user register nahi hua")
     except:
-        st.info("Google Sheet not connected.")
+        st.error("Firestore connect nahi ho pa raha")
     st.stop()
 
 # ============ CSS DESIGN ============
@@ -241,7 +251,7 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
     }
-  .metric-card {
+ .metric-card {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
         padding: 15px;
@@ -264,7 +274,7 @@ st.markdown("""
         font-size: 14px;
         font-weight: 600;
     }
-  .pro-lock-msg {
+ .pro-lock-msg {
         background: #fef2f2;
         border-left: 5px solid #ef4444;
         padding: 15px;
@@ -285,7 +295,6 @@ for bool_key in ['show_qr', 'ask_email']:
     if bool_key not in st.session_state:
         st.session_state[bool_key] = False
 
-# BALLOON TRIGGER
 if st.session_state.get('balloon_trigger') == True:
     st.balloons()
     st.session_state.balloon_trigger = False
@@ -294,7 +303,7 @@ def is_subscription_active():
     if st.session_state.get('plan') == 'free':
         return False
     expiry_val = st.session_state.get('pro_expiry')
-    if expiry_val and expiry_val not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'sheet_error', 'verification_pending', 'rejected']:
+    if expiry_val and expiry_val not in ['not_verified', 'expired', 'invalid_date', 'not_found', 'firestore_error', 'verification_pending', 'rejected']:
         try:
             expiry = datetime.strptime(expiry_val, '%Y-%m-%d')
             return datetime.now().date() <= expiry.date()
@@ -306,7 +315,7 @@ user_email_saved = st.session_state.get('user_email')
 current_plan_saved = st.session_state.get('plan')
 
 if user_email_saved and current_plan_saved!= 'free':
-    is_active, expiry, plan = check_user_in_sheet(user_email_saved)
+    is_active, expiry, plan = check_user_in_firestore(user_email_saved)
     st.session_state.pro_expiry = expiry
     st.session_state.pro_plan_type = plan
 
@@ -316,7 +325,6 @@ with st.sidebar:
     if st.session_state.get('user_email'):
         st.success(f"✅ Logged in")
         st.caption(f"📧 {st.session_state.user_email}")
-
         if st.session_state.get('plan') == 'free':
             st.info("🆓 Plan: Free Tier")
         elif is_subscription_active():
@@ -325,7 +333,6 @@ with st.sidebar:
             st.warning("⏳ Status: Verification Pending")
         else:
             st.error("❌ Status: Testing Mode (Unpaid)")
-
         st.markdown("---")
         if st.button("🚪 Logout", use_container_width=True):
             for k in list(st.session_state.keys()): del st.session_state[k]
@@ -429,9 +436,8 @@ else:
             if cleaned_email and "@" in cleaned_email and "." in cleaned_email:
                 st.session_state.user_email = cleaned_email
                 st.query_params["user"] = cleaned_email
-
-                save_user_to_sheet(cleaned_email, st.session_state.get('plan', 'free'))
-                is_active, expiry, plan = check_user_in_sheet(cleaned_email)
+                save_user_to_firestore(cleaned_email, st.session_state.get('plan', 'free'))
+                is_active, expiry, plan = check_user_in_firestore(cleaned_email)
                 st.session_state.pro_expiry = expiry
                 st.session_state.pro_plan_type = plan
                 st.session_state.ask_email = False
@@ -504,158 +510,50 @@ else:
                             df_cleaned[col] = pd.to_datetime(df_cleaned[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
                         st.success("Dates fixed to standard YYYY-MM-DD format!")
                 else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to auto-fix messy Date formats.</div>", unsafe_allow_html=True)
-            with col2:
-                st.markdown("**2. Fill Empty Boxes (PRO)**")
-                if is_pro_workspace:
-                    numeric_cols = df_cleaned.select_dtypes(include=[np.number]).columns.tolist()
-                    if numeric_cols:
-                        fill_method = st.selectbox("Fill Empty Boxes Method:", ["None", "Mean", "Median", "Zero"], key="fill_method")
-                        if fill_method!= "None":
-                            if fill_method == "Mean": df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].mean())
-                            elif fill_method == "Median": df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(df_cleaned[numeric_cols].median())
-                            elif fill_method == "Zero": df_cleaned[numeric_cols] = df_cleaned[numeric_cols].fillna(0)
-                            st.success("Empty boxes filled completely!")
-                else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to fill empty cells automatically.</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='pro-lock-msg'>🔒 PRO Feature - Upgrade karo</div>", unsafe_allow_html=True)
 
         with tab2:
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("**3. Email Format Checker (PRO)**")
+                st.markdown("**2. Email Format Checker (PRO)**")
                 if is_pro_workspace:
                     email_cols = st.multiselect("Select Email Columns", all_cols, default=detected_emails, key="email_cols")
                     if email_cols:
                         for col in email_cols:
-                            df_cleaned[f'{col}_valid_log'] = df_cleaned[col].str.contains(r'^[\w\.-]+@[\w\.-]+\.\w+$', na=False)
-                        st.success("Invalid emails flagged successfully!")
+                            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                            df_cleaned[col] = df_cleaned[col].apply(lambda x: x if re.match(pattern, str(x)) else "")
+                        st.success("Invalid emails removed!")
                 else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to detect fake/wrong emails.</div>", unsafe_allow_html=True)
-            with col2:
-                st.markdown("**4. Phone Number Fixer (PRO)**")
-                if is_pro_workspace:
-                    phone_cols = st.multiselect("Select Phone Columns", all_cols, default=detected_phones, key="phone_cols")
-                    if phone_cols:
-                        for col in phone_cols:
-                            df_cleaned[col] = df_cleaned[col].astype(str).str.replace(r'\D', '', regex=True)
-                        st.success("Fixed phone numbers formats.")
-                else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to clean phone number spacing.</div>", unsafe_allow_html=True)
+                    st.markdown("<div class='pro-lock-msg'>🔒 PRO Feature - Upgrade karo</div>", unsafe_allow_html=True)
 
         with tab3:
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("**5. Capital/Small Letters (FREE / PRO)**")
-                text_cols = st.multiselect("Select Text Columns", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="text_cols")
-                case_option = st.selectbox("Choose Style:", ["None", "UPPER CASE", "lower case"], key="case_opt")
-                if text_cols and case_option!= "None":
-                    for col in text_cols:
-                        if case_option == "UPPER CASE": df_cleaned[col] = df_cleaned[col].str.upper()
-                        elif case_option == "lower case": df_cleaned[col] = df_cleaned[col].str.lower()
-                    st.success("Text style transformed!")
-            with col2:
-                st.markdown("**6. Bad Symbol Remover (PRO)**")
-                if is_pro_workspace:
-                    special_cols = st.multiselect("Select Columns to Clean", df_cleaned.select_dtypes(include=['object']).columns.tolist(), key="special_cols")
-                    if special_cols:
-                        for col in special_cols:
-                            df_cleaned[col] = df_cleaned[col].astype(str).str.replace(r'[^\w\s]', '', regex=True)
-                        st.success("Emojis and bad symbols removed!")
-                else:
-                    st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to remove emojis and bad icons.</div>", unsafe_allow_html=True)
-
-        st.markdown("**7. Change Column Name (PRO)**")
-        if is_pro_workspace:
-            rename_col = st.selectbox("Select Column to Rename:", ["None"] + all_cols, key="rename_col")
-            if rename_col!= "None":
-                new_name = st.text_input(f"Enter new name for '{rename_col}':")
-                if st.button("Apply Name Change"):
-                    df_cleaned = df_cleaned.rename(columns={rename_col: new_name})
-                    st.success("Column name updated!")
-                    st.rerun()
-        else:
-            st.markdown("<div class='pro-lock-msg'>🔒 Locked Feature: Upgrade to PRO to rename columns instantly.</div>", unsafe_allow_html=True)
+            st.markdown("**3. Capital/Small Letters (FREE)**")
+            case_option = st.selectbox("Select Case", ["Uppercase", "Lowercase", "Title Case"])
+            case_cols = st.multiselect("Select Columns", all_cols, key="case_cols")
+            if st.button("Apply Case Change"):
+                for col in case_cols:
+                    if case_option == "Uppercase":
+                        df_cleaned[col] = df_cleaned[col].str.upper()
+                    elif case_option == "Lowercase":
+                        df_cleaned[col] = df_cleaned[col].str.lower()
+                    else:
+                        df_cleaned[col] = df_cleaned[col].str.title()
+                st.success("Case changed!")
 
         st.markdown("---")
+        st.subheader("📥 Download Cleaned File")
 
-        df_display = df_cleaned.copy()
-        for col in df_display.columns:
-            df_display[col] = df_display[col].astype(str).replace(['nan', 'NaN', 'None', '<NA>', 'nat', 'NaT'], '', regex=True)
-
-        st.write("**Data Output Preview (Audit Window Locked to 10 Rows Max):**")
-        st.dataframe(df_display.head(10))
-
-        # DOWNLOADS & PRO PAYMENTS ENGINE
-        current_plan = st.session_state.get('plan')
-
-        if current_plan == 'free':
-            csv_buf = BytesIO()
-            df_cleaned.to_csv(csv_buf, index=False)
-            if st.download_button("📥 Download Cleaned CSV File", csv_buf.getvalue(), "verisame_free.csv", use_container_width=True):
-                st.session_state.balloon_trigger = True
-                st.rerun()
-
-        elif current_plan == 'pro' and is_subscription_active():
-            ex_buf = BytesIO()
-            with pd.ExcelWriter(ex_buf, engine='openpyxl') as w: df_cleaned.to_excel(w, index=False)
-            c1, c2 = st.columns(2)
-
-            if c1.download_button("📊 Download Premium Excel (.xlsx)", ex_buf.getvalue(), "verisame_pro.xlsx", use_container_width=True):
-                st.session_state.balloon_trigger = True
-                st.rerun()
-
-            csv_buf = BytesIO()
-            df_cleaned.to_csv(csv_buf, index=False)
-            if c2.download_button("📄 Download Premium CSV (.csv)", csv_buf.getvalue(), "verisame_pro.csv", use_container_width=True):
-                st.session_state.balloon_trigger = True
-                st.rerun()
-
+        if st.session_state.get('plan') == 'free':
+            csv = df_cleaned.to_csv(index=False).encode('utf-8')
+            st.download_button("Download CSV", csv, "cleaned_data.csv", "text/csv")
         else:
-            st.markdown("### 🔒 Premium Download Locked")
-            st.info("To unlock full file download, click on one of the payment plans below.")
+            col1, col2 = st.columns(2)
+            with col1:
+                csv = df_cleaned.to_csv(index=False).encode('utf-8')
+                st.download_button("Download CSV", csv, "cleaned_data.csv", "text/csv")
+            with col2:
+                output = BytesIO()
+                df_cleaned.to_excel(output, index=False)
+                st.download_button("Download Excel", output.getvalue(), "cleaned_data.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
-            pay_col1, pay_col2 = st.columns(2)
-            with pay_col1:
-                if st.button("💳 Pay ₹299", use_container_width=True):
-                    st.session_state.show_qr = True
-                    st.session_state.current_pay_amt = 299
-                    st.rerun()
-            with pay_col2:
-                if st.button("💎 Pay ₹1499", use_container_width=True, type="primary"):
-                    st.session_state.show_qr = True
-                    st.session_state.current_pay_amt = 1499
-                    st.rerun()
-
-            if st.session_state.get('show_qr'):
-                amt = st.session_state.get('current_pay_amt', 299)
-                upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={amt}&cu=INR&tn={st.session_state.get('user_email','')}"
-                qr = qrcode.QRCode(box_size=5, border=1)
-                qr.add_data(upi_link)
-                qr.make(fit=True)
-                buf = BytesIO()
-                qr.make_image().save(buf)
-
-                st.markdown("---")
-                col_qr, col_txt = st.columns([1,2])
-                col_qr.image(buf, width=220)
-                col_txt.markdown(f"""
-                ### 📲 Scan QR to Pay
-                * **UPI ID:** `{UPI_ID}`
-                * **Amount:** `₹{amt}`
-                * **Your Registered Email:** `{st.session_state.get('user_email','')}`
-
-                *Pay karne ke baad niche button dabayein verification ke liye.*
-                """)
-
-                if st.button("I Paid! Click to Verify", type="primary", use_container_width=True):
-                    is_active, expiry, plan = check_user_in_sheet(st.session_state.get('user_email',''))
-                    if is_active:
-                        st.session_state.pro_expiry = expiry
-                        st.session_state.balloon_trigger = True
-                        st.rerun()
-                    else:
-                        st.error("⏳ Abhi tak aapka payment clear nahi dikh raha hai sheet mein. Please admin ke status update karne ka wait karein aur fir se check karein.")
-
-# FOOTER METRICS
-st.markdown("---")
-st.markdown("<div style='text-align: center; color: #f43f5e; font-size:12px;'>VeriSame Suite v2.2 | Pink Premium Edition © 2026</div>", unsafe_allow_html=True)
+        st.session_state.df_cleaned = df_cleaned
