@@ -6,7 +6,7 @@ import pandas as pd
 import time
 import numpy as np
 import re
-from io import BytesIO
+import io
 import qrcode
 import json
 import os
@@ -614,8 +614,10 @@ else:
             st.warning(f"₹{amt} Pay karo. Payment ke baad 'I Paid' dabana")
 
             upi_link = f"upi://pay?pa={UPI_ID}&am={amt}&cu=INR&tn=VeriSame Pro"
-            qr_img = qrcode.make(upi_link)
-            st.image(qr_img, width=250)
+            qr = qrcode.make(upi_link)
+            buf = io.BytesIO()
+            qr.save(buf, format='PNG')
+            st.image(buf.getvalue(), width=250)
             st.code(UPI_ID)
 
             if st.button("I Paid ✅"):
