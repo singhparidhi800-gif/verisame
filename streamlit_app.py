@@ -28,6 +28,7 @@ def init_firebase():
             firebase_admin.initialize_app(cred)
         except Exception as e:
             st.error(f"Firebase Error: {e}")
+            st.code(str(st.secrets["firebase"]))
             st.stop()
     return firestore.client()
 
