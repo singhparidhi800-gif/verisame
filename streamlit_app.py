@@ -14,12 +14,25 @@ from datetime import datetime, timedelta
 
 # ============ FIREBASE CONNECT ============
 
-if not firebase_admin._apps:
-    cred_dict = dict(st.secrets["firebase"])  # dict bana le
-    cred_dict["private_key"] = cred_dict["private_key"].replace('\\n', '\n')  # \n fix
-    cred = credentials.Certificate(cred_dict)
-    firebase_admin.initialize_app(cred)
-db = firestore.client()
+@st.cache_resource
+def init_firebase():
+    if not firebase_admin._apps:
+        try:
+            # private_key ko saaf karte hai
+            key = st.secrets["firebase"]["private_key"]
+            key = key.replace('\\n', '\n').replace('"', '').strip()
+
+            cred_dict = dict(st.secrets["firebase"])
+            cred_dict["private_key"] = key
+
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred)
+        except Exception as e:
+            st.error(f"Firebase Error: {e}")
+            st.stop()
+    return firestore.client()
+
+db = init_firebase()
 
 # Google Search Console Verification
 google_file = Path("googlef1bc5a74570309f0.html")
