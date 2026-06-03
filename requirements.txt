@@ -6,3 +6,5 @@ qrcode[pil]
 streamlit-javascript
 requests
 word2number
+firebase-admin
+pillow
