@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from PIL import Image
 
 # ============ CONFIG ============
-st.set_page_config(page_title="VeriSame Pro", page_icon="💼", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="VeriSame Pro", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
@@ -47,88 +47,187 @@ def words_to_num(s):
 LANG = {
     "English": {
         "title": "VeriSame Pro", "tagline": "AI-Powered Data Cleaning in 3 Seconds",
-        "pro_banner": "🚀 UNLOCK 7 PREMIUM AI TOOLS",
-        "free_title": "FREE FOREVER", "pro1_title": "PRO MONTHLY", "pro6_title": "PRO 6 MONTHS - 50% OFF",
-        "free_feat": ["1000 Rows Lifetime", "CSV Export Only", "6 Basic Cleaning Tools", "Words → Numbers Auto", "30s Processing Delay", "Email Support"],
-        "pro_feat": ["Unlimited Rows Forever", "CSV + Excel Export", "All 7 Premium AI Tools", "3s Lightning Speed", "Priority Email Support", "No Watermark", "Future Updates Free"],
+        "pro_banner": "💎 UNLOCK 7 PREMIUM AI TOOLS",
+        "free_title": "FREE FOREVER", "pro1_title": "PRO MONTHLY", "pro6_title": "PRO 6 MONTHS",
+        "free_feat": ["1000 Rows Lifetime", "CSV Export Only", "6 Basic Cleaning Tools", "Words → Numbers Auto", "30s Processing", "Email Support"],
+        "pro_feat": ["Unlimited Rows Forever", "CSV + Excel Export", "All 7 Premium AI Tools", "3s Lightning Speed", "Priority Support", "No Watermark", "Future Updates Free"],
         "email_label": "Enter your email", "continue_btn": "Continue →",
-        "upload_tab": "📤 Upload Your File", "sample_tab": "🧪 Try Demo Data",
+        "upload_tab": "📤 Upload File", "sample_tab": "🧪 Try Demo",
         "upload_text": "Drag & Drop CSV, Excel or JSON here",
-        "sample_btn": "Load Messy Sample Data",
-        "summary_title": "📊 Real-Time Cleaning Summary",
+        "sample_btn": "Load Sample Data",
+        "summary_title": "📊 Live Cleaning Summary",
         "rows": "Total Rows", "clean": "Clean Rows", "dups": "Duplicates Removed", "empty": "Empty Cells Fixed",
         "preview": "Preview - First 10 Rows Only",
         "tools_menu": "⚡ Premium Data Cleaning Studio",
         "back_btn": "⬅️ Back to Plans",
         "download_title": "📥 Export Clean Data",
-        "paid_msg": "Payment Verification Pending - Check below after payment",
-        "upi_text": "Scan QR Code to Pay Instantly",
+        "paid_msg": "Payment Verification Pending",
+        "upi_text": "Scan QR to Pay",
         "paid_btn": "✓ I Have Paid ₹{amount}",
-        "success_msg": "Payment request sent! Admin will verify in 2 minutes. Download will unlock below.",
-        "locked": "🔒 PRO FEATURE - Upgrade to Unlock",
-        "tab1": "📅 Date & Null Handling", "tab2": "📧 Email & Phone Tools", "tab3": "✨ Text AI Tools",
-        "tool1": "1. Smart Date Normalizer", "tool2": "2. AI Smart Fill Missing",
-        "tool3": "3. Email Validator & Cleaner", "tool4": "4. Phone Number Formatter",
-        "tool5": "5. Advanced Case Converter", "tool6": "6. Special Character Remover",
-        "tool7": "7. Bulk Column Renamer", "tool8": "8. Words to Numbers AI",
-        "select_col": "Select Columns", "select_case": "Choose Case Type",
-        "apply_btn": "Apply Tool", "success": "Applied Successfully! ✅",
-        "expiry_warn": "⚠️ Your PRO plan expires in {days} days! Renew now to avoid interruption",
-        "pro_active": "🔥 PRO Active\n📅 Valid till {date}\n⏰ {days} days left",
+        "success_msg": "Payment request sent! Admin will verify in 2 minutes.",
+        "download_success": "Download completed successfully! ✅",
+        "locked": "🔒 PRO - Upgrade to Unlock",
+        "tab1": "📅 Date & Nulls", "tab2": "📧 Email & Phone", "tab3": "✨ Text AI",
+        "tool1": "1. Smart Date Normalizer", "tool2": "2. AI Smart Fill",
+        "tool3": "3. Email Validator", "tool4": "4. Phone Formatter",
+        "tool5": "5. Case Converter", "tool6": "6. Remove Symbols",
+        "tool7": "7. Bulk Rename", "tool8": "8. Words→Number",
+        "select_col": "Select Columns", "select_case": "Choose Case",
+        "apply_btn": "Apply Tool", "success": "Applied! ✅",
+        "expiry_warn": "⚠️ PRO expires in {days} days!",
+        "pro_active": "🔥 PRO Active\n📅 Till {date}\n⏰ {days} days left",
         "free_plan": "🆓 FREE Plan\nLifetime free",
-        "expired": "⚠️ PRO Expired!\nPlease pay again"
+        "expired": "⚠️ PRO Expired!"
     },
     "Hindi": {
-        "title": "VeriSame Pro", "tagline": "AI se Data Saaf Karo Sirf 3 Second me",
-        "pro_banner": "🚀 7 PREMIUM AI TOOLS KHOLO",
-        "free_title": "FREE HAMESHA", "pro1_title": "PRO MONTHLY", "pro6_title": "PRO 6 MONTH - 50% OFF",
-        "free_feat": ["1000 Row Lifetime", "Sirf CSV Export", "6 Basic Saaf Karne Wale Tools", "Shabd → Number Auto", "30 Sec Processing Delay", "Email Support"],
-        "pro_feat": ["Unlimited Rows Hamesha", "CSV + Excel Export", "7 Saare Premium AI Tools", "3 Sec Lightning Speed", "Priority Email Support", "No Watermark", "Future Update Free"],
-        "email_label": "Email daalo", "continue_btn": "Aage Badho →",
-        "upload_tab": "📤 File Upload Karo", "sample_tab": "🧪 Demo Data Try Karo",
+        "title": "VeriSame Pro", "tagline": "AI se Data Saaf 3 Second me",
+        "pro_banner": "💎 7 PREMIUM AI TOOLS KHOLO",
+        "free_title": "FREE HAMESHA", "pro1_title": "PRO MONTHLY", "pro6_title": "PRO 6 MONTH",
+        "free_feat": ["1000 Row Lifetime", "Sirf CSV Export", "6 Basic Tools", "Shabd → Number", "30 Sec Processing", "Email Support"],
+        "pro_feat": ["Unlimited Rows", "CSV + Excel Export", "7 Saare AI Tools", "3 Sec Speed", "Priority Support", "No Watermark", "Free Updates"],
+        "email_label": "Email daalo", "continue_btn": "Aage →",
+        "upload_tab": "📤 File Upload", "sample_tab": "🧪 Demo Data",
         "upload_text": "CSV, Excel ya JSON yahan drag karo",
-        "sample_btn": "Ganda Sample Data Load Karo",
-        "summary_title": "📊 Live Cleaning Summary",
-        "rows": "Total Row", "clean": "Saaf Row", "dups": "Duplicate Hate", "empty": "Khali Cell Thik Hue",
-        "preview": "Preview - Sirf Pehle 10 Rows",
-        "tools_menu": "⚡ Premium Data Saaf Karne Ka Studio",
-        "back_btn": "⬅️ Wapas Plans Pe",
-        "download_title": "📥 Saaf Data Download Karo",
-        "paid_msg": "Payment Verify Hona Baaki - Payment ke baad niche download khulega",
-        "upi_text": "QR Scan Karke Turant Pay Karo",
-        "paid_btn": "✓ Maine Pay Kar Diya ₹{amount}",
-        "success_msg": "Request bhej di! Admin 2 min me verify karega. Download niche unlock ho jayega.",
-        "locked": "🔒 PRO FEATURE - Upgrade Karo",
-        "tab1": "📅 Date & Khali Box", "tab2": "📧 Email & Phone Tools", "tab3": "✨ Text AI Tools",
-        "tool1": "1. Date Format Thik Karo", "tool2": "2. AI se Khali Box Bhardo",
-        "tool3": "3. Email Check aur Saaf Karo", "tool4": "4. Phone Number Saaf Karo",
-        "tool5": "5. Bade Chote Akshar", "tool6": "6. Bad Symbol Hatao",
-        "tool7": "7. Column Naam Bulk Badlo", "tool8": "8. Shabd se Number AI",
-        "select_col": "Column Chuno", "select_case": "Case Type Chuno",
-        "apply_btn": "Tool Lagao", "success": "Ho Gaya! ✅",
-        "expiry_warn": "⚠️ Aapka PRO plan {days} din me khatam ho raha hai! Abhi renew karo",
-        "pro_active": "🔥 PRO Active\n📅 {date} tak valid\n⏰ {days} din bache",
-        "free_plan": "🆓 FREE Plan\nHamesha ke liye free",
-        "expired": "⚠️ PRO Expire ho gaya!\nDobara payment karo"
+        "sample_btn": "Sample Data Load",
+        "summary_title": "📊 Live Summary",
+        "rows": "Total Row", "clean": "Saaf Row", "dups": "Duplicate Hate", "empty": "Khali Cell Thik",
+        "preview": "Preview - Sirf 10 Rows",
+        "tools_menu": "⚡ Premium Studio",
+        "back_btn": "⬅️ Wapas Plans",
+        "download_title": "📥 Download Karo",
+        "paid_msg": "Payment Verify Baaki Hai",
+        "upi_text": "QR Scan Karo",
+        "paid_btn": "✓ Pay Kar Diya ₹{amount}",
+        "success_msg": "Request bhej di! Admin 2 min me verify karega.",
+        "download_success": "Download ho gaya! ✅",
+        "locked": "🔒 PRO - Upgrade Karo",
+        "tab1": "📅 Date & Khali", "tab2": "📧 Email & Phone", "tab3": "✨ Text AI",
+        "tool1": "1. Date Thik Karo", "tool2": "2. AI Fill",
+        "tool3": "3. Email Check", "tool4": "4. Phone Saaf",
+        "tool5": "5. Case Badlo", "tool6": "6. Symbol Hatao",
+        "tool7": "7. Naam Badlo", "tool8": "8. Shabd→Number",
+        "select_col": "Column Chuno", "select_case": "Case Chuno",
+        "apply_btn": "Lagao", "success": "Ho Gaya! ✅",
+        "expiry_warn": "⚠️ PRO {days} din me khatam!",
+        "pro_active": "🔥 PRO Active\n📅 {date} tak\n⏰ {days} din bache",
+        "free_plan": "🆓 FREE Plan\nHamesha free",
+        "expired": "⚠️ PRO Expire!"
     }
 }
 
-# ============ CSS AURA ============
+# ============ DULHAN DESIGN CSS ============
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
-.stApp {background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); background-size: 400% 400%; animation: gradientShift 20s ease infinite;}
-@keyframes gradientShift {0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}}
-.block-container {background: rgba(255,255,255,0.97); backdrop-filter: blur(20px); border-radius: 32px; padding: 3rem 4rem; box-shadow: 0 30px 90px rgba(0,0,0,0.3);}
-h1 {font-weight: 800!important; background: linear-gradient(90deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 3.5rem!important;}
-.pro-banner {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; border-radius: 24px; color: white; text-align: center; margin: 30px 0;}
-.tool-chip {display: inline-block; background: rgba(255,255,255,0.25); padding: 10px 20px; border-radius: 50px; margin: 6px; font-weight: 600;}
-.pricing-card {border: 3px solid transparent; border-radius: 24px; padding: 30px; background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column; justify-content: space-between;}
-.pricing-card:hover {transform: translateY(-10px); box-shadow: 0 20px 60px rgba(102,126,234,0.3); border-color: #667eea;}
-.metric-card {background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 16px; text-align: center;}
-.stButton>button {border-radius: 12px; font-weight: 600; transition: all 0.3s; border: none;}
-.stButton>button:hover {transform: scale(1.05);}
+
+/* Background gradient aura */
+.stApp {
+    background: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 25%, #FECFEF 50%, #FFE1E6 75%, #FF9A9E 100%);
+    background-size: 400% 400%;
+    animation: auraShift 15s ease infinite;
+}
+@keyframes auraShift {0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}}
+
+/* Glassmorphism container */
+.block-container {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(30px);
+    border-radius: 40px;
+    padding: 3rem 4rem;
+    box-shadow: 0 40px 120px rgba(255,154,158,0.4);
+    border: 2px solid rgba(255,255,255,0.6);
+}
+
+h1 {
+    font-weight: 800!important;
+    background: linear-gradient(90deg, #FF6B6B, #FF8E8E, #FFB6C1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 3.8rem!important;
+    text-shadow: 0 4px 20px rgba(255,107,107,0.3);
+}
+
+/* Pro banner with glow */
+.pro-banner {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 50%, #FFB6C1 100%);
+    padding: 50px;
+    border-radius: 30px;
+    color: white;
+    text-align: center;
+    margin: 40px 0;
+    box-shadow: 0 20px 60px rgba(255,107,107,0.5);
+    border: 3px solid rgba(255,255,255,0.5);
+}
+.tool-chip {
+    display: inline-block;
+    background: rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px);
+    padding: 12px 24px;
+    border-radius: 50px;
+    margin: 8px;
+    font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Pricing cards equal height with glow */
+.pricing-card {
+    border: 4px solid transparent;
+    border-radius: 30px;
+    padding: 35px;
+    background: white;
+    box-shadow: 0 15px 50px rgba(255,154,158,0.2);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.4s;
+}
+.pricing-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 30px 80px rgba(255,107,107,0.4);
+    border-color: #FF6B6B;
+}
+
+/* Metric cards */
+.metric-card {
+    background: linear-gradient(135deg, #FF6B6B 0%, #FFB6C1 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(255,107,107,0.3);
+}
+
+/* Buttons */
+.stButton>button {
+    border-radius: 15px;
+    font-weight: 700;
+    transition: all 0.3s;
+    border: none;
+    box-shadow: 0 8px 20px rgba(255,107,107,0.3);
+}
+.stButton>button:hover {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 12px 30px rgba(255,107,107,0.5);
+}
+
+/* Download success message */
+.download-msg {
+    background: linear-gradient(90deg, #4CAF50, #66BB6A);
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 10px;
+    text-align: center;
+    font-weight: 600;
+    animation: slideIn 0.5s;
+}
+@keyframes slideIn {
+    from {opacity: 0; transform: translateY(-10px);}
+    to {opacity: 1; transform: translateY(0);}
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -138,7 +237,8 @@ if 'plan' not in st.session_state: st.session_state.plan = None
 if 'email' not in st.session_state: st.session_state.email = ""
 if 'df_clean' not in st.session_state: st.session_state.df_clean = None
 if 'show_balloon' not in st.session_state: st.session_state.show_balloon = False
-if 'payment_done' not in st.session_state: st.session_state.payment_done = False
+if 'show_download_msg' not in st.session_state: st.session_state.show_download_msg = False
+if 'amt' not in st.session_state: st.session_state.amt = 0
 
 # ============ SIDEBAR ============
 lang = st.sidebar.selectbox("🌐 Language / भाषा", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_select")
@@ -168,66 +268,74 @@ if st.session_state.email:
         st.session_state.plan = None
         st.session_state.email = ""
         st.session_state.df_clean = None
-        st.session_state.payment_done = False
         st.rerun()
 
 # ============ HEADER - LOGO BADA ============
 col_logo, col_title = st.columns([1,4])
-with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=350)
+with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=380)
 with col_title:
     st.title(T['title'])
     st.markdown(f"### {T['tagline']}")
 
-st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>🤖 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Text Case</span><span class='tool-chip'>✨ Clean Symbols</span><span class='tool-chip'>✏️ Bulk Rename</span><span class='tool-chip'>🔢 Words→Number</span></div></div>", unsafe_allow_html=True)
+st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>🤖 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>✨ Clean</span><span class='tool-chip'>✏️ Rename</span><span class='tool-chip'>🔢 Numbers</span></div></div>", unsafe_allow_html=True)
 
-# ============ ADMIN - PLAN + PRICE DIKHEGA ============
+# ============ ADMIN - EMAIL + PLAN + PRICE ============
 if st.query_params.get("admin") == ADMIN_PASS:
-    st.title("🔐 Admin Control Panel - Sherni")
+    st.title("🔐 Admin Control Panel - Sherni 💎")
     data = load_db()
     pending = [e for e,i in data.items() if i.get("status")=="PENDING" and "@" in e]
 
     st.metric("Pending Verifications", len(pending))
 
     all_users = [e for e in data.keys() if "@" in e]
-    st.subheader(f"📧 Total Registered Emails: {len(all_users)}")
+    st.subheader(f"📧 Total Registered: {len(all_users)}")
 
     for email in all_users:
         info = data[email]
         plan = info.get('plan','free')
         amt = info.get('amt',0)
-        price_text = "FREE" if plan=="free" else f"₹{amt}"
-        st.write(f"**{email}** - Plan: {plan.upper()} | Price: {price_text} | Status: {info.get('status','PENDING')} | Exp: {info.get('expiry','N/A')}")
+        if plan == "free":
+            price_text = "FREE"
+            plan_text = "FREE"
+        elif amt == 299:
+            price_text = "₹299"
+            plan_text = "PRO 299"
+        else:
+            price_text = "₹1499"
+            plan_text = "PRO 1499"
+        st.write(f"**{email}** | Plan: **{plan_text}** | Price: **{price_text}** | Status: {info.get('status','PENDING')} | Exp: {info.get('expiry','N/A')}")
 
     for email,info in data.items():
         if info.get("status")=="PENDING" and "@" in email:
             c1,c2,c3 = st.columns([3,2,1])
             c1.write(f"📧 **{email}**")
             amt = info.get('amt',0)
+            plan_text = "FREE" if info['plan']=="free" else f"PRO {amt}"
             price_text = "FREE" if info['plan']=="free" else f"₹{amt}"
-            c2.write(f"Plan: {info['plan'].upper()} | {price_text} | Exp: {info['expiry']}")
+            c2.write(f"Plan: {plan_text} | {price_text} | Exp: {info['expiry']}")
             if c3.button("✅ Approve", key=f"admin_{email}", type="primary"):
                 data[email]["status"]="PAID"; save_db(data); st.rerun()
     st.stop()
 
-# ============ PLAN CARDS - BARABAR + FREE ============
+# ============ PLAN CARDS - BARABAR + AURA ============
 if st.session_state.plan is None:
     col1,col2,col3 = st.columns(3, gap="large")
 
     with col1:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align:center'>{T['free_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#FF6B6B'>{T['free_title']}</h2>", unsafe_allow_html=True)
         st.markdown("<h1 style='text-align:center'>FREE</h1>", unsafe_allow_html=True)
         for f in T['free_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button("Start FREE", key="btn_free", use_container_width=True, type="primary"):
-            update_count("free"); st.session_state.plan="free"; st.rerun()
+            update_count("free"); st.session_state.plan="free"; st.session_state.amt=0; st.rerun()
         st.markdown("</div></div>", unsafe_allow_html=True)
-        st.markdown("<style>div[data-testid='stButton'] button[kind='primary'] {background: red;}</style>", unsafe_allow_html=True)
+        st.markdown("<style>div[data-testid='stButton'] button[kind='primary'] {background: linear-gradient(90deg, #FF6B6B, #FF8E8E);}</style>", unsafe_allow_html=True)
 
     with col2:
-        st.markdown("<div class='pricing-card' style='border-color:#667eea'>", unsafe_allow_html=True)
+        st.markdown("<div class='pricing-card' style='border-color:#FF6B6B'>", unsafe_allow_html=True)
         st.markdown("⭐ MOST POPULAR")
-        st.markdown(f"<h2 style='text-align:center'>{T['pro1_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#FF6B6B'>{T['pro1_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_1M}</h1>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
@@ -237,9 +345,9 @@ if st.session_state.plan is None:
 
     with col3:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align:center'>{T['pro6_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#FF6B6B'>{T['pro6_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_6M}</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; color:green'>Save ₹295</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; color:#4CAF50; font-weight:700'>Save ₹295</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button(f"Get PRO 6 Months", key="btn_pro6", use_container_width=True, type="primary"):
@@ -267,11 +375,9 @@ else:
     with tab1:
         file = st.file_uploader(T['upload_text'], type=["csv","xlsx","xls","json"])
         if file:
-            with st.spinner("🤖 AI Processing... 3 seconds"):
-                time.sleep(3)
-                if file.name.endswith(".csv"): df = pd.read_csv(file)
-                elif file.name.endswith(("xlsx","xls")): df = pd.read_excel(file)
-                else: df = pd.read_json(file)
+            if file.name.endswith(".csv"): df = pd.read_csv(file)
+            elif file.name.endswith(("xlsx","xls")): df = pd.read_excel(file)
+            else: df = pd.read_json(file)
 
     with tab2:
         if st.button(T['sample_btn'], key="btn_sample"):
@@ -375,20 +481,25 @@ else:
 
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
 
-        # BALLOON LOGIC
+        # BALLOON + DOWNLOAD MESSAGE LOGIC
         if st.session_state.show_balloon:
             st.balloons()
             st.session_state.show_balloon = False
 
-        # FREE = Download pe balloon
+        if st.session_state.show_download_msg:
+            st.markdown(f"<div class='download-msg'>{T['download_success']}</div>", unsafe_allow_html=True)
+            st.session_state.show_download_msg = False
+
+        # FREE = Download pe balloon + message
         if st.session_state.plan=="free":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
 
             if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv"):
                 st.session_state.show_balloon = True
+                st.session_state.show_download_msg = True
 
-        # PRO PENDING = I Paid pe balloon
+        # PRO PENDING = I Paid pe balloon + message
         elif user.get("status")!="PAID":
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
@@ -399,19 +510,21 @@ else:
             st.image(buf.getvalue(), width=280)
             st.code(UPI)
             if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary"):
-                st.session_state.payment_done = True
-                st.session_state.show_balloon = True # I PAID PE BALLOON
+                st.session_state.show_balloon = True
+                st.session_state.show_download_msg = True
                 st.success(T['success_msg'])
 
-        # PRO PAID = Download pe balloon bhi
+        # PRO PAID = Download pe balloon + message
         else:
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
 
             if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv_pro"):
                 st.session_state.show_balloon = True
+                st.session_state.show_download_msg = True
 
             excel = io.BytesIO()
             st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
             if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel_pro"):
                 st.session_state.show_balloon = True
+                st.session_state.show_download_msg = True
