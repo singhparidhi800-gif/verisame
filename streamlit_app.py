@@ -141,7 +141,7 @@ if 'df_clean' not in st.session_state: st.session_state.df_clean = None
 
 lang = st.sidebar.selectbox("🌐 Language / भाषा", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_select")
 st.session_state.lang = lang
-T = LANG
+T = LANG[st.session_state.lang]
 
 # ============ HEADER ============
 col_logo, col_title = st.columns([1,4])
