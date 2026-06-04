@@ -35,14 +35,14 @@ LANG = {
     "Hindi": {"title":"VeriSame Pro","tagline":"AI se Data Saaf","pro_banner":"💜 7 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"PRO MONTHLY","pro6_title":"PRO 6 MONTH","free_feat":["1000 Row Lifetime","Sirf CSV Export","6 Basic Tools","Shabd → Number","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","7 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ Premium Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Pehle payment karo, phir I Paid dabao download khul jayega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Ab niche download khul gaya","download_success":"Download ho gaya! ✅","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ PRO {days} din me khatam!","pro_active":"🔥 PRO Active\n📅 {date} tak\n⏰ {days} din bache","free_plan":"🆓 FREE Plan","expired":"⚠️ PRO Expire!"}
 }
 
-# SOBER PURPLE-PINK + SIDE HIRE MOTI
+# SOBER PURPLE-PINK + SIDE HIRE MOTI + TEXT VISIBLE FIX
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
+html, body, [class*="css"] {font-family: 'Poppins', sans-serif; color: #2C3E50;}
 
 .stApp {
-    background: linear-gradient(135deg, #E8E2F3 0%, #F3E8F7 50%, #E8E2F3 100%);
+    background: linear-gradient(135deg, #F5F0FF 0%, #F8F4FF 50%, #F5F0FF 100%);
     background-size: 300% 300%;
     animation: aura 20s ease infinite;
 }
@@ -52,79 +52,80 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .stApp::before {
     content: '◊ ◊';
     position: fixed;
-    left: 20px;
-    top: 10%;
-    font-size: 24px;
-    color: #9B59B6;
-    opacity: 0.3;
+    left: 15px;
+    top: 15%;
+    font-size: 22px;
+    color: #8E44AD;
+    opacity: 0.4;
     writing-mode: vertical-rl;
-    letter-spacing: 40px;
-    animation: float 15s ease-in-out infinite;
+    letter-spacing: 50px;
+    animation: float 18s ease-in-out infinite;
     z-index: 999;
 }
 .stApp::after {
     content: '◊ ◊';
     position: fixed;
-    right: 20px;
-    top: 10%;
-    font-size: 24px;
-    color: #9B59B6;
-    opacity: 0.3;
+    right: 15px;
+    top: 15%;
+    font-size: 22px;
+    color: #8E44AD;
+    opacity: 0.4;
     writing-mode: vertical-rl;
-    letter-spacing: 40px;
-    animation: float 15s ease-in-out infinite reverse;
+    letter-spacing: 50px;
+    animation: float 18s ease-in-out infinite reverse;
     z-index: 999;
 }
-@keyframes float {0%,100%{transform: translateY(0px)} 50%{transform: translateY(30px)}}
+@keyframes float {0%,100%{transform: translateY(0px)} 50%{transform: translateY(40px)}}
 
 .block-container {
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(20px);
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(15px);
     border-radius: 40px;
     padding: 3.5rem;
-    box-shadow: 0 30px 80px rgba(155,89,182,0.2);
-    border: 2px solid rgba(230,230,250,0.8);
+    box-shadow: 0 30px 80px rgba(142,68,173,0.15);
+    border: 2px solid #E8DAEF;
     position: relative;
     z-index: 1;
 }
 
 h1 {
     font-weight: 700!important;
-    background: linear-gradient(90deg, #8E44AD, #9B59B6, #BB8FCE);
+    background: linear-gradient(90deg, #6C3483, #8E44AD);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-size: 3.5rem!important;
 }
 
 .pro-banner {
-    background: linear-gradient(135deg, #8E44AD 0%, #9B59B6 50%, #AF7AC5 100%);
+    background: linear-gradient(135deg, #7D3C98 0%, #8E44AD 100%);
     padding: 50px;
     border-radius: 35px;
-    color: white;
+    color: white!important;
     text-align: center;
     margin: 40px 0;
-    box-shadow: 0 20px 60px rgba(142,68,173,0.3);
-    border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: 0 20px 60px rgba(125,60,152,0.3);
+    border: 2px solid rgba(255,255,255,0.4);
 }
 
 .tool-chip {
     display: inline-block;
-    background: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.25);
     backdrop-filter: blur(10px);
     padding: 12px 24px;
     border-radius: 50px;
     margin: 8px;
     font-weight: 600;
     border: 2px solid rgba(255,255,255,0.6);
-    box-shadow: 0 8px 20px rgba(142,68,173,0.2);
+    color: white!important;
+    box-shadow: 0 8px 20px rgba(125,60,152,0.2);
 }
 
 .pricing-card {
     border: 3px solid #E8DAEF;
     border-radius: 35px;
     padding: 40px;
-    background: white;
-    box-shadow: 0 15px 50px rgba(155,89,182,0.15);
+    background: #FFFFFF;
+    box-shadow: 0 15px 50px rgba(142,68,173,0.12);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -133,17 +134,17 @@ h1 {
 }
 .pricing-card:hover {
     transform: translateY(-15px);
-    box-shadow: 0 25px 70px rgba(142,68,173,0.3);
-    border-color: #9B59B6;
+    box-shadow: 0 25px 70px rgba(142,68,173,0.25);
+    border-color: #8E44AD;
 }
 
 .metric-card {
-    background: linear-gradient(135deg, #8E44AD 0%, #9B59B6 100%);
-    color: white;
+    background: linear-gradient(135deg, #6C3483 0%, #8E44AD 100%);
+    color: white!important;
     padding: 25px;
     border-radius: 20px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(142,68,173,0.3);
+    box-shadow: 0 10px 30px rgba(108,52,131,0.3);
 }
 
 .stButton>button {
@@ -152,8 +153,8 @@ h1 {
     transition: all 0.3s;
     border: none;
     box-shadow: 0 8px 20px rgba(142,68,173,0.3);
-    background: linear-gradient(90deg, #8E44AD, #9B59B6);
-    color: white;
+    background: linear-gradient(90deg, #6C3483, #8E44AD);
+    color: white!important;
 }
 .stButton>button:hover {
     transform: scale(1.05) translateY(-2px);
@@ -161,8 +162,8 @@ h1 {
 }
 
 .download-msg {
-    background: linear-gradient(90deg, #27AE60, #58D68D);
-    color: yellow;
+    background: linear-gradient(90deg, #229954, #52C882);
+    color: white!important;
     padding: 18px;
     border-radius: 15px;
     margin-top: 15px;
@@ -174,12 +175,19 @@ h1 {
 @keyframes slideIn {from {opacity: 0; transform: translateY(-10px);} to {opacity: 1; transform: translateY(0);}}
 
 .admin-card {
-    background: rgba(248,240,255,0.95);
-    border-radius: 25px;
-    padding: 25px;
-    margin: 15px 0;
-    border: 2px solid #E8DAEF;
-    box-shadow: 0 10px 30px rgba(155,89,182,0.15);
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 12px 0;
+    border: 2px solid #D7BDE2;
+    box-shadow: 0 8px 25px rgba(142,68,173,0.1);
+    color: #2C3E50!important;
+    font-size: 16px;
+    font-weight: 500;
+}
+.admin-card b {
+    color: #6C3483!important;
+    font-weight: 700;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -220,12 +228,12 @@ with col_title: st.title(T['title']); st.markdown(f"### {T['tagline']}")
 
 st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>🤖 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>✨ Clean</span><span class='tool-chip'>✏️ Rename</span></div></div>", unsafe_allow_html=True)
 
-# ADMIN - EMAIL + PLAN + PRICE FIX
+# ADMIN - EMAIL + PLAN + PRICE TEXT VISIBLE FIX
 if st.query_params.get("admin") == ADMIN_PASS:
     st.title("🔐 Admin Panel - Sherni")
     data = load_db()
     pending = [e for e,i in data.items() if i.get("status")=="PENDING" and "@" in e]
-    st.metric("Pending", len(pending))
+    st.metric("Pending Verifications", len(pending))
 
     all_users = [e for e in data.keys() if "@" in e]
     st.subheader(f"📧 Total Users: {len(all_users)}")
@@ -249,7 +257,7 @@ if st.query_params.get("admin") == ADMIN_PASS:
             elif amt==299: plan_text="PRO 299"; price_text="₹299"; badge="💎"
             else: plan_text="PRO 1499"; price_text="₹1499"; badge="👑"
             c1.markdown(f"<div class='admin-card'>{badge} <b>{email}</b></div>", unsafe_allow_html=True)
-            c2.markdown(f"<div class='admin-card'><b>Plan:</b> {plan_text} | <b>{price_text}</b> | <b>Exp:</b> {info['expiry']}</div>", unsafe_allow_html=True)
+            c2.markdown(f"<div class='admin-card'><b>Plan:</b> {plan_text} | <b>{price_text}</b> | <b>Expiry:</b> {info['expiry']}</div>", unsafe_allow_html=True)
             if c3.button("✅ Approve", key=f"admin_{email}", type="primary"):
                 data[email]["status"]="PAID"; save_db(data); st.rerun()
     st.stop()
@@ -259,7 +267,7 @@ if st.session_state.plan is None:
     col1,col2,col3 = st.columns(3, gap="large")
     with col1:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align:center; color:#8E44AD'>🆓 {T['free_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#6C3483'>🆓 {T['free_title']}</h2>", unsafe_allow_html=True)
         st.markdown("<h1 style='text-align:center'>FREE</h1>", unsafe_allow_html=True)
         for f in T['free_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
@@ -267,9 +275,9 @@ if st.session_state.plan is None:
             st.session_state.plan="free"; st.session_state.amt=0; st.rerun()
         st.markdown("</div></div>", unsafe_allow_html=True)
     with col2:
-        st.markdown("<div class='pricing-card' style='border-color:#9B59B6'>", unsafe_allow_html=True)
+        st.markdown("<div class='pricing-card' style='border-color:#8E44AD'>", unsafe_allow_html=True)
         st.markdown("⭐ MOST POPULAR")
-        st.markdown(f"<h2 style='text-align:center; color:#8E44AD'>💎 {T['pro1_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#6C3483'>💎 {T['pro1_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_1M}</h1>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
@@ -278,9 +286,9 @@ if st.session_state.plan is None:
         st.markdown("</div></div>", unsafe_allow_html=True)
     with col3:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align:center; color:#8E44AD'>👑 {T['pro6_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#6C3483'>👑 {T['pro6_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_6M}</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; color:#27AE60; font-weight:600'>Save ₹295</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; color:#229954; font-weight:600'>Save ₹295</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button(f"Get PRO 6 Months", key="btn_pro6", use_container_width=True, type="primary"):
@@ -400,7 +408,6 @@ else:
             st.markdown(f"<div class='download-msg'>{T['download_success']}</div>", unsafe_allow_html=True)
             st.session_state.show_download_msg = False
 
-        # FREE PLAN
         if st.session_state.plan=="free":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -408,7 +415,6 @@ else:
                 st.session_state.show_balloon = True
                 st.session_state.show_download_msg = True
 
-        # PRO PENDING - QR PEHLE, I PAID DABAO TAB DOWNLOAD
         elif user.get("status")!="PAID":
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
@@ -424,7 +430,6 @@ else:
                 st.success(T['success_msg'])
                 st.rerun()
 
-            # I PAID DABANE KE BAAD HI DOWNLOAD AAYEGA
             if st.session_state.payment_clicked:
                 col1,col2 = st.columns(2)
                 csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -437,7 +442,6 @@ else:
                     st.session_state.show_balloon = True
                     st.session_state.show_download_msg = True
 
-        # PRO PAID
         else:
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
