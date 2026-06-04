@@ -137,16 +137,25 @@ lang = st.sidebar.selectbox("🌐 Language / भाषा", ["English", "Hindi"]
 st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
-# Email sidebar me + yaad rakhega
+# Email + Expiry sidebar me
 if st.session_state.email:
-    st.sidebar.success(f"📧 {st.session_state.email}")
-    # Expiry check 5 din pehle warning
     user = load_db().get(st.session_state.email,{})
-    if user.get("expiry"):
+    st.sidebar.success(f"📧 {st.session_state.email}")
+
+    if user.get("plan") == "pro":
         exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
         days_left = (exp_date - datetime.now()).days
-        if 0 < days_left <= 5:
-            st.sidebar.warning(T['expiry_warn'].format(days=days_left))
+
+        if days_left > 0:
+            st.sidebar.info(f"🔥 PRO Active\n📅 {user['expiry']} tak\n⏰ {days_left} din bache")
+            if days_left <= 5:
+                st.sidebar.warning(T['expiry_warn'].format(days=days_left))
+        else:
+            st.sidebar.error("⚠️ PRO Expired!\nDobara payment karo")
+            st.session_state.plan = None
+
+    elif user.get("plan") == "free":
+        st.sidebar.info("🆓 FREE Plan\nHamesha ke liye")
 
     if st.sidebar.button(T['back_btn'], key="btn_back_side"):
         st.session_state.plan = None
@@ -156,12 +165,11 @@ if st.session_state.email:
 
 # ============ HEADER ============
 col_logo, col_title = st.columns([1,4])
-with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=250) # LOGO BADA
+with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=250)
 with col_title:
     st.title(T['title'])
     st.markdown(f"### {T['tagline']}")
 
-# ============ TOOLS LIST ============
 st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>🤖 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Text Case</span><span class='tool-chip'>✨ Clean Symbols</span><span class='tool-chip'>✏️ Bulk Rename</span><span class='tool-chip'>🔢 Words→Number</span></div></div>", unsafe_allow_html=True)
 
 # ============ ADMIN ============
@@ -304,7 +312,7 @@ else:
             if is_pro:
                 email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
                 if st.button(T['apply_btn'], key="btn_email"):
-                    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                     for col in email_cols:
                         st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern,str(x)) else "")
                     st.success(T['success']); st.rerun()
@@ -354,14 +362,16 @@ else:
         if st.session_state.plan=="free" or user.get("status")=="PAID":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
-            if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv"):
-                st.balloons() # BALLOON FREE ME BHI
+
+            # BALLOON FIX - on_click se
+            def show_balloon(): st.balloons()
+
+            col1.download_button("📄 Download CSV", csv, "clean_data.csv", on_click=show_balloon, key="dl_csv")
 
             if is_pro:
                 excel = io.BytesIO()
                 st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel"):
-                    st.balloons() # BALLOON PRO ME BHI
+                col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", on_click=show_balloon, key="dl_excel")
         else:
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
