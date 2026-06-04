@@ -73,7 +73,10 @@ LANG = {
         "tool7": "7. Bulk Column Renamer", "tool8": "8. Words to Numbers AI",
         "select_col": "Select Columns", "select_case": "Choose Case Type",
         "apply_btn": "Apply Tool", "success": "Applied Successfully! ✅",
-        "expiry_warn": "⚠️ Your PRO plan expires in {days} days! Renew now to avoid interruption"
+        "expiry_warn": "⚠️ Your PRO plan expires in {days} days! Renew now to avoid interruption",
+        "pro_active": "🔥 PRO Active\n📅 Valid till {date}\n⏰ {days} days left",
+        "free_plan": "🆓 FREE Plan\nLifetime free",
+        "expired": "⚠️ PRO Expired!\nPlease pay again"
     },
     "Hindi": {
         "title": "VeriSame Pro", "tagline": "AI se Data Saaf Karo Sirf 3 Second me",
@@ -103,7 +106,10 @@ LANG = {
         "tool7": "7. Column Naam Bulk Badlo", "tool8": "8. Shabd se Number AI",
         "select_col": "Column Chuno", "select_case": "Case Type Chuno",
         "apply_btn": "Tool Lagao", "success": "Ho Gaya! ✅",
-        "expiry_warn": "⚠️ Aapka PRO plan {days} din me khatam ho raha hai! Abhi renew karo"
+        "expiry_warn": "⚠️ Aapka PRO plan {days} din me khatam ho raha hai! Abhi renew karo",
+        "pro_active": "🔥 PRO Active\n📅 {date} tak valid\n⏰ {days} din bache",
+        "free_plan": "🆓 FREE Plan\nHamesha ke liye free",
+        "expired": "⚠️ PRO Expire ho gaya!\nDobara payment karo"
     }
 }
 
@@ -131,13 +137,14 @@ if 'lang' not in st.session_state: st.session_state.lang = "English"
 if 'plan' not in st.session_state: st.session_state.plan = None
 if 'email' not in st.session_state: st.session_state.email = ""
 if 'df_clean' not in st.session_state: st.session_state.df_clean = None
+if 'show_balloon' not in st.session_state: st.session_state.show_balloon = False
 
 # ============ SIDEBAR ============
 lang = st.sidebar.selectbox("🌐 Language / भाषा", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_select")
 st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
-# Email + Expiry sidebar me
+# Email + Expiry sidebar me - EMAIL GAYAB NAHI HOGA
 if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
@@ -147,15 +154,15 @@ if st.session_state.email:
         days_left = (exp_date - datetime.now()).days
 
         if days_left > 0:
-            st.sidebar.info(f"🔥 PRO Active\n📅 {user['expiry']} tak\n⏰ {days_left} din bache")
+            st.sidebar.info(T['pro_active'].format(date=user['expiry'], days=days_left))
             if days_left <= 5:
                 st.sidebar.warning(T['expiry_warn'].format(days=days_left))
         else:
-            st.sidebar.error("⚠️ PRO Expired!\nDobara payment karo")
+            st.sidebar.error(T['expired'])
             st.session_state.plan = None
 
     elif user.get("plan") == "free":
-        st.sidebar.info("🆓 FREE Plan\nHamesha ke liye")
+        st.sidebar.info(T['free_plan'])
 
     if st.sidebar.button(T['back_btn'], key="btn_back_side"):
         st.session_state.plan = None
@@ -359,19 +366,24 @@ else:
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
         user = load_db().get(st.session_state.email,{})
 
+        # PAID USER KO QR NAHI DIKHEGA - SIDHA DOWNLOAD
         if st.session_state.plan=="free" or user.get("status")=="PAID":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
 
-            # BALLOON FIX - on_click se
-            def show_balloon(): st.balloons()
-
-            col1.download_button("📄 Download CSV", csv, "clean_data.csv", on_click=show_balloon, key="dl_csv")
+            if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv"):
+                st.session_state.show_balloon = True
 
             if is_pro:
                 excel = io.BytesIO()
                 st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", on_click=show_balloon, key="dl_excel")
+                if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel"):
+                    st.session_state.show_balloon = True
+
+            # BALLOON FIX - session_state se
+            if st.session_state.show_balloon:
+                st.balloons()
+                st.session_state.show_balloon = False
         else:
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
