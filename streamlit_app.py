@@ -61,10 +61,10 @@ LANG = {
         "tools_menu": "⚡ Premium Data Cleaning Studio",
         "back_btn": "⬅️ Back to Plans",
         "download_title": "📥 Export Clean Data",
-        "paid_msg": "Payment Verification Pending",
+        "paid_msg": "Payment Verification Pending - Check below after payment",
         "upi_text": "Scan QR Code to Pay Instantly",
         "paid_btn": "✓ I Have Paid ₹{amount}",
-        "success_msg": "Payment request sent! Admin will verify in 2 minutes",
+        "success_msg": "Payment request sent! Admin will verify in 2 minutes. Download will unlock below.",
         "locked": "🔒 PRO FEATURE - Upgrade to Unlock",
         "tab1": "📅 Date & Null Handling", "tab2": "📧 Email & Phone Tools", "tab3": "✨ Text AI Tools",
         "tool1": "1. Smart Date Normalizer", "tool2": "2. AI Smart Fill Missing",
@@ -94,10 +94,10 @@ LANG = {
         "tools_menu": "⚡ Premium Data Saaf Karne Ka Studio",
         "back_btn": "⬅️ Wapas Plans Pe",
         "download_title": "📥 Saaf Data Download Karo",
-        "paid_msg": "Payment Verify Hona Baaki Hai",
+        "paid_msg": "Payment Verify Hona Baaki - Payment ke baad niche download khulega",
         "upi_text": "QR Scan Karke Turant Pay Karo",
         "paid_btn": "✓ Maine Pay Kar Diya ₹{amount}",
-        "success_msg": "Request bhej di! Admin 2 min me verify karega",
+        "success_msg": "Request bhej di! Admin 2 min me verify karega. Download niche unlock ho jayega.",
         "locked": "🔒 PRO FEATURE - Upgrade Karo",
         "tab1": "📅 Date & Khali Box", "tab2": "📧 Email & Phone Tools", "tab3": "✨ Text AI Tools",
         "tool1": "1. Date Format Thik Karo", "tool2": "2. AI se Khali Box Bhardo",
@@ -124,7 +124,7 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 h1 {font-weight: 800!important; background: linear-gradient(90deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 3.5rem!important;}
 .pro-banner {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; border-radius: 24px; color: white; text-align: center; margin: 30px 0;}
 .tool-chip {display: inline-block; background: rgba(255,255,255,0.25); padding: 10px 20px; border-radius: 50px; margin: 6px; font-weight: 600;}
-.pricing-card {border: 3px solid transparent; border-radius: 24px; padding: 30px; background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.1);}
+.pricing-card {border: 3px solid transparent; border-radius: 24px; padding: 30px; background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.1); height: 100%; display: flex; flex-direction: column; justify-content: space-between;}
 .pricing-card:hover {transform: translateY(-10px); box-shadow: 0 20px 60px rgba(102,126,234,0.3); border-color: #667eea;}
 .metric-card {background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 16px; text-align: center;}
 .stButton>button {border-radius: 12px; font-weight: 600; transition: all 0.3s; border: none;}
@@ -138,13 +138,13 @@ if 'plan' not in st.session_state: st.session_state.plan = None
 if 'email' not in st.session_state: st.session_state.email = ""
 if 'df_clean' not in st.session_state: st.session_state.df_clean = None
 if 'show_balloon' not in st.session_state: st.session_state.show_balloon = False
+if 'payment_done' not in st.session_state: st.session_state.payment_done = False
 
 # ============ SIDEBAR ============
 lang = st.sidebar.selectbox("🌐 Language / भाषा", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_select")
 st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
-# Email + Expiry sidebar me - GAYAB NAHI HOGA
 if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
@@ -168,53 +168,60 @@ if st.session_state.email:
         st.session_state.plan = None
         st.session_state.email = ""
         st.session_state.df_clean = None
+        st.session_state.payment_done = False
         st.rerun()
 
-# ============ HEADER ============
+# ============ HEADER - LOGO BADA ============
 col_logo, col_title = st.columns([1,4])
-with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=250)
+with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=350)
 with col_title:
     st.title(T['title'])
     st.markdown(f"### {T['tagline']}")
 
 st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>🤖 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Text Case</span><span class='tool-chip'>✨ Clean Symbols</span><span class='tool-chip'>✏️ Bulk Rename</span><span class='tool-chip'>🔢 Words→Number</span></div></div>", unsafe_allow_html=True)
 
-# ============ ADMIN ============
+# ============ ADMIN - PLAN + PRICE DIKHEGA ============
 if st.query_params.get("admin") == ADMIN_PASS:
-    st.title("🔐 Admin Control Panel")
+    st.title("🔐 Admin Control Panel - Sherni")
     data = load_db()
-    pending = [e for e,i in data.items() if i["status"]=="PENDING" and "@" in e]
+    pending = [e for e,i in data.items() if i.get("status")=="PENDING" and "@" in e]
 
     st.metric("Pending Verifications", len(pending))
 
-    # Saare emails dikhao
     all_users = [e for e in data.keys() if "@" in e]
     st.subheader(f"📧 Total Registered Emails: {len(all_users)}")
+
     for email in all_users:
         info = data[email]
-        st.write(f"**{email}** - Plan: {info.get('plan','free').upper()} | Status: {info.get('status','PENDING')} | Exp: {info.get('expiry','N/A')}")
+        plan = info.get('plan','free')
+        amt = info.get('amt',0)
+        price_text = "FREE" if plan=="free" else f"₹{amt}"
+        st.write(f"**{email}** - Plan: {plan.upper()} | Price: {price_text} | Status: {info.get('status','PENDING')} | Exp: {info.get('expiry','N/A')}")
 
     for email,info in data.items():
         if info.get("status")=="PENDING" and "@" in email:
             c1,c2,c3 = st.columns([3,2,1])
             c1.write(f"📧 **{email}**")
-            c2.write(f"Plan: {info['plan'].upper()} | ₹{info['amt']} | Exp: {info['expiry']}")
+            amt = info.get('amt',0)
+            price_text = "FREE" if info['plan']=="free" else f"₹{amt}"
+            c2.write(f"Plan: {info['plan'].upper()} | {price_text} | Exp: {info['expiry']}")
             if c3.button("✅ Approve", key=f"admin_{email}", type="primary"):
                 data[email]["status"]="PAID"; save_db(data); st.rerun()
     st.stop()
 
-# ============ PLAN CARDS ============
+# ============ PLAN CARDS - BARABAR + FREE ============
 if st.session_state.plan is None:
     col1,col2,col3 = st.columns(3, gap="large")
 
     with col1:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
         st.markdown(f"<h2 style='text-align:center'>{T['free_title']}</h2>", unsafe_allow_html=True)
-        st.markdown("<h1 style='text-align:center'>₹0</h1>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align:center'>FREE</h1>", unsafe_allow_html=True)
         for f in T['free_feat']: st.write(f"✓ {f}")
+        st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button("Start FREE", key="btn_free", use_container_width=True, type="primary"):
             update_count("free"); st.session_state.plan="free"; st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div></div>", unsafe_allow_html=True)
         st.markdown("<style>div[data-testid='stButton'] button[kind='primary'] {background: red;}</style>", unsafe_allow_html=True)
 
     with col2:
@@ -223,9 +230,10 @@ if st.session_state.plan is None:
         st.markdown(f"<h2 style='text-align:center'>{T['pro1_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_1M}</h1>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
+        st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button(f"Get PRO Monthly", key="btn_pro1", use_container_width=True, type="primary"):
             update_count("pro"); st.session_state.plan="pro"; st.session_state.amt=PRO_1M; st.session_state.days=30; st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div></div>", unsafe_allow_html=True)
 
     with col3:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
@@ -233,9 +241,10 @@ if st.session_state.plan is None:
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_6M}</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:center; color:green'>Save ₹295</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
+        st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button(f"Get PRO 6 Months", key="btn_pro6", use_container_width=True, type="primary"):
             update_count("pro"); st.session_state.plan="pro"; st.session_state.amt=PRO_6M; st.session_state.days=180; st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div></div>", unsafe_allow_html=True)
 
 # ============ MAIN APP ============
 else:
@@ -278,7 +287,6 @@ else:
         st.session_state.df_clean = df.copy()
         orig_len = len(df)
 
-        # BASIC CLEANING DONO ME
         df_clean = st.session_state.df_clean.drop_duplicates()
         for col in df_clean.columns:
             df_clean[col] = df_clean[col].astype(str).str.strip()
@@ -294,53 +302,49 @@ else:
         with c3: st.markdown(f"<div class='metric-card'><h3>{orig_len-len(df_clean)}</h3><p>{T['dups']}</p></div>", unsafe_allow_html=True)
         with c4: st.markdown(f"<div class='metric-card'><h3>{df.isna().sum().sum()}</h3><p>{T['empty']}</p></div>", unsafe_allow_html=True)
 
-        # PREMIUM DATA CLEANING STUDIO KE NICHE 10 ROWS DONO KE LIYE
         st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
         st.caption(T['preview'])
         st.dataframe(df_clean.head(10), use_container_width=True, height=350)
 
         all_cols = df_clean.columns.tolist()
-        is_pro = st.session_state.plan=="pro" and load_db().get(st.session_state.email,{}).get("status")=="PAID"
+        user = load_db().get(st.session_state.email,{})
+        is_pro = st.session_state.plan=="pro" and user.get("status")=="PAID"
 
         tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
 
         with tab1:
             st.write(f"**{T['tool1']}**")
-            if is_pro:
-                date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
-                if st.button(T['apply_btn'], key="btn_date"):
-                    for col in date_cols:
-                        st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
-                    st.success(T['success']); st.rerun()
-            else: st.info(T['locked'])
+            date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date", disabled=not is_pro)
+            if st.button(T['apply_btn'], key="btn_date", disabled=not is_pro):
+                for col in date_cols:
+                    st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
+                st.success(T['success']); st.rerun()
+            if not is_pro: st.info(T['locked'])
 
             st.write(f"**{T['tool2']}**")
-            if is_pro:
-                fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
-                if st.button(T['apply_btn'], key="btn_fill"):
-                    st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
-                    st.success(T['success']); st.rerun()
-            else: st.info(T['locked'])
+            fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=not is_pro)
+            if st.button(T['apply_btn'], key="btn_fill", disabled=not is_pro):
+                st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
+                st.success(T['success']); st.rerun()
+            if not is_pro: st.info(T['locked'])
 
         with tab2:
             st.write(f"**{T['tool3']}**")
-            if is_pro:
-                email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
-                if st.button(T['apply_btn'], key="btn_email"):
-                    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                    for col in email_cols:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern,str(x)) else "")
-                    st.success(T['success']); st.rerun()
-            else: st.info(T['locked'])
+            email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=not is_pro)
+            if st.button(T['apply_btn'], key="btn_email", disabled=not is_pro):
+                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                for col in email_cols:
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern,str(x)) else "")
+                st.success(T['success']); st.rerun()
+            if not is_pro: st.info(T['locked'])
 
             st.write(f"**{T['tool4']}**")
-            if is_pro:
-                phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
-                if st.button(T['apply_btn'], key="btn_phone"):
-                    for col in phone_cols:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D','',regex=True)
-                    st.success(T['success']); st.rerun()
-            else: st.info(T['locked'])
+            phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=not is_pro)
+            if st.button(T['apply_btn'], key="btn_phone", disabled=not is_pro):
+                for col in phone_cols:
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D','',regex=True)
+                st.success(T['success']); st.rerun()
+            if not is_pro: st.info(T['locked'])
 
         with tab3:
             st.write(f"**{T['tool5']}**")
@@ -354,45 +358,38 @@ else:
                 st.success(T['success']); st.rerun()
 
             st.write(f"**{T['tool6']}**")
-            if is_pro:
-                spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
-                if st.button(T['apply_btn'], key="btn_spec"):
-                    for col in spec_cols:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]','',regex=True)
-                    st.success(T['success']); st.rerun()
-            else: st.info(T['locked'])
+            spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=not is_pro)
+            if st.button(T['apply_btn'], key="btn_spec", disabled=not is_pro):
+                for col in spec_cols:
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]','',regex=True)
+                st.success(T['success']); st.rerun()
+            if not is_pro: st.info(T['locked'])
 
             st.write(f"**{T['tool7']}**")
-            if is_pro:
-                old = st.selectbox("Old name", all_cols, key="sel_old")
-                new = st.text_input("New name", key="inp_new")
-                if st.button(T['apply_btn'], key="btn_rename") and new:
-                    st.session_state.df_clean.rename(columns={old:new}, inplace=True)
-                    st.success(T['success']); st.rerun()
-            else: st.info(T['locked'])
+            old = st.selectbox("Old name", all_cols, key="sel_old", disabled=not is_pro)
+            new = st.text_input("New name", key="inp_new", disabled=not is_pro)
+            if st.button(T['apply_btn'], key="btn_rename", disabled=not is_pro) and new:
+                st.session_state.df_clean.rename(columns={old:new}, inplace=True)
+                st.success(T['success']); st.rerun()
+            if not is_pro: st.info(T['locked'])
 
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
-        user = load_db().get(st.session_state.email,{})
 
-        # PAID USER KO QR NAHI - SIDHA DOWNLOAD
-        if st.session_state.plan=="free" or user.get("status")=="PAID":
+        # BALLOON LOGIC
+        if st.session_state.show_balloon:
+            st.balloons()
+            st.session_state.show_balloon = False
+
+        # FREE = Download pe balloon
+        if st.session_state.plan=="free":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
 
             if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv"):
                 st.session_state.show_balloon = True
 
-            if is_pro:
-                excel = io.BytesIO()
-                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel"):
-                    st.session_state.show_balloon = True
-
-            # BALLOON FIX
-            if st.session_state.show_balloon:
-                st.balloons()
-                st.session_state.show_balloon = False
-        else:
+        # PRO PENDING = I Paid pe balloon
+        elif user.get("status")!="PAID":
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
             upi_link = f"upi://pay?pa={UPI}&pn=VeriSame%20Pro&am={st.session_state.amt}&cu=INR"
@@ -402,4 +399,19 @@ else:
             st.image(buf.getvalue(), width=280)
             st.code(UPI)
             if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary"):
+                st.session_state.payment_done = True
+                st.session_state.show_balloon = True # I PAID PE BALLOON
                 st.success(T['success_msg'])
+
+        # PRO PAID = Download pe balloon bhi
+        else:
+            col1,col2 = st.columns(2)
+            csv = st.session_state.df_clean.to_csv(index=False).encode()
+
+            if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv_pro"):
+                st.session_state.show_balloon = True
+
+            excel = io.BytesIO()
+            st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+            if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel_pro"):
+                st.session_state.show_balloon = True
