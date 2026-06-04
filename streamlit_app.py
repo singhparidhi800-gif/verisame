@@ -1,296 +1,374 @@
 import streamlit as st
-import json, os, io
+import json, os, io, qrcode, base64
 import pandas as pd
-import time
-import re
+import time, re
 from datetime import datetime, timedelta
+from PIL import Image
 
-# ============ WORD TO NUMBER FUNCTION ============
+# ============ CONFIG ============
+st.set_page_config(page_title="VeriSame Pro", page_icon="💼", layout="wide", initial_sidebar_state="collapsed")
+
+UPI = "playwithreyansh0@okhdfcbank"
+PRO_1M, PRO_6M = 299, 1499
+ADMIN_PASS = "Sherni@123"
+DB_FILE, COUNT_FILE = "orders.json", "counts.json"
+
+# ============ INIT FILES ============
+for f in [DB_FILE, COUNT_FILE]:
+    if not os.path.exists(f):
+        json.dump({} if f==DB_FILE else {"views":0,"free":0,"pro":0}, open(f,"w"))
+
+def save_db(d): json.dump(d, open(DB_FILE,"w"), indent=2)
+def load_db(): return json.load(open(DB_FILE))
+def update_count(k):
+    c=json.load(open(COUNT_FILE)); c[k]=c.get(k,0)+1; json.dump(c, open(COUNT_FILE,"w"))
+
+# ============ WORD TO NUMBER ENGINE ============
 def words_to_num(s):
+    if pd.isna(s): return s
     s = str(s).lower().strip()
-    num_words = {
-        'zero':0, 'one':1, 'two':2, 'three':3, 'four':4, 'five':5, 'six':6, 'seven':7, 'eight':8, 'nine':9, 'ten':10,
-        'eleven':11, 'twelve':12, 'thirteen':13, 'fourteen':14, 'fifteen':15, 'sixteen':16, 'seventeen':17, 'eighteen':18, 'nineteen':19,
-        'twenty':20, 'thirty':30, 'forty':40, 'fifty':50, 'sixty':60, 'seventy':70, 'eighty':80, 'ninety':90,
-        'hundred':100, 'thousand':1000
-    }
     if s.isdigit(): return int(s)
+    num_words = {
+        'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,
+        'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,
+        'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,'seventy':70,'eighty':80,'ninety':90,
+        'hundred':100,'thousand':1000,'lakh':100000,'crore':10000000
+    }
     total = 0; current = 0
     for word in re.findall(r'\w+', s):
         if word in num_words:
             val = num_words[word]
-            if val == 100: current *= 100
-            elif val == 1000: total += current * 1000; current = 0
+            if val >= 100:
+                current = max(1, current) * val
+                if val >= 1000: total += current; current = 0
             else: current += val
     return total + current if total + current > 0 else s
 
-# ============ LANGUAGE DICTIONARY ============
+# ============ MULTILANGUAGE DICT ============
 LANG = {
     "English": {
-        "title": "VeriSame", "subtitle": "The Fastest Way to Clean Your Data",
-        "pro_banner": "🚀 PRO Includes 7 Advanced Tools",
-        "free": "FREE Forever", "pro1": "Monthly Pro", "pro6": "Best Value",
-        "free_feat": ["✓ 1000 Rows Lifetime", "✓ CSV Download", "✓ 6 Basic Tools incl Words→Number", "✓ 30 Second Wait"],
-        "pro_feat": ["✓ Unlimited Rows", "✓ Excel + CSV Export", "✓ All 7 PRO Tools", "✓ 3 Second Speed"],
-        "email": "Enter your email to continue", "continue": "Continue",
-        "upload": "Upload your file", "sample": "Try sample data",
-        "tools_menu": "🛠️ Advanced Tools Menu", "preview": "Preview first 10 rows",
-        "download": "Download clean file", "paid": "Payment pending. Admin will verify soon",
-        "upi": "Pay via UPI", "paid_btn": "I have paid",
-        "back": "⬅️ Back to plans", "rows": "Total rows", "clean": "Clean rows",
-        "dups": "Duplicates removed", "empty": "Empty cells", "apply": "Apply", "success": "Done!",
-        "locked": "🔒 PRO Feature - Upgrade to unlock",
-        "tab1": "📅 Date & Empty Boxes", "tab2": "📧 Email & Phone", "tab3": "✨ Advanced Text Cleaners",
-        "tool1": "1. Auto Date Normalizer (PRO)", "tool2": "2. Smart Fill Missing (PRO)",
-        "tool3": "3. Email Validator (PRO)", "tool4": "4. Phone Formatter (PRO)",
-        "tool5": "5. Text Case Converter (FREE)", "tool6": "6. Remove Special Chars (PRO)",
-        "tool7": "7. Column Renamer (PRO)", "tool8": "Words to Numbers (FREE+PRO)",
-        "select_col": "Select columns", "select_case": "Select case type"
+        "title": "VeriSame Pro", "tagline": "AI-Powered Data Cleaning in 3 Seconds",
+        "pro_banner": "🚀 UNLOCK 7 PREMIUM AI TOOLS",
+        "free_title": "FREE FOREVER", "pro1_title": "PRO MONTHLY", "pro6_title": "PRO 6 MONTHS - 50% OFF",
+        "free_desc": "Perfect for small datasets & testing",
+        "pro_desc": "For professionals & businesses",
+        "pro6_desc": "Best value for agencies",
+        "free_feat": ["1000 Rows Lifetime", "CSV Export Only", "6 Basic Cleaning Tools", "Words → Numbers Auto", "30s Processing Delay", "Email Support"],
+        "pro_feat": ["Unlimited Rows Forever", "CSV + Excel Export", "All 7 Premium AI Tools", "3s Lightning Speed", "Priority Email Support", "No Watermark", "Future Updates Free"],
+        "email_label": "Enter your business email", "continue_btn": "Continue →",
+        "upload_tab": "📤 Upload Your File", "sample_tab": "🧪 Try Demo Data",
+        "upload_text": "Drag & Drop CSV, Excel or JSON here",
+        "sample_btn": "Load Messy Sample Data",
+        "summary_title": "📊 Real-Time Cleaning Summary",
+        "rows": "Total Rows", "clean": "Clean Rows", "dups": "Duplicates Removed", "empty": "Empty Cells Fixed",
+        "preview": "Live Preview - First 10 Rows",
+        "tools_menu": "⚡ Premium Data Cleaning Studio",
+        "back_btn": "⬅️ Back to Plans",
+        "download_title": "📥 Export Clean Data",
+        "paid_msg": "Payment Verification Pending",
+        "upi_text": "Scan QR Code to Pay Instantly",
+        "paid_btn": "✓ I Have Paid ₹{amount}",
+        "success_msg": "Payment request sent! Admin will verify in 2 minutes",
+        "locked": "🔒 PRO FEATURE - Upgrade to Unlock",
+        "tab1": "📅 Date & Null Handling", "tab2": "📧 Email & Phone Tools", "tab3": "✨ Text AI Tools",
+        "tool1": "1. Smart Date Normalizer", "tool2": "2. AI Smart Fill Missing",
+        "tool3": "3. Email Validator & Cleaner", "tool4": "4. Phone Number Formatter",
+        "tool5": "5. Advanced Case Converter", "tool6": "6. Special Character Remover",
+        "tool7": "7. Bulk Column Renamer", "tool8": "8. Words to Numbers AI",
+        "select_col": "Select Columns", "select_case": "Choose Case Type",
+        "apply_btn": "Apply Tool", "success": "Applied Successfully! ✅"
     },
     "Hindi": {
-        "title": "VeriSame", "subtitle": "Data Saaf Karne Ka Sabse Fast Tareeka",
-        "pro_banner": "🚀 PRO me 7 Advanced Tools",
-        "free": "FREE Hamesha", "pro1": "Monthly Pro", "pro6": "Best Deal",
-        "free_feat": ["✓ 1000 Row Lifetime", "✓ Sirf CSV Download", "✓ 6 Basic Tools Shabd→Number sahit", "✓ 30 Sec Wait"],
-        "pro_feat": ["✓ Unlimited Row", "✓ Excel + CSV Export", "✓ 7 Saare PRO Tools", "✓ 3 Sec Speed"],
-        "email": "Aage badhne ke liye email daalo", "continue": "Aage badho",
-        "upload": "Apna file daalo", "sample": "Sample data try karo",
-        "tools_menu": "🛠️ Advanced Tools Menu", "preview": "Sirf pehle 10 row dikhenge",
-        "download": "Saaf file download karo", "paid": "Payment pending. Admin jaldi verify karega",
-        "upi": "UPI se paise bhejo", "paid_btn": "Maine paise bhej diye",
-        "back": "⬅️ Wapas plans pe", "rows": "Total row", "clean": "Saaf row",
-        "dups": "Duplicate hate", "empty": "Khali cell", "apply": "Lagao", "success": "Ho gaya!",
-        "locked": "🔒 PRO Feature hai. Upgrade karo",
-        "tab1": "📅 Date & Khali Box", "tab2": "📧 Email & Phone", "tab3": "✨ Text Saaf Karo",
-        "tool1": "1. Date Format Thik Karo (PRO)", "tool2": "2. Khali Box Bhardo (PRO)",
-        "tool3": "3. Email Check Karo (PRO)", "tool4": "4. Phone Number Saaf Karo (PRO)",
-        "tool5": "5. Bade Chote Akshar (FREE)", "tool6": "6. Bad Symbol Hatao (PRO)",
-        "tool7": "7. Column Naam Badlo (PRO)", "tool8": "Shabd se Number (FREE+PRO)",
-        "select_col": "Column chuno", "select_case": "Case chuno"
+        "title": "VeriSame Pro", "tagline": "AI se Data Saaf Karo Sirf 3 Second me",
+        "pro_banner": "🚀 7 PREMIUM AI TOOLS KHOLO",
+        "free_title": "FREE HAMESHA", "pro1_title": "PRO MONTHLY", "pro6_title": "PRO 6 MONTH - 50% OFF",
+        "free_desc": "Chote data ke liye best",
+        "pro_desc": "Professionals aur business ke liye",
+        "pro6_desc": "Agency ke liye best deal",
+        "free_feat": ["1000 Row Lifetime", "Sirf CSV Export", "6 Basic Saaf Karne Wale Tools", "Shabd → Number Auto", "30 Sec Processing Delay", "Email Support"],
+        "pro_feat": ["Unlimited Rows Hamesha", "CSV + Excel Export", "7 Saare Premium AI Tools", "3 Sec Lightning Speed", "Priority Email Support", "No Watermark", "Future Update Free"],
+        "email_label": "Business email daalo", "continue_btn": "Aage Badho →",
+        "upload_tab": "📤 File Upload Karo", "sample_tab": "🧪 Demo Data Try Karo",
+        "upload_text": "CSV, Excel ya JSON yahan drag karo",
+        "sample_btn": "Ganda Sample Data Load Karo",
+        "summary_title": "📊 Live Cleaning Summary",
+        "rows": "Total Row", "clean": "Saaf Row", "dups": "Duplicate Hate", "empty": "Khali Cell Thik Hue",
+        "preview": "Live Preview - Pehle 10 Row",
+        "tools_menu": "⚡ Premium Data Saaf Karne Ka Studio",
+        "back_btn": "⬅️ Wapas Plans Pe",
+        "download_title": "📥 Saaf Data Download Karo",
+        "paid_msg": "Payment Verify Hona Baaki Hai",
+        "upi_text": "QR Scan Karke Turant Pay Karo",
+        "paid_btn": "✓ Maine Pay Kar Diya ₹{amount}",
+        "success_msg": "Request bhej di! Admin 2 min me verify karega",
+        "locked": "🔒 PRO FEATURE - Upgrade Karo",
+        "tab1": "📅 Date & Khali Box", "tab2": "📧 Email & Phone Tools", "tab3": "✨ Text AI Tools",
+        "tool1": "1. Date Format Thik Karo", "tool2": "2. AI se Khali Box Bhardo",
+        "tool3": "3. Email Check aur Saaf Karo", "tool4": "4. Phone Number Saaf Karo",
+        "tool5": "5. Bade Chote Akshar", "tool6": "6. Bad Symbol Hatao",
+        "tool7": "7. Column Naam Bulk Badlo", "tool8": "8. Shabd se Number AI",
+        "select_col": "Column Chuno", "select_case": "Case Type Chuno",
+        "apply_btn": "Tool Lagao", "success": "Ho Gaya! ✅"
     }
 }
 
-# ============ DB ============
-DB, COUNT_FILE = "orders.json", "counts.json"
-for f in [DB, COUNT_FILE]:
-    if not os.path.exists(f):
-        json.dump({} if f==DB else {"views":0,"free":0,"pro":0}, open(f,"w"))
-def save_db(d): json.dump(d, open(DB,"w"))
-def load_db(): return json.load(open(DB))
-def update_count(k): c=json.load(open(COUNT_FILE)); c[k]=c.get(k,0)+1; json.dump(c, open(COUNT_FILE,"w"))
-
-UPI, PRO_1M, PRO_6M, ADMIN_PASS = "playwithreyansh0@okhdfcbank", 299, 1499, "Sherni@123"
-st.set_page_config(page_title="VeriSame", layout="wide")
-
-# ============ CSS ============
+# ============ AURA CSS ============
 st.markdown("""
 <style>
-.stApp {background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c); background-size: 400% 400%; animation: gradient 15s ease infinite;}
-@keyframes gradient {0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}}
-.block-container {background: rgba(255,255,255,0.98); border-radius: 24px; padding: 2rem 3rem; box-shadow: 0 20px 60px rgba(0,0,0,0.3);}
-.pro-banner {background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 20px; color: white; text-align: center; margin: 20px 0;}
-.tool-chip {display: inline-block; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; margin: 5px; font-weight: 600;}
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
+.stApp {background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); background-size: 400% 400%; animation: gradientShift 20s ease infinite;}
+@keyframes gradientShift {0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%}}
+.block-container {background: rgba(255,255,255,0.97); backdrop-filter: blur(20px); border-radius: 32px; padding: 3rem 4rem; box-shadow: 0 30px 90px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.5);}
+h1 {font-weight: 800!important; background: linear-gradient(90deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 3.5rem!important;}
+h2 {font-weight: 700!important; color: #2d3748!important;}
+.pro-banner {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; border-radius: 24px; color: white; text-align: center; margin: 30px 0; box-shadow: 0 20px 60px rgba(102,126,234,0.4);}
+.tool-chip {display: inline-block; background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); padding: 10px 20px; border-radius: 50px; margin: 6px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);}
+.pricing-card {border: 3px solid transparent; border-radius: 24px; padding: 30px; transition: all 0.4s; background: white; box-shadow: 0 10px 40px rgba(0,0,0,0.1);}
+.pricing-card:hover {transform: translateY(-10px); box-shadow: 0 20px 60px rgba(102,126,234,0.3); border-color: #667eea;}
+.feature-item {padding: 8px 0; font-size: 1.05rem;}
+.metric-card {background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 16px; text-align: center;}
+.stButton>button {border-radius: 12px; font-weight: 600; transition: all 0.3s; border: none;}
+.stButton>button:hover {transform: scale(1.05);}
 </style>
 """, unsafe_allow_html=True)
 
-lang = st.sidebar.selectbox("Language / भाषा", ["English", "Hindi"])
-T = LANG[lang]
+# ============ SESSION STATE ============
+if 'lang' not in st.session_state: st.session_state.lang = "English"
+if 'plan' not in st.session_state: st.session_state.plan = None
+if 'email' not in st.session_state: st.session_state.email = ""
+if 'df_clean' not in st.session_state: st.session_state.df_clean = None
 
-st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=200)
-st.title(f"💼 {T['title']}")
-st.subheader(T['subtitle'])
+lang = st.sidebar.selectbox("🌐 Language / भाषा", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_select")
+st.session_state.lang = lang
+T = LANG
 
-# ============ ADMIN ============
+# ============ HEADER ============
+col_logo, col_title = st.columns([1,4])
+with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=180)
+with col_title:
+    st.title(T['title'])
+    st.markdown(f"### {T['tagline']}")
+
+# ============ ADMIN PANEL ============
 if st.query_params.get("admin") == ADMIN_PASS:
-    st.title("🔒 Admin Panel")
+    st.title("🔐 Admin Control Panel")
     data = load_db()
+    pending = [e for e,i in data.items() if i["status"]=="PENDING"]
+    st.metric("Pending Verifications", len(pending))
     for email,info in data.items():
         if info["status"]=="PENDING":
-            c1,c2 = st.columns([4,1])
-            c1.write(f"📧 {email} | {info['plan']} | ₹{info['amt']}")
-            if c2.button("Mark PAID", key=f"admin_{email}"):
+            c1,c2,c3 = st.columns([3,2,1])
+            c1.write(f"📧 **{email}**")
+            c2.write(f"Plan: {info['plan'].upper()} | ₹{info['amt']} | {info['expiry']}")
+            if c3.button("✅ Approve", key=f"admin_{email}", type="primary"):
                 data[email]["status"]="PAID"; save_db(data); st.rerun()
     st.stop()
 
-if 'plan' not in st.session_state: st.session_state.plan = None
-if 'email' not in st.session_state: st.session_state.email = ""
-
-# ============ PLAN CARDS ============
+# ============ PLAN SELECTION - AURA CARDS ============
 if st.session_state.plan is None:
-    st.markdown(f"<div class='pro-banner'><h3>{T['pro_banner']}</h3><div><span class='tool-chip'>📅 Date</span><span class='tool-chip'>📊 SmartFill</span><span class='tool-chip'>📧 Email</span><span class='tool-chip'>📱 Phone</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>✨ Clean</span><span class='tool-chip'>✏️ Rename</span></div></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>🤖 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Text AI</span><span class='tool-chip'>✨ Clean AI</span><span class='tool-chip'>✏️ Bulk Rename</span></div></div>", unsafe_allow_html=True)
 
-    col1,col2,col3 = st.columns(3)
+    col1,col2,col3 = st.columns(3, gap="large")
+
     with col1:
-        with st.container(border=True):
-            st.subheader(f"🆓 {T['free']}")
-            for f in T['free_feat']: st.write(f)
-            if st.button("Use FREE", key="btn_free", use_container_width=True):
-                update_count("free"); st.session_state.plan="free"; st.rerun()
+        st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center'>{T['free_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align:center; color:gray'>{T['free_desc']}</p>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align:center'>₹0</h1>", unsafe_allow_html=True)
+        for f in T['free_feat']: st.markdown(f"<div class='feature-item'>{f}</div>", unsafe_allow_html=True)
+        if st.button("Start FREE", key="btn_free", use_container_width=True):
+            update_count("free"); st.session_state.plan="free"; st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with col2:
-        with st.container(border=True):
-            st.subheader(f"🔥 {T['pro1']}")
-            for f in T['pro_feat']: st.write(f)
-            st.write(f"**₹{PRO_1M}/month**")
-            if st.button(f"₹{PRO_1M}/Month", key="btn_pro1", use_container_width=True, type="primary"):
-                update_count("pro"); st.session_state.plan="pro"; st.session_state.amt=PRO_1M; st.session_state.days=30; st.rerun()
+        st.markdown("<div class='pricing-card' style='border-color:#667eea'>", unsafe_allow_html=True)
+        st.markdown("⭐ MOST POPULAR")
+        st.markdown(f"<h2 style='text-align:center'>{T['pro1_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align:center; color:gray'>{T['pro_desc']}</p>", unsafe_allow_html=True)
+        st.markdown(f"<h1 style='text-align:center'>₹{PRO_1M}</h1>", unsafe_allow_html=True)
+        for f in T['pro_feat']: st.markdown(f"<div class='feature-item'>{f}</div>", unsafe_allow_html=True)
+        if st.button(f"Get PRO Monthly", key="btn_pro1", use_container_width=True, type="primary"):
+            update_count("pro"); st.session_state.plan="pro"; st.session_state.amt=PRO_1M; st.session_state.days=30; st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
     with col3:
-        with st.container(border=True):
-            st.subheader(f"💎 {T['pro6']}")
-            for f in T['pro_feat']: st.write(f)
-            st.write(f"**₹{PRO_6M}/6 months**")
-            if st.button(f"₹{PRO_6M}/6 Months", key="btn_pro6", use_container_width=True, type="primary"):
-                update_count("pro"); st.session_state.plan="pro"; st.session_state.amt=PRO_6M; st.session_state.days=180; st.rerun()
+        st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center'>{T['pro6_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align:center; color:gray'>{T['pro6_desc']}</p>", unsafe_allow_html=True)
+        st.markdown(f"<h1 style='text-align:center'>₹{PRO_6M}</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; color:green'>Save ₹295</p>", unsafe_allow_html=True)
+        for f in T['pro_feat']: st.markdown(f"<div class='feature-item'>{f}</div>", unsafe_allow_html=True)
+        if st.button(f"Get PRO 6 Months", key="btn_pro6", use_container_width=True, type="primary"):
+            update_count("pro"); st.session_state.plan="pro"; st.session_state.amt=PRO_6M; st.session_state.days=180; st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ============ MAIN APP ============
 else:
     if not st.session_state.email:
-        st.session_state.email = st.text_input(T['email']).lower().strip()
-        if st.button(T['continue'], key="btn_continue", type="primary", use_container_width=True):
-            if "@" in st.session_state.email:
+        st.session_state.email = st.text_input(T['email_label']).lower().strip()
+        if st.button(T['continue_btn'], key="btn_continue", type="primary", use_container_width=True):
+            if "@" in st.session_state.email and "." in st.session_state.email:
                 data = load_db()
                 if st.session_state.email not in data:
                     expiry = (datetime.now()+timedelta(days=st.session_state.get("days",0))).strftime("%Y-%m-%d")
-                    data[st.session_state.email] = {"plan":st.session_state.plan,"status":"PENDING","amt":st.session_state.get("amt",0),"expiry":expiry}
+                    data[st.session_state.email] = {"plan":st.session_state.plan,"status":"PENDING","amt":st.session_state.get("amt",0),"expiry":expiry,"created":str(datetime.now())}
                     save_db(data)
                 st.rerun()
-            else: st.error("Valid email daalo")
+            else: st.error("Valid email daalo bhai")
         st.stop()
 
-    if st.button(T['back'], key="btn_back"): st.session_state.clear(); st.rerun()
+    if st.button(T['back_btn'], key="btn_back"):
+        st.session_state.plan = None
+        st.session_state.email = ""
+        st.session_state.df_clean = None
+        st.rerun()
 
-    tab1,tab2 = st.tabs([f"📁 {T['upload']}", f"🧪 {T['sample']}"])
+    tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
     df = None
+
     with tab1:
-        file = st.file_uploader(T['upload'], type=["csv","xlsx","xls","json"])
+        file = st.file_uploader(T['upload_text'], type=["csv","xlsx","xls","json"])
         if file:
-            with st.spinner("3 sec processing..."):
+            with st.spinner("🤖 AI Processing... 3 seconds"):
                 time.sleep(3)
                 if file.name.endswith(".csv"): df = pd.read_csv(file)
                 elif file.name.endswith(("xlsx","xls")): df = pd.read_excel(file)
                 else: df = pd.read_json(file)
+
     with tab2:
-        if st.button(T['sample'], key="btn_sample"):
+        if st.button(T['sample_btn'], key="btn_sample", type="secondary"):
             df = pd.DataFrame({
-                "Joining Date": ["12/5/2024", "2024-01-15", "", "15-03-2023", "bad date"],
-                "Full Name": [" RAHUL KUMAR ", "priya sharma", "RAHUL KUMAR", "AMIT SINGH", "sneha@123"],
-                "Email Address": ["RAHUL@GMAIL.COM", "bad email@", "priya@email.com", "", "amit@company.co.in"],
-                "Phone No": ["98765-43210", "9123 456 789", "000123", "+91 99887 76655", ""],
-                "Salary": ["one hundred", "250", "thirty five", "two thousand five hundred", "5000"]
+                "Joining Date": ["12/5/2024", "2024-01-15", "", "15-03-2023", "bad date", "01-01-22"],
+                "Full Name": [" RAHUL KUMAR ", "priya sharma", "RAHUL KUMAR", "AMIT SINGH", "sneha@123", " AMIT "],
+                "Email Address": ["RAHUL@GMAIL.COM", "bad email@", "priya@email.com", "", "amit@company.co.in", "test@test"],
+                "Phone No": ["98765-43210", "9123 456 789", "000123", "+91 99887 76655", "", "9810012345"],
+                "Salary": ["one hundred", "250", "thirty five", "two thousand five hundred", "5000", "one lakh"]
             })
-            st.info("Sample messy data loaded. Dekho kaise saaf hota hai!")
+            st.success("Sample messy data loaded! Ab cleaning dekho 🔥")
 
     if df is not None:
+        st.session_state.df_clean = df.copy()
         orig_len = len(df)
         if st.session_state.plan=="free" and orig_len>1000:
-            df = df.head(1000); st.warning("Free: only first 1000 rows")
+            st.session_state.df_clean = st.session_state.df_clean.head(1000)
+            st.warning("⚠️ Free plan: Only first 1000 rows processed")
 
-        # FREE BASIC CLEAN + WORDS TO NUMBER
-        df_clean = df.drop_duplicates()
+        # BASIC CLEANING + WORDS TO NUMBER
+        df_clean = st.session_state.df_clean.drop_duplicates()
         for col in df_clean.columns:
             df_clean[col] = df_clean[col].astype(str).str.strip()
             df_clean[col] = df_clean[col].str.replace(r'\s+', ' ', regex=True)
-            # Tool 8: Words to Number - FREE + PRO both
-            if 'salary' in col.lower() or 'amount' in col.lower() or 'price' in col.lower():
+            if any(k in col.lower() for k in ['salary','amount','price','cost','revenue']):
                 df_clean[col] = df_clean[col].apply(words_to_num)
 
-        st.subheader("📊 Live Summary")
+        st.session_state.df_clean = df_clean
+
+        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         c1,c2,c3,c4 = st.columns(4)
-        c1.metric(T['rows'], orig_len)
-        c2.metric(T['clean'], len(df_clean))
-        c3.metric(T['dups'], orig_len-len(df_clean))
-        c4.metric(T['empty'], df.isna().sum().sum())
-        st.dataframe(df_clean.head(10), use_container_width=True)
+        with c1: st.markdown(f"<div class='metric-card'><h3>{orig_len}</h3><p>{T['rows']}</p></div>", unsafe_allow_html=True)
+        with c2: st.markdown(f"<div class='metric-card'><h3>{len(df_clean)}</h3><p>{T['clean']}</p></div>", unsafe_allow_html=True)
+        with c3: st.markdown(f"<div class='metric-card'><h3>{orig_len-len(df_clean)}</h3><p>{T['dups']}</p></div>", unsafe_allow_html=True)
+        with c4: st.markdown(f"<div class='metric-card'><h3>{df.isna().sum().sum()}</h3><p>{T['empty']}</p></div>", unsafe_allow_html=True)
+
+        st.dataframe(df_clean.head(10), use_container_width=True, height=350)
         st.caption(T['preview'])
 
-        # ============ 3 TABS TOOL MENU ============
-        st.divider()
-        st.subheader(T['tools_menu'])
+        st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
         all_cols = df_clean.columns.tolist()
         is_pro = st.session_state.plan=="pro" and load_db().get(st.session_state.email,{}).get("status")=="PAID"
 
         tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
 
         with tab1:
-            st.write(f"**{T['tool1']}**")
-            if is_pro:
-                date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
-                if st.button(T['apply'], key="btn_date"):
-                    for col in date_cols: df_clean[col] = pd.to_datetime(df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
-                    st.success("Dates fixed!")
-            else: st.info(T['locked'])
+            with st.expander(T['tool1'], expanded=True):
+                if is_pro:
+                    date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
+                    if st.button(T['apply_btn'], key="btn_date"):
+                        for col in date_cols:
+                            st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
+                        st.success(T['success']); st.rerun()
+                else: st.info(T['locked'])
 
-            st.write(f"**{T['tool2']}**")
-            if is_pro:
-                fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
-                if st.button(T['apply'], key="btn_fill"):
-                    df_clean[fill_cols] = df_clean[fill_cols].fillna("N/A")
-                    st.success(T['success'])
-            else: st.info(T['locked'])
+            with st.expander(T['tool2']):
+                if is_pro:
+                    fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
+                    if st.button(T['apply_btn'], key="btn_fill"):
+                        st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
+                        st.success(T['success']); st.rerun()
+                else: st.info(T['locked'])
 
         with tab2:
-            st.write(f"**{T['tool3']}**")
-            if is_pro:
-                email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
-                if st.button(T['apply'], key="btn_email"):
-                    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-                    for col in email_cols: df_clean[col] = df_clean[col].apply(lambda x: x.lower() if re.match(pattern,str(x)) else "")
-                    st.success("Emails cleaned!")
-            else: st.info(T['locked'])
+            with st.expander(T['tool3']):
+                if is_pro:
+                    email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
+                    if st.button(T['apply_btn'], key="btn_email"):
+                        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                        for col in email_cols:
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern,str(x)) else "")
+                        st.success(T['success']); st.rerun()
+                else: st.info(T['locked'])
 
-            st.write(f"**{T['tool4']}**")
-            if is_pro:
-                phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
-                if st.button(T['apply'], key="btn_phone"):
-                    for col in phone_cols: df_clean[col] = df_clean[col].str.replace(r'\D','',regex=True)
-                    st.success(T['success'])
-            else: st.info(T['locked'])
+            with st.expander(T['tool4']):
+                if is_pro:
+                    phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
+                    if st.button(T['apply_btn'], key="btn_phone"):
+                        for col in phone_cols:
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D','',regex=True)
+                        st.success(T['success']); st.rerun()
+                else: st.info(T['locked'])
 
         with tab3:
-            st.write(f"**{T['tool5']}**")
-            case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
-            case_opt = st.selectbox(T['select_case'], ["Uppercase","Lowercase","Title Case"], key="sel_case")
-            if st.button(T['apply'], key="btn_case"):
-                for col in case_cols:
-                    if case_opt=="Uppercase": df_clean[col]=df_clean[col].str.upper()
-                    elif case_opt=="Lowercase": df_clean[col]=df_clean[col].str.lower()
-                    else: df_clean[col]=df_clean[col].str.title()
-                st.success(T['success'])
+            with st.expander(T['tool5'], expanded=True):
+                case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
+                case_opt = st.selectbox(T['select_case'], ["Uppercase","Lowercase","Title Case"], key="sel_case")
+                if st.button(T['apply_btn'], key="btn_case"):
+                    for col in case_cols:
+                        if case_opt=="Uppercase": st.session_state.df_clean[col]=st.session_state.df_clean[col].str.upper()
+                        elif case_opt=="Lowercase": st.session_state.df_clean[col]=st.session_state.df_clean[col].str.lower()
+                        else: st.session_state.df_clean[col]=st.session_state.df_clean[col].str.title()
+                    st.success(T['success']); st.rerun()
 
-            st.write(f"**{T['tool6']}**")
-            if is_pro:
-                spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
-                if st.button(T['apply'], key="btn_spec"):
-                    for col in spec_cols: df_clean[col] = df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]','',regex=True)
-                    st.success(T['success'])
-            else: st.info(T['locked'])
+            with st.expander(T['tool6']):
+                if is_pro:
+                    spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
+                    if st.button(T['apply_btn'], key="btn_spec"):
+                        for col in spec_cols:
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]','',regex=True)
+                        st.success(T['success']); st.rerun()
+                else: st.info(T['locked'])
 
-            st.write(f"**{T['tool7']}**")
-            if is_pro:
-                old = st.selectbox("Old name", all_cols, key="sel_old")
-                new = st.text_input("New name", key="inp_new")
-                if st.button(T['apply'], key="btn_rename") and new:
-                    df_clean.rename(columns={old:new}, inplace=True)
-                    st.success(T['success'])
-            else: st.info(T['locked'])
+            with st.expander(T['tool7']):
+                if is_pro:
+                    old = st.selectbox("Old Column Name", all_cols, key="sel_old")
+                    new = st.text_input("New Column Name", key="inp_new")
+                    if st.button(T['apply_btn'], key="btn_rename") and new:
+                        st.session_state.df_clean.rename(columns={old:new}, inplace=True)
+                        st.success(T['success']); st.rerun()
+                else: st.info(T['locked'])
 
-        # ============ DOWNLOAD ============
-        st.divider()
-        st.subheader(f"📥 {T['download']}")
+        st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
         user = load_db().get(st.session_state.email,{})
 
         if st.session_state.plan=="free" or user.get("status")=="PAID":
             col1,col2 = st.columns(2)
-            csv = df_clean.to_csv(index=False).encode()
-            if col1.download_button("Download CSV", csv, "clean_data.csv", key="dl_csv"):
+            csv = st.session_state.df_clean.to_csv(index=False).encode()
+            if col1.download_button("📄 Download CSV", csv, "clean_data.csv", mime="text/csv", key="dl_csv"):
                 st.balloons()
 
             if is_pro:
                 excel = io.BytesIO()
-                df_clean.to_excel(excel, index=False)
-                if col2.download_button("Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel"):
+                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel"):
                     st.balloons()
         else:
-            st.error(f"🔒 {T['paid']}")
-            st.code(UPI)
-            if st.button(f"{T['paid_btn']} ₹{st.session_state.amt}", key="btn_paid"):
-                st.success("Request sent! Admin verify karega")
+            st.error(f"🔒 {T['paid_msg']}")
+            st.markdown(f"### {T['upi_text']}")
+
+            upi_link = f"upi://pay?pa={UPI}&pn=VeriSame%20Pro&am={st.session_state.amt}&cu=INR&tn=VeriSame%20Subscription"
+            qr = qrcode.make(upi_link)
+            st.image(qr, width=280)
+            st.code(UPI, language="text")
+
+            if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary"):
+                st.success(T['success_msg'])
