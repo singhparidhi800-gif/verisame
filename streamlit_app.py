@@ -57,7 +57,7 @@ LANG = {
         "sample_btn": "Load Messy Sample Data",
         "summary_title": "📊 Real-Time Cleaning Summary",
         "rows": "Total Rows", "clean": "Clean Rows", "dups": "Duplicates Removed", "empty": "Empty Cells Fixed",
-        "preview": "Live Preview - First 10 Rows",
+        "preview": "Preview - First 10 Rows Only",
         "tools_menu": "⚡ Premium Data Cleaning Studio",
         "back_btn": "⬅️ Back to Plans",
         "download_title": "📥 Export Clean Data",
@@ -90,7 +90,7 @@ LANG = {
         "sample_btn": "Ganda Sample Data Load Karo",
         "summary_title": "📊 Live Cleaning Summary",
         "rows": "Total Row", "clean": "Saaf Row", "dups": "Duplicate Hate", "empty": "Khali Cell Thik Hue",
-        "preview": "Live Preview - Pehle 10 Row",
+        "preview": "Preview - Sirf Pehle 10 Rows",
         "tools_menu": "⚡ Premium Data Saaf Karne Ka Studio",
         "back_btn": "⬅️ Wapas Plans Pe",
         "download_title": "📥 Saaf Data Download Karo",
@@ -144,7 +144,7 @@ lang = st.sidebar.selectbox("🌐 Language / भाषा", ["English", "Hindi"]
 st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
-# Email + Expiry sidebar me - EMAIL GAYAB NAHI HOGA
+# Email + Expiry sidebar me - GAYAB NAHI HOGA
 if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
@@ -183,10 +183,19 @@ st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class
 if st.query_params.get("admin") == ADMIN_PASS:
     st.title("🔐 Admin Control Panel")
     data = load_db()
-    pending = [e for e,i in data.items() if i["status"]=="PENDING"]
+    pending = [e for e,i in data.items() if i["status"]=="PENDING" and "@" in e]
+
     st.metric("Pending Verifications", len(pending))
+
+    # Saare emails dikhao
+    all_users = [e for e in data.keys() if "@" in e]
+    st.subheader(f"📧 Total Registered Emails: {len(all_users)}")
+    for email in all_users:
+        info = data[email]
+        st.write(f"**{email}** - Plan: {info.get('plan','free').upper()} | Status: {info.get('status','PENDING')} | Exp: {info.get('expiry','N/A')}")
+
     for email,info in data.items():
-        if info["status"]=="PENDING":
+        if info.get("status")=="PENDING" and "@" in email:
             c1,c2,c3 = st.columns([3,2,1])
             c1.write(f"📧 **{email}**")
             c2.write(f"Plan: {info['plan'].upper()} | ₹{info['amt']} | Exp: {info['expiry']}")
@@ -268,10 +277,8 @@ else:
     if df is not None:
         st.session_state.df_clean = df.copy()
         orig_len = len(df)
-        if st.session_state.plan=="free" and orig_len>1000:
-            st.session_state.df_clean = st.session_state.df_clean.head(1000)
-            st.warning("⚠️ Free: Only first 1000 rows")
 
+        # BASIC CLEANING DONO ME
         df_clean = st.session_state.df_clean.drop_duplicates()
         for col in df_clean.columns:
             df_clean[col] = df_clean[col].astype(str).str.strip()
@@ -287,10 +294,11 @@ else:
         with c3: st.markdown(f"<div class='metric-card'><h3>{orig_len-len(df_clean)}</h3><p>{T['dups']}</p></div>", unsafe_allow_html=True)
         with c4: st.markdown(f"<div class='metric-card'><h3>{df.isna().sum().sum()}</h3><p>{T['empty']}</p></div>", unsafe_allow_html=True)
 
-        st.dataframe(df_clean.head(10), use_container_width=True, height=350)
-        st.caption(T['preview'])
-
+        # PREMIUM DATA CLEANING STUDIO KE NICHE 10 ROWS DONO KE LIYE
         st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
+        st.caption(T['preview'])
+        st.dataframe(df_clean.head(10), use_container_width=True, height=350)
+
         all_cols = df_clean.columns.tolist()
         is_pro = st.session_state.plan=="pro" and load_db().get(st.session_state.email,{}).get("status")=="PAID"
 
@@ -366,7 +374,7 @@ else:
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
         user = load_db().get(st.session_state.email,{})
 
-        # PAID USER KO QR NAHI DIKHEGA - SIDHA DOWNLOAD
+        # PAID USER KO QR NAHI - SIDHA DOWNLOAD
         if st.session_state.plan=="free" or user.get("status")=="PAID":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -380,7 +388,7 @@ else:
                 if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel"):
                     st.session_state.show_balloon = True
 
-            # BALLOON FIX - session_state se
+            # BALLOON FIX
             if st.session_state.show_balloon:
                 st.balloons()
                 st.session_state.show_balloon = False
