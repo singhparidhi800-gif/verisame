@@ -560,7 +560,7 @@ else:
             if st.button(T['apply_btn'], key="btn_fill", disabled=not is_pro):
                 st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
                 st.success(T['success'])
-       with tab2:
+        with tab2:
             st.write(f"**{T['tool3']}**")
             email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=not is_pro)
             if st.button(T['apply_btn'], key="btn_email", disabled=not is_pro):
