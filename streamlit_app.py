@@ -4,7 +4,7 @@ import pandas as pd
 import re
 from datetime import datetime, timedelta
 
-# GOOGLE VERIFICATION TAG
+# GOOGLE VERIFICATION TAG - ISKO MAT HATANA
 st.markdown('<meta name="google-site-verification" content="r1wzMau1uinP14S7qbYJcmve44Ih7SEO-MdK9TZjW9A" />', unsafe_allow_html=True)
 
 st.set_page_config(page_title="VeriSame", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
@@ -41,12 +41,12 @@ LANG = {
     "Hindi": {"title":"VeriSame","tagline":"Data Saaf Karne Ka Sabse Fast Tareeka","pro_banner":"📊 9 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","Basic Tools","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo shuru karne ke liye","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Pehle payment karo, I Paid dabao. Admin approve karega tab download khulega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Admin approve karega","download_success":"Download ho gaya! ✅","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ Aapka plan {days} din me khatam! Abhi renew karo","pro_active":"🔥 Plan Active\n📅 {date} tak\n⏰ {days} din bache","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expire! Dobara payment karo","delete_btn":"🗑️ Delete"}
 }
 
-# WHITE TEXT + PINK PURPLE THEME + BIG LOGO
+# WHITE TEXT + 900PX LOGO + SMALL PRICE FIX
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@400;600;700&display=swap');
 
-html, body, [class*="css"], p, div, span, label {font-family: 'Poppins', sans-serif; color: #FFFFFF!important;}
+html, body, [class*="css"], p, div, span, label, h1, h2, h3, h4, h5, h6 {font-family: 'Poppins', sans-serif; color: #FFFFFF!important;}
 
 .stApp {
     background: linear-gradient(135deg, #0D001A 0%, #1A0033 50%, #0D001A 100%);
@@ -61,11 +61,6 @@ html, body, [class*="css"], p, div, span, label {font-family: 'Poppins', sans-se
     border: 2px solid rgba(255,20,147,0.4);
 }
 
-/* WHITE TEXT FOR EVERYTHING */
-h1, h2, h3, h4, h5, h6, p, label {
-    color: #FFFFFF!important;
-}
-
 h1 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900!important;
@@ -76,16 +71,29 @@ h1 {
     text-shadow: 0 0 30px rgba(255,255,255,0.5);
 }
 
-/* SMALLER PRICE - ONE LINE */
-h1[style*="text-align:center"] {
-    font-size: 3.5rem!important;
+/* PRICE CHOTA + EK LINE */
+.pricing-card h1 {
+    font-size: 3rem!important;
     white-space: nowrap;
+    margin: 10px 0;
 }
 
-/* VALID FOR TEXT CENTER */
-p[style*="text-align:center; color:#FF69B4"] {
+/* VALID FOR BARABAR */
+.pricing-card p {
     text-align: center!important;
-    margin-top: 10px!important;
+    color: #FFB6C1!important;
+    font-weight: 700;
+    min-height: 25px;
+    margin-top: 10px;
+}
+
+.pricing-card h2 {
+    font-size: 1.4rem!important;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF!important;
 }
 
 .pro-banner {
@@ -120,14 +128,6 @@ p[style*="text-align:center; color:#FF69B4"] {
     justify-content: space-between;
 }
 
-.pricing-card h2 {
-    font-size: 1.5rem!important;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .metric-card {
     background: linear-gradient(135deg, rgba(255,20,147,0.35) 0%, rgba(138,43,226,0.35) 100%);
     color: white!important;
@@ -146,6 +146,7 @@ p[style*="text-align:center; color:#FF69B4"] {
     font-size: 16px;
     padding: 12px 24px;
     width: 100%;
+    transition: all 0.3s;
 }
 
 .stButton>button:hover {
@@ -182,22 +183,39 @@ lang = st.sidebar.selectbox("🌐 Language", ["English", "Hindi"], index=0 if st
 st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
+# BACK BUTTON - HAR PAGE PE
+if st.session_state.plan is not None or st.session_state.email_entered:
+    if st.button(T['back_btn'], key="btn_back_top"):
+        st.session_state.plan = None; st.session_state.email = ""; st.session_state.df_clean = None; st.session_state.payment_clicked = False; st.session_state.sample_loaded = False; st.session_state.email_entered = False
+        st.rerun()
+
+if st.session_state.email:
+    user = load_db().get(st.session_state.email,{})
+    st.sidebar.success(f"📧 {st.session_state.email}")
+
+    if user.get("plan") == "pro":
+        exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
+        days_left = (exp_date - datetime.now()).days
+
+        if 0 < days_left <= 5:
+            st.sidebar.warning(T['expiry_warn'].format(days=days_left))
+            st.sidebar.info(T['pro_active'].format(date=user['expiry'], days=days_left))
+        elif days_left > 5:
+            st.sidebar.info(T['pro_active'].format(date=user['expiry'], days=days_left))
+        else:
+            st.sidebar.error(T['expired'])
+            st.session_state.plan = None
+            st.session_state.payment_clicked = False
+
+    elif user.get("plan") == "free":
+        st.sidebar.info(T['free_plan'])
+
 # LOGO 900PX BADA
 col_logo, col_title = st.columns([1,4])
 with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=900)
 with col_title: st.title(T['title']); st.markdown(f"### {T['tagline']}")
 
 st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>📈 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>🧹 Clean</span><span class='tool-chip'>✏️ Rename</span><span class='tool-chip'>🗑️ Dedup</span><span class='tool-chip'>✂️ Trim</span></div></div>", unsafe_allow_html=True)
-
-# EMAIL PEHLE - PHIR FILE UPLOAD
-if not st.session_state.email_entered:
-    st.session_state.email = st.text_input(T['email_label']).lower().strip()
-    if st.button(T['continue_btn'], key="btn_continue", type="primary"):
-        if "@" in st.session_state.email and "." in st.session_state.email:
-            st.session_state.email_entered = True
-            st.rerun()
-        else: st.error("Valid email daalo")
-    st.stop()
 
 # ADMIN
 if st.query_params.get("admin") == ADMIN_PASS:
@@ -234,9 +252,9 @@ if st.session_state.plan is None:
     col1,col2,col3 = st.columns(3, gap="large")
     with col1:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='color:#FFFFFF'>🆓 {T['free_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>🆓 {T['free_title']}</h2>", unsafe_allow_html=True)
         st.markdown("<h1 style='text-align:center'>FREE</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center;min-height:25px'></p>", unsafe_allow_html=True)
+        st.markdown("<p></p>", unsafe_allow_html=True)
         for f in T['free_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button("Start FREE", key="btn_free", use_container_width=True, type="primary"):
@@ -250,9 +268,9 @@ if st.session_state.plan is None:
     with col2:
         st.markdown("<div class='pricing-card' style='border-color:#FF1493'>", unsafe_allow_html=True)
         st.markdown("⭐ MOST POPULAR")
-        st.markdown(f"<h2 style='color:#FFFFFF'>📊 {T['pro1_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>📊 {T['pro1_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_1M}</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center;color:#FFB6C1;font-weight:700'>Valid for 1 Month</p>", unsafe_allow_html=True)
+        st.markdown("<p>Valid for 1 Month</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button(f"Get Monthly", key="btn_pro1", use_container_width=True, type="primary"):
@@ -261,9 +279,9 @@ if st.session_state.plan is None:
         st.markdown("</div></div>", unsafe_allow_html=True)
     with col3:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='color:#FFFFFF'>📈 {T['pro6_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>📈 {T['pro6_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_6M}</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center;color:#FFB6C1;font-weight:700'>Valid for 6 Months</p>", unsafe_allow_html=True)
+        st.markdown("<p>Valid for 6 Months</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button(f"Get 6 Months", key="btn_pro6", use_container_width=True, type="primary"):
@@ -272,7 +290,16 @@ if st.session_state.plan is None:
         st.markdown("</div></div>", unsafe_allow_html=True)
 
 else:
-    # EMAIL DALNE KE BAAD HI FILE UPLOAD
+    # EMAIL PEHLE - PHIR FILE UPLOAD
+    if not st.session_state.email_entered:
+        st.session_state.email = st.text_input(T['email_label']).lower().strip()
+        if st.button(T['continue_btn'], key="btn_continue", type="primary", use_container_width=True):
+            if "@" in st.session_state.email and "." in st.session_state.email:
+                st.session_state.email_entered = True
+                st.rerun()
+            else: st.error("Valid email daalo")
+        st.stop()
+
     tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
     df = None
     with tab1:
@@ -316,7 +343,7 @@ else:
 
         all_cols = df_clean.columns.tolist()
         user = load_db().get(st.session_state.email,{})
-        # 299 AUR 1499 DONO ME TOOLS KHUL JAYENGE
+        # 299 AUR 1499 DONO ME TOOLS KHULENGE
         is_pro = st.session_state.plan=="pro" and user.get("status")=="PAID"
 
         tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
