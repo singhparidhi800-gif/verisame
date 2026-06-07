@@ -37,195 +37,293 @@ def words_to_num(s):
     return total + current if total + current > 0 else s
 
 LANG = {
-    "English": {"title":"VeriSame","tagline":"Next-Gen AI Data Cleaning","pro_banner":"💎 UNLOCK 9 PREMIUM AI TOOLS","free_title":"FREE FOREVER","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTHS PLAN","free_feat":["1000 Rows Lifetime","CSV + Excel Export","9 Premium Tools","Words → Numbers","30s Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Premium AI Tools","3s Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Enter your email","continue_btn":"Continue →","upload_tab":"📤 Upload File","sample_tab":"🧪 Try Demo","upload_text":"Drag & Drop CSV, Excel or JSON here","sample_btn":"Load Sample Data","summary_title":"📊 Live Summary","rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Preview - First 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Back to Plans","download_title":"📥 Export Clean Data","paid_msg":"Complete payment first, then click I Paid to unlock download","upi_text":"Scan QR to Pay","paid_btn":"✓ I Have Paid ₹{amount}","success_msg":"Payment request sent! Download unlocked below","download_success":"Download completed successfully! ✅","locked":"🔒 PRO - Upgrade","tab1":"📅 Date & Nulls","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Smart Date","tool2":"2. AI Fill","tool3":"3. Email Validator","tool4":"4. Phone Formatter","tool5":"5. Case Converter","tool6":"6. Remove Symbols","tool7":"7. Bulk Rename","tool8":"8. Remove Duplicates","tool9":"9. Trim Spaces","select_col":"Select Columns","select_case":"Choose Case","apply_btn":"Apply","success":"Applied! ✅","expiry_warn":"⚠️ Your plan expires in {days} days! Renew now","pro_active":"🔥 Plan Active\n📅 Till {date}\n⏰ {days} days left","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expired! Please pay again","delete_btn":"🗑️ Delete"},
-    "Hindi": {"title":"VeriSame","tagline":"Next-Gen AI se Data Saaf","pro_banner":"💎 9 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","9 Premium Tools","Shabd → Number","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Pehle payment karo, phir I Paid dabao download khul jayega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Ab niche download khul gaya","download_success":"Download ho gaya! ✅","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ Aapka plan {days} din me khatam! Abhi renew karo","pro_active":"🔥 Plan Active\n📅 {date} tak\n⏰ {days} din bache","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expire! Dobara payment karo","delete_btn":"🗑️ Delete"}
+    "English": {"title":"VeriSame","tagline":"Next-Gen AI Data Cleaning","pro_banner":"📊 UNLOCK 9 PREMIUM AI TOOLS","free_title":"FREE FOREVER","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTHS PLAN","free_feat":["1000 Rows Lifetime","CSV + Excel Export","9 Premium Tools","Words → Numbers","30s Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Premium AI Tools","3s Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Enter your email","continue_btn":"Continue →","upload_tab":"📤 Upload File","sample_tab":"🧪 Try Demo","upload_text":"Drag & Drop CSV, Excel or JSON here","sample_btn":"Load Sample Data","summary_title":"📊 Live Summary","rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Preview - First 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Back to Plans","download_title":"📥 Export Clean Data","paid_msg":"Complete payment first, then click I Paid to unlock download","upi_text":"Scan QR to Pay","paid_btn":"✓ I Have Paid ₹{amount}","success_msg":"Payment request sent! Download unlocked below","download_success":"Download completed successfully! ✅","locked":"🔒 PRO - Upgrade","tab1":"📅 Date & Nulls","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Smart Date","tool2":"2. AI Fill","tool3":"3. Email Validator","tool4":"4. Phone Formatter","tool5":"5. Case Converter","tool6":"6. Remove Symbols","tool7":"7. Bulk Rename","tool8":"8. Remove Duplicates","tool9":"9. Trim Spaces","select_col":"Select Columns","select_case":"Choose Case","apply_btn":"Apply","success":"Applied! ✅","expiry_warn":"⚠️ Your plan expires in {days} days! Renew now","pro_active":"🔥 Plan Active\n📅 Till {date}\n⏰ {days} days left","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expired! Please pay again","delete_btn":"🗑️ Delete"},
+    "Hindi": {"title":"VeriSame","tagline":"Next-Gen AI se Data Saaf","pro_banner":"📊 9 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","9 Premium Tools","Shabd → Number","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Pehle payment karo, phir I Paid dabao download khul jayega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Ab niche download khul gaya","download_success":"Download ho gaya! ✅","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ Aapka plan {days} din me khatam! Abhi renew karo","pro_active":"🔥 Plan Active\n📅 {date} tak\n⏰ {days} din bache","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expire! Dobara payment karo","delete_btn":"🗑️ Delete"}
 }
 
-# PRO 3D AURA + HOLOGRAM EFFECT
+# PINK + PURPLE 3D + 2D DATA CLEANING THEME
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@400;600;700&display=swap');
 
-html, body, [class*="css"] {font-family: 'Poppins', sans-serif; color: #E0E0E0;}
+html, body, [class*="css"] {font-family: 'Poppins', sans-serif; color: #F5E6FF;}
 
 .stApp {
-    background: radial-gradient(circle at 20% 50%, rgba(255,215,0,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(184,134,11,0.1) 0%, transparent 50%),
-                linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 50%, #0A0A0A 100%);
+    background: radial-gradient(circle at 20% 50%, rgba(255,20,147,0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(138,43,226,0.15) 0%, transparent 50%),
+                linear-gradient(135deg, #0D001A 0%, #1A0033 50%, #0D001A 100%);
     animation: auraGlow 8s ease-in-out infinite;
 }
 
 @keyframes auraGlow {
     0%,100% {filter: brightness(1);}
-    50% {filter: brightness(1.1);}
+    50% {filter: brightness(1.15);}
 }
 
-/* 3D FLOATING HOLOGRAM SIDE ELEMENTS */
+/* 2D DATA PARTICLES - ONLY CLEANING RELATED */
 .stApp::before {
-    content: '🪔';
+    content: '';
     position: fixed;
-    left: 2%;
-    top: 25%;
-    font-size: 60px;
-    opacity: 0.4;
-    filter: drop-shadow(0 0 20px rgba(255,215,0,0.8));
-    animation: float3dLeft 20s ease-in-out infinite;
-    z-index: 999;
-    transform-style: preserve-3d;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(255,20,147,0.3) 2px, transparent 2px),
+        radial-gradient(circle at 80% 70%, rgba(138,43,226,0.3) 2px, transparent 2px),
+        radial-gradient(circle at 40% 80%, rgba(255,105,180,0.2) 1px, transparent 1px);
+    background-size: 100px 100px, 150px 150px, 80px 80px;
+    animation: particleFloat 20s linear infinite;
+    z-index: 0;
+    pointer-events: none;
 }
+
+@keyframes particleFloat {
+    0% {background-position: 0% 0%, 0% 0%, 0% 0%;}
+    100% {background-position: 100% 100%, -100% 100%, 50% -100%;}
+}
+
+/* 3D DATA CLEANING ICONS */
 .stApp::after {
-    content: '🍃';
+    content: '📊';
     position: fixed;
-    right: 2%;
-    top: 30%;
-    font-size: 55px;
-    opacity: 0.4;
-    filter: drop-shadow(0 0 20px rgba(184,134,11,0.8));
-    animation: float3dRight 20s ease-in-out infinite reverse;
+    left: 3%;
+    top: 20%;
+    font-size: 80px;
+    opacity: 0.6;
+    filter: drop-shadow(0 0 30px rgba(255,20,147,1));
+    animation: hologram3D2D 12s ease-in-out infinite;
     z-index: 999;
-    transform-style: preserve-3d;
 }
 
-@keyframes float3dLeft {
-    0%,100% {transform: perspective(1000px) rotateY(15deg) translateZ(50px) translateY(0px);}
-    25% {transform: perspective(1000px) rotateY(-15deg) translateZ(80px) translateY(-30px);}
-    50% {transform: perspective(1000px) rotateY(15deg) translateZ(50px) translateY(0px);}
-    75% {transform: perspective(1000px) rotateY(-15deg) translateZ(80px) translateY(30px);}
+body::after {
+    content: '🧹';
+    position: fixed;
+    right: 3%;
+    top: 40%;
+    font-size: 70px;
+    opacity: 0.6;
+    filter: drop-shadow(0 0 30px rgba(138,43,226,1));
+    animation: hologram3D2D 12s ease-in-out infinite reverse;
+    z-index: 999;
 }
 
-@keyframes float3dRight {
-    0%,100% {transform: perspective(1000px) rotateY(-15deg) translateZ(50px) translateY(0px);}
-    25% {transform: perspective(1000px) rotateY(15deg) translateZ(80px) translateY(30px);}
-    50% {transform: perspective(1000px) rotateY(-15deg) translateZ(50px) translateY(0px);}
-    75% {transform: perspective(1000px) rotateY(15deg) translateZ(80px) translateY(-30px);}
+@keyframes hologram3D2D {
+    0%, 100% {
+        transform: perspective(1000px) rotateY(25deg) rotateX(10deg) translateZ(50px) scale(1);
+    }
+    25% {
+        transform: perspective(1000px) rotateY(-25deg) rotateX(-10deg) translateZ(80px) scale(1.2) translateY(-30px);
+    }
+    50% {
+        transform: perspective(1000px) rotateY(25deg) rotateX(10deg) translateZ(50px) scale(1);
+    }
+    75% {
+        transform: perspective(1000px) rotateY(-25deg) rotateX(-10deg) translateZ(80px) scale(1.2) translateY(30px);
+    }
 }
 
 .block-container {
-    background: rgba(20,20,20,0.85);
+    background: rgba(20,0,40,0.85);
     backdrop-filter: blur(20px) saturate(180%);
     border-radius: 50px;
     padding: 4rem;
-    box-shadow: 0 0 60px rgba(255,215,0,0.2),
+    box-shadow: 0 0 60px rgba(255,20,147,0.3),
                 inset 0 0 40px rgba(255,255,255,0.05);
-    border: 2px solid rgba(255,215,0,0.3);
+    border: 2px solid rgba(255,20,147,0.4);
     position: relative;
     z-index: 1;
 }
 
+/* PINK PURPLE GRADIENT TEXT */
 h1 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900!important;
-    background: linear-gradient(90deg, #FFD700, #FFA500, #FF8C00, #FFD700);
+    background: linear-gradient(90deg, #FF1493, #FF69B4, #DA70D6, #BA55D3, #FF1493);
     background-size: 300% 300%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-size: 4.5rem!important;
-    text-shadow: 0 0 40px rgba(255,215,0,0.6);
-    animation: textGlow 3s ease-in-out infinite;
+    font-size: 5rem!important;
+    text-shadow: 0 0 50px rgba(255,20,147,0.8);
+    animation: text3DPop 4s ease-in-out infinite;
+    transform: perspective(500px) rotateX(15deg);
 }
 
-@keyframes textGlow {
-    0%,100% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
+@keyframes text3DPop {
+    0%, 100% {
+        transform: perspective(500px) rotateX(15deg) translateZ(0px) scale(1);
+        text-shadow: 0 10px 30px rgba(255,20,147,0.6);
+    }
+    50% {
+        transform: perspective(500px) rotateX(0deg) translateZ(30px) scale(1.05);
+        text-shadow: 0 25px 60px rgba(255,20,147,1);
+    }
 }
 
 .pro-banner {
-    background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(184,134,11,0.2) 100%);
+    background: linear-gradient(135deg, rgba(255,20,147,0.25) 0%, rgba(138,43,226,0.25) 100%);
     backdrop-filter: blur(10px);
     padding: 60px;
     border-radius: 45px;
-    color: white!important;
+    color: #FFFFFF!important;
     text-align: center;
     margin: 50px 0;
-    box-shadow: 0 0 80px rgba(255,215,0,0.3),
-                inset 0 0 40px rgba(255,255,255,0.05);
-    border: 2px solid rgba(255,215,0,0.4);
+    box-shadow: 0 0 80px rgba(255,20,147,0.4);
+    border: 2px solid rgba(255,20,147,0.5);
+    position: relative;
+    overflow: hidden;
     transform: perspective(1000px) rotateX(5deg);
     transition: all 0.5s;
 }
-.pro-banner:hover {
-    transform: perspective(1000px) rotateX(0deg) scale(1.02);
-    box-shadow: 0 0 100px rgba(255,215,0,0.5);
+
+.pro-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 3s infinite;
 }
 
+@keyframes shimmer {
+    0% {transform: translateX(-100%) translateY(-100%) rotate(45deg);}
+    100% {transform: translateX(100%) translateY(100%) rotate(45deg);}
+}
+
+.pro-banner:hover {
+    transform: perspective(1000px) rotateX(0deg) scale(1.02);
+    box-shadow: 0 0 100px rgba(255,20,147,0.6);
+}
+
+/* 2D DATA CHIP FLOAT */
 .tool-chip {
     display: inline-block;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255,255,255,0.08);
     backdrop-filter: blur(15px);
     padding: 16px 28px;
     border-radius: 60px;
     margin: 12px;
     font-weight: 700;
-    border: 1px solid rgba(255,215,0,0.4);
-    color: #FFD700!important;
-    box-shadow: 0 8px 30px rgba(255,215,0,0.2);
+    border: 1px solid rgba(255,20,147,0.5);
+    color: #FFB6C1!important;
+    box-shadow: 0 8px 30px rgba(255,20,147,0.3);
+    animation: chipFloat 3s ease-in-out infinite;
     transition: all 0.3s;
 }
-.tool-chip:hover {
-    transform: translateY(-5px) scale(1.05);
-    box-shadow: 0 12px 40px rgba(255,215,0,0.4);
-    border-color: #FFD700;
+
+.tool-chip:nth-child(2n) {animation-delay: 0.5s;}
+.tool-chip:nth-child(3n) {animation-delay: 1s;}
+
+@keyframes chipFloat {
+    0%, 100% {transform: translateY(0px) rotate(0deg);}
+    50% {transform: translateY(-8px) rotate(2deg);}
 }
 
+.tool-chip:hover {
+    transform: translateY(-10px) scale(1.1) rotate(0deg);
+    box-shadow: 0 15px 45px rgba(255,20,147,0.6);
+    border-color: #FF69B4;
+    background: rgba(255,20,147,0.25);
+}
+
+/* 2D BOUNCE CARDS */
 .pricing-card {
-    border: 2px solid rgba(255,215,0,0.3);
+    border: 2px solid rgba(255,20,147,0.4);
     border-radius: 45px;
     padding: 45px;
-    background: rgba(30,30,30,0.8);
+    background: rgba(30,0,60,0.8);
     backdrop-filter: blur(15px);
     box-shadow: 0 20px 60px rgba(0,0,0,0.5),
-                0 0 40px rgba(255,215,0,0.1);
+                0 0 40px rgba(255,20,147,0.2);
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     transition: all 0.4s;
     transform: perspective(1000px) rotateX(5deg);
+    animation: cardBounce 4s ease-in-out infinite;
 }
+
+.pricing-card:nth-child(2) {animation-delay: 0.5s;}
+.pricing-card:nth-child(3) {animation-delay: 1s;}
+
+@keyframes cardBounce {
+    0%, 100% {transform: perspective(1000px) rotateX(5deg) translateY(0px);}
+    50% {transform: perspective(1000px) rotateX(0deg) translateY(-10px);}
+}
+
 .pricing-card:hover {
-    transform: perspective(1000px) rotateX(0deg) translateY(-15px) scale(1.03);
-    box-shadow: 0 30px 80px rgba(255,215,0,0.3);
-    border-color: #FFD700;
+    transform: perspective(1000px) rotateX(0deg) translateY(-20px) scale(1.05) rotateZ(1deg);
+    box-shadow: 0 40px 100px rgba(255,20,147,0.6);
+    border-color: #FF69B4;
+    animation: none;
 }
 
 .metric-card {
-    background: linear-gradient(135deg, rgba(255,215,0,0.3) 0%, rgba(184,134,11,0.3) 100%);
+    background: linear-gradient(135deg, rgba(255,20,147,0.35) 0%, rgba(138,43,226,0.35) 100%);
     backdrop-filter: blur(10px);
     color: white!important;
     padding: 30px;
     border-radius: 25px;
     text-align: center;
-    box-shadow: 0 15px 40px rgba(255,215,0,0.2);
-    border: 1px solid rgba(255,215,0,0.3);
+    box-shadow: 0 15px 40px rgba(255,20,147,0.3);
+    border: 1px solid rgba(255,20,147,0.4);
     transition: all 0.3s;
 }
 .metric-card:hover {
     transform: scale(1.05);
-    box-shadow: 0 20px 50px rgba(255,215,0,0.4);
+    box-shadow: 0 20px 50px rgba(255,20,147,0.5);
 }
 
+/* SMOOTH BUTTON PULSE - 2D ANIMATION */
 .stButton>button {
     border-radius: 22px;
     font-weight: 700;
-    background: linear-gradient(90deg, #FFD700, #FFA500);
-    color: #0A0A0A!important;
+    background: linear-gradient(90deg, #FF1493, #DA70D6, #BA55D3, #FF1493);
+    background-size: 300% 300%;
+    color: #FFFFFF!important;
     border: none;
-    transition: all 0.3s;
+    transition: all 0.2s ease;
     font-size: 17px;
     padding: 14px 28px;
-    box-shadow: 0 8px 25px rgba(255,215,0,0.4);
+    box-shadow: 0 8px 25px rgba(255,20,147,0.5);
+    animation: buttonPulse 2s ease-in-out infinite, gradientShift 3s ease infinite;
 }
+
+@keyframes buttonPulse {
+    0%, 100% {transform: scale(1);}
+    50% {transform: scale(1.03);}
+}
+
+@keyframes gradientShift {
+    0%, 100% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+}
+
 .stButton>button:hover {
-    transform: scale(1.08) translateY(-3px);
-    box-shadow: 0 15px 40px rgba(255,215,0,0.6);
+    transform: scale(1.1) translateY(-5px);
+    box-shadow: 0 20px 50px rgba(255,20,147,0.8);
 }
+
+.stButton>button:active {
+    animation: buttonClick 0.3s ease;
+}
+
+@keyframes buttonClick {
+    0% {transform: scale(1.1);}
+    50% {transform: scale(0.95);}
+    100% {transform: scale(1);}
+}
+
 .stButton>button[kind="secondary"] {
-    background: linear-gradient(90deg, #C0392B, #E74C3C);
+    background: linear-gradient(90deg, #8B008B, #9932CC);
     color: white!important;
 }
 
 .download-msg {
-    background: linear-gradient(90deg, #27AE60, #2ECC71);
+    background: linear-gradient(90deg, #FF1493, #BA55D3);
     color: white!important;
     padding: 22px;
     border-radius: 20px;
@@ -233,29 +331,29 @@ h1 {
     text-align: center;
     font-weight: 700;
     font-size: 18px;
-    box-shadow: 0 10px 30px rgba(46,204,113,0.4);
+    box-shadow: 0 10px 30px rgba(255,20,147,0.5);
     animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
-    0%,100% {box-shadow: 0 10px 30px rgba(46,204,113,0.4);}
-    50% {box-shadow: 0 15px 40px rgba(46,204,113,0.6);}
+    0%,100% {box-shadow: 0 10px 30px rgba(255,20,147,0.5);}
+    50% {box-shadow: 0 15px 40px rgba(255,20,147,0.7);}
 }
 
 .admin-card {
-    background: rgba(40,40,40,0.9);
+    background: rgba(40,0,80,0.9);
     backdrop-filter: blur(10px);
     border-radius: 25px;
     padding: 24px;
     margin: 16px 0;
-    border: 2px solid rgba(255,215,0,0.3);
-    color: #E0E0E0!important;
+    border: 2px solid rgba(255,20,147,0.4);
+    color: #F5E6FF!important;
     font-size: 16px;
     font-weight: 600;
     box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 .admin-card b {
-    color: #FFD700!important;
+    color: #FF69B4!important;
     font-weight: 800;
 }
 </style>
@@ -300,12 +398,12 @@ if st.session_state.email:
     if st.sidebar.button(T['back_btn'], key="btn_back_side"):
         st.session_state.plan = None; st.session_state.email = ""; st.session_state.df_clean = None; st.session_state.payment_clicked = False; st.session_state.sample_loaded = False
 
-# LOGO 500px BADA + 3D SHADOW
+# LOGO 700px BADA + 3D SHADOW PINK
 col_logo, col_title = st.columns([1,4])
-with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=500)
+with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=700)
 with col_title: st.title(T['title']); st.markdown(f"### {T['tagline']}")
 
-st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>🤖 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>✨ Clean</span><span class='tool-chip'>✏️ Rename</span><span class='tool-chip'>🔄 Dedup</span><span class='tool-chip'>✂️ Trim</span></div></div>", unsafe_allow_html=True)
+st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>📈 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>🧹 Clean</span><span class='tool-chip'>✏️ Rename</span><span class='tool-chip'>🗑️ Dedup</span><span class='tool-chip'>✂️ Trim</span></div></div>", unsafe_allow_html=True)
 
 # ADMIN
 if st.query_params.get("admin") == ADMIN_PASS:
@@ -322,8 +420,8 @@ if st.query_params.get("admin") == ADMIN_PASS:
         plan = info.get('plan','free')
         amt = info.get('amt',0)
         if plan == "free": plan_text = "FREE"; price_text = "FREE"; badge = "🆓"; duration = "Lifetime"
-        elif amt == 299: plan_text = "MONTHLY"; price_text = "₹299"; badge = "💎"; duration = "1 Month"
-        else: plan_text = "6 MONTHS"; price_text = "₹1499"; badge = "👑"; duration = "6 Months"
+        elif amt == 299: plan_text = "MONTHLY"; price_text = "₹299"; badge = "📊"; duration = "1 Month"
+        else: plan_text = "6 MONTHS"; price_text = "₹1499"; badge = "📈"; duration = "6 Months"
         st.markdown(f"<div class='admin-card'>{badge} <b>Email:</b> {email} | <b>Plan:</b> {plan_text} | <b>Price:</b> {price_text} | <b>Duration:</b> {duration} | <b>Status:</b> {info.get('status','N/A')} | <b>Expiry:</b> {info.get('expiry','N/A')}</div>", unsafe_allow_html=True)
 
     st.markdown("---")
@@ -333,8 +431,8 @@ if st.query_params.get("admin") == ADMIN_PASS:
             c1,c2,c3,c4 = st.columns([3,2,1,1])
             amt = info.get('amt',0)
             if info['plan']=="free": plan_text="FREE"; price_text="FREE"; badge="🆓"; duration="Lifetime"
-            elif amt==299: plan_text="MONTHLY"; price_text="₹299"; badge="💎"; duration="1 Month"
-            else: plan_text="6 MONTHS"; price_text="₹1499"; badge="👑"; duration="6 Months"
+            elif amt==299: plan_text="MONTHLY"; price_text="₹299"; badge="📊"; duration="1 Month"
+            else: plan_text="6 MONTHS"; price_text="₹1499"; badge="📈"; duration="6 Months"
             c1.markdown(f"<div class='admin-card'>{badge} <b>{email}</b></div>", unsafe_allow_html=True)
             c2.markdown(f"<div class='admin-card'><b>Plan:</b> {plan_text} | <b>{price_text}</b> | <b>{duration}</b> | <b>Exp:</b> {info['expiry']}</div>", unsafe_allow_html=True)
             if c3.button("✅ Approve", key=f"admin_{email}", type="primary"):
@@ -350,8 +448,8 @@ if st.query_params.get("admin") == ADMIN_PASS:
         plan = info.get('plan','free')
         amt = info.get('amt',0)
         if plan == "free": badge = "🆓"
-        elif amt == 299: badge = "💎"
-        else: badge = "👑"
+        elif amt == 299: badge = "📊"
+        else: badge = "📈"
         c1.markdown(f"<div class='admin-card'>{badge} <b>{email}</b> | Status: {info.get('status','N/A')} | Exp: {info.get('expiry','N/A')}</div>", unsafe_allow_html=True)
         if c2.button(T['delete_btn'], key=f"delete_all_{email}", type="secondary"):
             del data[email]; save_db(data); st.success(f"Deleted {email}"); st.rerun()
@@ -362,7 +460,7 @@ if st.session_state.plan is None:
     col1,col2,col3 = st.columns(3, gap="large")
     with col1:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align:center; color:#FFD700'>🆓 {T['free_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#FF69B4'>🆓 {T['free_title']}</h2>", unsafe_allow_html=True)
         st.markdown("<h1 style='text-align:center'>FREE</h1>", unsafe_allow_html=True)
         for f in T['free_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
@@ -370,11 +468,11 @@ if st.session_state.plan is None:
             st.session_state.plan="free"; st.session_state.amt=0
         st.markdown("</div></div>", unsafe_allow_html=True)
     with col2:
-        st.markdown("<div class='pricing-card' style='border-color:#FFD700'>", unsafe_allow_html=True)
+        st.markdown("<div class='pricing-card' style='border-color:#FF1493'>", unsafe_allow_html=True)
         st.markdown("⭐ MOST POPULAR")
-        st.markdown(f"<h2 style='text-align:center; color:#FFD700'>💎 {T['pro1_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#FF69B4'>📊 {T['pro1_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_1M}</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; color:#FFD700; font-weight:700'>Valid for 1 Month</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; color:#FF69B4; font-weight:700'>Valid for 1 Month</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button(f"Get Monthly", key="btn_pro1", use_container_width=True, type="primary"):
@@ -382,9 +480,9 @@ if st.session_state.plan is None:
         st.markdown("</div></div>", unsafe_allow_html=True)
     with col3:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align:center; color:#FFD700'>👑 {T['pro6_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center; color:#FF69B4'>📈 {T['pro6_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1 style='text-align:center'>₹{PRO_6M}</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; color:#2ECC71; font-weight:700'>Valid for 6 Months</p>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; color:#DA70D6; font-weight:700'>Valid for 6 Months</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.write(f"✓ {f}")
         st.markdown("<div style='margin-top:auto'>", unsafe_allow_html=True)
         if st.button(f"Get 6 Months", key="btn_pro6", use_container_width=True, type="primary"):
@@ -462,8 +560,7 @@ else:
             if st.button(T['apply_btn'], key="btn_fill", disabled=not is_pro):
                 st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
                 st.success(T['success'])
-
-        with tab2:
+       with tab2:
             st.write(f"**{T['tool3']}**")
             email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=not is_pro)
             if st.button(T['apply_btn'], key="btn_email", disabled=not is_pro):
@@ -521,7 +618,7 @@ else:
             st.markdown(f"<div class='download-msg'>{T['download_success']}</div>", unsafe_allow_html=True)
             st.session_state.show_download_msg = False
 
-                # FREE PLAN - CSV + EXCEL DONO
+        # FREE PLAN - CSV + EXCEL DONO
         if st.session_state.plan=="free":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
