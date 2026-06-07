@@ -4,7 +4,7 @@ import pandas as pd
 import re
 from datetime import datetime, timedelta
 
-# GOOGLE VERIFICATION TAG - ISKO MAT HATANA
+# GOOGLE VERIFICATION TAG
 st.markdown('<meta name="google-site-verification" content="r1wzMau1uinP14S7qbYJcmve44Ih7SEO-MdK9TZjW9A" />', unsafe_allow_html=True)
 
 st.set_page_config(page_title="VeriSame", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
@@ -41,47 +41,93 @@ LANG = {
     "Hindi": {"title":"VeriSame","tagline":"Data Saaf Karne Ka Sabse Fast Tareeka","pro_banner":"📊 9 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","Basic Tools","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo shuru karne ke liye","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Pehle payment karo, I Paid dabao. Admin approve karega tab download khulega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Admin approve karega","download_success":"Download ho gaya! ✅","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ Aapka plan {days} din me khatam! Abhi renew karo","pro_active":"🔥 Plan Active\n📅 {date} tak\n⏰ {days} din bache","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expire! Dobara payment karo","delete_btn":"🗑️ Delete"}
 }
 
-# WHITE TEXT + 900PX LOGO + SMALL PRICE FIX
+# BLACK TEXT + LIGHT BG + 3D 2D ANIMATION WAPAS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@400;600;700&display=swap');
 
-html, body, [class*="css"], p, div, span, label, h1, h2, h3, h4, h5, h6 {font-family: 'Poppins', sans-serif; color: #FFFFFF!important;}
+html, body, [class*="css"], p, div, span, label, h1, h2, h3, h4, h5, h6 {font-family: 'Poppins', sans-serif; color: #000!important;}
 
 .stApp {
-    background: linear-gradient(135deg, #0D001A 0%, #1A0033 50%, #0D001A 100%);
+    background: radial-gradient(circle at 20% 50%, rgba(255,182,193,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(221,160,221,0.3) 0%, transparent 50%),
+                linear-gradient(135deg, #FFF0F5 0%, #F8F0FF 50%, #FFF0F5 100%);
+    animation: auraGlow 8s ease-in-out infinite;
+}
+
+@keyframes auraGlow {
+    0%,100% {filter: brightness(1);}
+    50% {filter: brightness(1.05);}
+}
+
+/* 2D PARTICLES */
+.stApp::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(255,105,180,0.4) 2px, transparent 2px),
+        radial-gradient(circle at 80% 70%, rgba(186,85,211,0.4) 2px, transparent 2px);
+    background-size: 100px 100px, 150px 150px;
+    animation: particleFloat 20s linear infinite;
+    z-index: 0;
+    pointer-events: none;
+}
+
+@keyframes particleFloat {
+    0% {background-position: 0% 0%, 0% 0%;}
+    100% {background-position: 100% 100%, -100% 100%;}
 }
 
 .block-container {
-    background: rgba(20,0,40,0.9);
+    background: rgba(255,255,255,0.95);
     backdrop-filter: blur(20px);
     border-radius: 50px;
     padding: 4rem;
-    box-shadow: 0 0 60px rgba(255,20,147,0.3);
-    border: 2px solid rgba(255,20,147,0.4);
+    box-shadow: 0 0 60px rgba(255,20,147,0.2);
+    border: 2px solid rgba(255,20,147,0.3);
+    position: relative;
+    z-index: 1;
+}
+
+/* BLACK TEXT */
+h1, h2, h3, p, label, div {
+    color: #000!important;
 }
 
 h1 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900!important;
-    background: linear-gradient(90deg, #FFFFFF, #FFB6C1, #FFFFFF);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     font-size: 4.5rem!important;
-    text-shadow: 0 0 30px rgba(255,255,255,0.5);
+    color: #000!important;
 }
 
-/* PRICE CHOTA + EK LINE */
+/* LOGO 1200PX + EK LINE ME */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+.logo-container img {
+    width: 1200px!important;
+    max-width: 100%;
+    height: auto;
+}
+
 .pricing-card h1 {
     font-size: 3rem!important;
     white-space: nowrap;
     margin: 10px 0;
+    color: #000!important;
 }
 
-/* VALID FOR BARABAR */
 .pricing-card p {
     text-align: center!important;
-    color: #FFB6C1!important;
+    color: #333!important;
     font-weight: 700;
     min-height: 25px;
     margin-top: 10px;
@@ -93,48 +139,73 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #FFFFFF!important;
+    color: #000!important;
 }
 
 .pro-banner {
-    background: linear-gradient(135deg, rgba(255,20,147,0.25) 0%, rgba(138,43,226,0.25) 100%);
+    background: linear-gradient(135deg, rgba(255,182,193,0.4) 0%, rgba(221,160,221,0.4) 100%);
     padding: 60px;
     border-radius: 45px;
-    color: #FFFFFF!important;
+    color: #000000!important;
     text-align: center;
     margin: 50px 0;
-    border: 2px solid rgba(255,20,147,0.5);
+    border: 2px solid rgba(255,20,147,0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.pro-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% {transform: translateX(-100%) translateY(-100%) rotate(45deg);}
+    100% {transform: translateX(100%) translateY(100%) rotate(45deg);}
+}
+
+/* 2D BOUNCE CARDS */
+.pricing-card {
+    border: 2px solid rgba(255,20,147,0.4);
+    border-radius: 45px;
+    padding: 40px;
+    background: rgba(255,255,255,0.9);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    animation: cardBounce 4s ease-in-out infinite;
+}
+
+.pricing-card:nth-child(2) {animation-delay: 0.5s;}
+.pricing-card:nth-child(3) {animation-delay: 1s;}
+
+@keyframes cardBounce {
+    0%, 100% {transform: translateY(0px);}
+    50% {transform: translateY(-10px);}
 }
 
 .tool-chip {
     display: inline-block;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.8);
     padding: 16px 28px;
     border-radius: 60px;
     margin: 12px;
     font-weight: 700;
     border: 1px solid rgba(255,20,147,0.5);
-    color: #FFFFFF!important;
+    color: #000!important;
+    animation: chipFloat 3s ease-in-out infinite;
 }
 
-.pricing-card {
-    border: 2px solid rgba(255,20,147,0.4);
-    border-radius: 45px;
-    padding: 40px;
-    background: rgba(30,0,60,0.8);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.metric-card {
-    background: linear-gradient(135deg, rgba(255,20,147,0.35) 0%, rgba(138,43,226,0.35) 100%);
-    color: white!important;
-    padding: 30px;
-    border-radius: 25px;
-    text-align: center;
-    border: 1px solid rgba(255,20,147,0.4);
+@keyframes chipFloat {
+    0%, 100% {transform: translateY(0px);}
+    50% {transform: translateY(-8px);}
 }
 
 .stButton>button {
@@ -147,6 +218,12 @@ h1 {
     padding: 12px 24px;
     width: 100%;
     transition: all 0.3s;
+    animation: buttonPulse 2s ease-in-out infinite;
+}
+
+@keyframes buttonPulse {
+    0%, 100% {transform: scale(1);}
+    50% {transform: scale(1.03);}
 }
 
 .stButton>button:hover {
@@ -183,9 +260,9 @@ lang = st.sidebar.selectbox("🌐 Language", ["English", "Hindi"], index=0 if st
 st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
-# BACK BUTTON - HAR PAGE PE
+# BACK BUTTON SIDEBAR ME - LOGO KE UPAR NAHI
 if st.session_state.plan is not None or st.session_state.email_entered:
-    if st.button(T['back_btn'], key="btn_back_top"):
+    if st.sidebar.button(T['back_btn'], key="btn_back_side"):
         st.session_state.plan = None; st.session_state.email = ""; st.session_state.df_clean = None; st.session_state.payment_clicked = False; st.session_state.sample_loaded = False; st.session_state.email_entered = False
         st.rerun()
 
@@ -210,10 +287,12 @@ if st.session_state.email:
     elif user.get("plan") == "free":
         st.sidebar.info(T['free_plan'])
 
-# LOGO 900PX BADA
-col_logo, col_title = st.columns([1,4])
-with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=900)
+# LOGO 1200PX + EK LINE ME TITLE KE SAATH
+st.markdown("<div class='logo-container'>", unsafe_allow_html=True)
+col_logo, col_title = st.columns([1,5])
+with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=1200)
 with col_title: st.title(T['title']); st.markdown(f"### {T['tagline']}")
+st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>📈 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>🧹 Clean</span><span class='tool-chip'>✏️ Rename</span><span class='tool-chip'>🗑️ Dedup</span><span class='tool-chip'>✂️ Trim</span></div></div>", unsafe_allow_html=True)
 
@@ -232,7 +311,7 @@ if st.query_params.get("admin") == ADMIN_PASS:
         if plan == "free": plan_text = "FREE"; price_text = "FREE"; badge = "🆓"; duration = "Lifetime"
         elif amt == 299: plan_text = "MONTHLY"; price_text = "₹299"; badge = "📊"; duration = "1 Month"
         else: plan_text = "6 MONTHS"; price_text = "₹1499"; badge = "📈"; duration = "6 Months"
-        st.markdown(f"<div style='background:rgba(40,0,80,0.9);padding:20px;border-radius:20px;margin:10px 0;border:2px solid #FF1493;color:white'>{badge} <b>Email:</b> {email} | <b>Plan:</b> {plan_text} | <b>Price:</b> {price_text} | <b>Status:</b> {info.get('status','N/A')}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='background:rgba(255,255,255,0.9);padding:20px;border-radius:20px;margin:10px 0;border:2px solid #FF1493;color:#000'>{badge} <b>Email:</b> {email} | <b>Plan:</b> {plan_text} | <b>Price:</b> {price_text} | <b>Status:</b> {info.get('status','N/A')}</div>", unsafe_allow_html=True)
     st.markdown("---")
     st.subheader("⏳ Pending Approvals")
     for email,info in data.items():
@@ -241,8 +320,8 @@ if st.query_params.get("admin") == ADMIN_PASS:
             amt = info.get('amt',0)
             if amt==299: plan_text="MONTHLY"; price_text="₹299"; badge="📊"
             else: plan_text="6 MONTHS"; price_text="₹1499"; badge="📈"
-            c1.markdown(f"<div style='background:rgba(40,0,80,0.9);padding:20px;border-radius:20px;color:white'>{badge} <b>{email}</b></div>", unsafe_allow_html=True)
-            c2.markdown(f"<div style='background:rgba(40,0,80,0.9);padding:20px;border-radius:20px;color:white'><b>Plan:</b> {plan_text} | <b>{price_text}</b></div>", unsafe_allow_html=True)
+            c1.markdown(f"<div style='background:rgba(255,255,255,0.9);padding:20px;border-radius:20px;color:#000'>{badge} <b>{email}</b></div>", unsafe_allow_html=True)
+            c2.markdown(f"<div style='background:rgba(255,255,255,0.9);padding:20px;border-radius:20px;color:#000'><b>Plan:</b> {plan_text} | <b>{price_text}</b></div>", unsafe_allow_html=True)
             if c3.button("✅ Approve", key=f"admin_{email}", type="primary"):
                 data[email]["status"]="PAID"; save_db(data); st.success("Approved"); st.rerun()
     st.stop()
@@ -290,11 +369,12 @@ if st.session_state.plan is None:
         st.markdown("</div></div>", unsafe_allow_html=True)
 
 else:
-    # EMAIL PEHLE - PHIR FILE UPLOAD
+    # EMAIL PEHLE - SESSION ME SAVE KAR RAHE HAIN
     if not st.session_state.email_entered:
-        st.session_state.email = st.text_input(T['email_label']).lower().strip()
+        email_input = st.text_input(T['email_label']).lower().strip()
         if st.button(T['continue_btn'], key="btn_continue", type="primary", use_container_width=True):
-            if "@" in st.session_state.email and "." in st.session_state.email:
+            if "@" in email_input and "." in email_input:
+                st.session_state.email = email_input # EMAIL SAVE KAR DIYA
                 st.session_state.email_entered = True
                 st.rerun()
             else: st.error("Valid email daalo")
@@ -343,7 +423,6 @@ else:
 
         all_cols = df_clean.columns.tolist()
         user = load_db().get(st.session_state.email,{})
-        # 299 AUR 1499 DONO ME TOOLS KHULENGE
         is_pro = st.session_state.plan=="pro" and user.get("status")=="PAID"
 
         tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
@@ -418,7 +497,6 @@ else:
             st.markdown(f"<div class='download-msg'>{T['download_success']}</div>", unsafe_allow_html=True)
             st.session_state.show_download_msg = False
 
-        # FREE PLAN
         if st.session_state.plan=="free":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -431,7 +509,6 @@ else:
                 st.session_state.show_balloon = True
                 st.session_state.show_download_msg = True
 
-        # PRO PENDING - ADMIN APPROVE KE BAAD HI DOWNLOAD
         elif user.get("status")!="PAID":
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
@@ -451,7 +528,6 @@ else:
                 st.session_state.payment_clicked = True
                 st.success(T['success_msg'])
 
-        # PRO PAID - ADMIN APPROVE KE BAAD
         else:
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
