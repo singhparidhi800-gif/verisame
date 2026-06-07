@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 # GOOGLE VERIFICATION TAG
 st.markdown('<meta name="google-site-verification" content="r1wzMau1uinP14S7qbYJcmve44Ih7SEO-MdK9TZjW9A" />', unsafe_allow_html=True)
 
-st.set_page_config(page_title="VeriSame", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
@@ -37,121 +37,137 @@ def words_to_num(s):
     return total + current if total + current > 0 else s
 
 LANG = {
-    "English": {"title":"VeriSame","tagline":"The Fastest Way to Clean Your Data","pro_banner":"📊 UNLOCK 9 PREMIUM AI TOOLS","free_title":"FREE FOREVER","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTHS PLAN","free_feat":["1000 Rows Lifetime","CSV + Excel Export","Basic Tools","30s Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Premium AI Tools","3s Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Enter your email to start","continue_btn":"Continue →","upload_tab":"📤 Upload File","sample_tab":"🧪 Try Demo","upload_text":"Drag & Drop CSV, Excel or JSON here","sample_btn":"Load Sample Data","summary_title":"📊 Live Summary","rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Preview - First 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Back to Plans","download_title":"📥 Export Clean Data","paid_msg":"Complete payment first, then click I Paid. Admin will approve to unlock download","upi_text":"Scan QR to Pay","paid_btn":"✓ I Have Paid ₹{amount}","success_msg":"Payment request sent! Wait for admin approval","download_success":"Download completed successfully! ✅","locked":"🔒 PRO - Upgrade","tab1":"📅 Date & Nulls","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Smart Date","tool2":"2. AI Fill","tool3":"3. Email Validator","tool4":"4. Phone Formatter","tool5":"5. Case Converter","tool6":"6. Remove Symbols","tool7":"7. Bulk Rename","tool8":"8. Remove Duplicates","tool9":"9. Trim Spaces","select_col":"Select Columns","select_case":"Choose Case","apply_btn":"Apply","success":"Applied! ✅","expiry_warn":"⚠️ Your plan expires in {days} days! Renew now","pro_active":"🔥 Plan Active\n📅 Till {date}\n⏰ {days} days left","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expired! Please pay again","delete_btn":"🗑️ Delete"},
-    "Hindi": {"title":"VeriSame","tagline":"Data Saaf Karne Ka Sabse Fast Tareeka","pro_banner":"📊 9 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","Basic Tools","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo shuru karne ke liye","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Pehle payment karo, I Paid dabao. Admin approve karega tab download khulega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Admin approve karega","download_success":"Download ho gaya! ✅","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ Aapka plan {days} din me khatam! Abhi renew karo","pro_active":"🔥 Plan Active\n📅 {date} tak\n⏰ {days} din bache","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expire! Dobara payment karo","delete_btn":"🗑️ Delete"}
+    "English": {"title":"VeriSame","tagline":"The Fastest Way to Clean Your Data","pro_banner":"💎 UNLOCK 9 PREMIUM AI TOOLS","free_title":"FREE FOREVER","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTHS PLAN","free_feat":["1000 Rows Lifetime","CSV + Excel Export","Basic Tools","30s Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Premium AI Tools","3s Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Enter your email to start","continue_btn":"Continue →","upload_tab":"📤 Upload File","sample_tab":"🧪 Try Demo","upload_text":"Drag & Drop CSV, Excel or JSON here","sample_btn":"Load Sample Data","summary_title":"📊 Live Summary","rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Preview - First 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Back to Plans","download_title":"📥 Export Clean Data","paid_msg":"Step 1: Scan QR & Pay. Step 2: Click I Paid. Step 3: Admin approves. Step 4: Download unlocks","upi_text":"Scan QR to Pay","paid_btn":"✓ I Have Paid ₹{amount}","success_msg":"Payment request sent! Admin will approve soon","download_success":"Download completed successfully! 🎉","locked":"🔒 PRO - Upgrade","tab1":"📅 Date & Nulls","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Smart Date","tool2":"2. AI Fill","tool3":"3. Email Validator","tool4":"4. Phone Formatter","tool5":"5. Case Converter","tool6":"6. Remove Symbols","tool7":"7. Bulk Rename","tool8":"8. Remove Duplicates","tool9":"9. Trim Spaces","select_col":"Select Columns","select_case":"Choose Case","apply_btn":"Apply","success":"Applied! ✅","expiry_warn":"⚠️ Your plan expires in {days} days! Renew now","pro_active":"🔥 Plan Active\n📅 Till {date}\n⏰ {days} days left","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expired! Please pay again","delete_btn":"🗑️ Delete"},
+    "Hindi": {"title":"VeriSame","tagline":"Data Saaf Karne Ka Sabse Fast Tareeka","pro_banner":"💎 9 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","Basic Tools","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo shuru karne ke liye","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Step 1: QR Scan karke Pay karo. Step 2: I Paid dabao. Step 3: Admin approve karega. Step 4: Download khulega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Admin approve karega","download_success":"Download ho gaya! 🎉","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ Aapka plan {days} din me khatam! Abhi renew karo","pro_active":"🔥 Plan Active\n📅 {date} tak\n⏰ {days} din bache","free_plan":"🆓 FREE Plan","expired":"⚠️ Plan Expire! Dobara payment karo","delete_btn":"🗑️ Delete"}
 }
 
-# BLACK TEXT + LIGHT BG + 3D 2D ANIMATION WAPAS
+# PINK PURPLE + WHITE TEXT + ULTRA ANIMATION + LOGO FIX
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@400;600;700&display=swap');
 
-html, body, [class*="css"], p, div, span, label, h1, h2, h3, h4, h5, h6 {font-family: 'Poppins', sans-serif; color: #000!important;}
+html, body, [class*="css"], p, div, span, label, h1, h2, h3, h4, h5, h6 {font-family: 'Poppins', sans-serif; color: #FFFFFF!important;}
 
 .stApp {
-    background: radial-gradient(circle at 20% 50%, rgba(255,182,193,0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(221,160,221,0.3) 0%, transparent 50%),
-                linear-gradient(135deg, #FFF0F5 0%, #F8F0FF 50%, #FFF0F5 100%);
-    animation: auraGlow 8s ease-in-out infinite;
+    background: radial-gradient(circle at 20% 50%, rgba(255,20,147,0.25) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(138,43,226,0.25) 0%, transparent 50%),
+                linear-gradient(135deg, #0D001A 0%, #1A0033 50%, #0D001A 100%);
+    animation: auraGlow 6s ease-in-out infinite;
 }
 
 @keyframes auraGlow {
-    0%,100% {filter: brightness(1);}
-    50% {filter: brightness(1.05);}
+    0%,100% {filter: brightness(1) hue-rotate(0deg);}
+    50% {filter: brightness(1.2) hue-rotate(20deg);}
 }
 
-/* 2D PARTICLES */
+/* FLOATING PARTICLES + STARS */
 .stApp::before {
-    content: '';
+    content: '✨';
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-        radial-gradient(circle at 20% 30%, rgba(255,105,180,0.4) 2px, transparent 2px),
-        radial-gradient(circle at 80% 70%, rgba(186,85,211,0.4) 2px, transparent 2px);
-    background-size: 100px 100px, 150px 150px;
-    animation: particleFloat 20s linear infinite;
+    top: 10%;
+    left: 5%;
+    font-size: 30px;
+    opacity: 0.7;
+    animation: starFloat 15s linear infinite;
     z-index: 0;
-    pointer-events: none;
+}
+.stApp::after {
+    content: '💎';
+    position: fixed;
+    bottom: 10%;
+    right: 5%;
+    font-size: 40px;
+    opacity: 0.6;
+    animation: starFloat 20s linear infinite reverse;
+    z-index: 0;
 }
 
-@keyframes particleFloat {
-    0% {background-position: 0% 0%, 0% 0%;}
-    100% {background-position: 100% 100%, -100% 100%;}
+@keyframes starFloat {
+    0% {transform: translateY(0px) rotate(0deg);}
+    50% {transform: translateY(-100px) rotate(180deg);}
+    100% {transform: translateY(0px) rotate(360deg);}
 }
 
 .block-container {
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(20px);
+    background: rgba(20,0,40,0.85);
+    backdrop-filter: blur(25px) saturate(180%);
     border-radius: 50px;
     padding: 4rem;
-    box-shadow: 0 0 60px rgba(255,20,147,0.2);
-    border: 2px solid rgba(255,20,147,0.3);
+    box-shadow: 0 0 80px rgba(255,20,147,0.4),
+                inset 0 0 40px rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,20,147,0.5);
     position: relative;
     z-index: 1;
 }
 
-/* BLACK TEXT */
-h1, h2, h3, p, label, div {
-    color: #000!important;
+/* WHITE TEXT EVERYWHERE */
+h1, h2, h3, p, label, div, span {
+    color: #FFFFFF!important;
 }
 
 h1 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900!important;
-    font-size: 4.5rem!important;
-    color: #000!important;
+    background: linear-gradient(90deg, #FFFFFF, #FFB6C1, #E0AAFF, #FFFFFF);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 5rem!important;
+    text-shadow: 0 0 50px rgba(255,255,255,0.6);
+    animation: textGlow 3s ease-in-out infinite;
 }
 
-/* LOGO 1200PX + EK LINE ME */
-.logo-container {
-    display: flex;
-    align-items: center;
-    gap: 30px;
-    margin-bottom: 30px;
+@keyframes textGlow {
+    0%,100% {filter: brightness(1);}
+    50% {filter: brightness(1.3);}
 }
-.logo-container img {
-    width: 1200px!important;
-    max-width: 100%;
-    height: auto;
+
+/* LOGO 1000PX FORCE - CSS SE BADA */
+[data-testid="stImage"] img {
+    width: 1000px!important;
+    max-width: 100%!important;
+    height: auto!important;
+    filter: drop-shadow(0 0 30px rgba(255,20,147,0.8));
+    animation: logoFloat 4s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+    0%,100% {transform: translateY(0px) scale(1);}
+    50% {transform: translateY(-15px) scale(1.05);}
 }
 
 .pricing-card h1 {
-    font-size: 3rem!important;
+    font-size: 3.2rem!important;
     white-space: nowrap;
     margin: 10px 0;
-    color: #000!important;
 }
 
 .pricing-card p {
     text-align: center!important;
-    color: #333!important;
+    color: #FFB6C1!important;
     font-weight: 700;
     min-height: 25px;
     margin-top: 10px;
 }
 
-.pricing-card h2 {
-    font-size: 1.4rem!important;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #000!important;
-}
-
 .pro-banner {
-    background: linear-gradient(135deg, rgba(255,182,193,0.4) 0%, rgba(221,160,221,0.4) 100%);
+    background: linear-gradient(135deg, rgba(255,20,147,0.3) 0%, rgba(138,43,226,0.3) 100%);
+    backdrop-filter: blur(15px);
     padding: 60px;
     border-radius: 45px;
-    color: #000000!important;
+    color: #FFFFFF!important;
     text-align: center;
     margin: 50px 0;
-    border: 2px solid rgba(255,20,147,0.4);
+    box-shadow: 0 0 80px rgba(255,20,147,0.5);
+    border: 2px solid rgba(255,20,147,0.6);
     position: relative;
     overflow: hidden;
+    animation: bannerPulse 4s ease-in-out infinite;
+}
+
+@keyframes bannerPulse {
+    0%,100% {box-shadow: 0 0 80px rgba(255,20,147,0.5);}
+    50% {box-shadow: 0 0 120px rgba(255,20,147,0.8);}
 }
 
 .pro-banner::before {
@@ -161,7 +177,7 @@ h1 {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
     animation: shimmer 3s infinite;
 }
 
@@ -170,76 +186,84 @@ h1 {
     100% {transform: translateX(100%) translateY(100%) rotate(45deg);}
 }
 
-/* 2D BOUNCE CARDS */
+/* 3D BOUNCE CARDS */
 .pricing-card {
-    border: 2px solid rgba(255,20,147,0.4);
+    border: 2px solid rgba(255,20,147,0.5);
     border-radius: 45px;
     padding: 40px;
-    background: rgba(255,255,255,0.9);
+    background: rgba(30,0,60,0.85);
+    backdrop-filter: blur(15px);
     height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    animation: cardBounce 4s ease-in-out infinite;
+    animation: card3D 5s ease-in-out infinite;
+    transform-style: preserve-3d;
 }
 
-.pricing-card:nth-child(2) {animation-delay: 0.5s;}
-.pricing-card:nth-child(3) {animation-delay: 1s;}
+.pricing-card:nth-child(2) {animation-delay: 0.3s;}
+.pricing-card:nth-child(3) {animation-delay: 0.6s;}
 
-@keyframes cardBounce {
-    0%, 100% {transform: translateY(0px);}
-    50% {transform: translateY(-10px);}
+@keyframes card3D {
+    0%,100% {transform: perspective(1000px) rotateX(5deg) translateZ(0px);}
+    50% {transform: perspective(1000px) rotateX(0deg) translateZ(20px);}
 }
 
 .tool-chip {
     display: inline-block;
-    background: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
     padding: 16px 28px;
     border-radius: 60px;
     margin: 12px;
     font-weight: 700;
-    border: 1px solid rgba(255,20,147,0.5);
-    color: #000!important;
-    animation: chipFloat 3s ease-in-out infinite;
+    border: 1px solid rgba(255,20,147,0.6);
+    color: #FFFFFF!important;
+    animation: chipRotate 3s ease-in-out infinite;
+    box-shadow: 0 5px 20px rgba(255,20,147,0.4);
 }
 
-@keyframes chipFloat {
-    0%, 100% {transform: translateY(0px);}
-    50% {transform: translateY(-8px);}
+@keyframes chipRotate {
+    0%,100% {transform: rotateY(0deg);}
+    50% {transform: rotateY(10deg);}
 }
 
 .stButton>button {
     border-radius: 22px;
     font-weight: 700;
-    background: linear-gradient(90deg, #FF1493, #DA70D6);
+    background: linear-gradient(90deg, #FF1493, #DA70D6, #BA55D3, #FF1493);
+    background-size: 300% 300%;
     color: #FFFFFF!important;
     border: none;
-    font-size: 16px;
-    padding: 12px 24px;
+    font-size: 17px;
+    padding: 14px 28px;
     width: 100%;
-    transition: all 0.3s;
-    animation: buttonPulse 2s ease-in-out infinite;
+    box-shadow: 0 8px 25px rgba(255,20,147,0.6);
+    animation: buttonGlow 2s ease-in-out infinite, gradientShift 3s ease infinite;
 }
 
-@keyframes buttonPulse {
-    0%, 100% {transform: scale(1);}
-    50% {transform: scale(1.03);}
+@keyframes buttonGlow {
+    0%,100% {box-shadow: 0 8px 25px rgba(255,20,147,0.6);}
+    50% {box-shadow: 0 15px 40px rgba(255,20,147,0.9);}
 }
 
-.stButton>button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 30px rgba(255,20,147,0.6);
+@keyframes gradientShift {
+    0%,100% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
 }
 
 .download-msg {
-    background: linear-gradient(90deg, #FF1493, #BA55D3);
+    background: linear-gradient(90deg, #FF1493, #BA55D3, #FF1493);
+    background-size: 200% 200%;
     color: white!important;
-    padding: 22px;
+    padding: 25px;
     border-radius: 20px;
     margin-top: 20px;
     text-align: center;
     font-weight: 700;
-    font-size: 18px;
+    font-size: 19px;
+    box-shadow: 0 10px 40px rgba(255,20,147,0.7);
+    animation: pulse 2s ease-in-out infinite, gradientShift 2s ease infinite;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -260,7 +284,7 @@ lang = st.sidebar.selectbox("🌐 Language", ["English", "Hindi"], index=0 if st
 st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
-# BACK BUTTON SIDEBAR ME - LOGO KE UPAR NAHI
+# BACK BUTTON SIDEBAR ME
 if st.session_state.plan is not None or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], key="btn_back_side"):
         st.session_state.plan = None; st.session_state.email = ""; st.session_state.df_clean = None; st.session_state.payment_clicked = False; st.session_state.sample_loaded = False; st.session_state.email_entered = False
@@ -287,12 +311,10 @@ if st.session_state.email:
     elif user.get("plan") == "free":
         st.sidebar.info(T['free_plan'])
 
-# LOGO 1200PX + EK LINE ME TITLE KE SAATH
-st.markdown("<div class='logo-container'>", unsafe_allow_html=True)
-col_logo, col_title = st.columns([1,5])
-with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png", width=1200)
+# LOGO - CSS SE 1000PX FORCE HOGA
+col_logo, col_title = st.columns([1,4])
+with col_logo: st.image("https://i.ibb.co/W43B7drG/VeriSame-1.png")
 with col_title: st.title(T['title']); st.markdown(f"### {T['tagline']}")
-st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>📈 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>🧹 Clean</span><span class='tool-chip'>✏️ Rename</span><span class='tool-chip'>🗑️ Dedup</span><span class='tool-chip'>✂️ Trim</span></div></div>", unsafe_allow_html=True)
 
@@ -311,7 +333,7 @@ if st.query_params.get("admin") == ADMIN_PASS:
         if plan == "free": plan_text = "FREE"; price_text = "FREE"; badge = "🆓"; duration = "Lifetime"
         elif amt == 299: plan_text = "MONTHLY"; price_text = "₹299"; badge = "📊"; duration = "1 Month"
         else: plan_text = "6 MONTHS"; price_text = "₹1499"; badge = "📈"; duration = "6 Months"
-        st.markdown(f"<div style='background:rgba(255,255,255,0.9);padding:20px;border-radius:20px;margin:10px 0;border:2px solid #FF1493;color:#000'>{badge} <b>Email:</b> {email} | <b>Plan:</b> {plan_text} | <b>Price:</b> {price_text} | <b>Status:</b> {info.get('status','N/A')}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='background:rgba(40,0,80,0.9);padding:20px;border-radius:20px;margin:10px 0;border:2px solid #FF1493;color:white'>{badge} <b>Email:</b> {email} | <b>Plan:</b> {plan_text} | <b>Price:</b> {price_text} | <b>Status:</b> {info.get('status','N/A')}</div>", unsafe_allow_html=True)
     st.markdown("---")
     st.subheader("⏳ Pending Approvals")
     for email,info in data.items():
@@ -320,8 +342,8 @@ if st.query_params.get("admin") == ADMIN_PASS:
             amt = info.get('amt',0)
             if amt==299: plan_text="MONTHLY"; price_text="₹299"; badge="📊"
             else: plan_text="6 MONTHS"; price_text="₹1499"; badge="📈"
-            c1.markdown(f"<div style='background:rgba(255,255,255,0.9);padding:20px;border-radius:20px;color:#000'>{badge} <b>{email}</b></div>", unsafe_allow_html=True)
-            c2.markdown(f"<div style='background:rgba(255,255,255,0.9);padding:20px;border-radius:20px;color:#000'><b>Plan:</b> {plan_text} | <b>{price_text}</b></div>", unsafe_allow_html=True)
+            c1.markdown(f"<div style='background:rgba(40,0,80,0.9);padding:20px;border-radius:20px;color:white'>{badge} <b>{email}</b></div>", unsafe_allow_html=True)
+            c2.markdown(f"<div style='background:rgba(40,0,80,0.9);padding:20px;border-radius:20px;color:white'><b>Plan:</b> {plan_text} | <b>{price_text}</b></div>", unsafe_allow_html=True)
             if c3.button("✅ Approve", key=f"admin_{email}", type="primary"):
                 data[email]["status"]="PAID"; save_db(data); st.success("Approved"); st.rerun()
     st.stop()
@@ -369,12 +391,12 @@ if st.session_state.plan is None:
         st.markdown("</div></div>", unsafe_allow_html=True)
 
 else:
-    # EMAIL PEHLE - SESSION ME SAVE KAR RAHE HAIN
+    # EMAIL PEHLE
     if not st.session_state.email_entered:
         email_input = st.text_input(T['email_label']).lower().strip()
         if st.button(T['continue_btn'], key="btn_continue", type="primary", use_container_width=True):
             if "@" in email_input and "." in email_input:
-                st.session_state.email = email_input # EMAIL SAVE KAR DIYA
+                st.session_state.email = email_input
                 st.session_state.email_entered = True
                 st.rerun()
             else: st.error("Valid email daalo")
@@ -490,6 +512,7 @@ else:
 
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
 
+        # BALLOON SIRF DOWNLOAD KE BAAD
         if st.session_state.show_balloon:
             st.balloons()
             st.session_state.show_balloon = False
@@ -497,18 +520,21 @@ else:
             st.markdown(f"<div class='download-msg'>{T['download_success']}</div>", unsafe_allow_html=True)
             st.session_state.show_download_msg = False
 
+        # FREE PLAN - BALLOON DOWNLOAD KE BAAD
         if st.session_state.plan=="free":
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
             if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv_free"):
                 st.session_state.show_balloon = True
                 st.session_state.show_download_msg = True
+
             excel = io.BytesIO()
             st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
             if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel_free"):
                 st.session_state.show_balloon = True
                 st.session_state.show_download_msg = True
 
+        # PRO PENDING - QR -> I PAID -> ADMIN APPROVE -> DOWNLOAD
         elif user.get("status")!="PAID":
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
@@ -528,12 +554,18 @@ else:
                 st.session_state.payment_clicked = True
                 st.success(T['success_msg'])
 
+            # I PAID KE BAAD BHI DOWNLOAD TAB TAK NAHI JAB TAK ADMIN APPROVE NA KARE
+            if st.session_state.payment_clicked:
+                st.info("⏳ Admin approval ka wait kar rahe hain...")
+
+        # PRO PAID - ADMIN APPROVE KE BAAD HI DOWNLOAD + BALLOON
         else:
             col1,col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
             if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv_paid"):
                 st.session_state.show_balloon = True
                 st.session_state.show_download_msg = True
+
             excel = io.BytesIO()
             st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
             if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel_paid"):
