@@ -41,7 +41,7 @@ LANG = {
     "Hindi": {"title":"VeriSame","tagline":"Data Saaf Karne Ka Sabse Fast Tareeka","pro_banner":"💎 9 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","Basic Tools","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo shuru karne ke liye","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Step 1: QR Scan karke Pay karo. Step 2: I Paid dabao. Step 3: Admin approve karega. Step 4: Download khulega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Admin approve karega","download_success":"Download ho gaya! 🎉","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ {days} DIN ME KHATAM! ABHI RENEW KARO","pro_active":"🔥 Plan Active\n📅 Valid Till: {date}\n⏰ {days} din bache","free_plan":"🆓 FREE Plan - Lifetime","expired":"⚠️ PLAN EXPIRE! DOBARA PAYMENT KARO","delete_btn":"🗑️ Delete"}
 }
 
-# PINK PURPLE + WHITE + ULTRA ANIMATION + EXPIRY ALERT
+# PINK PURPLE + WHITE + ULTRA ANIMATION + PRICE CHOTA + FILE UPLOADER BLACK + EXPIRY ALERT
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@400;600;700&display=swap');
@@ -60,7 +60,6 @@ html, body, [class*="css"], p, div, span, label, h1, h2, h3, h4, h5, h6 {font-fa
     50% {filter: brightness(1.25) hue-rotate(25deg);}
 }
 
-/* FLOATING STARS + PARTICLES */
 .stApp::before {
     content: '✨';
     position: fixed;
@@ -140,7 +139,7 @@ h1 {
     50% {transform: translateY(-15px) scale(1.08) rotateY(5deg);}
 }
 
-/* PRICE CHOTA + EK LINE */
+/* PRICE CHOTA + EK LINE - TOOTEGA NAHI AB */
 .pricing-card h1 {
     font-size: 2.5rem!important;
     white-space: nowrap!important;
@@ -157,17 +156,28 @@ h1 {
     margin-top: 10px;
 }
 
-/* FILE UPLOADER BLACK TEXT */
+/* FILE UPLOADER BLACK TEXT - TU JO DIYA THA WO ADD KAR DIYA */
 [data-testid="stFileUploader"] {
     background: rgba(255,255,255,0.95)!important;
     border-radius: 15px!important;
     border: 2px solid rgba(255,20,147,0.5)!important;
 }
+
 [data-testid="stFileUploader"] * {
     color: #000!important;
 }
+
 [data-testid="stFileUploader"] label {
     color: #FFFFFF!important;
+}
+
+/* LANGUAGE SELECT BOX BHI BLACK TEXT */
+.stSelectbox > div > div {
+    background: rgba(255,255,255,0.95)!important;
+    color: #000!important;
+}
+.stSelectbox > div > div > div {
+    color: #000!important;
 }
 
 /* EXPIRY ALERT RED ANIMATION */
@@ -539,12 +549,14 @@ else:
             if col1.download_button("📄 Download CSV", csv, "clean_data.csv", key="dl_csv_free"):
                 st.session_state.show_balloon = True
                 st.session_state.show_download_msg = True
+
             excel = io.BytesIO()
             st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
             if col2.download_button("📊 Download Excel", excel.getvalue(), "clean_data.xlsx", key="dl_excel_free"):
                 st.session_state.show_balloon = True
                 st.session_state.show_download_msg = True
 
+        # PRO PENDING - QR -> I PAID -> ADMIN APPROVE -> DOWNLOAD
         elif user.get("status")!="PAID":
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
