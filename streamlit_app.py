@@ -35,11 +35,11 @@ def words_to_num(s):
     return total + current if total + current > 0 else s
 
 LANG = {
-    "English": {"title":"VeriSame","tagline":"The Fastest Way to Clean Your Data","pro_banner":"💎 UNLOCK 10 PREMIUM AI TOOLS","free_title":"FREE FOREVER","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTHS PLAN","free_feat":["1000 Rows Lifetime","CSV + Excel Export","2 Basic Tools","30s Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Enter your email to start","continue_btn":"Continue →","upload_tab":"📤 Upload File","sample_tab":"🧪 Try Demo","upload_text":"Drag & Drop CSV, Excel or JSON here","sample_btn":"Load Sample Data","summary_title":"📊 Live Summary","rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Preview - First 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Back to Plans","download_title":"📥 Export Clean Data","paid_msg":"Step 1: Scan QR & Pay. Step 2: Click I Paid. Step 3: Sherani will approve. Step 4: Download unlocks","upi_text":"Scan QR to Pay","paid_btn":"✓ I Have Paid ₹{amount}","success_msg":"Payment request sent! Wait for Sherani approval","download_success":"Download completed successfully! 🎉","locked":"🔒 PRO ONLY - Upgrade to unlock","tab1":"📅 Date & Nulls","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Smart Date","tool2":"2. AI Fill","tool3":"3. Email Validator","tool4":"4. Phone Formatter","tool5":"5. Case Converter","tool6":"6. Remove Symbols","tool7":"7. Bulk Rename","tool8":"8. Remove Duplicates","tool9":"9. Trim Spaces","tool10":"10. Spell Check","select_col":"Select Columns","select_case":"Choose Case","apply_btn":"Apply","success":"Applied! ✅","expiry_warn":"⚠️ EXPIRES IN {days} DAYS! RENEW NOW","pro_active":"🔥 Plan Active\n📅 Valid Till: {date}\n⏰ {days} days left","free_plan":"🆓 FREE Plan - Lifetime","expired":"⚠️ PLAN EXPIRED! PAY AGAIN","delete_btn":"🗑️ Delete","admin_title":"🔐 Sherani Secret Dashboard","admin_pending":"Pending Approvals","admin_approve_btn":"✅ Approve","admin_user":"Customer","admin_plan":"Plan","admin_expiry":"Valid Till","admin_status":"Status","language":"🌐 Language"},
-    "Hindi": {"title":"VeriSame","tagline":"Data Saaf Karne Ka Sabse Fast Tareeka","pro_banner":"💎 10 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","2 Basic Tools","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","10 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo shuru karne ke liye","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Step 1: QR Scan karke Pay karo. Step 2: I Paid dabao. Step 3: Sherani approve karegi. Step 4: Download khulega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Sherani approve karegi","download_success":"Download ho gaya! 🎉","locked":"🔒 PRO ONLY - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","tool10":"10. Spelling Thik","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ {days} DIN ME KHATAM! ABHI RENEW KARO","pro_active":"🔥 Plan Active\n📅 Valid Till: {date}\n⏰ {days} din bache","free_plan":"🆓 FREE Plan - Lifetime","expired":"⚠️ PLAN EXPIRE! DOBARA PAYMENT KARO","delete_btn":"🗑️ Delete","admin_title":"🔐 Sherani Secret Dashboard","admin_pending":"Pending Approvals","admin_approve_btn":"✅ Approve Karo","admin_user":"Customer","admin_plan":"Plan","admin_expiry":"Valid Till","admin_status":"Status","language":"🌐 Language"}
+    "English": {"title":"VeriSame","tagline":"The Fastest Way to Clean Your Data","pro_banner":"💎 UNLOCK 10 PREMIUM AI TOOLS","free_title":"FREE FOREVER","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTHS PLAN","free_feat":["1000 Rows Lifetime","CSV + Excel Export","2 Basic Tools","30s Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Enter your email to start","continue_btn":"Continue →","upload_tab":"📤 Upload File","sample_tab":"🧪 Try Demo","upload_text":"Drag & Drop CSV, Excel or JSON here","sample_btn":"Load Sample Data","summary_title":"📊 Live Summary","rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Preview - First 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Back to Plans","download_title":"📥 Export Clean Data","paid_msg":"Step 1: Scan QR & Pay. Step 2: Click I Paid. Step 3: Sherani will approve. Step 4: Download unlocks","upi_text":"Scan QR to Pay","paid_btn":"✓ I Have Paid ₹{amount}","success_msg":"Payment request sent! Wait for Sherani approval","download_success":"Download completed successfully! 🎉","locked":"🔒 PRO ONLY - Upgrade to unlock","tab1":"📅 Date & Nulls","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Smart Date","tool2":"2. AI Fill","tool3":"3. Email Validator","tool4":"4. Phone Formatter","tool5":"5. Case Converter","tool6":"6. Remove Symbols","tool7":"7. Bulk Rename","tool8":"8. Remove Duplicates","tool9":"9. Trim Spaces","tool10":"10. Spell Check","select_col":"Select Columns","select_case":"Choose Case","apply_btn":"Apply","success":"Applied! ✅","expiry_warn":"⚠️ EXPIRES IN {days} DAYS! RENEW NOW","pro_active":"🔥 Plan Active\n📅 Valid Till: {date}\n⏰ {days} days left","free_plan":"🆓 FREE Plan - Lifetime","expired":"⚠️ PLAN EXPIRED! PAY AGAIN","delete_btn":"🗑️ Delete","admin_title":"🔐 Sherani Secret Dashboard","admin_pending":"Pending Approvals","admin_approve_btn":"✅ Approve","admin_user":"Customer","admin_plan":"Plan","admin_expiry":"Valid Till","admin_status":"Status"},
+    "Hindi": {"title":"VeriSame","tagline":"Data Saaf Karne Ka Sabse Fast Tareeka","pro_banner":"💎 10 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","2 Basic Tools","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","10 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo shuru karne ke liye","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Step 1: QR Scan karke Pay karo. Step 2: I Paid dabao. Step 3: Sherani approve karegi. Step 4: Download khulega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Sherani approve karegi","download_success":"Download ho gaya! 🎉","locked":"🔒 PRO ONLY - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","tool10":"10. Spelling Thik","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ {days} DIN ME KHATAM! ABHI RENEW KARO","pro_active":"🔥 Plan Active\n📅 Valid Till: {date}\n⏰ {days} din bache","free_plan":"🆓 FREE Plan - Lifetime","expired":"⚠️ PLAN EXPIRE! DOBARA PAYMENT KARO","delete_btn":"🗑️ Delete","admin_title":"🔐 Sherani Secret Dashboard","admin_pending":"Pending Approvals","admin_approve_btn":"✅ Approve Karo","admin_user":"Customer","admin_plan":"Plan","admin_expiry":"Valid Till","admin_status":"Status"}
 }
 
-# BEAUTIFUL ANIME PINK PURPLE CSS + DROPDOWN FIX
+# CSS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@400;600;700&display=swap');
@@ -86,7 +86,7 @@ ul[data-baseweb="menu"] li:hover {background: linear-gradient(90deg, rgba(255,20
 </style>
 """, unsafe_allow_html=True)
 
-# SESSION - EMAIL YAAD RAHEGA
+# SESSION
 if 'lang' not in st.session_state: st.session_state.lang = "English"
 if 'plan' not in st.session_state: st.session_state.plan = None
 if 'email' not in st.session_state: st.session_state.email = ""
@@ -98,28 +98,28 @@ if 'amt' not in st.session_state: st.session_state.amt = 0
 if 'sample_loaded' not in st.session_state: st.session_state.sample_loaded = False
 if 'email_entered' not in st.session_state: st.session_state.email_entered = False
 
-# LANGUAGE SELECT TOP RIGHT
-lang_col = st.columns([8,2])[1]
-with lang_col:
-    lang = st.selectbox("🪩language",["English","Hindi"] if 'language' in T else "🌐 Language", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_top")
-    st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
-# BACK BUTTON SIDEBAR
+# LANGUAGE SELECT
+lang_col = st.columns([8,2])[1]
+with lang_col:
+    lang = st.selectbox("🌐 Language", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_top")
+    st.session_state.lang = lang
+    T = LANG[st.session_state.lang]
+
+# BACK BUTTON
 if st.session_state.plan is not None or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], key="btn_back_side"):
         st.session_state.plan = None; st.session_state.email = ""; st.session_state.df_clean = None; st.session_state.payment_clicked = False; st.session_state.sample_loaded = False; st.session_state.email_entered = False
         st.rerun()
 
-# EMAIL YAAD RAKHO - EXPIRED NA HO TO PLAN ACTIVE
+# EMAIL CHECK
 if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
-
     if user.get("plan") == "pro":
         exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
         days_left = (exp_date - datetime.now()).days
-
         if days_left > 0:
             st.session_state.plan = "pro"
             st.session_state.amt = user.get("amt", 299)
@@ -130,12 +130,11 @@ if st.session_state.email:
             st.sidebar.error(T['expired'])
             st.session_state.plan = None
             st.session_state.payment_clicked = False
-
     elif user.get("plan") == "free":
         st.session_state.plan = "free"
         st.sidebar.info(T['free_plan'])
 
-# ANIME CHARACTER + LOGO
+# LOGO + TITLE
 col_anime, col_logo, col_title = st.columns([1,2,4])
 with col_anime:
     st.image("https://i.ibb.co/Vps2R8np/anime-girl-pink-hair-beautiful-anime-girl.png", width=220)
@@ -146,49 +145,40 @@ with col_title:
 
 st.markdown(f"<div class='pro-banner'><h2>{T['pro_banner']}</h2><div><span class='tool-chip'>📅 Smart Date</span><span class='tool-chip'>📈 AI Fill</span><span class='tool-chip'>📧 Email AI</span><span class='tool-chip'>📱 Phone AI</span><span class='tool-chip'>🔤 Case</span><span class='tool-chip'>🧹 Clean</span><span class='tool-chip'>✏️ Rename</span><span class='tool-chip'>🗑️ Dedup</span><span class='tool-chip'>✂️ Trim</span><span class='tool-chip'>📝 Spell</span></div></div>", unsafe_allow_html=True)
 
-# ADMIN PANEL - SHERANI KE LIYE - EMAIL NAHI DALNA PADEGA
+# ADMIN
 if st.query_params.get("admin") == ADMIN_PASS:
     st.title(T['admin_title'])
     st.warning("⚠️ Sirf Sherani dekh sakti hai")
-
     data = load_db()
     pending = {e:i for e,i in data.items() if i.get("status")=="PENDING" and "@" in e}
-
     st.metric(T['admin_pending'], len(pending))
-
     if pending:
         st.subheader("⏳ Pending Payments - Bas Approve Daba")
         for email,info in pending.items():
             amt = info.get('amt',0)
             days = 30 if amt==299 else 180
             plan_text = f"PRO {T['pro1_title']} ₹299 - {days} din" if amt==299 else f"PRO {T['pro6_title']} ₹1499 - {days} din"
-
             col1, col2, col3 = st.columns([4,3,2])
             with col1:
                 st.markdown(f"<div class='admin-card'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>{T['admin_expiry']}:</b> {info['expiry']}<br><b>{T['admin_status']}:</b> {info['status']}</div>", unsafe_allow_html=True)
-            with col2:
-                st.write("")
             with col3:
                 if st.button(T['admin_approve_btn'], key=f"approve_{email}", type="primary", use_container_width=True):
                     data[email]["status"] = "PAID"
                     save_db(data)
-                    st.success(f"✅ {email} approved! Customer ab download kar sakta hai")
+                    st.success(f"✅ {email} approved!")
                     st.balloons()
                     st.rerun()
-
     st.markdown("---")
-    st.subheader("📊 All Users - FREE/PRO Sab")
+    st.subheader("📊 All Users")
     all_users = {e:i for e,i in data.items() if "@" in e}
     for email,info in all_users.items():
         status = info.get('status','N/A')
         plan = info.get('plan','free')
         amt = info.get('amt',0)
         expiry = info.get('expiry','N/A')
-
         if plan == "free": badge = "🆓 FREE"; color = "gray"
         elif amt == 299: badge = "📊 PRO 1M"; color = "green"
         else: badge = "📈 PRO 6M"; color = "gold"
-
         status_color = "lightgreen" if status=="PAID" else "orange"
         st.markdown(f"<div style='background:rgba(40,0,80,0.9);padding:20px;border-radius:20px;margin:10px 0;border-left:8px solid {color};color:white'><b>{email}</b> | {badge} | Status: <span style='color:{status_color};font-weight:800'>{status}</span> | Valid: {expiry}</div>", unsafe_allow_html=True)
     st.stop()
@@ -234,7 +224,6 @@ if st.session_state.plan is None:
             st.session_state.plan="pro"; st.session_state.amt=PRO_6M; st.session_state.days=180
             st.rerun()
         st.markdown("</div></div>", unsafe_allow_html=True)
-
 else:
     if not st.session_state.email_entered:
         email_input = st.text_input(T['email_label']).lower().strip()
@@ -242,8 +231,6 @@ else:
             if "@" in email_input and "." in email_input:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
-
-                # CHECK KARO PEHLE SE PLAN HAI KYA
                 data = load_db()
                 if email_input in data and data[email_input].get("status")=="PAID":
                     exp_date = datetime.strptime(data[email_input]["expiry"], "%Y-%m-%d")
@@ -251,7 +238,6 @@ else:
                         st.session_state.plan = data[email_input]["plan"]
                         st.session_state.amt = data[email_input].get("amt", 0)
                         st.success(f"Welcome back! Plan active hai till {data[email_input]['expiry']}")
-
                 st.rerun()
             else: st.error("Valid email daalo")
         st.stop()
@@ -265,7 +251,6 @@ else:
             elif file.name.endswith(("xlsx","xls")): df = pd.read_excel(file)
             else: df = pd.read_json(file)
             st.session_state.sample_loaded = False
-
     with tab2:
         if st.button(T['sample_btn'], key="btn_sample"):
             df = pd.DataFrame({
@@ -325,9 +310,7 @@ else:
             if st.button(T['apply_btn'], key="btn_email", disabled=not is_pro):
                 pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                 for col in email_cols:
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(
-                        lambda x: str(x).lower() if re.match(pattern, str(x)) else ""
-                    )
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern, str(x)) else "")
                 st.success(T['success'])
 
             st.write(f"**{T['tool4']}**")
