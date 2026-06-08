@@ -41,7 +41,7 @@ LANG = {
     "Hindi": {"title":"VeriSame","tagline":"Data Saaf Karne Ka Sabse Fast Tareeka","pro_banner":"💎 9 PREMIUM AI TOOLS KHOLO","free_title":"FREE HAMESHA","pro1_title":"MONTHLY PLAN","pro6_title":"6 MONTH PLAN","free_feat":["1000 Row Lifetime","CSV + Excel Export","Basic Tools","30 Sec Processing","Email Support"],"pro_feat":["Unlimited Rows","CSV + Excel Export","9 Saare AI Tools","3 Sec Speed","Priority Support","No Watermark","Free Updates"],"email_label":"Email daalo shuru karne ke liye","continue_btn":"Aage →","upload_tab":"📤 File Upload","sample_tab":"🧪 Demo Data","upload_text":"CSV, Excel ya JSON yahan drag karo","sample_btn":"Sample Data Load","summary_title":"📊 Live Summary","rows":"Total Row","clean":"Saaf Row","dups":"Duplicate Hate","empty":"Khali Cell Thik","preview":"Preview - Sirf 10 Rows","tools_menu":"⚡ AI Studio","back_btn":"⬅️ Wapas Plans","download_title":"📥 Download Karo","paid_msg":"Step 1: QR Scan karke Pay karo. Step 2: I Paid dabao. Step 3: Admin approve karega. Step 4: Download khulega","upi_text":"QR Scan Karo","paid_btn":"✓ Pay Kar Diya ₹{amount}","success_msg":"Request bhej di! Admin approve karega","download_success":"Download ho gaya! 🎉","locked":"🔒 PRO - Upgrade Karo","tab1":"📅 Date & Khali","tab2":"📧 Email & Phone","tab3":"✨ Text AI","tool1":"1. Date Thik","tool2":"2. AI Fill","tool3":"3. Email Check","tool4":"4. Phone Saaf","tool5":"5. Case Badlo","tool6":"6. Symbol Hatao","tool7":"7. Naam Badlo","tool8":"8. Duplicate Hatao","tool9":"9. Space Saaf","select_col":"Column Chuno","select_case":"Case Chuno","apply_btn":"Lagao","success":"Ho Gaya! ✅","expiry_warn":"⚠️ {days} DIN ME KHATAM! ABHI RENEW KARO","pro_active":"🔥 Plan Active\n📅 Valid Till: {date}\n⏰ {days} din bache","free_plan":"🆓 FREE Plan - Lifetime","expired":"⚠️ PLAN EXPIRE! DOBARA PAYMENT KARO","delete_btn":"🗑️ Delete"}
 }
 
-# PINK PURPLE + WHITE + ULTRA ANIMATION + PRICE CHOTA + FILE UPLOADER BLACK + EXPIRY ALERT
+# PINK PURPLE + ANIME ANIMATION + MULTSELECT BLACK TEXT FIX
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@400;600;700&display=swap');
@@ -60,30 +60,35 @@ html, body, [class*="css"], p, div, span, label, h1, h2, h3, h4, h5, h6 {font-fa
     50% {filter: brightness(1.25) hue-rotate(25deg);}
 }
 
+/* ANIME STYLE FLOATING PARTICLES */
 .stApp::before {
-    content: '✨';
+    content: '✨💎⭐';
     position: fixed;
     top: 10%;
     left: 5%;
     font-size: 30px;
     opacity: 0.8;
-    animation: starFloat 15s linear infinite;
+    animation: animeFloat 12s ease-in-out infinite;
     z-index: 0;
+    letter-spacing: 40px;
 }
 .stApp::after {
-    content: '💎';
+    content: '🌸⚡🔮';
     position: fixed;
     bottom: 10%;
     right: 5%;
     font-size: 40px;
     opacity: 0.7;
-    animation: starFloat 20s linear infinite reverse;
+    animation: animeFloat 15s ease-in-out infinite reverse;
     z-index: 0;
+    letter-spacing: 40px;
 }
 
-@keyframes starFloat {
+@keyframes animeFloat {
     0% {transform: translateY(0px) rotate(0deg) scale(1);}
-    50% {transform: translateY(-120px) rotate(180deg) scale(1.3);}
+    25% {transform: translateY(-60px) rotate(90deg) scale(1.2);}
+    50% {transform: translateY(-120px) rotate(180deg) scale(1.4);}
+    75% {transform: translateY(-60px) rotate(270deg) scale(1.2);}
     100% {transform: translateY(0px) rotate(360deg) scale(1);}
 }
 
@@ -139,7 +144,7 @@ h1 {
     50% {transform: translateY(-15px) scale(1.08) rotateY(5deg);}
 }
 
-/* PRICE CHOTA + EK LINE - TOOTEGA NAHI AB */
+/* PRICE CHOTA + EK LINE */
 .pricing-card h1 {
     font-size: 2.5rem!important;
     white-space: nowrap!important;
@@ -156,7 +161,7 @@ h1 {
     margin-top: 10px;
 }
 
-/* FILE UPLOADER BLACK TEXT - TU JO DIYA THA WO ADD KAR DIYA */
+/* FILE UPLOADER BLACK TEXT */
 [data-testid="stFileUploader"] {
     background: rgba(255,255,255,0.95)!important;
     border-radius: 15px!important;
@@ -171,7 +176,39 @@ h1 {
     color: #FFFFFF!important;
 }
 
-/* LANGUAGE SELECT BOX BHI BLACK TEXT */
+/* MULTSELECT FIX - AB TEXT DIKHEGA + LIST KHULEGI */
+.stMultiSelect > div > div {
+    background: rgba(255,255,255,0.98)!important;
+    border-radius: 12px!important;
+    border: 2px solid rgba(255,20,147,0.6)!important;
+}
+
+.stMultiSelect [data-baseweb="select"] * {
+    color: #000!important;
+    font-weight: 600!important;
+}
+
+.stMultiSelect [data-baseweb="tag"] {
+    background: rgba(255,20,147,0.8)!important;
+    color: white!important;
+}
+
+.stMultiSelect [data-baseweb="tag"] * {
+    color: white!important;
+}
+
+/* DROPDOWN LIST BHI BLACK */
+ul[data-baseweb="menu"] li {
+    color: #000!important;
+    background: white!important;
+    font-weight: 600!important;
+}
+
+ul[data-baseweb="menu"] li:hover {
+    background: rgba(255,20,147,0.2)!important;
+}
+
+/* LANGUAGE SELECT BOX */
 .stSelectbox > div > div {
     background: rgba(255,255,255,0.95)!important;
     color: #000!important;
@@ -322,7 +359,6 @@ if st.session_state.email:
         exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
         days_left = (exp_date - datetime.now()).days
 
-        # 5 DIN PEHLE RED ALERT
         if 0 < days_left <= 5:
             st.sidebar.markdown(f"<div class='expiry-alert'>⚠️ {T['expiry_warn'].format(days=days_left)}</div>", unsafe_allow_html=True)
             st.sidebar.info(T['pro_active'].format(date=user['expiry'], days=days_left))
