@@ -101,7 +101,7 @@ if 'email_entered' not in st.session_state: st.session_state.email_entered = Fal
 # LANGUAGE SELECT TOP RIGHT
 lang_col = st.columns([8,2])[1]
 with lang_col:
-    lang = st.selectbox(T['language'] if 'language' in T else "🌐 Language", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_top")
+    lang = st.selectbox("🪩language",["English","Hindi"] if 'language' in T else "🌐 Language", ["English", "Hindi"], index=0 if st.session_state.lang=="English" else 1, key="lang_top")
     st.session_state.lang = lang
 T = LANG[st.session_state.lang]
 
