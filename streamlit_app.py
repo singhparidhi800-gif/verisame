@@ -78,7 +78,6 @@ h2, h3 {color: #581C87!important; font-weight: 700!important; margin-top: 1rem!i
 .download-msg {background: linear-gradient(90deg, #7C3AED, #EC4899); color: white!important; padding: 18px; border-radius: 14px; margin-top: 1rem; text-align: center; font-weight: 600; box-shadow: 0 10px 25px rgba(236,72,153,0.45);}
 .admin-card {background: rgba(255,255,255,0.96); padding: 1.3rem; border-radius: 18px; margin: 0.7rem 0; border: 2px solid rgba(236,72,153,0.25); box-shadow: 0 5px 15px rgba(124,58,237,0.1);}
 .element-container {margin-bottom: 0.35rem!important;}
-.anime-float {position: fixed; bottom: 25px; right: 25px; z-index: 999; opacity: 0.8; filter: drop-shadow(0 10px 20px rgba(236,72,153,0.4));}
 .stTextInput input {border-radius: 12px; border: 2px solid #D8B4FE;}
 
 /* Cherry blossom falling effect */
@@ -135,18 +134,19 @@ if st.session_state.email:
         else:
             st.sidebar.error(T['expired'])
 
-# ========== HEADER: LOGO + ANIME GIRL ==========
-col1, col2 = st.columns([6,1])
+# ========== HEADER: LOGO + TITLE + ANIME GIRL BIG ==========
+col1, col2, col3 = st.columns([1.5, 4, 1.5])
 with col1:
-    st.title(T['title'])
-    st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
+    st.image("https://i.postimg.cc/gjWxsmHf/1779366919870.png", width=120) # Tera logo bada
 with col2:
-    st.image("https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg", width=110)
+    st.markdown("<h1 style='margin-top: 15px; margin-bottom: 0;'>VeriSame</h1>", unsafe_allow_html=True)
+    st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
+with col3:
+    st.image("https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg", width=140) # Anime girl badi
 
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# Baki tera pura code same as it is yahi se start ho jayega...
-# SHERANI ADMIN PANEL - FIXED EMAIL DISPLAY + COLUMNS + VERIFY + DELETE
+# SHERANI ADMIN PANEL
 if st.query_params.get("admin"):
     input_hash = hashlib.sha256(st.query_params.get("admin").encode()).hexdigest()
     if input_hash == ADMIN_PASS_HASH:
@@ -176,7 +176,6 @@ if st.query_params.get("admin"):
         st.subheader("📊 All Users")
         all_users = {e:i for e,i in data.items() if "@" in e}
 
-        # COLUMN LAYOUT - FREE ALAG, PRO ALAG
         col_free, col_pro299, col_pro1499 = st.columns(3)
 
         with col_free:
@@ -397,7 +396,7 @@ else:
             st.markdown(f"<div class='download-msg'>{T['download_success']}</div>", unsafe_allow_html=True)
             st.session_state.show_download_msg = False
 
-        # DOWNLOAD LOGIC - EMAIL PERSIST + CUSTOMER I PAID
+        # DOWNLOAD LOGIC
         if st.session_state.plan == "free":
             col1, col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
