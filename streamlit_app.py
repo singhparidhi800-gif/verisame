@@ -1,5 +1,5 @@
 import streamlit as st
-import json, os, io, qrcode, hashlib, random
+import json, os, io, qrcode, hashlib
 import pandas as pd
 import re
 from datetime import datetime, timedelta
@@ -33,91 +33,120 @@ def words_to_num(s):
     return total + current if total + current > 0 else s
 
 T = {
-    "title":"VeriSame","tagline":"Intelligent Data Cleaning Platform","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
+    "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
     "free_feat":["1000 Rows Lifetime","CSV + Excel Export","2 Basic Tools","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
-    "email_label":"Enter Email for OTP Verification","continue_btn":"Verify & Continue","upload_tab":"Upload File","sample_tab":"Try Demo",
+    "email_label":"Please enter your email","continue_btn":"Verify & Continue","upload_tab":"Upload File","sample_tab":"Try Demo",
     "upload_text":"Drop CSV, Excel or JSON here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
     "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
     "paid_msg":"Step 1: Pay via UPI. Step 2: Click I Paid. Step 3: Admin Approval. Step 4: Download Unlocks",
-    "upi_text":"Scan to Pay","paid_btn":"I Have Paid ₹{amount}","success_msg":"Payment Submitted! Awaiting Approval",
+    "upi_text":"Scan to Pay","paid_btn":"Customer I Paid ₹{amount}","success_msg":"Payment Submitted! Awaiting Approval",
     "download_success":"Download Ready!","locked":"Upgrade to Pro to Unlock","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
     "select_col":"Select Columns","select_case":"Choose Case","apply_btn":"Apply","success":"Applied Successfully!",
     "expiry_warn":"Expires in {days} days!","pro_active":"Plan Active\nValid Till: {date}\n{days} days left","free_plan":"FREE Plan Active",
     "expired":"Plan Expired","admin_title":"Sherani Admin Panel","admin_pending":"Pending Approvals","admin_approve_btn":"Verify & Approve",
-    "admin_user":"Email","admin_plan":"Plan","admin_expiry":"Valid Till","admin_status":"Status","download_btn":"Download Now"
+    "admin_user":"Email","admin_plan":"Plan","admin_expiry":"Valid Till","admin_status":"Status","download_btn":"Download Now",
+    "delete_btn":"Delete User"
 }
 
-# BEAUTIFUL GLASSMORPHISM CSS - PURPLE PINK AURORA
+# ========== CHERRY BLOSSOM + CSS ==========
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
-.stApp {background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #667eea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.5rem;}
+.stApp {background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #667eea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
-.block-container {background: rgba(255,255,255,0.85); backdrop-filter: blur(20px) saturate(180%); border-radius: 24px; padding: 2rem; max-width: 1100px; margin: 0 auto; box-shadow: 0 25px 50px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.3);}
-h1 {font-weight: 800!important; background: linear-gradient(90deg, #7C3AED, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 3rem!important; margin-bottom: 0.3rem!important;}
+.block-container {background: rgba(255,255,255,0.88); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1100px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
+h1 {font-weight: 800!important; background: linear-gradient(90deg, #7C3AED, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; letter-spacing: -1px;}
+.subtitle {text-align: left; color: #7C3AED!important; font-size: 1.1rem!important; font-weight: 500; margin-bottom: 1rem!important;}
 h2, h3 {color: #581C87!important; font-weight: 700!important; margin-top: 1rem!important; margin-bottom: 0.6rem!important;}
 .stMarkdown p {color: #6B7280!important; margin-bottom: 0.3rem!important;}
-.pricing-card {border: 1.5px solid rgba(236,72,153,0.3); border-radius: 20px; padding: 1.5rem; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(124,58,237,0.1);}
-.pricing-card:hover {transform: translateY(-6px); box-shadow: 0 20px 40px rgba(236,72,153,0.25); border-color: #EC4899;}
-.pricing-card h2 {font-size: 1.3rem!important; color: #581C87!important; margin-bottom: 0.5rem!important;}
-.pricing-card h1 {font-size: 2.5rem!important; background: linear-gradient(90deg, #7C3AED, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0.5rem 0!important;}
-.stButton>button {border-radius: 12px; font-weight: 600; background: linear-gradient(90deg, #8B5CF6, #EC4899); color: white!important; border: none; padding: 12px 24px; width: 100%; box-shadow: 0 4px 15px rgba(139,92,246,0.4); transition: all 0.3s;}
-.stButton>button:hover {transform: translateY(-3px); box-shadow: 0 8px 25px rgba(236,72,153,0.5);}
-.stFileUploader {border-radius: 16px; border: 2px dashed #C084FC; background: rgba(250,245,255,0.8);}
-.stDataFrame {border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(139,92,246,0.1);}
-.pro-banner {background: linear-gradient(135deg, rgba(124,58,237,0.9), rgba(236,72,153,0.9)); backdrop-filter: blur(15px); padding: 1.5rem; border-radius: 20px; color: white!important; text-align: center; margin: 1rem 0; border: 1px solid rgba(255,255,255,0.3);}
-.tool-chip {display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: 25px; margin: 4px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); color: white!important; font-size: 0.9rem;}
-.download-msg {background: linear-gradient(90deg, #7C3AED, #EC4899); color: white!important; padding: 16px; border-radius: 12px; margin-top: 1rem; text-align: center; font-weight: 600; box-shadow: 0 8px 20px rgba(236,72,153,0.4);}
-.admin-card {background: rgba(255,255,255,0.95); padding: 1.2rem; border-radius: 16px; margin: 0.6rem 0; border: 1.5px solid rgba(236,72,153,0.3); box-shadow: 0 4px 12px rgba(124,58,237,0.08);}
-.locked-section {opacity: 0.4; filter: blur(2px); pointer-events: none;}
-.element-container {margin-bottom: 0.4rem!important;}
-.anime-float {position: fixed; bottom: 20px; right: 20px; z-index: 999; opacity: 0.7;}
+.pricing-card {border: 2px solid rgba(236,72,153,0.3); border-radius: 22px; padding: 1.6rem; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(124,58,237,0.12);}
+.pricing-card:hover {transform: translateY(-8px); box-shadow: 0 25px 45px rgba(236,72,153,0.3); border-color: #EC4899;}
+.pricing-card h2 {font-size: 1.4rem!important; color: #581C87!important; margin-bottom: 0.5rem!important; font-weight: 700;}
+.pricing-card h1 {font-size: 2.6rem!important; background: linear-gradient(90deg, #7C3AED, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0.5rem 0!important; font-weight: 800;}
+.stButton>button {border-radius: 14px; font-weight: 600; background: linear-gradient(90deg, #8B5CF6, #EC4899); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(139,92,246,0.45); transition: all 0.3s; cursor: pointer;}
+.stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(236,72,153,0.55);}
+.stFileUploader {border-radius: 18px; border: 2px dashed #C084FC; background: rgba(250,245,255,0.85);}
+.stDataFrame {border-radius: 18px; overflow: hidden; box-shadow: 0 6px 16px rgba(139,92,246,0.12);}
+.pro-banner {background: linear-gradient(135deg, rgba(124,58,237,0.92), rgba(236,72,153,0.92)); backdrop-filter: blur(18px); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 1.5px solid rgba(255,255,255,0.35);}
+.tool-chip {display: inline-block; background: rgba(255,255,255,0.22); backdrop-filter: blur(12px); padding: 9px 17px; border-radius: 28px; margin: 4px; font-weight: 600; border: 1.5px solid rgba(255,255,255,0.35); color: white!important; font-size: 0.92rem;}
+.download-msg {background: linear-gradient(90deg, #7C3AED, #EC4899); color: white!important; padding: 18px; border-radius: 14px; margin-top: 1rem; text-align: center; font-weight: 600; box-shadow: 0 10px 25px rgba(236,72,153,0.45);}
+.admin-card {background: rgba(255,255,255,0.96); padding: 1.3rem; border-radius: 18px; margin: 0.7rem 0; border: 2px solid rgba(236,72,153,0.25); box-shadow: 0 5px 15px rgba(124,58,237,0.1);}
+.element-container {margin-bottom: 0.35rem!important;}
+.anime-float {position: fixed; bottom: 25px; right: 25px; z-index: 999; opacity: 0.8; filter: drop-shadow(0 10px 20px rgba(236,72,153,0.4));}
+.stTextInput input {border-radius: 12px; border: 2px solid #D8B4FE;}
+
+/* Cherry blossom falling effect */
+.cherry {
+    position: fixed;
+    top: -10vh;
+    color: #FFB7C5;
+    font-size: 20px;
+    animation: fall linear infinite;
+    z-index: 9999;
+    pointer-events: none;
+}
+@keyframes fall {
+    0% {transform: translateY(0vh) translateX(0vw) rotate(0deg); opacity: 1;}
+    100% {transform: translateY(110vh) translateX(10vw) rotate(360deg); opacity: 0;}
+}
 </style>
+
+<div class="cherry" style="left: 5%; animation-duration: 8s; animation-delay: 0s;">🌸</div>
+<div class="cherry" style="left: 15%; animation-duration: 10s; animation-delay: 2s;">🌸</div>
+<div class="cherry" style="left: 25%; animation-duration: 9s; animation-delay: 4s;">🌸</div>
+<div class="cherry" style="left: 35%; animation-duration: 11s; animation-delay: 1s;">🌸</div>
+<div class="cherry" style="left: 45%; animation-duration: 7s; animation-delay: 3s;">🌸</div>
+<div class="cherry" style="left: 55%; animation-duration: 12s; animation-delay: 5s;">🌸</div>
+<div class="cherry" style="left: 65%; animation-duration: 8s; animation-delay: 2s;">🌸</div>
+<div class="cherry" style="left: 75%; animation-duration: 10s; animation-delay: 4s;">🌸</div>
+<div class="cherry" style="left: 85%; animation-duration: 9s; animation-delay: 1s;">🌸</div>
+<div class="cherry" style="left: 95%; animation-duration: 11s; animation-delay: 3s;">🌸</div>
 """, unsafe_allow_html=True)
 
 # SESSION
-for key in ['plan','email','df_clean','show_balloon','show_download_msg','payment_clicked','amt','sample_loaded','email_entered','otp','otp_verified']:
-    if key not in st.session_state: st.session_state[key] = None if key in ['plan','email','df_clean','otp'] else False
+for key in ['plan','email','df_clean','show_balloon','show_download_msg','payment_clicked','amt','sample_loaded','email_entered','days']:
+    if key not in st.session_state: st.session_state[key] = None if key in ['plan','email','df_clean','days'] else False
 
 # BACK BUTTON
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn']):
-        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','otp','otp_verified']:
-            st.session_state[key] = None if key in ['plan','email','df_clean','otp'] else False
+        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days']:
+            st.session_state[key] = None if key in ['plan','email','df_clean','days'] else False
         st.rerun()
 
-# EMAIL + OTP SECURITY
-if st.session_state.email and not st.session_state.otp_verified:
+# EMAIL CHECK + DATE DISPLAY
+if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
-    if user.get("plan") == "pro":
+    if user.get("plan"):
         exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
         days_left = (exp_date - datetime.now()).days
+        st.session_state.plan = user.get("plan")
+        st.session_state.amt = user.get("amt", 0)
+        st.session_state.days = user.get("days", 0)
         if days_left > 0:
-            st.session_state.plan = "pro"
-            st.session_state.amt = user.get("amt", 299)
-            st.sidebar.info(T['pro_active'].format(date=user['expiry'], days=days_left))
+            st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
         else:
             st.sidebar.error(T['expired'])
-            st.session_state.plan = None
 
-# HEADER + ANIME FLOAT
-col1, col2 = st.columns([1,5])
+# ========== HEADER: LOGO + ANIME GIRL ==========
+col1, col2 = st.columns([6,1])
 with col1:
-    st.image("https://i.ibb.co/Vps2R8np/anime-girl-pink-hair-beautiful-anime-girl.png", width=100)
-with col2:
     st.title(T['title'])
-    st.markdown(f"**{T['tagline']}**")
+    st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
+with col2:
+    st.image("https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg", width=110)
 
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# SHERANI ADMIN PANEL - IMPROVED
+# Baki tera pura code same as it is yahi se start ho jayega...
+# SHERANI ADMIN PANEL - FIXED EMAIL DISPLAY + COLUMNS + VERIFY + DELETE
 if st.query_params.get("admin"):
     input_hash = hashlib.sha256(st.query_params.get("admin").encode()).hexdigest()
     if input_hash == ADMIN_PASS_HASH:
@@ -127,16 +156,16 @@ if st.query_params.get("admin"):
         st.metric(T['admin_pending'], len(pending))
 
         if pending:
-            st.subheader("⏳ Pending Verifications")
+            st.subheader("⏳ Pending Approvals")
             for email,info in pending.items():
                 amt = info.get('amt',0)
                 days = 30 if amt==299 else 180
                 plan_text = f"PRO Monthly ₹299 - {days}d" if amt==299 else f"PRO 6M ₹1499 - {days}d"
-                col1, col2, col3 = st.columns([4,2,1])
+                col1, col2, col3 = st.columns([5,2,1])
                 with col1:
                     st.markdown(f"<div class='admin-card'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>{T['admin_expiry']}:</b> {info['expiry']}</div>", unsafe_allow_html=True)
                 with col3:
-                    if st.button(T['admin_approve_btn'], key=f"approve_{email}", type="primary"):
+                    if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary"):
                         data[email]["status"] = "PAID"
                         save_db(data)
                         st.success(f"✓ {email} Verified!")
@@ -146,17 +175,44 @@ if st.query_params.get("admin"):
         st.markdown("---")
         st.subheader("📊 All Users")
         all_users = {e:i for e,i in data.items() if "@" in e}
-        for email,info in all_users.items():
-            status = info.get('status','N/A')
-            plan = info.get('plan','free')
-            amt = info.get('amt',0)
-            expiry = info.get('expiry','N/A')
-            badge = "FREE" if plan == "free" else f"PRO ₹{amt}"
-            color = "#7C3AED" if status=="PAID" else "#EC4899"
-            st.markdown(f"<div class='admin-card'><b>{email}</b> | {badge} | Status: <span style='color:{color};font-weight:600'>{status}</span> | {expiry}</div>", unsafe_allow_html=True)
+
+        # COLUMN LAYOUT - FREE ALAG, PRO ALAG
+        col_free, col_pro299, col_pro1499 = st.columns(3)
+
+        with col_free:
+            st.markdown("### FREE Users")
+            for email,info in all_users.items():
+                if info.get('plan')=='free':
+                    st.markdown(f"<div class='admin-card'><b>{email}</b><br>Valid: {info.get('expiry','N/A')}<br>Status: {info.get('status','N/A')}</div>", unsafe_allow_html=True)
+                    if st.button(T['delete_btn'], key=f"del_free_{email}"):
+                        del data[email]
+                        save_db(data)
+                        st.rerun()
+
+        with col_pro299:
+            st.markdown("### PRO ₹299 Users")
+            for email,info in all_users.items():
+                if info.get('plan')=='pro' and info.get('amt')==299:
+                    status_color = "#7C3AED" if info.get('status')=="PAID" else "#EC4899"
+                    st.markdown(f"<div class='admin-card'><b>{email}</b><br>Valid: {info.get('expiry','N/A')}<br>Status: <span style='color:{status_color};font-weight:600'>{info.get('status','N/A')}</span></div>", unsafe_allow_html=True)
+                    if st.button(T['delete_btn'], key=f"del_299_{email}"):
+                        del data[email]
+                        save_db(data)
+                        st.rerun()
+
+        with col_pro1499:
+            st.markdown("### PRO ₹1499 Users")
+            for email,info in all_users.items():
+                if info.get('plan')=='pro' and info.get('amt')==1499:
+                    status_color = "#7C3AED" if info.get('status')=="PAID" else "#EC4899"
+                    st.markdown(f"<div class='admin-card'><b>{email}</b><br>Valid: {info.get('expiry','N/A')}<br>Status: <span style='color:{status_color};font-weight:600'>{info.get('status','N/A')}</span></div>", unsafe_allow_html=True)
+                    if st.button(T['delete_btn'], key=f"del_1499_{email}"):
+                        del data[email]
+                        save_db(data)
+                        st.rerun()
         st.stop()
 
-# PLANS
+# PLANS - FREE ME BHI EMAIL
 if st.session_state.plan is None:
     col1,col2,col3 = st.columns(3, gap="small")
     with col1:
@@ -165,39 +221,46 @@ if st.session_state.plan is None:
         st.markdown("<h1>FREE</h1>", unsafe_allow_html=True)
         st.markdown("<p>Lifetime</p>", unsafe_allow_html=True)
         for f in T['free_feat']: st.markdown(f"✓ {f}")
-        if st.button("Start Free", key="btn_free"):
-            st.session_state.plan="free"; st.session_state.amt=0; st.session_state.email_entered=True
-            data = load_db()
-            expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-            data["guest_free"] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
-            save_db(data)
-            st.rerun()
+        free_email = st.text_input(T['email_label'], key="free_email", placeholder="your@email.com")
+        if st.button("Start Free", key="btn_free", type="primary"):
+            if "@" in free_email:
+                st.session_state.email = free_email
+                st.session_state.plan="free"; st.session_state.amt=0; st.session_state.email_entered=True
+                data = load_db()
+                expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                data[free_email] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
+                save_db(data)
+                st.balloons()
+                st.rerun()
+            else: st.error("Enter valid email")
         st.markdown("</div>", unsafe_allow_html=True)
+
     with col2:
-        st.markdown("<div class='pricing-card' style='border-color:#EC4899;box-shadow:0 12px 30px rgba(236,72,153,0.3)'>", unsafe_allow_html=True)
+        st.markdown("<div class='pricing-card' style='border-color:#EC4899;box-shadow:0 15px 35px rgba(236,72,153,0.35)'>", unsafe_allow_html=True)
         st.markdown("⭐ POPULAR")
         st.markdown(f"<h2>{T['pro1_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1>₹{PRO_1M}</h1>", unsafe_allow_html=True)
         st.markdown("<p>30 Days</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.markdown(f"✓ {f}")
-        if st.button("Get Pro", key="btn_pro1"):
+        if st.button("Get Pro", key="btn_pro1", type="primary"):
             st.session_state.plan="pro"; st.session_state.amt=PRO_1M; st.session_state.days=30
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
+
     with col3:
         st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
         st.markdown(f"<h2>{T['pro6_title']}</h2>", unsafe_allow_html=True)
         st.markdown(f"<h1>₹{PRO_6M}</h1>", unsafe_allow_html=True)
         st.markdown("<p>180 Days</p>", unsafe_allow_html=True)
         for f in T['pro_feat']: st.markdown(f"✓ {f}")
-        if st.button("Get Pro+", key="btn_pro6"):
+        if st.button("Get Pro+", key="btn_pro6", type="primary"):
             st.session_state.plan="pro"; st.session_state.amt=PRO_6M; st.session_state.days=180
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 else:
     if not st.session_state.email_entered:
-        email_input = st.text_input(T['email_label']).lower().strip()
-        if st.button(T['continue_btn'], type="primary"):
+        email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
+        if st.button(T['continue_btn'], key="btn_continue", type="primary"):
             if "@" in email_input and "." in email_input:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
@@ -207,6 +270,7 @@ else:
                     if exp_date > datetime.now():
                         st.session_state.plan = data[email_input]["plan"]
                         st.session_state.amt = data[email_input].get("amt", 0)
+                        st.session_state.days = data[email_input].get("days", 0)
                 st.rerun()
             else: st.error("Valid email required")
         st.stop()
@@ -333,7 +397,7 @@ else:
             st.markdown(f"<div class='download-msg'>{T['download_success']}</div>", unsafe_allow_html=True)
             st.session_state.show_download_msg = False
 
-        # DOWNLOAD LOGIC - SIRF PAID KE BAAD HI KHULEGA
+        # DOWNLOAD LOGIC - EMAIL PERSIST + CUSTOMER I PAID
         if st.session_state.plan == "free":
             col1, col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -354,11 +418,11 @@ else:
             qr.save(buf, format="PNG")
             st.image(buf.getvalue(), width=200)
             st.code(UPI)
-            if st.button(T['paid_btn'].format(amount=st.session_state.amt), type="primary"):
+            if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary"):
                 data = load_db()
                 days = 30 if st.session_state.amt == 299 else 180
                 expiry = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
-                data[st.session_state.email] = {"plan": "pro", "status": "PENDING", "amt": st.session_state.amt, "expiry": expiry, "created": str(datetime.now())}
+                data[st.session_state.email] = {"plan": "pro", "status": "PENDING", "amt": st.session_state.amt, "days": days, "expiry": expiry, "created": str(datetime.now())}
                 save_db(data)
                 st.session_state.payment_clicked = True
                 st.success(T['success_msg'])
