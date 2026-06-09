@@ -79,8 +79,6 @@ h2, h3 {color: #581C87!important; font-weight: 700!important; margin-top: 1rem!i
 .admin-card {background: rgba(255,255,255,0.96); padding: 1.3rem; border-radius: 18px; margin: 0.7rem 0; border: 2px solid rgba(236,72,153,0.25); box-shadow: 0 5px 15px rgba(124,58,237,0.1);}
 .element-container {margin-bottom: 0.35rem!important;}
 .stTextInput input {border-radius: 12px; border: 2px solid #D8B4FE;}
-.locked-overlay {position: relative;}
-.locked-overlay::after {content: '🔒 Pro Only'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 600; z-index: 1000;}
 .cherry {
     position: fixed;
     top: -10vh;
@@ -134,15 +132,26 @@ if st.session_state.email:
         else:
             st.sidebar.error(T['expired'])
 
-# ========== HEADER: LOGO + TITLE + ANIME GIRL BIGGER ==========
-col1, col2, col3 = st.columns([1.5, 4, 1.5])
+# ========== HEADER: LOGO + TITLE + ANIME GIRL FULL WIDTH ==========
+col1, col2, col3 = st.columns([1.2, 3, 1.2])
+
 with col1:
-    st.image("https://i.postimg.cc/gjWxsmHf/1779366919870.png", width=150) # Logo aur bada
+    st.markdown("""
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 140px;">
+        <img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; max-width: 220px; height: auto; object-fit: contain;">
+    </div>
+    """, unsafe_allow_html=True)
+
 with col2:
-    st.markdown("<h1 style='margin-top: 15px; margin-bottom: 0;'>VeriSame</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin-top: 10px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
+
 with col3:
-    st.image("https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg", width=180) # Girl aur badi
+    st.markdown("""
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 140px;">
+        <img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg" style="width: 100%; max-width: 240px; height: auto; object-fit: cover; border-radius: 18px; box-shadow: 0 8px 20px rgba(236,72,153,0.3);">
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
