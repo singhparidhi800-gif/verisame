@@ -79,8 +79,8 @@ h2, h3 {color: #581C87!important; font-weight: 700!important; margin-top: 1rem!i
 .admin-card {background: rgba(255,255,255,0.96); padding: 1.3rem; border-radius: 18px; margin: 0.7rem 0; border: 2px solid rgba(236,72,153,0.25); box-shadow: 0 5px 15px rgba(124,58,237,0.1);}
 .element-container {margin-bottom: 0.35rem!important;}
 .stTextInput input {border-radius: 12px; border: 2px solid #D8B4FE;}
-
-/* Cherry blossom falling effect */
+.locked-overlay {position: relative;}
+.locked-overlay::after {content: '🔒 Pro Only'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 600; z-index: 1000;}
 .cherry {
     position: fixed;
     top: -10vh;
@@ -109,13 +109,13 @@ h2, h3 {color: #581C87!important; font-weight: 700!important; margin-top: 1rem!i
 """, unsafe_allow_html=True)
 
 # SESSION
-for key in ['plan','email','df_clean','show_balloon','show_download_msg','payment_clicked','amt','sample_loaded','email_entered','days']:
+for key in ['plan','email','df_clean','show_balloon','show_download_msg','payment_clicked','amt','sample_loaded','email_entered','days','free_clicked']:
     if key not in st.session_state: st.session_state[key] = None if key in ['plan','email','df_clean','days'] else False
 
 # BACK BUTTON
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn']):
-        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days']:
+        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','free_clicked']:
             st.session_state[key] = None if key in ['plan','email','df_clean','days'] else False
         st.rerun()
 
@@ -134,15 +134,15 @@ if st.session_state.email:
         else:
             st.sidebar.error(T['expired'])
 
-# ========== HEADER: LOGO + TITLE + ANIME GIRL BIG ==========
+# ========== HEADER: LOGO + TITLE + ANIME GIRL BIGGER ==========
 col1, col2, col3 = st.columns([1.5, 4, 1.5])
 with col1:
-    st.image("https://i.postimg.cc/gjWxsmHf/1779366919870.png", width=120) # Tera logo bada
+    st.image("https://i.postimg.cc/gjWxsmHf/1779366919870.png", width=150) # Logo aur bada
 with col2:
     st.markdown("<h1 style='margin-top: 15px; margin-bottom: 0;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
 with col3:
-    st.image("https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg", width=140) # Anime girl badi
+    st.image("https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg", width=180) # Girl aur badi
 
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
@@ -211,7 +211,7 @@ if st.query_params.get("admin"):
                         st.rerun()
         st.stop()
 
-# PLANS - FREE ME BHI EMAIL
+# PLANS - FREE ME EMAIL BAAD ME
 if st.session_state.plan is None:
     col1,col2,col3 = st.columns(3, gap="small")
     with col1:
@@ -220,18 +220,23 @@ if st.session_state.plan is None:
         st.markdown("<h1>FREE</h1>", unsafe_allow_html=True)
         st.markdown("<p>Lifetime</p>", unsafe_allow_html=True)
         for f in T['free_feat']: st.markdown(f"✓ {f}")
-        free_email = st.text_input(T['email_label'], key="free_email", placeholder="your@email.com")
-        if st.button("Start Free", key="btn_free", type="primary"):
-            if "@" in free_email:
-                st.session_state.email = free_email
-                st.session_state.plan="free"; st.session_state.amt=0; st.session_state.email_entered=True
-                data = load_db()
-                expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                data[free_email] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
-                save_db(data)
-                st.balloons()
+        if not st.session_state.free_clicked:
+            if st.button("Start Free", key="btn_free", type="primary"):
+                st.session_state.free_clicked = True
                 st.rerun()
-            else: st.error("Enter valid email")
+        else:
+            free_email = st.text_input(T['email_label'], key="free_email", placeholder="your@email.com")
+            if st.button("Continue", key="btn_free_continue", type="primary"):
+                if "@" in free_email:
+                    st.session_state.email = free_email
+                    st.session_state.plan="free"; st.session_state.amt=0; st.session_state.email_entered=True
+                    data = load_db()
+                    expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                    data[free_email] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
+                    save_db(data)
+                    st.balloons()
+                    st.rerun()
+                else: st.error("Enter valid email")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col2:
@@ -312,14 +317,14 @@ else:
         with tab1:
             st.write(f"**{T['tool1']}**")
             date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date", disabled=not is_paid)
-            if not is_paid: st.caption(f"🔒 {T['locked']}")
+            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
             if st.button(T['apply_btn'], key="btn_date", disabled=not is_paid):
                 for col in date_cols: st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
                 st.success(T['success'])
 
             st.write(f"**{T['tool2']}**")
             fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=not is_paid)
-            if not is_paid: st.caption(f"🔒 {T['locked']}")
+            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
             if st.button(T['apply_btn'], key="btn_fill", disabled=not is_paid):
                 st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
                 st.success(T['success'])
@@ -327,7 +332,7 @@ else:
         with tab2:
             st.write(f"**{T['tool3']}**")
             email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=not is_paid)
-            if not is_paid: st.caption(f"🔒 {T['locked']}")
+            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
             if st.button(T['apply_btn'], key="btn_email", disabled=not is_paid):
                 pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                 for col in email_cols:
@@ -336,7 +341,7 @@ else:
 
             st.write(f"**{T['tool4']}**")
             phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=not is_paid)
-            if not is_paid: st.caption(f"🔒 {T['locked']}")
+            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
             if st.button(T['apply_btn'], key="btn_phone", disabled=not is_paid):
                 for col in phone_cols:
                     st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
@@ -353,7 +358,7 @@ else:
 
             st.write(f"**{T['tool6']}**")
             spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=not is_paid)
-            if not is_paid: st.caption(f"🔒 {T['locked']}")
+            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
             if st.button(T['apply_btn'], key="btn_spec", disabled=not is_paid):
                 for col in spec_cols:
                     st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
@@ -362,7 +367,7 @@ else:
             st.write(f"**{T['tool7']}**")
             old = st.selectbox("Old name", all_cols, key="sel_old", disabled=not is_paid)
             new = st.text_input("New name", key="inp_new", disabled=not is_paid)
-            if not is_paid: st.caption(f"🔒 {T['locked']}")
+            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
             if st.button(T['apply_btn'], key="btn_rename", disabled=not is_paid) and new:
                 st.session_state.df_clean.rename(columns={old: new}, inplace=True)
                 st.success(T['success'])
@@ -371,7 +376,7 @@ else:
             if st.button(T['apply_btn'], key="btn_dedup", disabled=not is_paid):
                 st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                 st.success(T['success'])
-            if not is_paid: st.caption(f"🔒 {T['locked']}")
+            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
 
             st.write(f"**{T['tool9']}**")
             trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
@@ -382,7 +387,7 @@ else:
 
             st.write(f"**{T['tool10']}**")
             spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=not is_paid)
-            if not is_paid: st.caption(f"🔒 {T['locked']}")
+            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
             if st.button(T['apply_btn'], key="btn_spell", disabled=not is_paid):
                 for col in spell_cols:
                     st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).replace("teh", "the").replace("recieve", "receive").title())
