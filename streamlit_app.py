@@ -48,7 +48,7 @@ T = {
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
     "select_col":"Select Columns","select_case":"Choose Case","apply_btn":"Apply","success":"Applied Successfully!",
     "expiry_warn":"Expires in {days} days!","pro_active":"Plan Active\nValid Till: {date}\n{days} days left","free_plan":"FREE Plan Active",
-    "expired":"Plan Expired","admin_title":"Sherani Admin Panel","admin_pending":"Pending Approvals","admin_approve_btn":"Verify & Approve",
+    "expired":"Plan Expired","admin_title":"Sherani Admin Panel","admin_pending":"Pending Approvals","admin_approve_btn":"Mark Paid & Approve",
     "admin_user":"Email","admin_plan":"Plan","admin_expiry":"Valid Till","admin_status":"Status","download_btn":"Download Now",
     "delete_btn":"Delete User"
 }
@@ -107,14 +107,14 @@ h2, h3 {color: #581C87!important; font-weight: 700!important; margin-top: 1rem!i
 """, unsafe_allow_html=True)
 
 # SESSION
-for key in ['plan','email','df_clean','show_balloon','show_download_msg','payment_clicked','amt','sample_loaded','email_entered','days','free_clicked']:
-    if key not in st.session_state: st.session_state[key] = None if key in ['plan','email','df_clean','days'] else False
+for key in ['plan','email','df_clean','show_balloon','show_download_msg','payment_clicked','amt','sample_loaded','email_entered','days','free_clicked','selected_plan']:
+    if key not in st.session_state: st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
 
 # BACK BUTTON
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn']):
-        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','free_clicked']:
-            st.session_state[key] = None if key in ['plan','email','df_clean','days'] else False
+        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','free_clicked','selected_plan']:
+            st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
         st.rerun()
 
 # EMAIL CHECK + DATE DISPLAY
@@ -132,13 +132,13 @@ if st.session_state.email:
         else:
             st.sidebar.error(T['expired'])
 
-# ========== HEADER: LOGO + TITLE + ANIME GIRL AUR BADI CHAURA ==========
-col1, col2, col3 = st.columns([0.7, 2.4, 1.7]) # Girl ko aur jagah
+# ========== HEADER: LOGO BADA + GIRL CHEHRA DIKHE ==========
+col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 
 with col1:
     st.markdown("""
-    <div style="width: 100%; min-height: 220px; display: flex; align-items: center;">
-        <img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; display: block;">
+    <div style="width: 100%; min-height: 240px; display: flex; align-items: center; justify-content: center;">
+        <img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 240px; object-fit: contain;">
     </div>
     """, unsafe_allow_html=True)
 
@@ -148,14 +148,14 @@ with col2:
 
 with col3:
     st.markdown("""
-    <div style="width: 100%; min-height: 220px;">
-        <img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg" style="width: 100%; height: 220px; object-fit: cover; border-radius: 25px; box-shadow: 0 15px 35px rgba(236,72,153,0.6);">
+    <div style="width: 100%; min-height: 240px;">
+        <img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg" style="width: 100%; height: 240px; object-fit: cover; object-position: center top; border-radius: 25px; box-shadow: 0 15px 35px rgba(236,72,153,0.6);">
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# SHERANI ADMIN PANEL
+# ========== SHERANI ADMIN PANEL WITH EMAIL + PAID BUTTON ==========
 if st.query_params.get("admin"):
     input_hash = hashlib.sha256(st.query_params.get("admin").encode()).hexdigest()
     if input_hash == ADMIN_PASS_HASH:
@@ -170,15 +170,26 @@ if st.query_params.get("admin"):
                 amt = info.get('amt',0)
                 days = 30 if amt==299 else 180
                 plan_text = f"PRO Monthly ₹299 - {days}d" if amt==299 else f"PRO 6M ₹1499 - {days}d"
-                col1, col2, col3 = st.columns([5,2,1])
+                col1, col2, col3, col4 = st.columns([4,2,2,1])
                 with col1:
                     st.markdown(f"<div class='admin-card'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>{T['admin_expiry']}:</b> {info['expiry']}</div>", unsafe_allow_html=True)
+                with col2:
+                    admin_email_input = st.text_input("Customer Email", value=email, key=f"email_{email}")
                 with col3:
                     if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary"):
-                        data[email]["status"] = "PAID"
+                        if admin_email_input and "@" in admin_email_input:
+                            data[admin_email_input] = data.pop(email)
+                            data[admin_email_input]["status"] = "PAID"
+                            save_db(data)
+                            st.success(f"✓ {admin_email_input} Marked Paid!")
+                            st.balloons()
+                            st.rerun()
+                        else:
+                            st.error("Valid email daalo")
+                with col4:
+                    if st.button(T['delete_btn'], key=f"del_pending_{email}"):
+                        del data[email]
                         save_db(data)
-                        st.success(f"✓ {email} Verified!")
-                        st.balloons()
                         st.rerun()
 
         st.markdown("---")
@@ -220,74 +231,67 @@ if st.query_params.get("admin"):
                         st.rerun()
         st.stop()
 
-# PLANS - FREE ME EMAIL BAAD ME
+# PLANS - FREE ME EMAIL BAAD ME ALAG PAGE
 if st.session_state.plan is None:
-    col1,col2,col3 = st.columns(3, gap="small")
-    with col1:
-        st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2>{T['free_title']}</h2>", unsafe_allow_html=True)
-        st.markdown("<h1>FREE</h1>", unsafe_allow_html=True)
-        st.markdown("<p>Lifetime</p>", unsafe_allow_html=True)
-        for f in T['free_feat']: st.markdown(f"✓ {f}")
-        if not st.session_state.free_clicked:
+    if st.session_state.selected_plan is None:
+        col1,col2,col3 = st.columns(3, gap="small")
+        with col1:
+            st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
+            st.markdown(f"<h2>{T['free_title']}</h2>", unsafe_allow_html=True)
+            st.markdown("<h1>FREE</h1>", unsafe_allow_html=True)
+            st.markdown("<p>Lifetime</p>", unsafe_allow_html=True)
+            for f in T['free_feat']: st.markdown(f"✓ {f}")
             if st.button("Start Free", key="btn_free", type="primary"):
-                st.session_state.free_clicked = True
+                st.session_state.selected_plan = "free"
                 st.rerun()
-        else:
-            free_email = st.text_input(T['email_label'], key="free_email", placeholder="your@email.com")
-            if st.button("Continue", key="btn_free_continue", type="primary"):
-                if "@" in free_email:
-                    st.session_state.email = free_email
-                    st.session_state.plan="free"; st.session_state.amt=0; st.session_state.email_entered=True
-                    data = load_db()
-                    expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                    data[free_email] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
-                    save_db(data)
-                    st.balloons()
-                    st.rerun()
-                else: st.error("Enter valid email")
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
-    with col2:
-        st.markdown("<div class='pricing-card' style='border-color:#EC4899;box-shadow:0 15px 35px rgba(236,72,153,0.35)'>", unsafe_allow_html=True)
-        st.markdown("⭐ POPULAR")
-        st.markdown(f"<h2>{T['pro1_title']}</h2>", unsafe_allow_html=True)
-        st.markdown(f"<h1>₹{PRO_1M}</h1>", unsafe_allow_html=True)
-        st.markdown("<p>30 Days</p>", unsafe_allow_html=True)
-        for f in T['pro_feat']: st.markdown(f"✓ {f}")
-        if st.button("Get Pro", key="btn_pro1", type="primary"):
-            st.session_state.plan="pro"; st.session_state.amt=PRO_1M; st.session_state.days=30
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+        with col2:
+            st.markdown("<div class='pricing-card' style='border-color:#EC4899;box-shadow:0 15px 35px rgba(236,72,153,0.35)'>", unsafe_allow_html=True)
+            st.markdown("⭐ POPULAR")
+            st.markdown(f"<h2>{T['pro1_title']}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h1>₹{PRO_1M}</h1>", unsafe_allow_html=True)
+            st.markdown("<p>30 Days</p>", unsafe_allow_html=True)
+            for f in T['pro_feat']: st.markdown(f"✓ {f}")
+            if st.button("Get Pro", key="btn_pro1", type="primary"):
+                st.session_state.selected_plan = "pro"
+                st.session_state.amt = PRO_1M
+                st.session_state.days = 30
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
-    with col3:
-        st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-        st.markdown(f"<h2>{T['pro6_title']}</h2>", unsafe_allow_html=True)
-        st.markdown(f"<h1>₹{PRO_6M}</h1>", unsafe_allow_html=True)
-        st.markdown("<p>180 Days</p>", unsafe_allow_html=True)
-        for f in T['pro_feat']: st.markdown(f"✓ {f}")
-        if st.button("Get Pro+", key="btn_pro6", type="primary"):
-            st.session_state.plan="pro"; st.session_state.amt=PRO_6M; st.session_state.days=180
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-else:
-    if not st.session_state.email_entered:
+        with col3:
+            st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
+            st.markdown(f"<h2>{T['pro6_title']}</h2>", unsafe_allow_html=True)
+            st.markdown(f"<h1>₹{PRO_6M}</h1>", unsafe_allow_html=True)
+            st.markdown("<p>180 Days</p>", unsafe_allow_html=True)
+            for f in T['pro_feat']: st.markdown(f"✓ {f}")
+            if st.button("Get Pro+", key="btn_pro6", type="primary"):
+                st.session_state.selected_plan = "pro"
+                st.session_state.amt = PRO_6M
+                st.session_state.days = 180
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
         if st.button(T['continue_btn'], key="btn_continue", type="primary"):
             if "@" in email_input and "." in email_input:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
+                st.session_state.plan = st.session_state.selected_plan
                 data = load_db()
-                if email_input in data and data[email_input].get("status")=="PAID":
-                    exp_date = datetime.strptime(data[email_input]["expiry"], "%Y-%m-%d")
-                    if exp_date > datetime.now():
-                        st.session_state.plan = data[email_input]["plan"]
-                        st.session_state.amt = data[email_input].get("amt", 0)
-                        st.session_state.days = data[email_input].get("days", 0)
-                st.rerun()
+                if st.session_state.selected_plan == "free":
+                    expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                    data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
+                    save_db(data)
+                    st.balloons()
+                    st.rerun()
+                else:
+                    st.rerun()
             else: st.error("Valid email required")
         st.stop()
-
+else:
     tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
     df = None
     with tab1:
@@ -320,38 +324,41 @@ else:
 
         all_cols = df_clean.columns.tolist()
         user = load_db().get(st.session_state.email,{})
-        is_paid = user.get("status")=="PAID" and st.session_state.plan=="pro"
+
+        # FIX: Pro user ke liye tools upload ke baad hi unlock, payment se pehle
+        is_pro = st.session_state.plan == "pro"
+        is_paid = user.get("status")=="PAID"
 
         tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
         with tab1:
             st.write(f"**{T['tool1']}**")
-            date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date", disabled=not is_paid)
-            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
-            if st.button(T['apply_btn'], key="btn_date", disabled=not is_paid):
+            date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date", disabled=not is_pro)
+            if not is_pro: st.info(f"🔒 Pro plan lo saare tools ke liye")
+            if st.button(T['apply_btn'], key="btn_date", disabled=not is_pro):
                 for col in date_cols: st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
                 st.success(T['success'])
 
             st.write(f"**{T['tool2']}**")
-            fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=not is_paid)
-            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
-            if st.button(T['apply_btn'], key="btn_fill", disabled=not is_paid):
+            fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=not is_pro)
+            if not is_pro: st.info(f"🔒 Pro plan lo saare tools ke liye")
+            if st.button(T['apply_btn'], key="btn_fill", disabled=not is_pro):
                 st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
                 st.success(T['success'])
 
         with tab2:
             st.write(f"**{T['tool3']}**")
-            email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=not is_paid)
-            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
-            if st.button(T['apply_btn'], key="btn_email", disabled=not is_paid):
+            email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=not is_pro)
+            if not is_pro: st.info(f"🔒 Pro plan lo saare tools ke liye")
+            if st.button(T['apply_btn'], key="btn_email", disabled=not is_pro):
                 pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                 for col in email_cols:
                     st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern, str(x)) else "")
                 st.success(T['success'])
 
             st.write(f"**{T['tool4']}**")
-            phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=not is_paid)
-            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
-            if st.button(T['apply_btn'], key="btn_phone", disabled=not is_paid):
+            phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=not is_pro)
+            if not is_pro: st.info(f"🔒 Pro plan lo saare tools ke liye")
+            if st.button(T['apply_btn'], key="btn_phone", disabled=not is_pro):
                 for col in phone_cols:
                     st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
                 st.success(T['success'])
@@ -366,26 +373,26 @@ else:
                 st.success(T['success'])
 
             st.write(f"**{T['tool6']}**")
-            spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=not is_paid)
-            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
-            if st.button(T['apply_btn'], key="btn_spec", disabled=not is_paid):
+            spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=not is_pro)
+            if not is_pro: st.info(f"🔒 Pro plan lo saare tools ke liye")
+            if st.button(T['apply_btn'], key="btn_spec", disabled=not is_pro):
                 for col in spec_cols:
                     st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
                 st.success(T['success'])
 
             st.write(f"**{T['tool7']}**")
-            old = st.selectbox("Old name", all_cols, key="sel_old", disabled=not is_paid)
-            new = st.text_input("New name", key="inp_new", disabled=not is_paid)
-            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
-            if st.button(T['apply_btn'], key="btn_rename", disabled=not is_paid) and new:
+            old = st.selectbox("Old name", all_cols, key="sel_old", disabled=not is_pro)
+            new = st.text_input("New name", key="inp_new", disabled=not is_pro)
+            if not is_pro: st.info(f"🔒 Pro plan lo saare tools ke liye")
+            if st.button(T['apply_btn'], key="btn_rename", disabled=not is_pro) and new:
                 st.session_state.df_clean.rename(columns={old: new}, inplace=True)
                 st.success(T['success'])
 
             st.write(f"**{T['tool8']}**")
-            if st.button(T['apply_btn'], key="btn_dedup", disabled=not is_paid):
+            if st.button(T['apply_btn'], key="btn_dedup", disabled=not is_pro):
                 st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                 st.success(T['success'])
-            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
+            if not is_pro: st.info(f"🔒 Pro plan lo saare tools ke liye")
 
             st.write(f"**{T['tool9']}**")
             trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
@@ -395,9 +402,9 @@ else:
                 st.success(T['success'])
 
             st.write(f"**{T['tool10']}**")
-            spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=not is_paid)
-            if not is_paid: st.info(f"🔒 {T['locked']} - Demo dekh sakte ho par apply nahi hoga")
-            if st.button(T['apply_btn'], key="btn_spell", disabled=not is_paid):
+            spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=not is_pro)
+            if not is_pro: st.info(f"🔒 Pro plan lo saare tools ke liye")
+            if st.button(T['apply_btn'], key="btn_spell", disabled=not is_pro):
                 for col in spell_cols:
                     st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).replace("teh", "the").replace("recieve", "receive").title())
                 st.success(T['success'])
