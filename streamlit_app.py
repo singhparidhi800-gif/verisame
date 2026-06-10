@@ -132,24 +132,24 @@ if st.session_state.email:
         else:
             st.sidebar.error(T['expired'])
 
-# ========== HEADER: LOGO + TITLE + ANIME GIRL FULL WIDTH ==========
-col1, col2, col3 = st.columns([1.2, 3, 1.2])
+# ========== HEADER: LOGO + TITLE + ANIME GIRL AUR BADI CHAURA ==========
+col1, col2, col3 = st.columns([0.7, 2.4, 1.7]) # Girl ko aur jagah
 
 with col1:
     st.markdown("""
-    <div style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 140px;">
-        <img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; max-width: 220px; height: auto; object-fit: contain;">
+    <div style="width: 100%; min-height: 220px; display: flex; align-items: center;">
+        <img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; display: block;">
     </div>
     """, unsafe_allow_html=True)
 
 with col2:
-    st.markdown("<h1 style='margin-top: 10px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin-top: 5px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
 
 with col3:
     st.markdown("""
-    <div style="display: flex; align-items: center; justify-content: center; height: 100%; min-height: 140px;">
-        <img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg" style="width: 100%; max-width: 240px; height: auto; object-fit: cover; border-radius: 18px; box-shadow: 0 8px 20px rgba(236,72,153,0.3);">
+    <div style="width: 100%; min-height: 220px;">
+        <img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg" style="width: 100%; height: 220px; object-fit: cover; border-radius: 25px; box-shadow: 0 15px 35px rgba(236,72,153,0.6);">
     </div>
     """, unsafe_allow_html=True)
 
