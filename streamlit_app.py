@@ -430,7 +430,7 @@ else:
         elif not is_paid:
             st.error(f"🔒 {T['paid_msg']}")
             st.markdown(f"### {T['upi_text']}")
-                        upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
+            upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
             qr = qrcode.make(upi_link)
             buf = io.BytesIO()
             qr.save(buf, format="PNG")
