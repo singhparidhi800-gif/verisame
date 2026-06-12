@@ -37,7 +37,7 @@ def words_to_num(s):
 
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
-    "free_title":"FREE FOREVER","pro1_title":"MONTHLY ₹299","pro6_title":"6 MONTHS ₹1499",
+    "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
     "free_feat":["1000 Rows Lifetime","CSV + Excel Export","3 Basic Tools","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
@@ -51,57 +51,88 @@ T = {
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
     "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply","success":"Applied Successfully!",
     "admin_title":"Sherni Admin Panel","admin_pending":"Pending Approvals","admin_approve_btn":"Mark Paid - Unlock Customer Download",
-    "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_btn":"Download Now",
+    "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel",
     "expiry_warning":"⚠️ WARNING: Plan expires in {days} days! Renew now to avoid data loss"
 }
 
-# ========== FINAL CSS - TRANSPARENT BG, BLACK TEXT ONLY, 3D, RESPONSIVE ==========
+# ========== FINAL CSS - WAVY TEDHE-MEDHE CARDS + PIC COLOR ==========
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
-.stApp {background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #667eea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
+.stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
-.block-container {background: rgba(255,255,255,0.92); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1100px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
+.block-container {background: rgba(255,255,0.95); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
 
 /* Mobile responsive */
 @media (max-width: 768px) {
 .block-container {padding: 1rem!important; border-radius: 20px!important;}
-    h1 {font-size: 2.2rem!important;}
-.pricing-card {margin-bottom: 15px!important;}
+h1 {font-size: 2.2rem!important;}
+.pricing-card {margin-bottom: 20px!important; min-height: auto!important;}
 }
 
 h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
-h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important;}
+h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; color: #6b21a8!important;}
 .subtitle {text-align: left; color: #000!important; font-size: 1.1rem!important; font-weight: 600!important; margin-bottom: 1rem!important;}
 
-/* Pricing card - TRANSPARENT BG, BLACK TEXT, 3D EFFECT */
-.pricing-card {border: 2px solid #000; border-radius: 22px; padding: 1.6rem; background: rgba(255,255,255,0.85)!important; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08); height: 100%; transform: translateZ(0);}
-.pricing-card:hover {transform: translateY(-8px) scale(1.01); box-shadow: 0 20px 40px rgba(0,0,0,0.2), 0 8px 16px rgba(0,0,0,0.1);}
-.pricing-card h2 {font-size: 1.4rem!important; color: #000!important; margin-bottom: 0.5rem!important; font-weight: 700;}
-.pricing-card h1 {font-size: 2.6rem!important; color: #000!important; margin: 0.5rem 0!important; font-weight: 800;}
-.pricing-card p {color: #333!important; font-size: 0.95rem!important;}
+/* Anime image with VeriSame text - FIXED POSITION */
+.anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
+.anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
+.anime-text {position: absolute; top: 15px; left: 0; right: 0; text-align: center; color: white!important; font-size: 2rem; font-weight: 800; text-shadow: 0 3px 10px rgba(147,51,234,0.9), 0 0 25px rgba(168,85,247,0.7); z-index: 10;}
 
-/* Button black */
-.stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #000, #333); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(0,0,0,0.4); transition: all 0.3s; cursor: pointer; font-size: 1rem!important;}
-.stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(0,0,0,0.5);}
+/* Pricing card - TEDHE MEDHE WAVY BORDER */
+.pricing-card {
+  border: 3px solid #9333ea;
+  padding: 2rem;
+  background: rgba(255,255,255,0.88)!important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(147,51,234,0.15), 0 2px 6px rgba(147,51,234,0.1);
+  height: 100%;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 30% 70% 65% 35% / 40% 35% 65% 60%;
+  transform: rotate(-1deg);
+}
+.pricing-card:nth-child(2) {
+  border-radius: 65% 35% 30% 70% / 60% 65% 35% 40%;
+  transform: rotate(1deg);
+}
+.pricing-card:nth-child(3) {
+  border-radius: 40% 60% 70% 30% / 35% 40% 60% 65%;
+  transform: rotate(-0.5deg);
+}
+.pricing-card:hover {
+  transform: translateY(-8px) scale(1.01) rotate(0deg);
+  box-shadow: 0 20px 40px rgba(147,51,234,0.25), 0 8px 16px rgba(147,51,234,0.15);
+  border-radius: 25px;
+}
+.pricing-card h2 {font-size: 1.5rem!important; color: #6b21a8!important; margin-bottom: 0.8rem!important; font-weight: 700;}
+.pricing-card h1 {font-size: 3rem!important; color: #6b21a8!important; margin: 0.8rem 0!important; font-weight: 800;}
+.pricing-card p {color: #000!important; font-size: 1rem!important; margin-bottom: 1.2rem!important;}
+.pricing-card div {flex-grow: 1;}
+
+/* Button purple gradient */
+.stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 15px 28px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1.05rem!important; margin-top: auto;}
+.stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(147,51,234,0.5);}
 .stButton>button:disabled {background: #e0e0e0!important; color: #999!important; border: 2px dashed #ccc!important; cursor: not-allowed; box-shadow: none;}
 
-/* Pro banner - isme white text */
-.pro-banner {background: linear-gradient(135deg, #000, #333); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #000; box-shadow: 0 8px 20px rgba(0,0,0,0.3);}
-.pro-banner h2 {color: white!important;}
-.tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 9px 17px; border-radius: 28px; margin: 4px; font-weight: 700; border: 2px solid #000; color: #000!important; font-size: 0.92rem;}
+/* Pro banner - purple gradient */
+.pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.8rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
+.pro-banner h2 {color: white!important; font-size: 1.8rem!important;}
+.tool-chip {display: inline-block; background: rgba(255,255,0.95); padding: 10px 18px; border-radius: 28px; margin: 5px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.95rem;}
 
-.download-msg {background: linear-gradient(90deg, #000, #333); color: white!important; padding: 18px; border-radius: 14px; margin-top: 1rem; text-align: center; font-weight: 700; box-shadow: 0 10px 25px rgba(0,0,0,0.4);}
+.download-msg {background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; padding: 18px; border-radius: 14px; margin-top: 1rem; text-align: center; font-weight: 700; box-shadow: 0 10px 25px rgba(147,51,234,0.4);}
 
 /* Tabs - TRANSPARENT */
 div[data-testid="stTabs"] button p {color: #000!important; font-weight: 700!important; font-size: 1rem!important;}
-div[data-testid="stTabs"] button[aria-selected="true"] p {color: #000!important; font-weight: 800!important; border-bottom: 3px solid #000;}
-div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; backdrop-filter: blur(5px); border-radius: 12px; margin-right: 8px; border: 2px solid #000;}
+div[data-testid="stTabs"] button[aria-selected="true"] p {color: #6b21a8!important; font-weight: 800!important; border-bottom: 3px solid #9333ea;}
+div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; backdrop-filter: blur(5px); border-radius: 12px; margin-right: 8px; border: 2px solid #9333ea;}
 
-.stAlert,.stInfo,.stSuccess,.stError {color: #000!important; font-weight: 600!important; background: rgba(255,255,255,0.8)!important; backdrop-filter: blur(5px); border-radius: 12px; border: 2px solid #000;}
+.stAlert,.stInfo,.stSuccess,.stError {color: #000!important; font-weight: 600!important; background: rgba(255,255,255,0.8)!important; backdrop-filter: blur(5px); border-radius: 12px; border: 2px solid #9333ea;}
 .stDataFrame {background: rgba(255,255,255,0.9)!important;}
-.stFileUploader {background: rgba(255,255,255,0.8)!important; border: 2px dashed #000;}
+.stFileUploader {background: rgba(255,255,255,0.8)!important; border: 2px dashed #9333ea;}
 .cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 20px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
 @keyframes fall {0%{transform: translateY(0vh) translateX(0vw) rotate(0deg); opacity: 1;} 100%{transform: translateY(110vh) translateX(10vw) rotate(360deg); opacity: 0;}}
 </style>
@@ -144,7 +175,7 @@ if st.session_state.email:
             st.sidebar.error("Plan Expired")
             st.session_state.admin_approved = False
 
-# HEADER - ANIME PHOTO 280PX + FIT
+# HEADER - ANIME PHOTO WITH VERISAME TEXT OVERLAY FIXED
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 with col1:
     st.markdown("""<div style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
@@ -152,10 +183,10 @@ with col2:
     st.markdown("<h1 style='margin-top: 5px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
 with col3:
-    st.markdown("""<div style="width: 100%; min-height: 280px;"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg" style="width: 100%; height: 280px; object-fit: cover; object-position: center; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);"></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="anime-container"><div class="anime-text">VeriSame</div><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# SHERNI ADMIN PANEL - SECURITY + EMAIL LOG + PAID OPTION
+# SHERNI ADMIN PANEL - SECURITY + EMAIL LOG + DELETE OPTION
 if st.query_params.get("admin"):
     admin_pass = st.query_params.get("admin")
     if admin_pass == ADMIN_PASS:
@@ -169,7 +200,7 @@ if st.query_params.get("admin"):
                 amt = info.get('amt',0)
                 days = 30 if amt==299 else 180
                 plan_text = f"PRO Monthly ₹299 - {days} days" if amt==299 else f"PRO 6M ₹1499 - {days} days"
-                col1, col2 = st.columns([4,2])
+                col1, col2, col3 = st.columns([4,2,2])
                 with col1:
                     st.markdown(f"<div class='pricing-card'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>{T['admin_expiry']}:</b> {info['expiry']}</div>", unsafe_allow_html=True)
                 with col2:
@@ -179,13 +210,27 @@ if st.query_params.get("admin"):
                         st.success(f"✓ {email} ko unlock kar diya! Ab download kar payega")
                         st.balloons()
                         st.rerun()
+                with col3:
+                    if st.button(T['delete_btn'], key=f"delete_{email}", use_container_width=True):
+                        del data[email]
+                        save_db(data)
+                        st.error(f"✓ {email} deleted")
+                        st.rerun()
         st.markdown("---")
         st.subheader("📊 All Users - Security Log")
         all_users = {e:i for e,i in data.items() if "@" in e}
         for email,info in all_users.items():
             status_color = "#059669" if info.get('status')=="PAID" else "#DC2626"
             status_text = "PAID - Download Unlocked" if info.get('status')=="PAID" else "PENDING - Waiting for approval"
-            st.markdown(f"<div class='pricing-card'><b>{email}</b> | Plan: {info.get('plan','free').upper()} | ₹{info.get('amt',0)} | <span style='color:{status_color};font-weight:700'>{status_text}</span><br>Expiry: {info.get('expiry','N/A')}</div>", unsafe_allow_html=True)
+            col1, col2 = st.columns([6,2])
+            with col1:
+                st.markdown(f"<div class='pricing-card'><b>{email}</b> | Plan: {info.get('plan','free').upper()} | ₹{info.get('amt',0)} | <span style='color:{status_color};font-weight:700'>{status_text}</span><br>Expiry: {info.get('expiry','N/A')}</div>", unsafe_allow_html=True)
+            with col2:
+                if st.button(T['delete_btn'], key=f"delete_all_{email}", use_container_width=True):
+                    del data[email]
+                    save_db(data)
+                    st.error(f"✓ {email} deleted")
+                    st.rerun()
         st.stop()
 
 # PLANS
@@ -203,8 +248,8 @@ if st.session_state.plan is None:
                 st.rerun()
             st.markdown("</div>", unsafe_allow_html=True)
         with col2:
-            st.markdown("<div class='pricing-card' style='border: 3px solid #000; box-shadow:0 15px 35px rgba(0,0,0,0.3)'>", unsafe_allow_html=True)
-            st.markdown("⭐ MOST POPULAR")
+            st.markdown("<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'>", unsafe_allow_html=True)
+            st.markdown("⭐ POPULAR")
             st.markdown(f"<h2>{T['pro1_title']}</h2>", unsafe_allow_html=True)
             st.markdown("<h1>₹299</h1>", unsafe_allow_html=True)
             st.markdown("<p>30 Days - All Tools</p>", unsafe_allow_html=True)
@@ -404,13 +449,13 @@ else:
         if st.session_state.plan == "free":
             col1, col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
-            if col1.download_button(T['download_btn'] + " CSV", csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
+            if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
                 st.session_state.show_balloon = True
                 st.success("Downloaded! Check your Downloads folder")
                 st.rerun()
             excel = io.BytesIO()
             st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-            if col2.download_button(T['download_btn'] + " Excel", excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
+            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
                 st.session_state.show_balloon = True
                 st.success("Downloaded! Check your Downloads folder")
                 st.rerun()
@@ -434,13 +479,13 @@ else:
                 # PRO 299 & 1499 DONO ME DOWNLOAD + BALLOON
                 col1, col2 = st.columns(2)
                 csv = st.session_state.df_clean.to_csv(index=False).encode()
-                if col1.download_button(T['download_btn'] + " CSV", csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
+                if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
                     st.session_state.show_balloon = True
                     st.success("Pro Download Success! Check your Downloads folder")
                     st.rerun()
                 excel = io.BytesIO()
                 st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                if col2.download_button(T['download_btn'] + " Excel", excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
+                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
                     st.session_state.show_balloon = True
                     st.success("Pro Download Success! Check your Downloads folder")
                     st.rerun()
