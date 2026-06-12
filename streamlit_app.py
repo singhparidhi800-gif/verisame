@@ -59,113 +59,72 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
-.stApp {background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); background-size: 400% 400%; animation: aurora 20s ease infinite; padding-top: 0.3rem;}
+
+/* PEHLE JAISA PURPLE-PINK BACKGROUND WAPAS */
+.stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
-.block-container {background: rgba(255,255,255,0.08); backdrop-filter: blur(30px) saturate(200%); border-radius: 32px; padding: 2.5rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.18);}
+
+.block-container {background: rgba(255,255,255,0.95); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
 
 @media (max-width: 768px) {
-.block-container {padding: 1.2rem!important; border-radius: 24px!important;}
-h1 {font-size: 2.4rem!important;}
-.pricing-card {margin-bottom: 24px!important;}
+.block-container {padding: 1rem!important; border-radius: 20px!important;}
+h1 {font-size: 2.2rem!important;}
+.pricing-card {margin-bottom: 20px!important;}
 }
 
-h1,h2,h3,p,span,label,div,li {color: #fff!important; font-weight: 600!important;}
+/* TEXT KAALA WAPAS - PEHLE JAISA */
+h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
 
-/* VERISAME NEON GLOW TEXT */
-h1 {font-weight: 900!important; font-size: 3.5rem!important; margin-bottom: 0.2rem!important; background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: neonshine 3s linear infinite; text-shadow: 0 0 30px rgba(255,0,255,0.5);}
-@keyframes neonshine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
+/* VERISAME COLOR CHANGING TEXT - PURPLE WALA */
+h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; background: linear-gradient(90deg, #6b21a8, #9333ea, #c084fc, #a855f7, #6b21a8); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite;}
+@keyframes shine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
 
-.subtitle {text-align: left; color: rgba(255,255,255,0.8)!important; font-size: 1.15rem!important; font-weight: 500!important; margin-bottom: 1.2rem!important;}
+.subtitle {text-align: left; color: #000!important; font-size: 1.1rem!important; font-weight: 600!important; margin-bottom: 1rem!important;}
 
-/* FLOATING LOGO ANIMATION */
 .logo-float {animation: float 3s ease-in-out infinite;}
 @keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
 
-.anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 28px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 60px rgba(168,85,247,0.3); border: 1px solid rgba(255,255,255,0.1);}
+.anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
 
-/* NEON GLOW PRICING CARDS */
+/* NEON GLOW CARDS - HALKE WAVY CORNERS */
 .pricing-card {
   position: relative;
-  border-radius: 24px;
-  padding: 2rem;
-  background: rgba(255,255,255,0.05)!important;
-  backdrop-filter: blur(20px);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  border-radius: 22px;
+  padding: 1.6rem;
+  background: rgba(255,255,255,0.88)!important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(147,51,234,0.15), 0 2px 6px rgba(147,51,234,0.1);
   height: 100%;
-  border: 1px solid rgba(255,255,255,0.1);
-  overflow: hidden;
+  transform: translateZ(0);
+  border: 2px solid #9333ea;
+  clip-path: polygon(0% 3%, 3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%);
 }
-.pricing-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  border-radius: 24px;
-  padding: 2px;
-  background: linear-gradient(135deg, #ff00ff, #00ffff, #ff00ff);
-  background-size: 300% 300%;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: borderGlow 4s linear infinite;
-  opacity: 0;
-  transition: opacity 0.4s;
-}
-@keyframes borderGlow {0%{background-position: 0% 50%;} 50%{background-position: 100% 50%;} 100%{background-position: 0% 50%;}}
 .pricing-card:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 20px 60px rgba(255,0,255,0.4), 0 0 80px rgba(0,255,255,0.2);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(147,51,234,0.25), 0 8px 16px rgba(147,51,234,0.15);
 }
-.pricing-card:hover::before {opacity: 1;}
-.pricing-card h2 {font-size: 1.5rem!important; color: #fff!important; margin-bottom: 0.6rem!important; font-weight: 700;}
-.pricing-card h1 {font-size: 2.8rem!important; margin: 0.6rem 0!important; font-weight: 900; -webkit-text-fill-color: #fff!important;}
-.pricing-card p {color: rgba(255,255,255,0.85)!important; font-size: 0.98rem!important; margin-bottom: 0.5rem!important;}
+.pricing-card h2 {font-size: 1.4rem!important; color: #6b21a8!important; margin-bottom: 0.5rem!important; font-weight: 700;}
+.pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800; -webkit-text-fill-color: #6b21a8!important;}
+.pricing-card p {color: #000!important; font-size: 0.95rem!important; margin-bottom: 0.4rem!important;}
 
-/* ANIMATED SHINE BUTTONS */
-.stButton>button {
-  position: relative;
-  border-radius: 16px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white!important;
-  border: none;
-  padding: 15px 30px;
-  width: 100%;
-  box-shadow: 0 8px 20px rgba(102,126,234,0.4);
-  transition: all 0.3s;
-  cursor: pointer;
-  font-size: 1.05rem!important;
-  margin-top: 1.2rem;
-  overflow: hidden;
-}
-.stButton>button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.5s;
-}
-.stButton>button:hover::before {left: 100%;}
-.stButton>button:hover {transform: translateY(-4px); box-shadow: 0 12px 30px rgba(102,126,234,0.6);}
-.stButton>button:disabled {background: rgba(255,255,255,0.1)!important; color: rgba(255,255,255,0.3)!important; border: 1px dashed rgba(255,255,255,0.2)!important; cursor: not-allowed; box-shadow: none;}
+.stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1rem!important; margin-top: 1rem;}
+.stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(147,51,234,0.5);}
+.stButton>button:disabled {background: #e0e0e0!important; color: #999!important; border: 2px dashed #ccc!important; cursor: not-allowed; box-shadow: none;}
 
-.pro-banner {background: linear-gradient(135deg, rgba(255,0,255,0.2), rgba(0,255,255,0.2)); backdrop-filter: blur(20px); padding: 2rem; border-radius: 24px; color: white!important; text-align: center; margin: 1.2rem 0; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 32px rgba(0,0,0,0.3);}
-.pro-banner h2 {color: white!important; font-size: 1.9rem!important;}
-.tool-chip {display: inline-block; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 10px 18px; border-radius: 30px; margin: 5px; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); color: #fff!important; font-size: 0.95rem; transition: all 0.3s;}
-.tool-chip:hover {background: rgba(255,255,255,0.2); transform: scale(1.05);}
+.pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
+.pro-banner h2 {color: white!important;}
+.tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 9px 17px; border-radius: 28px; margin: 4px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.92rem;}
 
-div[data-testid="stTabs"] button p {color: #fff!important; font-weight: 700!important; font-size: 1rem!important;}
-div[data-testid="stTabs"] button[aria-selected="true"] p {color: #00ffff!important; font-weight: 800!important; border-bottom: 3px solid #00ffff;}
-div[data-testid="stTabs"] button {background: rgba(255,255,255,0.05)!important; backdrop-filter: blur(10px); border-radius: 14px; margin-right: 10px; border: 1px solid rgba(255,255,255,0.1);}
+div[data-testid="stTabs"] button p {color: #000!important; font-weight: 700!important; font-size: 1rem!important;}
+div[data-testid="stTabs"] button[aria-selected="true"] p {color: #6b21a8!important; font-weight: 800!important; border-bottom: 3px solid #9333ea;}
+div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; backdrop-filter: blur(5px); border-radius: 12px; margin-right: 8px; border: 2px solid #9333ea;}
 
-.stAlert,.stInfo,.stSuccess,.stError {color: #fff!important; font-weight: 600!important; background: rgba(255,255,255,0.08)!important; backdrop-filter: blur(15px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.15);}
-.stDataFrame {background: rgba(255,255,255,0.05)!important; border-radius: 16px;}
-.stFileUploader {background: rgba(255,255,255,0.05)!important; border: 2px dashed rgba(255,255,255,0.2); border-radius: 16px;}
-.cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 22px; animation: fall linear infinite; z-index: 9999; pointer-events: none; filter: drop-shadow(0 0 10px rgba(255,183,197,0.5));}
+.stAlert,.stInfo,.stSuccess,.stError {color: #000!important; font-weight: 600!important; background: rgba(255,255,255,0.8)!important; backdrop-filter: blur(5px); border-radius: 12px; border: 2px solid #9333ea;}
+.stDataFrame {background: rgba(255,255,255,0.9)!important;}
+.stFileUploader {background: rgba(255,255,255,0.8)!important; border: 2px dashed #9333ea;}
+.cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 20px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
 @keyframes fall {0%{transform: translateY(0vh) translateX(0vw) rotate(0deg); opacity: 1;} 100%{transform: translateY(110vh) translateX(10vw) rotate(360deg); opacity: 0;}}
 </style>
 <div class="cherry" style="left: 10%; animation-duration: 8s;">🌸</div>
@@ -206,7 +165,7 @@ if st.session_state.email:
 
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 with col1:
-    st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain; filter: drop-shadow(0 10px 30px rgba(102,126,234,0.5));"></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
 with col2:
     st.markdown("<h1 style='margin-top: 5px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
@@ -247,7 +206,7 @@ if st.query_params.get("admin"):
         st.subheader("📊 All Users - Security Log")
         all_users = {e:i for e,i in data.items() if "@" in e}
         for email,info in all_users.items():
-            status_color = "#00ff00" if info.get('status')=="PAID" else "#ff4444"
+            status_color = "#059669" if info.get('status')=="PAID" else "#DC2626"
             status_text = "PAID - Download Unlocked" if info.get('status')=="PAID" else "PENDING - Waiting for approval"
             col1, col2 = st.columns([6,2])
             with col1:
@@ -280,8 +239,8 @@ if st.session_state.plan is None:
                 
         with col2:
             st.markdown(f"""
-            <div class='pricing-card' style='border: 2px solid #ff00ff; box-shadow:0 0 40px rgba(255,0,255,0.3)'>
-                <p style='color: #00ffff!important;'>⭐ POPULAR</p>
+            <div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'>
+                <p>⭐ POPULAR</p>
                 <h2>{T['pro1_title']}</h2>
                 <h1>₹299</h1>
                 <p>30 Days - All Tools</p>
@@ -506,10 +465,7 @@ else:
                 csv = st.session_state.df_clean.to_csv(index=False).encode()
                 if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
                     st.session_state.show_balloon = True
-                    st.success("Pro Download Success! Check your Downloads folder")
-                    st.rerun()
-                excel = io.BytesIO()
-                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                    st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
                 if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
                     st.session_state.show_balloon = True
                     st.success("Pro Download Success! Check your Downloads folder")
