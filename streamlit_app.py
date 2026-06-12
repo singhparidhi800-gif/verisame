@@ -70,7 +70,11 @@ h1 {font-size: 2.2rem!important;}
 }
 
 h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
-h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; color: #6b21a8!important;}
+
+/* VERISAME COLOR CHANGING TEXT */
+h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; background: linear-gradient(90deg, #6b21a8, #9333ea, #c084fc, #e879f9, #6b21a8); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite;}
+@keyframes shine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
+
 .subtitle {text-align: left; color: #000!important; font-size: 1.1rem!important; font-weight: 600!important; margin-bottom: 1rem!important;}
 
 .anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
@@ -93,7 +97,7 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
   box-shadow: 0 20px 40px rgba(147,51,234,0.25), 0 8px 16px rgba(147,51,234,0.15);
 }
 .pricing-card h2 {font-size: 1.4rem!important; color: #6b21a8!important; margin-bottom: 0.5rem!important; font-weight: 700;}
-.pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800;}
+.pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800; -webkit-text-fill-color: #6b21a8!important;}
 .pricing-card p {color: #000!important; font-size: 0.95rem!important; margin-bottom: 0.4rem!important;}
 
 .stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1rem!important; margin-top: 1rem;}
