@@ -9,3 +9,4 @@ word2number
 firebase-admin
 pillow
 google-generativeai
+
