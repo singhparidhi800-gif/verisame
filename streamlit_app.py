@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai # <-- AI ke liye add kiya
+import google.generativeai as genai
 import json, os, io, qrcode
 import pandas as pd
 import re
@@ -7,17 +7,17 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-# ===== VERISAME CHAT AI SETUP - ADD KIYA =====
+# ===== VERISAME CHAT AI SETUP - GEMINI-PRO WALA =====
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
     MODEL = genai.GenerativeModel(
-        model_name="gemini-1.5-flash", # Flash free me fast hai
+        model_name="gemini-pro", # <-- YAHI BADLAV HAI, FREE ME CHALEGA
         system_instruction="""Tera naam VeriSame Chat AI hai. Tu VeriSame app ka official AI hai.
         Teri 2 kaam hain:
         1. Data Science Expert: CSV, Excel, Pandas, SQL, data cleaning sab ka baap. User ka data dekh ke bol kya saaf karna hai + code de.
         2. General Dost: Math, GK, cricket, duniya ki har basic cheez pata hai. 28x36 puchhe to 1008 bol de.
-        Rules: Hinglish me baat kar, 'Bhai' bol ke. Technical terms English me. Mana mat karna general sawal pe."""
+        Rules: HAMESHA Hinglish me baat kar. Har reply 'Bhai' se start kar. Technical terms English me rakh. Mana mat karna general sawal pe."""
     )
 else:
     MODEL = None
@@ -79,34 +79,22 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
-
-/* PURPLE-PINK BACKGROUND */
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
-
 .block-container {background: rgba(255,255,255,0.95); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
-
 @media (max-width: 768px) {
 .block-container {padding: 1rem!important; border-radius: 20px!important;}
 h1 {font-size: 2.2rem!important;}
 .pricing-card {margin-bottom: 20px!important;}
 }
-
 h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
-
-/* VERISAME COLOR CHANGING TEXT */
 h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; background: linear-gradient(90deg, #6b21a8, #9333ea, #c084fc, #a855f7, #6b21a8); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite;}
 @keyframes shine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
-
 .subtitle {text-align: left; color: #000!important; font-size: 1.1rem!important; font-weight: 600!important; margin-bottom: 1rem!important;}
-
 .logo-float {animation: float 3s ease-in-out infinite;}
 @keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
-
 .anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
-
-/* NEON GLOW CARDS - WAVY CORNERS */
 .pricing-card {
   position: relative;
   border-radius: 22px;
@@ -127,19 +115,15 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 .pricing-card h2 {font-size: 1.4rem!important; color: #6b21a8!important; margin-bottom: 0.5rem!important; font-weight: 700;}
 .pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800; -webkit-text-fill-color: #6b21a8!important;}
 .pricing-card p {color: #000!important; font-size: 0.95rem!important; margin-bottom: 0.4rem!important;}
-
 .stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1rem!important; margin-top: 1rem;}
 .stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(147,51,234,0.5);}
 .stButton>button:disabled {background: #e0e0e0!important; color: #999!important; border: 2px dashed #ccc!important; cursor: not-allowed; box-shadow: none;}
-
 .pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
 .pro-banner h2 {color: white!important;}
 .tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 9px 17px; border-radius: 28px; margin: 4px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.92rem;}
-
 div[data-testid="stTabs"] button p {color: #000!important; font-weight: 700!important; font-size: 1rem!important;}
 div[data-testid="stTabs"] button[aria-selected="true"] p {color: #6b21a8!important; font-weight: 800!important; border-bottom: 3px solid #9333ea;}
 div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; backdrop-filter: blur(5px); border-radius: 12px; margin-right: 8px; border: 2px solid #9333ea;}
-
 .stAlert,.stInfo,.stSuccess,.stError {color: #000!important; font-weight: 600!important; background: rgba(255,255,255,0.8)!important; backdrop-filter: blur(5px); border-radius: 12px; border: 2px solid #9333ea;}
 .stDataFrame {background: rgba(255,255,255,0.9)!important;}
 .stFileUploader {background: rgba(255,255,255,0.8)!important; border: 2px dashed #9333ea;}
@@ -167,7 +151,7 @@ if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
 
-    # ===== SIDEBAR VERISAME CHAT AI - ADD KIYA =====
+    # ===== SIDEBAR VERISAME CHAT AI - ASLI ERROR DIKHEGA =====
     if MODEL:
         st.sidebar.divider()
         st.sidebar.markdown("## 🤖 VeriSame Chat AI")
@@ -178,10 +162,13 @@ if st.session_state.email:
                 with st.sidebar:
                     with st.spinner("Socho..."):
                         try:
-                            resp = MODEL.generate_content(sidebar_q)
+                            context = ""
+                            if 'df_clean' in st.session_state and st.session_state.df_clean is not None:
+                                context = f"\n\nUser ka current CSV:\nColumns: {list(st.session_state.df_clean.columns)}\nFirst 2 rows:\n{st.session_state.df_clean.head(2).to_string()}"
+                            resp = MODEL.generate_content(sidebar_q + context)
                             st.success(f"**AI:** {resp.text}")
                         except Exception as e:
-                            st.error("Bhai abhi rush jyada hai, 1 min baad try karna 🙏")
+                            st.error(f"Gemini Error: {str(e)}") # ASLI ERROR
     # ===== SIDEBAR AI END =====
 
     if user.get("plan"):
@@ -286,7 +273,6 @@ if st.session_state.plan is None:
                 <div>
                     {''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}
                 </div>
-            </div>
             """, unsafe_allow_html=True)
             if st.button("Get Pro", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"
@@ -512,7 +498,7 @@ else:
                     st.success("Pro Download Success! Check your Downloads folder")
                     st.rerun()
 
-        # ===== FIRST PAGE BOTTOM VERISAME CHAT AI - ADD KIYA =====
+        # ===== FIRST PAGE BOTTOM VERISAME CHAT AI - GEMINI-PRO WALA =====
         st.divider()
         st.markdown("### 🤖 VeriSame Chat AI - Tera Data ka Dost")
         st.caption("CSV saaf karwao, 28x36 puchho, sab bata dega")
@@ -545,7 +531,7 @@ else:
                             st.write(ai_text)
                             st.session_state.vsai_messages.append({"role": "assistant", "content": ai_text})
                         except Exception as e:
-                            error_msg = "Bhai abhi rush jyada hai, 1 min baad try karna 🙏"
+                            error_msg = f"Gemini Error: {str(e)}"  # <-- YAHI BADLAV HAI
                             st.error(error_msg)
                             st.session_state.vsai_messages.append({"role": "assistant", "content": error_msg})
         # ===== BOTTOM AI END =====
