@@ -154,7 +154,9 @@ if st.session_state.email:
         st.session_state.days = user.get("days", 0)
         st.session_state.admin_approved = user.get("status") == "PAID"
 
-        if days_left <= 5 and days_left > 0:
+        if user.get("plan") == "free":
+            st.sidebar.info("Plan: FREE LIFETIME")
+        elif days_left <= 5 and days_left > 0:
             st.sidebar.error(T['expiry_warning'].format(days=days_left))
         elif days_left > 0:
             st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
@@ -340,7 +342,7 @@ else:
                 st.success(T['success'])
                 st.rerun()
 
-            st.write(f"**{T['tool2']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
+            st.write(f"**{T['tool2']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else 'Pro Only'}")
             fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free)
             if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free):
                 st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
