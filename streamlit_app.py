@@ -60,7 +60,7 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 
-/* PEHLE JAISA PURPLE-PINK BACKGROUND WAPAS */
+/* PURPLE-PINK BACKGROUND */
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
 
@@ -72,10 +72,9 @@ h1 {font-size: 2.2rem!important;}
 .pricing-card {margin-bottom: 20px!important;}
 }
 
-/* TEXT KAALA WAPAS - PEHLE JAISA */
 h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
 
-/* VERISAME COLOR CHANGING TEXT - PURPLE WALA */
+/* VERISAME COLOR CHANGING TEXT */
 h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; background: linear-gradient(90deg, #6b21a8, #9333ea, #c084fc, #a855f7, #6b21a8); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite;}
 @keyframes shine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
 
@@ -87,7 +86,7 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 .anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
 
-/* NEON GLOW CARDS - HALKE WAVY CORNERS */
+/* NEON GLOW CARDS - WAVY CORNERS */
 .pricing-card {
   position: relative;
   border-radius: 22px;
@@ -348,7 +347,7 @@ else:
                 st.success(T['success'])
                 st.rerun()
             if is_free:
-                st.info("Pro me unlock hoga - ₹299 ya ₹1499")
+                st.info("Unlock in Pro - ₹299 or ₹1499")
 
         with tab2:
             st.write(f"**{T['tool3']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
@@ -360,7 +359,7 @@ else:
                 st.success(T['success'])
                 st.rerun()
             if is_free:
-                st.info("Pro me unlock hoga - ₹299 ya ₹1499")
+                st.info("Unlock in Pro - ₹299 or ₹1499")
 
             st.write(f"**{T['tool4']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free)
@@ -370,7 +369,7 @@ else:
                 st.success(T['success'])
                 st.rerun()
             if is_free:
-                st.info("Pro me unlock hoga - ₹299 ya ₹1499")
+                st.info("Unlock in Pro - ₹299 or ₹1499")
 
         with tab3:
             st.write(f"**{T['tool5']}** ✅ Free + Pro")
@@ -390,7 +389,7 @@ else:
                 st.success(T['success'])
                 st.rerun()
             if is_free:
-                st.info("Pro me unlock hoga - ₹299 ya ₹1499")
+                st.info("Unlock in Pro - ₹299 or ₹1499")
 
             st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
@@ -400,7 +399,7 @@ else:
                 st.success(T['success'])
                 st.rerun()
             if is_free:
-                st.info("Pro me unlock hoga - ₹299 ya ₹1499")
+                st.info("Unlock in Pro - ₹299 or ₹1499")
 
             st.write(f"**{T['tool8']}** ✅ Free + Pro")
             if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
@@ -424,7 +423,7 @@ else:
                 st.success(T['success'])
                 st.rerun()
             if is_free:
-                st.info("Pro me unlock hoga - ₹299 ya ₹1499")
+                st.info("Unlock in Pro - ₹299 or ₹1499")
 
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
 
@@ -465,7 +464,10 @@ else:
                 csv = st.session_state.df_clean.to_csv(index=False).encode()
                 if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
                     st.session_state.show_balloon = True
-                    st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                    st.success("Pro Download Success! Check your Downloads folder")
+                    st.rerun()
+                excel = io.BytesIO()
+                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
                 if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
                     st.session_state.show_balloon = True
                     st.success("Pro Download Success! Check your Downloads folder")
