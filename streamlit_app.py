@@ -1,10 +1,30 @@
 import streamlit as st
+import google.generativeai as genai # <-- AI ke liye add kiya
 import json, os, io, qrcode
 import pandas as pd
 import re
 from datetime import datetime, timedelta
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
+
+# ===== VERISAME CHAT AI SETUP - ADD KIYA =====
+GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
+if GEMINI_KEY:
+    genai.configure(api_key=GEMINI_KEY)
+    MODEL = genai.GenerativeModel(
+        model_name="gemini-1.5-flash", # Flash free me fast hai
+        system_instruction="""Tera naam VeriSame Chat AI hai. Tu VeriSame app ka official AI hai.
+        Teri 2 kaam hain:
+        1. Data Science Expert: CSV, Excel, Pandas, SQL, data cleaning sab ka baap. User ka data dekh ke bol kya saaf karna hai + code de.
+        2. General Dost: Math, GK, cricket, duniya ki har basic cheez pata hai. 28x36 puchhe to 1008 bol de.
+        Rules: Hinglish me baat kar, 'Bhai' bol ke. Technical terms English me. Mana mat karna general sawal pe."""
+    )
+else:
+    MODEL = None
+
+if "vsai_messages" not in st.session_state:
+    st.session_state.vsai_messages = []
+# ===== AI SETUP END =====
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
@@ -146,6 +166,24 @@ if st.session_state.plan or st.session_state.email_entered:
 if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
+
+    # ===== SIDEBAR VERISAME CHAT AI - ADD KIYA =====
+    if MODEL:
+        st.sidebar.divider()
+        st.sidebar.markdown("## 🤖 VeriSame Chat AI")
+        st.sidebar.caption("CSV saaf karwao ya 28x36 puchho")
+        sidebar_q = st.sidebar.text_area("Quick Doubt:", height=150, key="sidebar_ai_q")
+        if st.sidebar.button("Ask AI", use_container_width=True, key="sidebar_ai_btn"):
+            if sidebar_q:
+                with st.sidebar:
+                    with st.spinner("Socho..."):
+                        try:
+                            resp = MODEL.generate_content(sidebar_q)
+                            st.success(f"**AI:** {resp.text}")
+                        except Exception as e:
+                            st.error("Bhai abhi rush jyada hai, 1 min baad try karna 🙏")
+    # ===== SIDEBAR AI END =====
+
     if user.get("plan"):
         exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
         days_left = (exp_date - datetime.now()).days
@@ -237,7 +275,7 @@ if st.session_state.plan is None:
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"
                 st.rerun()
-                
+
         with col2:
             st.markdown(f"""
             <div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'>
@@ -255,7 +293,7 @@ if st.session_state.plan is None:
                 st.session_state.amt = PRO_1M
                 st.session_state.days = 30
                 st.rerun()
-                
+
         with col3:
             st.markdown(f"""
             <div class='pricing-card'>
@@ -265,7 +303,6 @@ if st.session_state.plan is None:
                 <div>
                     {''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}
                 </div>
-            </div>
             """, unsafe_allow_html=True)
             if st.button("Get Pro+", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"
@@ -474,3 +511,41 @@ else:
                     st.session_state.show_balloon = True
                     st.success("Pro Download Success! Check your Downloads folder")
                     st.rerun()
+
+        # ===== FIRST PAGE BOTTOM VERISAME CHAT AI - ADD KIYA =====
+        st.divider()
+        st.markdown("### 🤖 VeriSame Chat AI - Tera Data ka Dost")
+        st.caption("CSV saaf karwao, 28x36 puchho, sab bata dega")
+        
+        if not MODEL:
+            st.warning("API Key missing bhai. Streamlit Secrets me GEMINI_API_KEY daal de.")
+        else:
+            # Chat history dikhao
+            for msg in st.session_state.vsai_messages:
+                with st.chat_message(msg["role"], avatar="🤖" if msg["role"]=="assistant" else "👤"):
+                    st.write(msg["content"])
+            
+            # Input box - ye bada dikhega
+            if prompt := st.chat_input("Yaha likh bhai... CSV ke baare me ya 28x36"):
+                st.session_state.vsai_messages.append({"role": "user", "content": prompt})
+                with st.chat_message("user", avatar="👤"):
+                    st.write(prompt)
+                
+                with st.chat_message("assistant", avatar="🤖"):
+                    with st.spinner("VeriSame Chat AI soch raha hai..."):
+                        try:
+                            # Agar CSV upload hai to context de do
+                            context = ""
+                            if 'df_clean' in st.session_state and st.session_state.df_clean is not None:
+                                context = f"\n\nUser ka current CSV data:\nColumns: {list(st.session_state.df_clean.columns)}\nFirst 3 rows:\n{st.session_state.df_clean.head(3).to_string()}"
+                            
+                            full_prompt = prompt + context
+                            response = MODEL.generate_content(full_prompt)
+                            ai_text = response.text
+                            st.write(ai_text)
+                            st.session_state.vsai_messages.append({"role": "assistant", "content": ai_text})
+                        except Exception as e:
+                            error_msg = "Bhai abhi rush jyada hai, 1 min baad try karna 🙏"
+                            st.error(error_msg)
+                            st.session_state.vsai_messages.append({"role": "assistant", "content": error_msg})
+        # ===== BOTTOM AI END =====
