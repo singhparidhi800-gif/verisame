@@ -55,7 +55,6 @@ T = {
     "expiry_warning":"⚠️ WARNING: Plan expires in {days} days! Renew now to avoid data loss"
 }
 
-# ========== FINAL CSS - HALKA WAVY CARDS + PURPLE BG ==========
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
@@ -64,23 +63,19 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
 .block-container {background: rgba(255,255,255,0.95); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
 
-/* Mobile responsive */
 @media (max-width: 768px) {
 .block-container {padding: 1rem!important; border-radius: 20px!important;}
 h1 {font-size: 2.2rem!important;}
-.pricing-card {margin-bottom: 20px!important; min-height: auto!important;}
+.pricing-card {margin-bottom: 20px!important;}
 }
 
 h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
 h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; color: #6b21a8!important;}
 .subtitle {text-align: left; color: #000!important; font-size: 1.1rem!important; font-weight: 600!important; margin-bottom: 1rem!important;}
 
-/* Anime image with VeriSame text - FIXED POSITION */
 .anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
-.anime-text {position: absolute; top: 15px; left: 0; right: 0; text-align: center; color: white!important; font-size: 2rem; font-weight: 800; text-shadow: 0 3px 10px rgba(147,51,234,0.9), 0 0 25px rgba(168,85,247,0.7); z-index: 10;}
 
-/* Pricing card - HALKA WAVY, NORMAL SIZE */
 .pricing-card {
   border: 2px solid #9333ea;
   border-radius: 22px;
@@ -90,7 +85,6 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
   transition: all 0.3s ease;
   box-shadow: 0 8px 20px rgba(147,51,234,0.15), 0 2px 6px rgba(147,51,234,0.1);
   height: 100%;
-  min-height: 480px;
   transform: translateZ(0);
   clip-path: polygon(0% 3%, 3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%);
 }
@@ -98,24 +92,20 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
   transform: translateY(-8px) scale(1.01);
   box-shadow: 0 20px 40px rgba(147,51,234,0.25), 0 8px 16px rgba(147,51,234,0.15);
 }
-.pricing-card h2 {font-size: 1.5rem!important; color: #6b21a8!important; margin-bottom: 0.8rem!important; font-weight: 700;}
-.pricing-card h1 {font-size: 3rem!important; color: #6b21a8!important; margin: 0.8rem 0!important; font-weight: 800;}
-.pricing-card p {color: #000!important; font-size: 1rem!important; margin-bottom: 1.2rem!important;}
-.pricing-card div {flex-grow: 1;}
+.pricing-card h2 {font-size: 1.4rem!important; color: #6b21a8!important; margin-bottom: 0.5rem!important; font-weight: 700;}
+.pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800;}
+.pricing-card p {color: #000!important; font-size: 0.95rem!important; margin-bottom: 0.4rem!important;}
 
-/* Button purple gradient */
-.stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 15px 28px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1.05rem!important; margin-top: auto;}
+.stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1rem!important; margin-top: 1rem;}
 .stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(147,51,234,0.5);}
 .stButton>button:disabled {background: #e0e0e0!important; color: #999!important; border: 2px dashed #ccc!important; cursor: not-allowed; box-shadow: none;}
 
-/* Pro banner - purple gradient */
-.pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.8rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
-.pro-banner h2 {color: white!important; font-size: 1.8rem!important;}
-.tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 10px 18px; border-radius: 28px; margin: 5px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.95rem;}
+.pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
+.pro-banner h2 {color: white!important;}
+.tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 9px 17px; border-radius: 28px; margin: 4px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.92rem;}
 
 .download-msg {background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; padding: 18px; border-radius: 14px; margin-top: 1rem; text-align: center; font-weight: 700; box-shadow: 0 10px 25px rgba(147,51,234,0.4);}
 
-/* Tabs - TRANSPARENT */
 div[data-testid="stTabs"] button p {color: #000!important; font-weight: 700!important; font-size: 1rem!important;}
 div[data-testid="stTabs"] button[aria-selected="true"] p {color: #6b21a8!important; font-weight: 800!important; border-bottom: 3px solid #9333ea;}
 div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; backdrop-filter: blur(5px); border-radius: 12px; margin-right: 8px; border: 2px solid #9333ea;}
@@ -133,19 +123,16 @@ div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; b
 <div class="cherry" style="left: 90%; animation-duration: 7s; animation-delay: 3s;">🌸</div>
 """, unsafe_allow_html=True)
 
-# SESSION
 for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved']:
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
 
-# BACK BUTTON
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], use_container_width=True):
         for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','selected_plan','admin_approved']:
             st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
         st.rerun()
 
-# EMAIL CHECK + EXPIRY WARNING
 if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
@@ -165,7 +152,6 @@ if st.session_state.email:
             st.sidebar.error("Plan Expired")
             st.session_state.admin_approved = False
 
-# HEADER - ANIME PHOTO WITH VERISAME TEXT OVERLAY FIXED
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 with col1:
     st.markdown("""<div style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
@@ -173,10 +159,9 @@ with col2:
     st.markdown("<h1 style='margin-top: 5px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
 with col3:
-    st.markdown("""<div class="anime-container"><div class="anime-text">VeriSame</div><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# SHERNI ADMIN PANEL - SECURITY + EMAIL LOG + DELETE OPTION
 if st.query_params.get("admin"):
     admin_pass = st.query_params.get("admin")
     if admin_pass == ADMIN_PASS:
@@ -223,45 +208,57 @@ if st.query_params.get("admin"):
                     st.rerun()
         st.stop()
 
-# PLANS
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
         col1,col2,col3 = st.columns(3, gap="medium")
         with col1:
-            st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-            st.markdown(f"<h2>{T['free_title']}</h2>", unsafe_allow_html=True)
-            st.markdown("<h1>FREE</h1>", unsafe_allow_html=True)
-            st.markdown("<p>Lifetime</p>", unsafe_allow_html=True)
-            for f in T['free_feat']: st.markdown(f"✓ {f}")
+            st.markdown(f"""
+            <div class='pricing-card'>
+                <h2>{T['free_title']}</h2>
+                <h1>FREE</h1>
+                <p>Lifetime</p>
+                <div>
+                    {''.join([f'<p>✓ {f}</p>' for f in T['free_feat']])}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+                
         with col2:
-            st.markdown("<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'>", unsafe_allow_html=True)
-            st.markdown("⭐ POPULAR")
-            st.markdown(f"<h2>{T['pro1_title']}</h2>", unsafe_allow_html=True)
-            st.markdown("<h1>₹299</h1>", unsafe_allow_html=True)
-            st.markdown("<p>30 Days - All Tools</p>", unsafe_allow_html=True)
-            for f in T['pro_feat']: st.markdown(f"✓ {f}")
+            st.markdown(f"""
+            <div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'>
+                <p>⭐ POPULAR</p>
+                <h2>{T['pro1_title']}</h2>
+                <h1>₹299</h1>
+                <p>30 Days - All Tools</p>
+                <div>
+                    {''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}
+                </div>
+            """, unsafe_allow_html=True)
             if st.button("Get Pro", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"
                 st.session_state.amt = PRO_1M
                 st.session_state.days = 30
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+                
         with col3:
-            st.markdown("<div class='pricing-card'>", unsafe_allow_html=True)
-            st.markdown(f"<h2>{T['pro6_title']}</h2>", unsafe_allow_html=True)
-            st.markdown("<h1>₹1499</h1>", unsafe_allow_html=True)
-            st.markdown("<p>180 Days - All Tools</p>", unsafe_allow_html=True)
-            for f in T['pro_feat']: st.markdown(f"✓ {f}")
+            st.markdown(f"""
+            <div class='pricing-card'>
+                <h2>{T['pro6_title']}</h2>
+                <h1>₹1499</h1>
+                <p>180 Days - All Tools</p>
+                <div>
+                    {''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             if st.button("Get Pro+", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"
                 st.session_state.amt = PRO_6M
                 st.session_state.days = 180
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
@@ -320,13 +317,11 @@ else:
         st.dataframe(df_clean.head(10), use_container_width=True, height=300)
 
         all_cols = df_clean.columns.tolist()
-        # PRO 299 & 1499 DONO ME SAARAY TOOLS HAMESHA UNLOCK - PAYMENT KE PEHLE BHI
         is_pro = st.session_state.plan == "pro"
         is_free = st.session_state.plan == "free"
 
         tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
         with tab1:
-            # Smart Date - FREE ME UNLOCK
             st.write(f"**{T['tool1']}** ✅ Free + Pro")
             date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
             if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
@@ -334,7 +329,6 @@ else:
                 st.success(T['success'])
                 st.rerun()
 
-            # AI Fill - PRO ALWAYS UNLOCK
             st.write(f"**{T['tool2']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free)
             if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free):
@@ -345,7 +339,6 @@ else:
                 st.info("Pro me unlock hoga - ₹299 ya ₹1499")
 
         with tab2:
-            # Email - PRO ALWAYS UNLOCK
             st.write(f"**{T['tool3']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free)
             if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free):
@@ -357,7 +350,6 @@ else:
             if is_free:
                 st.info("Pro me unlock hoga - ₹299 ya ₹1499")
 
-            # Phone - PRO ALWAYS UNLOCK
             st.write(f"**{T['tool4']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free)
             if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free):
@@ -369,7 +361,6 @@ else:
                 st.info("Pro me unlock hoga - ₹299 ya ₹1499")
 
         with tab3:
-            # Case - FREE ME UNLOCK
             st.write(f"**{T['tool5']}** ✅ Free + Pro")
             case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
             case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
@@ -379,7 +370,6 @@ else:
                 st.success(T['success'])
                 st.rerun()
 
-            # Remove Symbols - PRO ALWAYS UNLOCK
             st.write(f"**{T['tool6']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free)
             if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free):
@@ -390,7 +380,6 @@ else:
             if is_free:
                 st.info("Pro me unlock hoga - ₹299 ya ₹1499")
 
-            # Rename - PRO ALWAYS UNLOCK
             st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
             new = st.text_input("New column name", key="inp_new", disabled=is_free)
@@ -401,14 +390,12 @@ else:
             if is_free:
                 st.info("Pro me unlock hoga - ₹299 ya ₹1499")
 
-            # Dedup - FREE ME UNLOCK
             st.write(f"**{T['tool8']}** ✅ Free + Pro")
             if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                 st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                 st.success(T['success'])
                 st.rerun()
 
-            # Trim - FREE ME UNLOCK
             st.write(f"**{T['tool9']}** ✅ Free + Pro")
             trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
             if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
@@ -417,7 +404,6 @@ else:
                 st.success(T['success'])
                 st.rerun()
 
-            # Spell - PRO ALWAYS UNLOCK
             st.write(f"**{T['tool10']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free)
             if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free):
@@ -430,12 +416,10 @@ else:
 
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
 
-        # BALLOON DOWNLOAD KE BAAD - FREE AUR PRO DONO ME
         if st.session_state.show_balloon:
             st.balloons()
             st.session_state.show_balloon = False
 
-        # FREE user - DOWNLOAD PHONE/PC ME HOGA + BALLOON
         if st.session_state.plan == "free":
             col1, col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -450,7 +434,6 @@ else:
                 st.success("Downloaded! Check your Downloads folder")
                 st.rerun()
 
-        # PRO user - DOWNLOAD KE LIYE TU VERIFY KAREGI, TOOLS PEHLE SE UNLOCK
         elif st.session_state.plan == "pro":
             if not st.session_state.admin_approved:
                 st.warning(T['wait_approval'])
@@ -466,7 +449,6 @@ else:
                     st.info("Payment clicked. Sherni verify karegi tab download unlock hoga")
                     st.rerun()
             else:
-                # PRO 299 & 1499 DONO ME DOWNLOAD + BALLOON
                 col1, col2 = st.columns(2)
                 csv = st.session_state.df_clean.to_csv(index=False).encode()
                 if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
