@@ -55,14 +55,14 @@ T = {
     "expiry_warning":"⚠️ WARNING: Plan expires in {days} days! Renew now to avoid data loss"
 }
 
-# ========== FINAL CSS - WAVY TEDHE-MEDHE CARDS + PIC COLOR ==========
+# ========== FINAL CSS - HALKA WAVY CARDS + PURPLE BG ==========
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
-.block-container {background: rgba(255,255,0.95); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
+.block-container {background: rgba(255,255,255,0.95); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
 
 /* Mobile responsive */
 @media (max-width: 768px) {
@@ -80,33 +80,23 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
 .anime-text {position: absolute; top: 15px; left: 0; right: 0; text-align: center; color: white!important; font-size: 2rem; font-weight: 800; text-shadow: 0 3px 10px rgba(147,51,234,0.9), 0 0 25px rgba(168,85,247,0.7); z-index: 10;}
 
-/* Pricing card - TEDHE MEDHE WAVY BORDER */
+/* Pricing card - HALKA WAVY, NORMAL SIZE */
 .pricing-card {
-  border: 3px solid #9333ea;
-  padding: 2rem;
+  border: 2px solid #9333ea;
+  border-radius: 22px;
+  padding: 1.6rem;
   background: rgba(255,255,255,0.88)!important;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   box-shadow: 0 8px 20px rgba(147,51,234,0.15), 0 2px 6px rgba(147,51,234,0.1);
   height: 100%;
-  min-height: 520px;
-  display: flex;
-  flex-direction: column;
-  border-radius: 30% 70% 65% 35% / 40% 35% 65% 60%;
-  transform: rotate(-1deg);
-}
-.pricing-card:nth-child(2) {
-  border-radius: 65% 35% 30% 70% / 60% 65% 35% 40%;
-  transform: rotate(1deg);
-}
-.pricing-card:nth-child(3) {
-  border-radius: 40% 60% 70% 30% / 35% 40% 60% 65%;
-  transform: rotate(-0.5deg);
+  min-height: 480px;
+  transform: translateZ(0);
+  clip-path: polygon(0% 3%, 3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%);
 }
 .pricing-card:hover {
-  transform: translateY(-8px) scale(1.01) rotate(0deg);
+  transform: translateY(-8px) scale(1.01);
   box-shadow: 0 20px 40px rgba(147,51,234,0.25), 0 8px 16px rgba(147,51,234,0.15);
-  border-radius: 25px;
 }
 .pricing-card h2 {font-size: 1.5rem!important; color: #6b21a8!important; margin-bottom: 0.8rem!important; font-weight: 700;}
 .pricing-card h1 {font-size: 3rem!important; color: #6b21a8!important; margin: 0.8rem 0!important; font-weight: 800;}
@@ -121,7 +111,7 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 /* Pro banner - purple gradient */
 .pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.8rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
 .pro-banner h2 {color: white!important; font-size: 1.8rem!important;}
-.tool-chip {display: inline-block; background: rgba(255,255,0.95); padding: 10px 18px; border-radius: 28px; margin: 5px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.95rem;}
+.tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 10px 18px; border-radius: 28px; margin: 5px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.95rem;}
 
 .download-msg {background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; padding: 18px; border-radius: 14px; margin-top: 1rem; text-align: center; font-weight: 700; box-shadow: 0 10px 25px rgba(147,51,234,0.4);}
 
