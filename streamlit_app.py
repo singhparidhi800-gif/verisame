@@ -6,12 +6,12 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-# ===== VERISAME CHAT AI - WITH BASIC KNOWLEDGE BASE =====
+# ===== ADD KIYA: VERISAME CHAT AI - BAS YE 50 LINES ADD HUI =====
 def detect_hindi(text):
     hindi_chars = re.findall(r'[\u0900-\u097F]', text)
     if len(hindi_chars) >= 2:
         return True
-    hindi_words = ['bhai','kya','hai','kaise','karo','bolo','hindi','mein','main','tu','tum','ye','wo','kar','ho','raha','nahi','mujhe','tere','tera','meri','mera','kaam','app','bataye','samjhao','kaun','kahan','kab']
+    hindi_words = ['bhai','kya','hai','kaise','karo','bolo','hindi','mein','main','tu','tum','ye','wo','kar','ho','raha','nahi','mujhe','tere','tera','meri','mera','kaam','app','bataye','samjhao','kaun','kahan','kab','kyu','kyun']
     words_in_text = text.lower().split()
     hindi_count = sum(1 for word in hindi_words if word in words_in_text)
     return hindi_count >= 2
@@ -33,24 +33,31 @@ def local_ai_reply(prompt, df=None):
         'national animal': ('Tiger', 'Bagh'),
         'national bird': ('Peacock', 'Mor'),
         'national flower': ('Lotus', 'Kamal'),
+        'independence day': ('15th August 1947', '15 August 1947'),
         'capital of usa': ('Washington D.C.', 'Washington D.C.'),
         'capital of uk': ('London', 'London'),
         'capital of japan': ('Tokyo', 'Tokyo'),
+        'capital of china': ('Beijing', 'Beijing'),
+        'largest country': ('Russia', 'Russia'),
         'largest planet': ('Jupiter', 'Jupiter'),
         'smallest planet': ('Mercury', 'Mercury'),
+        'fastest land animal': ('Cheetah', 'Cheetah'),
         'water formula': ('H2O', 'H2O'),
         'speed of light': ('299,792,458 m/s', '299,792,458 m/s'),
         'pi value': ('3.14159', '3.14159'),
+        'sun': ('Star', 'Tara hai'),
+        'moon': ('Natural satellite of Earth', 'Dharti ka upgrah'),
         'current year': ('2026', '2026'),
         'cricket captain india': ('Rohit Sharma', 'Rohit Sharma'),
         'virat kohli': ('Indian cricketer, legend', 'Indian cricketer, legend hai'),
+        'ms dhoni': ('Former Indian cricket captain', 'Former Indian captain'),
     }
 
     for key, (eng_ans, hindi_ans) in knowledge.items():
         if all(word in p for word in key.split()):
             return f"Bhai {hindi_ans}" if is_hindi else f"{eng_ans}"
 
-    if any(x in p for x in ['app kaise', 'how does', 'how to use', 'kaam karta', 'verisame kya', 'what is verisame', 'how work', 'use this', 'kaise chalate', 'explain app']):
+    if any(x in p for x in ['app kaise', 'how does', 'how to use', 'kaam karta', 'verisame kya', 'what is verisame', 'how work', 'use this', 'kaise chalate', 'explain app', 'about app']):
         if is_hindi:
             return """Bhai VeriSame data cleaning ka sabse fast tareeka hai. 4 step me kaam hota hai:
 1. **Upload**: CSV, Excel ya JSON file daal de - 200MB tak. Auto clean ho jata hai
@@ -59,7 +66,7 @@ def local_ai_reply(prompt, df=None):
 4. **Download**: Clean CSV ya Excel download kar le
 
 **Pricing**: Free me 3 tools lifetime. Pro me ₹299/month ya ₹1499/6month me sab 10 tools + unlimited rows + 3s speed.
-**Support**: Mujhse sidebar me kuch bhi puchh le - CSV, maths, GK."""
+**Support**: Mujhse kuch bhi puchh le - CSV, maths, GK, chatting."""
         else:
             return """VeriSame is the fastest way to clean your data. Works in 4 steps:
 1. **Upload**: Drop CSV, Excel or JSON - up to 200MB. Auto-cleans basic stuff
@@ -68,7 +75,7 @@ def local_ai_reply(prompt, df=None):
 4. **Download**: Export clean CSV or Excel
 
 **Pricing**: Free gives 3 tools lifetime. Pro unlocks all 10 tools + unlimited rows + 3s speed for ₹299/month or ₹1499/6months.
-**Support**: Ask me anything in sidebar - CSV, math, GK."""
+**Support**: Ask me anything - CSV, math, GK, or just chat."""
 
     if any(x in p for x in ['*','x','multiply','guna','into']) or re.search(r'\d+\s*x\s*\d+', p):
         nums = [int(s) for s in re.findall(r'\d+', p)]
@@ -112,16 +119,25 @@ def local_ai_reply(prompt, df=None):
             return "10 tools available: 1-Smart Date, 2-AI Fill Nulls, 3-Email Validator, 4-Phone Formatter, 5-Case Converter, 6-Remove Symbols, 7-Bulk Rename, 8-Remove Duplicates, 9-Trim Spaces, 10-Spell Check. Free gives 1,5,8,9. Pro gives all 10."
 
     if any(x in p for x in ['hi','hello','hey','namaste','namaskar','hii','helo','hlw']):
-        return "Bhai Hi, bolo CSV saaf karna hai kya? Ya app ke baare me puchhna hai?" if is_hindi else "Hi there! Need help cleaning your CSV? Or want to know how this app works?"
+        return "Bhai Hi, kya puchna hai?" if is_hindi else "Hi there! What do you want to know?"
+
+    if any(x in p for x in ['how are you','kaise ho','kya haal','kaisi ho']):
+        return "Bhai badhiya hu, tu suna?" if is_hindi else "I'm doing great! How about you?"
+    if any(x in p for x in ['who are you','tum kaun','kaun ho','what are you']):
+        return "Bhai main VeriSame AI hu, tera data cleaning assistant. Kuch bhi puchh le." if is_hindi else "I'm VeriSame AI, your data cleaning assistant. Ask me anything."
+    if any(x in p for x in ['thank','thanks','shukriya','dhanyawad']):
+        return "Bhai koi baat nahi, aur kuch puchna hai?" if is_hindi else "You're welcome! Anything else?"
+    if any(x in p for x in ['bye','goodbye','tata','alvida']):
+        return "Bhai chalta hu, phir milenge!" if is_hindi else "Goodbye! Come back anytime."
 
     if is_hindi:
-        return "Bhai ye exact nahi pata. Par app kaise chalana hai, CSV cleaning, maths, capital-PM, cricket - ye sab puchh le. Example: '28x36' ya 'capital of india'"
+        return "Bhai ye samajh nahi aaya. App ke baare me, CSV cleaning, maths, GK ya kuch bhi puchh le. Example: '28x36' ya 'capital of india'"
     else:
-        return "I don't know that exactly. But ask me how the app works, CSV cleaning, math, capitals, PM, cricket. Example: '28x36' or 'capital of india'"
+        return "I didn't get that exactly. Ask me about the app, CSV cleaning, math, GK, or just chat. Example: '28x36' or 'capital of india'"
 
 if "vsai_messages" not in st.session_state:
     st.session_state.vsai_messages = []
-# ===== LOCAL AI END =====
+# ===== AI KHATAM - TERA CODE SHURU =====
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
@@ -176,22 +192,31 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
+
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
+
 .block-container {background: rgba(255,255,255,0.95); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2); border: 1.5px solid rgba(255,255,255,0.4);}
+
 @media (max-width: 768px) {
 .block-container {padding: 1rem!important; border-radius: 20px!important;}
 h1 {font-size: 2.2rem!important;}
 .pricing-card {margin-bottom: 20px!important;}
 }
+
 h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
+
 h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; background: linear-gradient(90deg, #6b21a8, #9333ea, #c084fc, #a855f7, #6b21a8); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite;}
 @keyframes shine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
+
 .subtitle {text-align: left; color: #000!important; font-size: 1.1rem!important; font-weight: 600!important; margin-bottom: 1rem!important;}
+
 .logo-float {animation: float 3s ease-in-out infinite;}
 @keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
+
 .anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
+
 .pricing-card {
   position: relative;
   border-radius: 22px;
@@ -212,15 +237,19 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 .pricing-card h2 {font-size: 1.4rem!important; color: #6b21a8!important; margin-bottom: 0.5rem!important; font-weight: 700;}
 .pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800; -webkit-text-fill-color: #6b21a8!important;}
 .pricing-card p {color: #000!important; font-size: 0.95rem!important; margin-bottom: 0.4rem!important;}
+
 .stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1rem!important; margin-top: 1rem;}
 .stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(147,51,234,0.5);}
 .stButton>button:disabled {background: #e0e0e0!important; color: #999!important; border: 2px dashed #ccc!important; cursor: not-allowed; box-shadow: none;}
+
 .pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
 .pro-banner h2 {color: white!important;}
 .tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 9px 17px; border-radius: 28px; margin: 4px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.92rem;}
+
 div[data-testid="stTabs"] button p {color: #000!important; font-weight: 700!important; font-size: 1rem!important;}
 div[data-testid="stTabs"] button[aria-selected="true"] p {color: #6b21a8!important; font-weight: 800!important; border-bottom: 3px solid #9333ea;}
 div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; backdrop-filter: blur(5px); border-radius: 12px; margin-right: 8px; border: 2px solid #9333ea;}
+
 .stAlert,.stInfo,.stSuccess,.stError {color: #000!important; font-weight: 600!important; background: rgba(255,255,255,0.8)!important; backdrop-filter: blur(5px); border-radius: 12px; border: 2px solid #9333ea;}
 .stDataFrame {background: rgba(255,255,255,0.9)!important;}
 .stFileUploader {background: rgba(255,255,255,0.8)!important; border: 2px dashed #9333ea;}
@@ -248,17 +277,19 @@ if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
 
+    # ===== ADD KIYA: SIDEBAR CHAT AI =====
     st.sidebar.divider()
     st.sidebar.markdown("## 🤖 VeriSame Chat AI")
-    st.sidebar.caption("CSV saaf karwao ya 28x36 puchho")
+    st.sidebar.caption("Ask me anything") # <-- FIXED: Hindi hata diya
     sidebar_q = st.sidebar.text_area("Quick Doubt:", height=150, key="sidebar_ai_q")
     if st.sidebar.button("Ask AI", use_container_width=True, key="sidebar_ai_btn"):
         if sidebar_q:
             with st.sidebar:
-                with st.spinner("Socho..."):
+                with st.spinner("Thinking..."):
                     df_context = st.session_state.df_clean if 'df_clean' in st.session_state else None
                     ai_text = local_ai_reply(sidebar_q, df_context)
                     st.success(f"**AI:** {ai_text}")
+    # ===== CHAT AI KHATAM =====
 
     if user.get("plan"):
         exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
@@ -266,7 +297,7 @@ if st.session_state.email:
         st.session_state.plan = user.get("plan")
         st.session_state.amt = user.get("amt", 0)
         st.session_state.days = user.get("days", 0)
-        # ===== NEW LOGIC: CHECK EXPIRY =====
+        # ===== FIX KIYA: EXPIRY CHECK =====
         st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
 
         if user.get("plan") == "free":
@@ -376,6 +407,7 @@ if st.session_state.plan is None:
                 <div>
                     {''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}
                 </div>
+            </div>
             """, unsafe_allow_html=True)
             if st.button("Get Pro", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"
@@ -392,6 +424,7 @@ if st.session_state.plan is None:
                 <div>
                     {''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}
                 </div>
+            </div>
             """, unsafe_allow_html=True)
             if st.button("Get Pro+", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"
@@ -407,10 +440,8 @@ if st.session_state.plan is None:
                 st.session_state.email_entered = True
                 st.session_state.plan = st.session_state.selected_plan
                 data = load_db()
-
-                # ===== NEW LOGIC: EMAIL KABHI DELETE NAHI HOGA =====
-                user_exists = email_input in data
                 current_time = datetime.now()
+                user_exists = email_input in data
 
                 if st.session_state.selected_plan == "free":
                     expiry = (current_time+timedelta(days=36500)).strftime("%Y-%m-%d")
@@ -419,11 +450,12 @@ if st.session_state.plan is None:
                     st.balloons()
                     st.rerun()
                 else:
-                    # Check if user exists and plan is expired
+                    # ===== TERA RULE 1: EMAIL KABHI DELETE NAHI HOGA =====
+                    # ===== TERA RULE 2+3: EXPIRE = QR WAPAS, ACTIVE = QR BAND =====
                     if user_exists:
                         old_expiry = datetime.strptime(data[email_input].get('expiry','2000-01-01'), "%Y-%m-%d")
                         days_left = (old_expiry - current_time).days
-                        # Agar active plan hai to QR mat dikhao - sidha approval
+                        # Agar active paid plan hai to QR mat dikhao
                         if data[email_input].get('status') == 'PAID' and days_left > 0:
                             st.success("Active plan hai! Dubara paise nahi dene")
                             st.rerun()
@@ -436,10 +468,17 @@ if st.session_state.plan is None:
             else: st.error("Valid email required")
         st.stop()
 else:
-    # ===== QR CODE + PAYMENT LOGIC - ACTIVE PLAN ME QR NAHI DIKHEGA =====
+    # ===== QR CODE + PAYMENT LOGIC - TERA RULE 3 YAHAN HAI =====
     data = load_db()
     user = data.get(st.session_state.email, {})
     is_paid = user.get("status") == "PAID"
+
+    # ===== TERA RULE 2: EXPIRY CHECK =====
+    if user.get("expiry"):
+        exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
+        days_left = (exp_date - datetime.now()).days
+        if days_left <= 0 and user.get("plan")!= "free":
+            is_paid = False # Plan expire = QR wapas aayega
 
     if st.session_state.plan == "pro" and not is_paid:
         if not st.session_state.payment_clicked:
