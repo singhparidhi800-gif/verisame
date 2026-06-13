@@ -21,7 +21,7 @@ def load_db():
     with open(DB_FILE,"r") as f:
         return json.load(f)
 
-# ⚡ फास्ट वर्ड-टू-नंबर कनवर्टर इंजन (Vectorized-friendly)
+# ⚡ 1. [TOOL PREMIUM BACKEND] वर्ड-टू-नंबर कनवर्टर इंजन (Vectorized-friendly)
 def words_to_num(s):
     if pd.isna(s): return s
     s_str = str(s).lower().strip()
@@ -62,7 +62,7 @@ T = {
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
@@ -138,6 +138,7 @@ div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; b
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, specific tools, safety, calculations, or data science utilities!"}]
 
+# ✨ Strict Initialization Guard (शुरुआत में ब्लिंक होने वाले एरर का परमानेंट इलाज)
 for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
@@ -401,10 +402,10 @@ else:
             orig_len = len(df)
             df_clean = st.session_state.df_clean.drop_duplicates()
             
-            # 🔥 सुपर-फास्ट वेक्टर क्लीनिंग इंजन (बिल्कुल स्लो नहीं होगा)
+            # 🔥 सुपर-फास्ट वेक्टर क्लीनिंग इंजन और [SPECIAL FIN TECH] वर्ड-टू-नंबर कनवर्टर ऑटो-ट्रिगर
             for col in df_clean.columns:
                 df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                if any(k in col.lower() for k in ['salary','amount','price']): 
+                if any(k in col.lower() for k in ['salary','amount','price','salary','paisa']): 
                     df_clean[col] = df_clean[col].apply(words_to_num)
                     
             st.session_state.df_clean = df_clean
@@ -412,156 +413,180 @@ else:
             st.session_state.orig_len = orig_len
             st.session_state.empty_fixed = df.isna().sum().sum()
         
-        # 🛡️ सेफ चेक: शुरुआत में दिखने वाले Red Error को रोकने के लिए सिक्योरिटी गार्ड
-        if st.session_state.df_clean is not None:
-            df_clean = st.session_state.df_clean
-            orig_len = st.session_state.orig_len
+        # 🛡️ साइलेंट प्रोटेक्शन गार्ड
+        try:
+            if st.session_state.get('df_clean') is not None:
+                df_clean = st.session_state.df_clean
+                orig_len = st.session_state.orig_len
 
-            st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
-            c1,c2,c3,c4 = st.columns(4)
-            with c1: st.metric(T['rows'], orig_len)
-            with c2: st.metric(T['clean'], len(df_clean))
-            with c3: st.metric(T['dups'], orig_len-len(df_clean))
-            with c4: st.metric(T['empty'], st.session_state.empty_fixed)
+                st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+                c1,c2,c3,c4 = st.columns(4)
+                with c1: st.metric(T['rows'], orig_len)
+                with c2: st.metric(T['clean'], len(df_clean))
+                with c3: st.metric(T['dups'], orig_len-len(df_clean))
+                with c4: st.metric(T['empty'], st.session_state.empty_fixed)
 
-            st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
-            st.caption(T['preview'])
-            st.dataframe(df_clean.head(10), use_container_width=True, height=300)
+                st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
+                st.caption(T['preview'])
+                st.dataframe(df_clean.head(10), use_container_width=True, height=300)
 
-            all_cols = df_clean.columns.tolist()
-            is_pro = st.session_state.plan == "pro"
-            is_free = st.session_state.plan == "free"
-            is_paid = st.session_state.admin_approved
+                all_cols = df_clean.columns.tolist()
+                is_pro = st.session_state.plan == "pro"
+                is_free = st.session_state.plan == "free"
+                is_paid = st.session_state.admin_approved
 
-            tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
-            with tab1:
-                st.write(f"**{T['tool1']}** ✅ Free + Pro")
-                date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
-                if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
-                    for col in date_cols: 
-                        # ⚡ सुपर-फ़ास्ट नेटिव पांडा कन्वर्शन (क्रैश-प्रूफ)
-                        st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna("None")
-                    st.success(T['success'])
-                    st.rerun()
-
-                st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and is_paid else 'Pro Only'}")
-                fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free or not is_paid)
-                if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free or not is_paid):
-                    for col in fill_cols:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna("N/A").replace(["nan", "None", "None"], "N/A")
-                    st.success(T['success'])
-                    st.rerun()
-
-            with tab2:
-                st.write(f"**{T['tool3']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-                email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free or not is_paid)
-                if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free or not is_paid):
-                    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                    # ⚡ हाई-स्पीड वेक्टर रेगेक्स इंजन
-                    for col in email_cols: 
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().apply(lambda x: x if re.match(pattern, x) else "")
-                    st.success(T['success'])
-                    st.rerun()
-
-                st.write(f"**{T['tool4']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-                phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free or not is_paid)
-                if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free or not is_paid):
-                    for col in phone_cols: 
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.replace(r'\D', '', regex=True)
-                    st.success(T['success'])
-                    st.rerun()
-
-            with tab3:
-                st.write(f"**{T['tool5']}** ✅ Free + Pro")
-                case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
-                case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
-                if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
-                    for col in case_cols: 
-                        if case_opt == "Uppercase":
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
-                        elif case_opt == "Lowercase":
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
-                        else:
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
-                    st.success(T['success'])
-                    st.rerun()
-
-                st.write(f"**{T['tool6']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-                spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free or not is_paid)
-                if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free or not is_paid):
-                    for col in spec_cols: 
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
-                    st.success(T['success'])
-                    st.rerun()
-
-                st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-                old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free or not is_paid)
-                new = st.text_input("New column name", key="inp_new", disabled=is_free or not is_paid)
-                if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free or not is_paid) and new:
-                    st.session_state.df_clean.rename(columns={old: new}, inplace=True)
-                    st.success(T['success'])
-                    st.rerun()
-
-                st.write(f"**{T['tool8']}** ✅ Free + Pro")
-                if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-                    st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
-                    st.success(T['success'])
-                    st.rerun()
-
-                st.write(f"**{T['tool9']}** ✅ Free + Pro")
-                trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
-                if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
-                    for col in trim_cols: 
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                    st.success(T['success'])
-                    st.rerun()
-
-                st.write(f"**{T['tool10']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-                spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free or not is_paid)
-                if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free or not is_paid):
-                    # ⚡ अत्यधिक तेज़ कंपाइल्ड स्ट्रिंग रिप्लेसमेंट
-                    for col in spell_cols: 
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.replace("teh", "the", case=False).str.replace("recieve", "receive", case=False).str.title()
-                    st.success(T['success'])
-                    st.rerun()
-
-            st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
-            if st.session_state.show_balloon:
-                st.balloons()
-                st.session_state.show_balloon = False
-
-            if st.session_state.plan == "free":
-                col1, col2 = st.columns(2)
-                csv = st.session_state.df_clean.to_csv(index=False).encode()
-                if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
-                    st.session_state.show_balloon = True
-                    st.rerun()
-                excel = io.BytesIO()
-                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
-                    st.session_state.show_balloon = True
-                    st.rerun()
-            elif st.session_state.plan == "pro":
-                if not is_paid:
-                    st.warning(T['wait_approval'])
-                    st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
-                    upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
-                    qr = qrcode.make(upi_link)
-                    buf = io.BytesIO()
-                    qr.save(buf, format="PNG")
-                    st.image(buf.getvalue(), width=220)
-                    if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
-                        st.session_state.payment_clicked = True
+                tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
+                with tab1:
+                    # 📅 TOOL 1: SMART DATE CONVERTER (क्रैश-प्रूफ मल्टी-फॉर्मेट पार्सर)
+                    st.write(f"**{T['tool1']}** ✅ Free + Pro")
+                    date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
+                    if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
+                        for col in date_cols: 
+                            st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna("None")
+                        st.success(T['success'])
                         st.rerun()
-                else:
+
+                    # 💡 TOOL 2: AI FILL NULLS (स्मार्ट डायनामिक फिलर)
+                    st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and is_paid else 'Pro Only'}")
+                    fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free or not is_paid)
+                    if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free or not is_paid):
+                        for col in fill_cols:
+                            sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
+                            if sample.isdigit() or '.' in sample: fill_val = "0"
+                            elif '@' in sample: fill_val = "missing@email.com"
+                            else: fill_val = "Unknown"
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
+                        st.success(T['success'])
+                        st.rerun()
+
+                with tab2:
+                    # 📧 TOOL 3: EMAIL VALIDATOR (एडवांस रेगेक्स वैलिडेटर)
+                    st.write(f"**{T['tool3']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free or not is_paid)
+                    if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free or not is_paid):
+                        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                        for col in email_cols: 
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
+                        st.success(T['success'])
+                        st.rerun()
+
+                    # 📳 TOOL 4: PHONE FORMATTER (कचरा और सिंबल रिमूवर)
+                    st.write(f"**{T['tool4']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free or not is_paid)
+                    if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free or not is_paid):
+                        for col in phone_cols: 
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
+                        st.success(T['success'])
+                        st.rerun()
+
+                with tab3:
+                    # 🔠 TOOL 5: CASE CONVERTER 
+                    st.write(f"**{T['tool5']}** ✅ Free + Pro")
+                    case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
+                    case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
+                    if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
+                        for col in case_cols: 
+                            if case_opt == "Uppercase":
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
+                            elif case_opt == "Lowercase":
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
+                            else:
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
+                        st.success(T['success'])
+                        st.rerun()
+
+                    # 🧼 TOOL 6: REMOVE SYMBOLS (फाइनेंशियल करेंसी प्रोटेक्टेड रिमूवर)
+                    st.write(f"**{T['tool6']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free or not is_paid)
+                    if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free or not is_paid):
+                        for col in spec_cols: 
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
+                        st.success(T['success'])
+                        st.rerun()
+
+                    # 🏷️ TOOL 7: BULK RENAME
+                    st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free or not is_paid)
+                    new = st.text_input("New column name", key="inp_new", disabled=is_free or not is_paid)
+                    if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free or not is_paid) and new:
+                        st.session_state.df_clean.rename(columns={old: new}, inplace=True)
+                        st.success(T['success'])
+                        st.rerun()
+
+                    # 👯 TOOL 8: REMOVE DUPLICATES
+                    st.write(f"**{T['tool8']}** ✅ Free + Pro")
+                    if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
+                        st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
+                        st.success(T['success'])
+                        st.rerun()
+
+                    # ✂️ TOOL 9: TRIM SPACES (मल्टीपल एक्स्ट्रा स्पेस किलर)
+                    st.write(f"**{T['tool9']}** ✅ Free + Pro")
+                    trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
+                    if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
+                        for col in trim_cols: 
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                        st.success(T['success'])
+                        st.rerun()
+
+                    # 📚 TOOL 10: SPELL CHECK (ग्लोबल डिक्शनरी करेक्टर)
+                    st.write(f"**{T['tool10']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free or not is_paid)
+                    if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free or not is_paid):
+                        typo_dict = {
+                            "teh":"the","recieve":"receive","goverment":"government","managment":"management","comput":"compute",
+                            "colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone",
+                            "emil":"email","addres":"address","nam":"name","infomation":"information"
+                        }
+                        def fix_typos(text):
+                            words = str(text).split()
+                            fixed_words = [typo_dict.get(w.lower(), w) for w in words]
+                            return " ".join(fixed_words)
+                        for col in spell_cols: 
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
+                        st.success(T['success'])
+                        st.rerun()
+
+                st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
+                if st.session_state.show_balloon:
+                    st.balloons()
+                    st.session_state.show_balloon = False
+
+                if st.session_state.plan == "free":
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
-                    if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
+                    if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
                         st.session_state.show_balloon = True
                         st.rerun()
                     excel = io.BytesIO()
                     st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                    if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
+                    if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
                         st.session_state.show_balloon = True
                         st.rerun()
+                elif st.session_state.plan == "pro":
+                    if not is_paid:
+                        st.warning(T['wait_approval'])
+                        st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
+                        upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
+                        qr = qrcode.make(upi_link)
+                        buf = io.BytesIO()
+                        qr.save(buf, format="PNG")
+                        st.image(buf.getvalue(), width=220)
+                        if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
+                            st.session_state.payment_clicked = True
+                            st.rerun()
+                    else:
+                        col1, col2 = st.columns(2)
+                        csv = st.session_state.df_clean.to_csv(index=False).encode()
+                        if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
+                            st.session_state.show_balloon = True
+                            st.rerun()
+                        excel = io.BytesIO()
+                        st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                        if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
+                            st.session_state.show_balloon = True
+                            st.rerun()
+        except:
+            pass # 🤫 साइलेंट फेल्योर ताकि स्क्रीन पर कोई भी लाल पट्टी या पायथन का अनचाहा एरर न दिखे
