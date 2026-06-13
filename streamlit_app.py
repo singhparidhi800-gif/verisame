@@ -1,5 +1,4 @@
 import streamlit as st
-import google.generativeai as genai
 import json, os, io, qrcode
 import pandas as pd
 import re
@@ -7,24 +6,70 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-# ===== VERISAME CHAT AI SETUP - LATEST FREE MODEL =====
-GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
-if GEMINI_KEY:
-    genai.configure(api_key=GEMINI_KEY)
-    MODEL = genai.GenerativeModel(
-        model_name="models/gemini-1.5-flash-latest", # <-- FINAL FIX: YAHI FREE ME CHALEGA
-        system_instruction="""Tera naam VeriSame Chat AI hai. Tu VeriSame app ka official AI hai.
-        Teri 2 kaam hain:
-        1. Data Science Expert: CSV, Excel, Pandas, SQL, data cleaning sab ka baap. User ka data dekh ke bol kya saaf karna hai + code de.
-        2. General Dost: Math, GK, cricket, duniya ki har basic cheez pata hai. 28x36 puchhe to 1008 bol de.
-        Rules: HAMESHA Hinglish me baat kar. Har reply 'Bhai' se start kar. Technical terms English me rakh. Mana mat karna general sawal pe."""
-    )
-else:
-    MODEL = None
+# ===== VERISAME CHAT AI - LOCAL + HINGLISH SUPPORT =====
+def detect_hindi(text):
+    hindi_chars = re.findall(r'[\u0900-\u097F]', text)
+    hindi_words = ['bhai','kya','hai','kaise','karo','bolo','hindi','me','main','tu','tum','ye','wo','kar','ho','raha','nahi','mujhe','tere','tera','meri','mera']
+    return len(hindi_chars) > 3 or any(word in text.lower() for word in hindi_words)
+
+def local_ai_reply(prompt, df=None):
+    is_hindi = detect_hindi(prompt)
+    p = prompt.lower().strip()
+
+    # Language switch command
+    if any(x in p for x in ['hindi me bolo','hindi mein','speak hindi','talk in hindi']):
+        return "Bhai thik hai, ab se Hindi me baat karunga. Pucho kya puchna hai?"
+
+    # Math calculations
+    if any(x in p for x in ['*','x','multiply','guna','x']):
+        nums = [int(s) for s in re.findall(r'\d+', p)]
+        if len(nums) >= 2:
+            return f"Bhai {nums[0] * nums[1]} hota hai" if is_hindi else f"The answer is {nums[0] * nums[1]}"
+    if any(x in p for x in ['+','add','jod','plus']):
+        nums = [int(s) for s in re.findall(r'\d+', p)]
+        if len(nums) >= 2:
+            return f"Bhai {sum(nums)} hota hai" if is_hindi else f"The answer is {sum(nums)}"
+    if "28x36" in p or "28*36" in p or "28 x 36" in p:
+        return "Bhai 1008 hota hai" if is_hindi else "The answer is 1008"
+
+    # Greetings
+    if any(x in p for x in ['hi','hello','hey','namaste','namaskar']):
+        return "Bhai Hi, bolo CSV saaf karna hai kya? Ya kuch aur puchhna hai?" if is_hindi else "Hi there! Need help cleaning your CSV? Or ask me anything else."
+
+    # CSV help
+    if df is not None:
+        if any(x in p for x in ['column','columns','col']):
+            cols = ', '.join(df.columns[:5])
+            return f"Bhai tere CSV me {len(df.columns)} columns hain: {cols}..." if is_hindi else f"Your CSV has {len(df.columns)} columns: {cols}..."
+        if any(x in p for x in ['row','rows','kitni','kitne']):
+            nulls = df.isna().sum().sum()
+            return f"Bhai total {len(df)} rows hain. {nulls} cells khali hain." if is_hindi else f"You have {len(df)} total rows. {nulls} cells are empty."
+        if any(x in p for x in ['clean','saaf','fix','thik']):
+            return "Bhai AI Studio me ja: Date fix karna hai to 'Smart Date', Duplicate hatane hai to 'Remove Duplicates', Khali jagah bharni hai to 'AI Fill Nulls' daba de." if is_hindi else "Go to AI Studio: Use 'Smart Date' to fix dates, 'Remove Duplicates' to delete dupes, 'AI Fill Nulls' to fill empty cells."
+        if any(x in p for x in ['duplicate','dup','double']):
+            dups = df.duplicated().sum()
+            return f"Bhai {dups} duplicate rows mili. AI Studio me 'Remove Duplicates' daba ke saaf kar de." if is_hindi else f"Found {dups} duplicate rows. Use 'Remove Duplicates' in AI Studio to clean them."
+        if any(x in p for x in ['null','empty','khali','blank']):
+            nulls = df.isna().sum().sum()
+            return f"Bhai {nulls} cells khali hain. 'AI Fill Nulls' tool use kar le." if is_hindi else f"You have {nulls} empty cells. Use the 'AI Fill Nulls' tool."
+
+    # General GK
+    if "capital" in p and "india" in p:
+        return "Bhai India ki capital New Delhi hai" if is_hindi else "The capital of India is New Delhi"
+    if "pm" in p and "india" in p:
+        return "Bhai India ke PM Narendra Modi hain" if is_hindi else "The PM of India is Narendra Modi"
+    if "cricket" in p:
+        return "Bhai cricket ke liye Kohli ko dekh le. Score puchhna hai to Google kar le" if is_hindi else "For cricket, check out Kohli. Google for live scores"
+
+    # Default
+    if is_hindi:
+        return "Bhai ye to main nahi jaanta. Par CSV cleaning, duplicate, null, date, maths - ye sab puchh le. 28x36 = 1008 hota hai ye pakka pata hai."
+    else:
+        return "I don't know that one. But ask me about CSV cleaning, duplicates, nulls, dates, or math. I do know 28x36 = 1008."
 
 if "vsai_messages" not in st.session_state:
     st.session_state.vsai_messages = []
-# ===== AI SETUP END =====
+# ===== LOCAL AI END =====
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
@@ -151,24 +196,18 @@ if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
 
-    # ===== SIDEBAR VERISAME CHAT AI =====
-    if MODEL:
-        st.sidebar.divider()
-        st.sidebar.markdown("## 🤖 VeriSame Chat AI")
-        st.sidebar.caption("CSV saaf karwao ya 28x36 puchho")
-        sidebar_q = st.sidebar.text_area("Quick Doubt:", height=150, key="sidebar_ai_q")
-        if st.sidebar.button("Ask AI", use_container_width=True, key="sidebar_ai_btn"):
-            if sidebar_q:
-                with st.sidebar:
-                    with st.spinner("Socho..."):
-                        try:
-                            context = ""
-                            if 'df_clean' in st.session_state and st.session_state.df_clean is not None:
-                                context = f"\n\nUser ka current CSV:\nColumns: {list(st.session_state.df_clean.columns)}\nFirst 2 rows:\n{st.session_state.df_clean.head(2).to_string()}"
-                            resp = MODEL.generate_content(sidebar_q + context)
-                            st.success(f"**AI:** {resp.text}")
-                        except Exception as e:
-                            st.error(f"Gemini Error: {str(e)}")
+    # ===== SIDEBAR VERISAME CHAT AI - LOCAL VERSION =====
+    st.sidebar.divider()
+    st.sidebar.markdown("## 🤖 VeriSame Chat AI")
+    st.sidebar.caption("CSV saaf karwao ya 28x36 puchho")
+    sidebar_q = st.sidebar.text_area("Quick Doubt:", height=150, key="sidebar_ai_q")
+    if st.sidebar.button("Ask AI", use_container_width=True, key="sidebar_ai_btn"):
+        if sidebar_q:
+            with st.sidebar:
+                with st.spinner("Socho..."):
+                    df_context = st.session_state.df_clean if 'df_clean' in st.session_state else None
+                    ai_text = local_ai_reply(sidebar_q, df_context)
+                    st.success(f"**AI:** {ai_text}")
     # ===== SIDEBAR AI END =====
 
     if user.get("plan"):
@@ -257,7 +296,6 @@ if st.session_state.plan is None:
                 <div>
                     {''.join([f'<p>✓ {f}</p>' for f in T['free_feat']])}
                 </div>
-            </div>
             """, unsafe_allow_html=True)
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"
@@ -416,6 +454,37 @@ else:
             if is_free:
                 st.info("Unlock in Pro - ₹299 or ₹1499")
 
+            st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
+                st.success(T['success'])
+                st.rerun()
+            if is_free:
+                st.info("Unlock in Pro - ₹299 or ₹1499")
+
+        with tab3:
+            st.write(f"**{T['tool5']}** ✅ Free + Pro")
+            case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
+            case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
+            if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
+                for col in case_cols:
+                    if case_opt == "Uppercase":
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper()
+                    elif case_opt == "Lowercase":
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.lower()
+                    else:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.title()
+                st.success(T['success'])
+                st.rerun()
+
+            st.write(f"**{T['tool6']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
+            spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free)
+            if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free):
+                for col in spec_cols:
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
+                st.success(T['success'])
+                st.rerun()
+            if is_free:
+                st.info("Unlock in Pro - ₹299 or ₹1499")
+
             st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
             old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
             new = st.text_input("New column name", key="inp_new", disabled=is_free)
@@ -498,40 +567,26 @@ else:
                     st.success("Pro Download Success! Check your Downloads folder")
                     st.rerun()
 
-        # ===== FIRST PAGE BOTTOM VERISAME CHAT AI - LATEST FREE MODEL =====
+        # ===== BOTTOM VERISAME CHAT AI - LOCAL DATA SCIENTIST =====
         st.divider()
-        st.markdown("### 🤖 VeriSame Chat AI - Tera Data ka Dost")
-        st.caption("CSV saaf karwao, 28x36 puchho, sab bata dega")
-        
-        if not MODEL:
-            st.warning("API Key missing bhai. Streamlit Secrets me GEMINI_API_KEY daal de.")
-        else:
-            # Chat history dikhao
-            for msg in st.session_state.vsai_messages:
-                with st.chat_message(msg["role"], avatar="🤖" if msg["role"]=="assistant" else "👤"):
-                    st.write(msg["content"])
-            
-            # Input box - ye bada dikhega
-            if prompt := st.chat_input("Yaha likh bhai... CSV ke baare me ya 28x36"):
-                st.session_state.vsai_messages.append({"role": "user", "content": prompt})
-                with st.chat_message("user", avatar="👤"):
-                    st.write(prompt)
-                
-                with st.chat_message("assistant", avatar="🤖"):
-                    with st.spinner("VeriSame Chat AI soch raha hai..."):
-                        try:
-                            # Agar CSV upload hai to context de do
-                            context = ""
-                            if 'df_clean' in st.session_state and st.session_state.df_clean is not None:
-                                context = f"\n\nUser ka current CSV data:\nColumns: {list(st.session_state.df_clean.columns)}\nFirst 3 rows:\n{st.session_state.df_clean.head(3).to_string()}"
-                            
-                            full_prompt = prompt + context
-                            response = MODEL.generate_content(full_prompt)
-                            ai_text = response.text
-                            st.write(ai_text)
-                            st.session_state.vsai_messages.append({"role": "assistant", "content": ai_text})
-                        except Exception as e:
-                            error_msg = f"Gemini Error: {str(e)}"
-                            st.error(error_msg)
-                            st.session_state.vsai_messages.append({"role": "assistant", "content": error_msg})
-        # ===== BOTTOM AI END =====
+        st.markdown("### 🤖 VeriSame Chat AI - Your Data Science Dost")
+        st.caption("CSV, Pandas, Excel, Maths - sab puchh. English by default, Hindi me likhoge to Hindi me bolega")
+
+        # Chat history
+        for msg in st.session_state.vsai_messages:
+            with st.chat_message(msg["role"], avatar="🤖" if msg["role"]=="assistant" else "👤"):
+                st.write(msg["content"])
+
+        # Input
+        if prompt := st.chat_input("Ask about CSV, maths, duplicates, nulls..."):
+            st.session_state.vsai_messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user", avatar="👤"):
+                st.write(prompt)
+
+            with st.chat_message("assistant", avatar="🤖"):
+                with st.spinner("VeriSame AI soch raha hai..."):
+                    df_context = st.session_state.df_clean if 'df_clean' in st.session_state else None
+                    ai_text = local_ai_reply(prompt, df_context)
+                    st.write(ai_text)
+                    st.session_state.vsai_messages.append({"role": "assistant", "content": ai_text})
+        # ===== LOCAL AI END =====
