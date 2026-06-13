@@ -298,7 +298,6 @@ if st.query_params.get("admin"):
         st.title(T['admin_title'])
         data = load_db()
         
-        # सभी यूजर्स का डेटा दिखाएं (चाहे Pending हो या Paid) ताकि लिस्ट से गायब न हो!
         st.subheader(T['admin_pending'])
         if data:
             for email, info in data.items():
@@ -319,7 +318,6 @@ if st.query_params.get("admin"):
                     </div>
                     """, unsafe_allow_html=True)
                 with col2:
-                    # अगर यूजर पहले से Paid नहीं है तभी अप्रूव करने का बटन दिखेगा
                     if status == "PENDING":
                         if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
                             data[email]["status"] = "PAID"
@@ -373,7 +371,6 @@ if st.session_state.plan is None:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
                 
-                # 🧠 पुराने रिकॉर्ड्स की मेमोरी चेक करने का मैकेनिज्म
                 data = load_db()
                 if email_input in data:
                     st.session_state.plan = data[email_input]["plan"]
@@ -480,7 +477,7 @@ else:
                 st.rerun()
 
             st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and st.session_state.admin_approved else '🔒 Pro Only'}")
- Old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
+            old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
             new = st.text_input("New column name", key="inp_new", disabled=is_free)
             if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free) and new:
                 st.session_state.df_clean.rename(columns={old: new}, inplace=True)
@@ -524,7 +521,6 @@ else:
                 st.session_state.show_balloon = True
                 st.rerun()
         elif st.session_state.plan == "pro":
-            # 🔓 अगर एडमिन से अप्रूव हो गया है, तो QR कोड मत दिखाओ, सीधे डाउनलोड ऑप्शन दो!
             if not st.session_state.admin_approved:
                 st.warning(T['wait_approval'])
                 st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
