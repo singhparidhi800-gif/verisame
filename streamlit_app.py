@@ -398,158 +398,158 @@ else:
             df = pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],"Email":["RAHUL@GMAIL.COM","bad@","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["one hundred","250","two thousand five hundred"]})
 
     if df is not None:
-    # 🔥 FIX: File ko sirf pehli baar load karo, baar baar nahi
-    if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
-        st.session_state.df_clean = df.copy()
-        orig_len = len(df)
-        df_clean = st.session_state.df_clean.drop_duplicates()
-        for col in df_clean.columns:
-            df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-            if any(k in col.lower() for k in ['salary','amount','price']): 
-                df_clean[col] = df_clean[col].apply(words_to_num)
-        st.session_state.df_clean = df_clean
-        st.session_state.df_loaded = True
-        st.session_state.orig_len = orig_len
-        st.session_state.empty_fixed = df.isna().sum().sum()
-    
-    df_clean = st.session_state.df_clean
-    orig_len = st.session_state.orig_len
+        # 🔥 FIX: Indentation errors sorted cleanly right here inside the 'if' condition
+        if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
+            st.session_state.df_clean = df.copy()
+            orig_len = len(df)
+            df_clean = st.session_state.df_clean.drop_duplicates()
+            for col in df_clean.columns:
+                df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                if any(k in col.lower() for k in ['salary','amount','price']): 
+                    df_clean[col] = df_clean[col].apply(words_to_num)
+            st.session_state.df_clean = df_clean
+            st.session_state.df_loaded = True
+            st.session_state.orig_len = orig_len
+            st.session_state.empty_fixed = df.isna().sum().sum()
+        
+        df_clean = st.session_state.df_clean
+        orig_len = st.session_state.orig_len
 
-    st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
-    c1,c2,c3,c4 = st.columns(4)
-    with c1: st.metric(T['rows'], orig_len)
-    with c2: st.metric(T['clean'], len(df_clean))
-    with c3: st.metric(T['dups'], orig_len-len(df_clean))
-    with c4: st.metric(T['empty'], st.session_state.empty_fixed)
+        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        c1,c2,c3,c4 = st.columns(4)
+        with c1: st.metric(T['rows'], orig_len)
+        with c2: st.metric(T['clean'], len(df_clean))
+        with c3: st.metric(T['dups'], orig_len-len(df_clean))
+        with c4: st.metric(T['empty'], st.session_state.empty_fixed)
 
-    st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
-    st.caption(T['preview'])
-    st.dataframe(df_clean.head(10), use_container_width=True, height=300)
+        st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
+        st.caption(T['preview'])
+        st.dataframe(df_clean.head(10), use_container_width=True, height=300)
 
-    all_cols = df_clean.columns.tolist()
-    is_pro = st.session_state.plan == "pro"
-    is_free = st.session_state.plan == "free"
-    is_paid = st.session_state.admin_approved
+        all_cols = df_clean.columns.tolist()
+        is_pro = st.session_state.plan == "pro"
+        is_free = st.session_state.plan == "free"
+        is_paid = st.session_state.admin_approved
 
-    tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
-    with tab1:
-        st.write(f"**{T['tool1']}** ✅ Free + Pro")
-        date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
-        if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
-            for col in date_cols: 
-                st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
-            st.success(T['success'])
-            st.rerun()
-
-        st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and is_paid else 'Pro Only'}")
-        fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free or not is_paid)
-        if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free or not is_paid):
-            st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
-            st.success(T['success'])
-            st.rerun()
-
-    with tab2:
-        st.write(f"**{T['tool3']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-        email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free or not is_paid)
-        if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free or not is_paid):
-            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-            for col in email_cols: 
-                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern, str(x)) else "")
-            st.success(T['success'])
-            st.rerun()
-
-        st.write(f"**{T['tool4']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-        phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free or not is_paid)
-        if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free or not is_paid):
-            for col in phone_cols: 
-                st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
-            st.success(T['success'])
-            st.rerun()
-
-    with tab3:
-        st.write(f"**{T['tool5']}** ✅ Free + Pro")
-        case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
-        case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
-        if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
-            for col in case_cols: 
-                st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper() if case_opt == "Uppercase" else st.session_state.df_clean[col].str.lower() if case_opt == "Lowercase" else st.session_state.df_clean[col].str.title()
-            st.success(T['success'])
-            st.rerun()
-
-        st.write(f"**{T['tool6']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-        spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free or not is_paid)
-        if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free or not is_paid):
-            for col in spec_cols: 
-                st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
-            st.success(T['success'])
-            st.rerun()
-
-        st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-        old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free or not is_paid)
-        new = st.text_input("New column name", key="inp_new", disabled=is_free or not is_paid)
-        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free or not is_paid) and new:
-            st.session_state.df_clean.rename(columns={old: new}, inplace=True)
-            st.success(T['success'])
-            st.rerun()
-
-        st.write(f"**{T['tool8']}** ✅ Free + Pro")
-        if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-            st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
-            st.success(T['success'])
-            st.rerun()
-
-        st.write(f"**{T['tool9']}** ✅ Free + Pro")
-        trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
-        if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
-            for col in trim_cols: 
-                st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip()
-            st.success(T['success'])
-            st.rerun()
-
-        st.write(f"**{T['tool10']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
-        spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free or not is_paid)
-        if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free or not is_paid):
-            for col in spell_cols: 
-                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).replace("teh", "the").replace("recieve", "receive").title())
-            st.success(T['success'])
-            st.rerun()
-
-    st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
-    if st.session_state.show_balloon:
-        st.balloons()
-        st.session_state.show_balloon = False
-
-    if st.session_state.plan == "free":
-        col1, col2 = st.columns(2)
-        csv = st.session_state.df_clean.to_csv(index=False).encode()
-        if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
-            st.session_state.show_balloon = True
-            st.rerun()
-        excel = io.BytesIO()
-        st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-        if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
-            st.session_state.show_balloon = True
-            st.rerun()
-    elif st.session_state.plan == "pro":
-        if not is_paid:
-            st.warning(T['wait_approval'])
-            st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
-            upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
-            qr = qrcode.make(upi_link)
-            buf = io.BytesIO()
-            qr.save(buf, format="PNG")
-            st.image(buf.getvalue(), width=220)
-            if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
-                st.session_state.payment_clicked = True
+        tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
+        with tab1:
+            st.write(f"**{T['tool1']}** ✅ Free + Pro")
+            date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
+            if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
+                for col in date_cols: 
+                    st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
+                st.success(T['success'])
                 st.rerun()
-        else:
+
+            st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and is_paid else 'Pro Only'}")
+            fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free or not is_paid)
+            if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free or not is_paid):
+                st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
+                st.success(T['success'])
+                st.rerun()
+
+        with tab2:
+            st.write(f"**{T['tool3']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+            email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free or not is_paid)
+            if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free or not is_paid):
+                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                for col in email_cols: 
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern, str(x)) else "")
+                st.success(T['success'])
+                st.rerun()
+
+            st.write(f"**{T['tool4']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+            phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free or not is_paid)
+            if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free or not is_paid):
+                for col in phone_cols: 
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
+                st.success(T['success'])
+                st.rerun()
+
+        with tab3:
+            st.write(f"**{T['tool5']}** ✅ Free + Pro")
+            case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
+            case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
+            if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
+                for col in case_cols: 
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper() if case_opt == "Uppercase" else st.session_state.df_clean[col].str.lower() if case_opt == "Lowercase" else st.session_state.df_clean[col].str.title()
+                st.success(T['success'])
+                st.rerun()
+
+            st.write(f"**{T['tool6']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+            spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free or not is_paid)
+            if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free or not is_paid):
+                for col in spec_cols: 
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
+                st.success(T['success'])
+                st.rerun()
+
+            st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+            old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free or not is_paid)
+            new = st.text_input("New column name", key="inp_new", disabled=is_free or not is_paid)
+            if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free or not is_paid) and new:
+                st.session_state.df_clean.rename(columns={old: new}, inplace=True)
+                st.success(T['success'])
+                st.rerun()
+
+            st.write(f"**{T['tool8']}** ✅ Free + Pro")
+            if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
+                st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
+                st.success(T['success'])
+                st.rerun()
+
+            st.write(f"**{T['tool9']}** ✅ Free + Pro")
+            trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
+            if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
+                for col in trim_cols: 
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip()
+                st.success(T['success'])
+                st.rerun()
+
+            st.write(f"**{T['tool10']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+            spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free or not is_paid)
+            if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free or not is_paid):
+                for col in spell_cols: 
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).replace("teh", "the").replace("recieve", "receive").title())
+                st.success(T['success'])
+                st.rerun()
+
+        st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
+        if st.session_state.show_balloon:
+            st.balloons()
+            st.session_state.show_balloon = False
+
+        if st.session_state.plan == "free":
             col1, col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
-            if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
+            if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
                 st.session_state.show_balloon = True
                 st.rerun()
             excel = io.BytesIO()
             st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
+            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
                 st.session_state.show_balloon = True
                 st.rerun()
+        elif st.session_state.plan == "pro":
+            if not is_paid:
+                st.warning(T['wait_approval'])
+                st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
+                upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
+                qr = qrcode.make(upi_link)
+                buf = io.BytesIO()
+                qr.save(buf, format="PNG")
+                st.image(buf.getvalue(), width=220)
+                if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
+                    st.session_state.payment_clicked = True
+                    st.rerun()
+            else:
+                col1, col2 = st.columns(2)
+                csv = st.session_state.df_clean.to_csv(index=False).encode()
+                if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
+                    st.session_state.show_balloon = True
+                    st.rerun()
+                excel = io.BytesIO()
+                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
+                    st.session_state.show_balloon = True
+                    st.rerun()
