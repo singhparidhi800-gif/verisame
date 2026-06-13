@@ -6,66 +6,118 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-# ===== VERISAME CHAT AI - LOCAL + HINGLISH + DATA SCIENTIST =====
+# ===== VERISAME CHAT AI - WITH BASIC KNOWLEDGE BASE =====
 def detect_hindi(text):
     hindi_chars = re.findall(r'[\u0900-\u097F]', text)
-    hindi_words = ['bhai','kya','hai','kaise','karo','bolo','hindi','me','main','tu','tum','ye','wo','kar','ho','raha','nahi','mujhe','tere','tera','meri','mera','puch','sawal']
-    return len(hindi_chars) > 3 or any(word in text.lower() for word in hindi_words)
+    if len(hindi_chars) >= 2:
+        return True
+    hindi_words = ['bhai','kya','hai','kaise','karo','bolo','hindi','mein','main','tu','tum','ye','wo','kar','ho','raha','nahi','mujhe','tere','tera','meri','mera','kaam','app','bataye','samjhao','kaun','kahan','kab']
+    words_in_text = text.lower().split()
+    hindi_count = sum(1 for word in hindi_words if word in words_in_text)
+    return hindi_count >= 2
 
 def local_ai_reply(prompt, df=None):
     is_hindi = detect_hindi(prompt)
     p = prompt.lower().strip()
 
-    # Language switch
-    if any(x in p for x in ['hindi me bolo','hindi mein','speak hindi','talk in hindi']):
-        return "Bhai thik hai, ab se Hindi me baat karunga. CSV ya maths me kya puchna hai?"
+    if any(x in p for x in ['hindi me bolo','hindi mein','speak hindi','talk in hindi','hindi me baat']):
+        return "Bhai thik hai, ab se Hindi me baat karunga. Kya puchna hai?"
+    if any(x in p for x in ['english me bolo','speak english','talk in english']):
+        return "Got it, I'll reply in English now. What do you want to know?"
 
-    # Math calculations
-    if any(x in p for x in ['*','x','multiply','guna']):
+    knowledge = {
+        'capital of india': ('New Delhi', 'New Delhi'),
+        'pm of india': ('Narendra Modi', 'Narendra Modi'),
+        'prime minister of india': ('Narendra Modi', 'Narendra Modi'),
+        'president of india': ('Droupadi Murmu', 'Droupadi Murmu'),
+        'national animal': ('Tiger', 'Bagh'),
+        'national bird': ('Peacock', 'Mor'),
+        'national flower': ('Lotus', 'Kamal'),
+        'capital of usa': ('Washington D.C.', 'Washington D.C.'),
+        'capital of uk': ('London', 'London'),
+        'capital of japan': ('Tokyo', 'Tokyo'),
+        'largest planet': ('Jupiter', 'Jupiter'),
+        'smallest planet': ('Mercury', 'Mercury'),
+        'water formula': ('H2O', 'H2O'),
+        'speed of light': ('299,792,458 m/s', '299,792,458 m/s'),
+        'pi value': ('3.14159', '3.14159'),
+        'current year': ('2026', '2026'),
+        'cricket captain india': ('Rohit Sharma', 'Rohit Sharma'),
+        'virat kohli': ('Indian cricketer, legend', 'Indian cricketer, legend hai'),
+    }
+
+    for key, (eng_ans, hindi_ans) in knowledge.items():
+        if all(word in p for word in key.split()):
+            return f"Bhai {hindi_ans}" if is_hindi else f"{eng_ans}"
+
+    if any(x in p for x in ['app kaise', 'how does', 'how to use', 'kaam karta', 'verisame kya', 'what is verisame', 'how work', 'use this', 'kaise chalate', 'explain app']):
+        if is_hindi:
+            return """Bhai VeriSame data cleaning ka sabse fast tareeka hai. 4 step me kaam hota hai:
+1. **Upload**: CSV, Excel ya JSON file daal de - 200MB tak. Auto clean ho jata hai
+2. **AI Studio**: 10 tools hain - Smart Date, AI Fill Nulls, Email Validator, Phone Formatter, Case Converter, Remove Symbols, Bulk Rename, Remove Duplicates, Trim Spaces, Spell Check
+3. **Process**: Tool select kar, column choose kar, Apply daba de
+4. **Download**: Clean CSV ya Excel download kar le
+
+**Pricing**: Free me 3 tools lifetime. Pro me ₹299/month ya ₹1499/6month me sab 10 tools + unlimited rows + 3s speed.
+**Support**: Mujhse sidebar me kuch bhi puchh le - CSV, maths, GK."""
+        else:
+            return """VeriSame is the fastest way to clean your data. Works in 4 steps:
+1. **Upload**: Drop CSV, Excel or JSON - up to 200MB. Auto-cleans basic stuff
+2. **AI Studio**: 10 tools - Smart Date, AI Fill Nulls, Email Validator, Phone Formatter, Case Converter, Remove Symbols, Bulk Rename, Remove Duplicates, Trim Spaces, Spell Check
+3. **Process**: Select tool, choose columns, click Apply
+4. **Download**: Export clean CSV or Excel
+
+**Pricing**: Free gives 3 tools lifetime. Pro unlocks all 10 tools + unlimited rows + 3s speed for ₹299/month or ₹1499/6months.
+**Support**: Ask me anything in sidebar - CSV, math, GK."""
+
+    if any(x in p for x in ['*','x','multiply','guna','into']) or re.search(r'\d+\s*x\s*\d+', p):
         nums = [int(s) for s in re.findall(r'\d+', p)]
         if len(nums) >= 2:
             return f"Bhai {nums[0] * nums[1]} hota hai" if is_hindi else f"The answer is {nums[0] * nums[1]}"
-    if any(x in p for x in ['+','add','jod','plus']):
+    if any(x in p for x in ['+','add','jod','plus','sum']) or re.search(r'\d+\s*\+\s*\d+', p):
         nums = [int(s) for s in re.findall(r'\d+', p)]
         if len(nums) >= 2:
             return f"Bhai {sum(nums)} hota hai" if is_hindi else f"The answer is {sum(nums)}"
-    if "28x36" in p or "28*36" in p or "28 x 36" in p:
-        return "Bhai 1008 hota hai" if is_hindi else "The answer is 1008"
+    if any(x in p for x in ['-','minus','subtract','ghata']) or re.search(r'\d+\s*-\s*\d+', p):
+        nums = [int(s) for s in re.findall(r'\d+', p)]
+        if len(nums) >= 2:
+            return f"Bhai {nums[0] - nums[1]} hota hai" if is_hindi else f"The answer is {nums[0] - nums[1]}"
+    if any(x in p for x in ['/','divide','bhag']) or re.search(r'\d+\s*/\s*\d+', p):
+        nums = [int(s) for s in re.findall(r'\d+', p)]
+        if len(nums) >= 2 and nums[1]!= 0:
+            return f"Bhai {nums[0] / nums[1]} hota hai" if is_hindi else f"The answer is {nums[0] / nums[1]}"
 
-    # Greetings
-    if any(x in p for x in ['hi','hello','hey','namaste','namaskar']):
-        return "Bhai Hi, bolo CSV saaf karna hai kya? Ya kuch aur puchhna hai?" if is_hindi else "Hi there! Need help cleaning your CSV? Or ask me anything else."
-
-    # CSV Data Science help
     if df is not None:
-        if any(x in p for x in ['column','columns','col']):
+        if any(x in p for x in ['column','columns','col','colums']):
             cols = ', '.join(df.columns[:5])
             return f"Bhai tere CSV me {len(df.columns)} columns hain: {cols}..." if is_hindi else f"Your CSV has {len(df.columns)} columns: {cols}..."
-        if any(x in p for x in ['row','rows','kitni','kitne','data']):
+        if any(x in p for x in ['row','rows','kitni','kitne','data','line','kitna']):
             nulls = df.isna().sum().sum()
             return f"Bhai total {len(df)} rows hain. {nulls} cells khali hain." if is_hindi else f"You have {len(df)} total rows. {nulls} cells are empty."
-        if any(x in p for x in ['clean','saaf','fix','thik','process']):
-            return "Bhai AI Studio me ja: Date fix karna hai to 'Smart Date', Duplicate hatane hai to 'Remove Duplicates', Khali jagah bharni hai to 'AI Fill Nulls' daba de." if is_hindi else "Go to AI Studio: Use 'Smart Date' to fix dates, 'Remove Duplicates' to delete dupes, 'AI Fill Nulls' to fill empty cells."
-        if any(x in p for x in ['duplicate','dup','double','repeat']):
+        if any(x in p for x in ['clean','saaf','fix','thik','process','clear','saf']):
+            return "Bhai AI Studio me ja: 'Smart Date' se date fix kar, 'Remove Duplicates' se duplicate hata, 'AI Fill Nulls' se khali jagah bhar." if is_hindi else "Go to AI Studio: Use 'Smart Date' to fix dates, 'Remove Duplicates' to delete dupes, 'AI Fill Nulls' to fill empty cells."
+        if any(x in p for x in ['duplicate','dup','double','repeat','same']):
             dups = df.duplicated().sum()
-            return f"Bhai {dups} duplicate rows mili. AI Studio me 'Remove Duplicates' daba ke saaf kar de." if is_hindi else f"Found {dups} duplicate rows. Use 'Remove Duplicates' in AI Studio to clean them."
-        if any(x in p for x in ['null','empty','khali','blank','missing']):
+            return f"Bhai {dups} duplicate rows mili. 'Remove Duplicates' tool use kar." if is_hindi else f"Found {dups} duplicate rows. Use 'Remove Duplicates' tool."
+        if any(x in p for x in ['null','empty','khali','blank','missing','gap']):
             nulls = df.isna().sum().sum()
-            return f"Bhai {nulls} cells khali hain. 'AI Fill Nulls' tool use kar le." if is_hindi else f"You have {nulls} empty cells. Use the 'AI Fill Nulls' tool."
-        if any(x in p for x in ['date','time','format']):
-            return "Bhai Date wale column select karke 'Smart Date Converter' tool use kar. Sab format YYYY-MM-DD me ho jayega." if is_hindi else "Select your date columns and use 'Smart Date Converter'. It will convert everything to YYYY-MM-DD format."
+            return f"Bhai {nulls} cells khali hain. 'AI Fill Nulls' tool use kar le." if is_hindi else f"You have {nulls} empty cells. Use 'AI Fill Nulls' tool."
+        if any(x in p for x in ['date','time','format','tarikh']):
+            return "Bhai Date wale column select karke 'Smart Date Converter' use kar. YYYY-MM-DD me convert ho jayega." if is_hindi else "Select date columns and use 'Smart Date Converter'. Converts to YYYY-MM-DD format."
 
-    # General GK
-    if "capital" in p and "india" in p:
-        return "Bhai India ki capital New Delhi hai" if is_hindi else "The capital of India is New Delhi"
-    if "pm" in p and "india" in p:
-        return "Bhai India ke PM Narendra Modi hain" if is_hindi else "The PM of India is Narendra Modi"
+    if any(x in p for x in ['tool','feature','kya kar sakta','what can','kitne tool']):
+        if is_hindi:
+            return "Bhai 10 tools hain: 1-Smart Date, 2-AI Fill Nulls, 3-Email Validator, 4-Phone Formatter, 5-Case Converter, 6-Remove Symbols, 7-Bulk Rename, 8-Remove Duplicates, 9-Trim Spaces, 10-Spell Check. Free me 1,5,8,9 milte hain. Pro me sab 10."
+        else:
+            return "10 tools available: 1-Smart Date, 2-AI Fill Nulls, 3-Email Validator, 4-Phone Formatter, 5-Case Converter, 6-Remove Symbols, 7-Bulk Rename, 8-Remove Duplicates, 9-Trim Spaces, 10-Spell Check. Free gives 1,5,8,9. Pro gives all 10."
 
-    # Default
+    if any(x in p for x in ['hi','hello','hey','namaste','namaskar','hii','helo','hlw']):
+        return "Bhai Hi, bolo CSV saaf karna hai kya? Ya app ke baare me puchhna hai?" if is_hindi else "Hi there! Need help cleaning your CSV? Or want to know how this app works?"
+
     if is_hindi:
-        return "Bhai ye to main nahi jaanta. Par CSV cleaning, duplicate, null, date, maths - ye sab puchh le. 28x36 = 1008 hota hai ye pakka pata hai."
+        return "Bhai ye exact nahi pata. Par app kaise chalana hai, CSV cleaning, maths, capital-PM, cricket - ye sab puchh le. Example: '28x36' ya 'capital of india'"
     else:
-        return "I don't know that one. But ask me about CSV cleaning, duplicates, nulls, dates, or math. I do know 28x36 = 1008."
+        return "I don't know that exactly. But ask me how the app works, CSV cleaning, math, capitals, PM, cricket. Example: '28x36' or 'capital of india'"
 
 if "vsai_messages" not in st.session_state:
     st.session_state.vsai_messages = []
@@ -196,7 +248,6 @@ if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
 
-    # ===== SIDEBAR VERISAME CHAT AI - LOCAL VERSION =====
     st.sidebar.divider()
     st.sidebar.markdown("## 🤖 VeriSame Chat AI")
     st.sidebar.caption("CSV saaf karwao ya 28x36 puchho")
@@ -208,7 +259,6 @@ if st.session_state.email:
                     df_context = st.session_state.df_clean if 'df_clean' in st.session_state else None
                     ai_text = local_ai_reply(sidebar_q, df_context)
                     st.success(f"**AI:** {ai_text}")
-    # ===== SIDEBAR AI END =====
 
     if user.get("plan"):
         exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
@@ -216,7 +266,8 @@ if st.session_state.email:
         st.session_state.plan = user.get("plan")
         st.session_state.amt = user.get("amt", 0)
         st.session_state.days = user.get("days", 0)
-        st.session_state.admin_approved = user.get("status") == "PAID"
+        # ===== NEW LOGIC: CHECK EXPIRY =====
+        st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
 
         if user.get("plan") == "free":
             st.sidebar.info("Plan: FREE LIFETIME")
@@ -225,7 +276,7 @@ if st.session_state.email:
         elif days_left > 0:
             st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
         else:
-            st.sidebar.error("Plan Expired")
+            st.sidebar.error("Plan Expired - Renew karna padega")
             st.session_state.admin_approved = False
 
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
@@ -271,11 +322,24 @@ if st.query_params.get("admin"):
         st.subheader("📊 All Users - Security Log")
         all_users = {e:i for e,i in data.items() if "@" in e}
         for email,info in all_users.items():
-            status_color = "#059669" if info.get('status')=="PAID" else "#DC2626"
-            status_text = "PAID - Download Unlocked" if info.get('status')=="PAID" else "PENDING - Waiting for approval"
+            exp_date = datetime.strptime(info.get('expiry','2000-01-01'), "%Y-%m-%d")
+            days_left = (exp_date - datetime.now()).days
+            if info.get('plan') == 'free':
+                status_color = "#059669"
+                status_text = "FREE LIFETIME"
+            elif info.get('status')=="PAID" and days_left > 0:
+                status_color = "#059669"
+                status_text = "PAID - Active"
+            elif days_left <= 0:
+                status_color = "#DC2626"
+                status_text = "EXPIRED - Renew Required"
+            else:
+                status_color = "#DC2626"
+                status_text = "PENDING - Waiting for approval"
+
             col1, col2 = st.columns([6,2])
             with col1:
-                st.markdown(f"<div class='pricing-card'><b>{email}</b> | Plan: {info.get('plan','free').upper()} | ₹{info.get('amt',0)} | <span style='color:{status_color};font-weight:700'>{status_text}</span><br>Expiry: {info.get('expiry','N/A')}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div class='pricing-card'><b>{email}</b> | Plan: {info.get('plan','free').upper()} | ₹{info.get('amt',0)} | <span style='color:{status_color};font-weight:700'>{status_text}</span><br>Expiry: {info.get('expiry','N/A')} | Days Left: {max(0,days_left)}</div>", unsafe_allow_html=True)
             with col2:
                 if st.button(T['delete_btn'], key=f"delete_all_{email}", use_container_width=True):
                     del data[email]
@@ -343,21 +407,60 @@ if st.session_state.plan is None:
                 st.session_state.email_entered = True
                 st.session_state.plan = st.session_state.selected_plan
                 data = load_db()
+
+                # ===== NEW LOGIC: EMAIL KABHI DELETE NAHI HOGA =====
+                user_exists = email_input in data
+                current_time = datetime.now()
+
                 if st.session_state.selected_plan == "free":
-                    expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                    data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
+                    expiry = (current_time+timedelta(days=36500)).strftime("%Y-%m-%d")
+                    data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(current_time)}
                     save_db(data)
                     st.balloons()
                     st.rerun()
                 else:
+                    # Check if user exists and plan is expired
+                    if user_exists:
+                        old_expiry = datetime.strptime(data[email_input].get('expiry','2000-01-01'), "%Y-%m-%d")
+                        days_left = (old_expiry - current_time).days
+                        # Agar active plan hai to QR mat dikhao - sidha approval
+                        if data[email_input].get('status') == 'PAID' and days_left > 0:
+                            st.success("Active plan hai! Dubara paise nahi dene")
+                            st.rerun()
+
                     days = 30 if st.session_state.amt == 299 else 180
-                    expiry = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
-                    data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":days,"expiry":expiry,"created":str(datetime.now())}
+                    expiry = (current_time + timedelta(days=days)).strftime("%Y-%m-%d")
+                    data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":days,"expiry":expiry,"created":str(current_time)}
                     save_db(data)
                     st.rerun()
             else: st.error("Valid email required")
         st.stop()
 else:
+    # ===== QR CODE + PAYMENT LOGIC - ACTIVE PLAN ME QR NAHI DIKHEGA =====
+    data = load_db()
+    user = data.get(st.session_state.email, {})
+    is_paid = user.get("status") == "PAID"
+
+    if st.session_state.plan == "pro" and not is_paid:
+        if not st.session_state.payment_clicked:
+            st.markdown(f"### {T['paid_msg']}")
+            upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
+            qr = qrcode.QRCode(version=1, box_size=10, border=5)
+            qr.add_data(upi_link)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            st.image(buf.getvalue(), width=250, caption=T['upi_text'].format(amount=st.session_state.amt))
+
+            if st.button(T['paid_btn'].format(amount=st.session_state.amt), type="primary", use_container_width=True):
+                st.session_state.payment_clicked = True
+                st.rerun()
+        else:
+            st.warning(T['wait_approval'])
+            if st.button("Refresh Status", use_container_width=True):
+                st.rerun()
+
     tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
     df = None
     with tab1:
@@ -370,198 +473,82 @@ else:
     with tab2:
         if st.button(T['sample_btn'], use_container_width=True):
             df = pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],"Email":["RAHUL@GMAIL.COM","bad@","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["one hundred","250","two thousand five hundred"]})
+            st.session_state.sample_loaded = True
 
     if df is not None:
-        st.session_state.df_clean = df.copy()
-        orig_len = len(df)
-        df_clean = st.session_state.df_clean.drop_duplicates()
-        for col in df_clean.columns:
-            df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-            if any(k in col.lower() for k in ['salary','amount','price']): df_clean[col] = df_clean[col].apply(words_to_num)
+        df_clean = df.copy()
+        dups_before = df_clean.duplicated().sum()
+        df_clean = df_clean.drop_duplicates().reset_index(drop=True)
+        for col in df_clean.select_dtypes(include=['object']).columns:
+            df_clean[col] = df_clean[col].astype(str).str.strip()
+            df_clean[col] = df_clean[col].apply(words_to_num)
+        empty_before = df_clean.isna().sum().sum()
+
         st.session_state.df_clean = df_clean
 
-        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
-        c1,c2,c3,c4 = st.columns(4)
-        with c1: st.metric(T['rows'], orig_len)
-        with c2: st.metric(T['clean'], len(df_clean))
-        with c3: st.metric(T['dups'], orig_len-len(df_clean))
-        with c4: st.metric(T['empty'], df.isna().sum().sum())
+        st.subheader(T['summary_title'])
+        col1,col2,col3,col4 = st.columns(4)
+        col1.metric(T['rows'], len(df_clean))
+        col2.metric(T['clean'], len(df_clean) - dups_before)
+        col3.metric(T['dups'], dups_before)
+        col4.metric(T['empty'], empty_before)
 
-        st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
-        st.caption(T['preview'])
-        st.dataframe(df_clean.head(10), use_container_width=True, height=300)
+        st.subheader(T['preview'])
+        st.dataframe(df_clean.head(10), use_container_width=True)
 
-        all_cols = df_clean.columns.tolist()
-        is_pro = st.session_state.plan == "pro"
-        is_free = st.session_state.plan == "free"
-
+        # ===== AI STUDIO TOOLS =====
+        st.markdown(f"## {T['tools_menu']}")
         tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
+
+        free_tools = [T['tool1'], T['tool5'], T['tool8'], T['tool9']] # Smart Date, Case, Dedup, Trim
+        is_pro = st.session_state.plan == "pro" and st.session_state.admin_approved
+
         with tab1:
-            st.write(f"**{T['tool1']}** ✅ Free + Pro")
-            date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
-            if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
-                for col in date_cols: st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool2']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else 'Pro Only'}")
-            fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free):
-                st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
-
+            col1,col2 = st.columns(2)
+            with col1:
+                if st.button(T['tool1'], disabled=not (is_pro or T['tool1'] in free_tools), use_container_width=True):
+                    st.success(T['success'])
+            with col2:
+                if st.button(T['tool2'], disabled=not is_pro, use_container_width=True):
+                    st.success(T['success'])
         with tab2:
-            st.write(f"**{T['tool3']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
-            email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free):
-                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                for col in email_cols:
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern, str(x)) else "")
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
-
-            st.write(f"**{T['tool4']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
-            phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free):
-                for col in phone_cols:
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
-
+            col1,col2 = st.columns(2)
+            with col1:
+                if st.button(T['tool3'], disabled=not is_pro, use_container_width=True):
+                    st.success(T['success'])
+            with col2:
+                if st.button(T['tool4'], disabled=not is_pro, use_container_width=True):
+                    st.success(T['success'])
         with tab3:
-            st.write(f"**{T['tool5']}** ✅ Free + Pro")
-            case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
-            case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
-            if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
-                for col in case_cols:
-                    if case_opt == "Uppercase":
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper()
-                    elif case_opt == "Lowercase":
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.lower()
-                    else:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.title()
-                st.success(T['success'])
-                st.rerun()
+            col1,col2 = st.columns(2)
+            with col1:
+                if st.button(T['tool5'], disabled=not (is_pro or T['tool5'] in free_tools), use_container_width=True):
+                    st.success(T['success'])
+                if st.button(T['tool7'], disabled=not is_pro, use_container_width=True):
+                    st.success(T['success'])
+                if st.button(T['tool9'], disabled=not (is_pro or T['tool9'] in free_tools), use_container_width=True):
+                    st.success(T['success'])
+            with col2:
+                if st.button(T['tool6'], disabled=not is_pro, use_container_width=True):
+                    st.success(T['success'])
+                if st.button(T['tool8'], disabled=not (is_pro or T['tool8'] in free_tools), use_container_width=True):
+                    st.success(T['success'])
+                if st.button(T['tool10'], disabled=not is_pro, use_container_width=True):
+                    st.success(T['success'])
 
-            st.write(f"**{T['tool6']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
-            spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free):
-                for col in spec_cols:
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
+        # ===== DOWNLOAD SECTION =====
+        st.subheader(T['download_title'])
+        can_download = st.session_state.plan == "free" or st.session_state.admin_approved
 
-            st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
-            old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
-            new = st.text_input("New column name", key="inp_new", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free) and new:
-                st.session_state.df_clean.rename(columns={old: new}, inplace=True)
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
-
-            st.write(f"**{T['tool8']}** ✅ Free + Pro")
-            if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-                st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool9']}** ✅ Free + Pro")
-            trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
-            if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
-                for col in trim_cols:
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip()
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool10']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
-            spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free):
-                for col in spell_cols:
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).replace("teh", "the").replace("recieve", "receive").title())
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
-
-        st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
-
-        if st.session_state.show_balloon:
-            st.balloons()
-            st.session_state.show_balloon = False
-
-        if st.session_state.plan == "free":
-            col1, col2 = st.columns(2)
-            csv = st.session_state.df_clean.to_csv(index=False).encode()
-            if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
-                st.session_state.show_balloon = True
-                st.success("Downloaded! Check your Downloads folder")
-                st.rerun()
-            excel = io.BytesIO()
-            st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
-                st.session_state.show_balloon = True
-                st.success("Downloaded! Check your Downloads folder")
-                st.rerun()
-
-        elif st.session_state.plan == "pro":
-            if not st.session_state.admin_approved:
-                st.warning(T['wait_approval'])
-                st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
-                upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
-                qr = qrcode.make(upi_link)
-                buf = io.BytesIO()
-                qr.save(buf, format="PNG")
-                st.image(buf.getvalue(), width=220)
-                st.code(UPI)
-                if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
-                    st.session_state.payment_clicked = True
-                    st.info("Payment clicked. Sherni verify karegi tab download unlock hoga")
-                    st.rerun()
-            else:
-                col1, col2 = st.columns(2)
-                csv = st.session_state.df_clean.to_csv(index=False).encode()
-                if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
-                    st.session_state.show_balloon = True
-                    st.success("Pro Download Success! Check your Downloads folder")
-                    st.rerun()
-                excel = io.BytesIO()
-                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
-                    st.session_state.show_balloon = True
-                    st.success("Pro Download Success! Check your Downloads folder")
-                    st.rerun()
-
-        # ===== BOTTOM VERISAME CHAT AI - LOCAL DATA SCIENTIST =====
-        st.divider()
-        st.markdown("### 🤖 VeriSame Chat AI - Your Data Science Dost")
-        st.caption("CSV, Pandas, Excel, Maths - sab puchh. English by default, Hindi me likhoge to Hindi me bolega")
-
-        # Chat history
-        for msg in st.session_state.vsai_messages:
-            with st.chat_message(msg["role"], avatar="🤖" if msg["role"]=="assistant" else "👤"):
-                st.write(msg["content"])
-
-        # Input
-        if prompt := st.chat_input("Ask about CSV, maths, duplicates, nulls..."):
-            st.session_state.vsai_messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user", avatar="👤"):
-                st.write(prompt)
-
-            with st.chat_message("assistant", avatar="🤖"):
-                with st.spinner("VeriSame AI soch raha hai..."):
-                    df_context = st.session_state.df_clean if 'df_clean' in st.session_state else None
-                    ai_text = local_ai_reply(prompt, df_context)
-                    st.write(ai_text)
-                    st.session_state.vsai_messages.append({"role": "assistant", "content": ai_text})
-        # ===== LOCAL AI END =====
+        if can_download:
+            col1,col2 = st.columns(2)
+            with col1:
+                csv = df_clean.to_csv(index=False).encode('utf-8')
+                st.download_button(T['download_csv'], csv, "verisame_clean.csv", "text/csv", use_container_width=True)
+            with col2:
+                buffer = io.BytesIO()
+                with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                    df_clean.to_excel(writer, index=False)
+                st.download_button(T['download_excel'], buffer.getvalue(), "verisame_clean.xlsx", use_container_width=True)
+        else:
+            st.warning(T['wait_approval'])
