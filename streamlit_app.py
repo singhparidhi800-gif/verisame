@@ -137,7 +137,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# 🔥 PERFECTED AI KNOWLEDGE BASE ENGINE WITH LANGUAGE-MATCHING EMOTIONS
+# 🔥 AI KNOWLEDGE BASE ENGINE
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -162,7 +162,6 @@ def render_ai_chatbot(is_sidebar=False):
 
             reply = None
 
-            # 🛠️ 1. SEPARATE ENGLISH & HINDI CASUAL CHAT ENGINE (भाषा के हिसाब से सटीक जवाब)
             # --- English Casual Intent ---
             if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
                 if "uplode" in u or "upload" in u:
@@ -186,7 +185,7 @@ def render_ai_chatbot(is_sidebar=False):
             elif any(x in u for x in ["pagal ho", "dimag kharab"]):
                 reply = "🤪 **अरे नहीं मेरे भाई!** मैं पागल नहीं हूँ, बस डेटा एरर्स को देखकर मेरा इंजन थोड़ा सुपर-फ़ास्ट दौड़ने लगता है! ⚡"
 
-            # 🧮 2. Fast Math Engine
+            # 🧮 Fast Math Engine
             if not reply:
                 math_clean = u.replace('x', '*')
                 match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
@@ -199,127 +198,34 @@ def render_ai_chatbot(is_sidebar=False):
                     reply = f"🔢 **Math Calculator Engine:** \nExpression: `{n1} {op} {n2}` \n**Result:** `{res}`"
 
             if not reply:
-                # 🧠 50 MASTER QUESTIONS AND ANSWERS DATA MAP (BASIC TO ADVANCED)
                 knowledge_map = {
-                    # --- BASIC QUESTIONS (1-15) ---
-                    "what this app can do what is app work app capability utility function software use details": 
-                        "💎 **VeriSame App Capability:** This app functions as an automated data-cleaning pipeline! It automatically repairs empty boxes, formats messy dates, formats phone numbers, drops duplicates, corrects spelling typos, and converts written word numbers (like 'two hundred') into clean integers in under 3 seconds!",
-                    "hi hello hey hello ai hi ai ola salam greeting system startup": 
-                        "👋 **Hello there!** Welcome to VeriSame! How can I speed up your dataset processing workflows today?",
-                    "how are you kaise ho kaise hain how it goes sab badhiya wellness state": 
-                        "✨ **I am doing fantastic!** Powered up, synchronized, and completely ready to smash data errors under 3 seconds.",
-                    "your name naam kya who are you tum kaun ho identify system role profile": 
-                        "💎 I am **VeriSame Engine AI**, a hyper-customized data assistant built to answer software queries and guide premium pipelines!",
-                    "founder made creator created developer owner built make kaun banaya owner kaun anugya sing": 
-                        "👑 **Founder & Creator:** VeriSame was architected and developed by **Anugya Singh** to eliminate manual data cleaning frustration.",
-                    "how many tools number of tools total tools kitne tool counts": 
-                        "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** plus a special financial **Word-to-Number conversion algorithm**!",
-                    "is this app free free version tier lifetime free cost paisa lagega": 
-                        "✨ **Yes, the base tier is Free Forever!** You get 1,000 rows processing, 3 basic pipeline tools, and direct CSV/Excel exports without spending any money.",
-                    "what is pro version premium cost details charges features upgrades": 
-                        "💎 **Pro Plan:** Unlocks absolute unlimited rows, lightning-fast 3-second vector speed, priority customer support channel, and all **10 premium AI engineering tools**!",
-                    "how to upload file select file spreadsheet csv excel insert data dataset load": 
-                        "📤 **File Upload Steps:** Go to the 'Upload File' tab, drag and drop or browse your `.csv`, `.xlsx`, or `.json` file from your device, and it will automatically show a live preview summary!",
-                    "how to download file save file download csv excel export sheet download output": 
-                        "🎯 **Downloading Data:** Scroll down to the bottom 'Export Data' section, choose 'Download as CSV' or 'Download as Excel' buttons, and your clean file will immediately save!",
-                    "what formats supported extension xlsx xls csv json files allowed file types": 
-                        "📊 **Supported Extensions:** VeriSame perfectly handles plain text `.csv` formats, heavy corporate `.xlsx` / `.xls` spreadsheets, and database `.json` structures.",
-                    "what is tool 1 date converter format date clean timeline layout yyyy mm dd": 
-                        "📅 **Tool 1: Smart Date Converter** Unifies chaotic and mixed date strings layout into the internationally clean 'YYYY-MM-DD' model automatically.",
-                    "what is tool 5 case converter capitalization lower uppercase caps string text adjust": 
-                        "🔠 **Tool 5: Case Converter** Alters string layouts across selected headers instantly into pure UPPERCASE, lowercase, or capitalized Title Case formats.",
-
-                    # --- INTERMEDIATE QUESTIONS (16-35) ---
-                    "what is tool 2 fill nulls blank data missing values row fill empty blocks na value": 
-                        "🔓 **Tool 2: AI Fill Nulls (PRO)** Searches the dataset structure for blank boxes or missing variables and inserts an organized logical token like 'N/A' or `0` automatically.",
-                    "what is tool 3 email validator filter email bad domains address active correct email check": 
-                        "📧 **Tool 3: Email Validator (PRO)** Runs strict regex protocols to remove structurally invalid emails, extracts spam configurations, and leaves purely valid email ids.",
-                    "what is tool 4 phone formatter strip text number extract clean mobile contacts digits only": 
-                        "📞 **Tool 4: Phone Formatter (PRO)** Strips away hyphens, country bracket spaces, or alphabet noise inside phone columns, providing clean numerical values.",
-                    "what is tool 6 remove symbols spec characters clean junk signs filter noise hashtags": 
-                        "🔣 **Tool 6: Remove Symbols & Noise (PRO)** Wipes off unreadable text characters (like #, $, %, *) from data blocks while fully protecting basic numeric strings and parameters.",
-                    "what is tool 7 bulk rename heading title change header text edit column tags modify rows": 
-                        "✏️ **Tool 7: Bulk Header Renamer (PRO)** Allows you to select any existing sheet header from a drop-down menu and rewrite a clean custom label instantly.",
-                    "what is tool 8 remove duplicates unique records primary entries repeat drop delete copies": 
-                        "🔥 **Tool 8: Remove Duplicates** Erases repetitive row entries inside the sheet automatically to guarantee that every single entry remains 100% unique.",
-                    "what is tool 9 trim spaces remove gaps trailing spaces double gap fix text cleaner field spacing": 
-                        "✂️ **Tool 9: Trim Spaces** Wipes off structural leading, trailing, or hazardous double whitespaces hidden inside string cells which cause lookup failures.",
-                    "what is tool 10 spell check correct spelling auto correction typos error logic word repair dictionary": 
-                        "🧠 **Tool 10: Spell Check & Auto-Correct (PRO)** Instantly fixes common data typing errors (like 'teh' to 'the' or 'recieve' to 'receive') to deliver top-tier clean reports.",
-                    "what is words to number algorithm text money salary text calculation conversion feature digit words": 
-                        "🔢 **Word-to-Number Engine:** A premium automated tool that converts written words (like 'one hundred fifty' or 'two thousand five hundred') into pure active numbers (150 or 2500) whenever found under Salary/Price columns!",
-                    "all tools good safe trust performance quality tools validation premium stability": 
-                        "💎 **Absolutely! All 10 tools are highly optimized.** They work using vectorized Python pandas commands, meaning they process your columns instantly without damaging or changing other columns.",
-                    "which plan should i buy decision matrix advice help select membership choice": 
-                        "🤔 **Plan Recommendation:** If your spreadsheets have **less than 1,000 lines** and basic tools are enough, use the **Free Lifetime Tier**. For heavy business files, choose **Pro Plan (₹299/Month)** to unlock full automation features!",
-                    "how long admin approval transaction wait verification time active window activation speed": 
-                        "⏳ **Verification Window:** standard manual approvals take around **10 to 30 minutes** maximum to confirm the transaction entry and unlock your system dashboard download.",
-                    "fiverr connection freelancing graphic work translation gig setup data services orders": 
-                        "💼 **Freelancing Setup:** VeriSame is perfectly designed for Fiverr freelancers! Clean massive client data sheets instantly here and deliver high-quality professional results on time.",
-                    "can i use on mobile laptop needed tablet friendly responsive layout pc requirement": 
-                        "📱 **100% Mobile Friendly:** No high-end PC or laptop required! This entire software is fully responsive and runs seamlessly inside your smartphone browser anywhere.",
-                    "is my data safe privacy leak security standard cloud storage storage rule file safety": 
-                        "🔒 **Absolute Privacy:** Your files are 100% secure. Everything is processed strictly within temporary volatile runtime memory and is **never stored or uploaded** to any permanent server database.",
-                    "can we apply multiple tools together pile up filters consecutive tool chaining combinations": 
-                        "🔄 **Multi-Tool Pipeline:** Yes! Select a column, apply a tool, then pick another tool/column and apply it again on the same dataset before exporting the final clean file.",
-                    "hindi language support multinational characters regional translation script compatibility": 
-                        "🌍 **Multilingual Engine:** Structural text algorithms like **Duplicate Removal (Tool 8)** and **Space Trimming (Tool 9)** work perfectly with Hindi font scripts and cell strings!",
-                    "file size limit capacity load block maximum dataset mb data crash protection": 
-                        "💾 **Storage Capacity:** VeriSame easily handles dataset file uploads of up to **50 Megabytes (MB)** smoothly without any processing lag or browser slow-down.",
-                    "refund policy cash back cancel subscription return value money protection": 
-                        "💸 **Subscription Refund:** We do not offer refund returns since digital access is unlocked instantly. We highly recommend exploring features using our comprehensive Free Tier first!",
-                    "failed payment money deducted upi issue payment error support processing loop queue": 
-                        "💳 **Payment Discrepancy:** No need to worry. Simply save your **UPI Transaction Reference Number** screenshot and email support to get fast track manual approval.",
-
-                    # --- ADVANCED QUESTIONS (36-50) ---
-                    "python pandas library implementation architecture code processing backend framework engineering model": 
-                        "⚙️ **System Architecture:** Built on top of a highly optimized Python framework. It uses vectorized pandas loops combined with deep regular expressions (`re`) for clean, secure execution.",
-                    "data science use analytics preparation feature engineering modeling pipeline values formatting data analytics": 
-                        "🚀 **Data Science Utility:** Data preprocessing consumes 80% of a scientist's schedule! VeriSame completely automates data-cleaning workflows, making datasets ready for ML models instantly.",
-                    "why openpyxl dependency excel spreadsheet rendering reading backend libraries engine": 
-                        "📊 **Excel Engine:** VeriSame implements `openpyxl` as a core binary utility library to parse heavy multi-tab excel books while maintaining formatting tags.",
-                    "regex pattern matching verification algorithms technical expression custom string parsing structures": 
-                        "🧠 **Regex Core Architecture:** Complex structural validators like the email check deploy the pattern: `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}` to stop spam blocks.",
-                    "data lost damage rows alteration shifting column alignment error stability guarantee": 
-                        "🛡️ **Alignment Guarantee:** Transforming custom rows will **never** change your row order or affect non-selected columns. Your data structure remains 100% aligned.",
-                    "how to access admin panel sherni panel parameter credentials control query routes management": 
-                        "👑 **Admin Dashboard:** System admins can log in by adding `?admin=Sherni@123` to the end of the web URL string to view pending approval pipelines.",
-                    "difference between csv and excel binary plain text structural data performance speeds output layout": 
-                        "📊 **Data Formats:** CSV represents lightweight plain text data optimized for machine learning training. Excel sheets store heavy presentation business layouts with styles.",
-                    "troubleshooting steps system crash error fix file format invalid refresh browser workbook debug": 
-                        "🛠️ **System Debugging:** 1. Ensure file extension is `.csv` or `.xlsx`. 2. Verify that header blocks do not contain duplicate label text. 3. Reload your browser window.",
-                    "contact support team email resolution developer help desk communications ticketing system response": 
-                        "📧 **Support Operations:** You can reach the core developer support desk via standard email channels. Inquiries are generally processed within 12 to 24 hours.",
-                    "joke funny coding laugh database fun data story break humor relational": 
-                        "😂 **Data Humor:** Why did the Data Scientist break up with the Excel Sheet? *Because it had way too many structural attachment issues!*",
-                    "what happens when plan expires data delete downgrade tier timeline renewal warnings warning alerts": 
-                        "⚠️ **Subscription Expiry:** Once your premium plan expires, the system gracefully shifts your email back to the Free Tier. No data is lost, but premium tools will relock.",
-                    "critical notification alert banner days remaining valid subscription tracker mechanism count alerts": 
-                        "⏰ **Smart Alert Tracker:** The sidebar system includes a safety counter that automatically flags a red warning message when a paid account has 5 or fewer days remaining.",
-                    "volatile memory retention session state reset caching parameters local storage rules variables": 
-                        "🧠 **Session Mechanics:** Data runs completely within Streamlit’s volatile `st.session_state`. Refreshing the tab completely resets the system memory cache for top-tier security.",
-                    "duplicate handling criteria exact row scanning primary match absolute extraction method": 
-                        "🔥 **Dedup Logic:** Tool 8 implements python's `drop_duplicates()` function which scans the entire row width to make sure duplicate row groups are cleanly deleted.",
-                    "empty cells metric system calculation logic missing values check indicator metrics block counters": 
-                        "🎯 **Null Calculation:** The upper dashboard applies the cumulative sum operation `.isna().sum().sum()` to scan the entire data table and count total missing cells instantly."
+                    "what this app can do what is app work app capability utility function software use details": "💎 **VeriSame App Capability:** This app functions as an automated data-cleaning pipeline! It automatically repairs empty boxes, formats messy dates, formats phone numbers, drops duplicates, corrects spelling typos, and converts written word numbers into clean integers in under 3 seconds!",
+                    "hi hello hey hello ai hi ai ola salam greeting system startup": "👋 **Hello there!** Welcome to VeriSame! How can I speed up your dataset processing workflows today?",
+                    "how are you kaise ho kaise hain how it goes sab badhiya wellness state": "✨ **I am doing fantastic!** Powered up, synchronized, and completely ready to smash data errors under 3 seconds.",
+                    "your name naam kya who are you tum kaun ho identify system role profile": "💎 I am **VeriSame Engine AI**, a hyper-customized data assistant built to answer software queries and guide premium pipelines!",
+                    "founder made creator created developer owner built make kaun banaya owner kaun anugya sing": "👑 **Founder & Creator:** VeriSame was architected and developed by **Anugya Singh** to eliminate manual data cleaning frustration.",
+                    "how many tools number of tools total tools kitne tool counts": "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** plus a special financial **Word-to-Number conversion algorithm**!",
+                    "is this app free free version tier lifetime free cost paisa lagega": "✨ **Yes, the base tier is Free Forever!** You get 1,000 rows processing, 3 basic pipeline tools, and direct CSV/Excel exports without spending any money.",
+                    "what is pro version premium cost details charges features upgrades": "💎 **Pro Plan:** Unlocks absolute unlimited rows, lightning-fast 3-second vector speed, priority customer support channel, and all **10 premium AI engineering tools**!",
+                    "how to upload file select file spreadsheet csv excel insert data dataset load": "📤 **File Upload Steps:** Go to the 'Upload File' tab, drag and drop or browse your `.csv`, `.xlsx`, or `.json` file from your device, and it will automatically show a live preview summary!",
+                    "how to download file save file download csv excel export sheet download output": "🎯 **Downloading Data:** Scroll down to the bottom 'Export Data' section, choose 'Download as CSV' or 'Download as Excel' buttons, and your clean file will immediately save!",
+                    "what formats supported extension xlsx xls csv json files allowed file types": "📊 **Supported Extensions:** VeriSame perfectly handles plain text `.csv` formats, heavy corporate `.xlsx` / `.xls` spreadsheets, and database `.json` structures.",
+                    "what is tool 1 date converter format date clean timeline layout yyyy mm dd": "📅 **Tool 1: Smart Date Converter** Unifies chaotic and mixed date strings layout into the internationally clean 'YYYY-MM-DD' model automatically.",
+                    "what is tool 5 case converter capitalization lower uppercase caps string text adjust": "🔠 **Tool 5: Case Converter** Alters string layouts across selected headers instantly into pure UPPERCASE, lowercase, or capitalized Title Case formats."
                 }
 
-                # 🧠 NEW HYBRID INTELLIGENT SEARCH ENGINE
                 best_score = 0.0
                 best_reply = None
-
                 user_words = u.split()
                 
                 for key_string, answer_text in knowledge_map.items():
                     key_words = key_string.split()
-                    
                     matched_words = sum(1 for w in user_words if w in key_words)
                     word_ratio = matched_words / max(1, len(user_words))
-                    
                     seq_ratio = difflib.SequenceMatcher(None, u, key_string).ratio()
                     final_score = (word_ratio * 0.7) + (seq_ratio * 0.3)
                     
-                    if any(w in key_string for w in ["can do", "app work", "app do", "what is app", "how this app works"]) and any(uw in u for uw in ["app", "work", "do", "use", "works"]):
+                    if any(w in key_string for w in ["can do", "app work", "app do", "what is app"]) and any(uw in u for uw in ["app", "work", "do"]):
                         final_score += 0.5
                         
                     if final_score > best_score:
@@ -534,7 +440,8 @@ else:
             st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and is_paid else 'Pro Only'}")
             fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free or not is_paid)
             if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free or not is_paid):
-                st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
+                for col in fill_cols:
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna("N/A").replace("nan", "N/A")
                 st.success(T['success'])
                 st.rerun()
 
@@ -552,7 +459,7 @@ else:
             phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free or not is_paid)
             if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free or not is_paid):
                 for col in phone_cols: 
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.replace(r'\D', '', regex=True)
                 st.success(T['success'])
                 st.rerun()
 
@@ -562,7 +469,12 @@ else:
             case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
             if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
                 for col in case_cols: 
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper() if case_opt == "Uppercase" else st.session_state.df_clean[col].str.lower() if case_opt == "Lowercase" else st.session_state.df_clean[col].str.title()
+                    if case_opt == "Uppercase":
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
+                    elif case_opt == "Lowercase":
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
+                    else:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
                 st.success(T['success'])
                 st.rerun()
 
@@ -570,7 +482,7 @@ else:
             spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free or not is_paid)
             if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free or not is_paid):
                 for col in spec_cols: 
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
                 st.success(T['success'])
                 st.rerun()
 
@@ -592,7 +504,7 @@ else:
             trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
             if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
                 for col in trim_cols: 
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip()
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                 st.success(T['success'])
                 st.rerun()
 
@@ -600,7 +512,7 @@ else:
             spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free or not is_paid)
             if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free or not is_paid):
                 for col in spell_cols: 
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).replace("teh", "the").replace("recieve", "receive").title())
+                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: x.replace("teh", "the").replace("recieve", "receive").title())
                 st.success(T['success'])
                 st.rerun()
 
