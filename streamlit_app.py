@@ -461,18 +461,19 @@ else:
             if is_free:
                 st.info("Unlock in Pro - ₹299 or ₹1499")
 
-        with tab3:
-            st.write(f"**{T['tool5']}** ✅ Free + Pro")
-            case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
-            case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
-            if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
-                for col in case_cols:
-                    if case_opt == "Uppercase":
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper()
-                    elif case_opt == "Lowercase":
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.lower()
-                    else:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.title()
+            st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
+            old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
+            new = st.text_input("New column name", key="inp_new", disabled=is_free)
+            if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free) and new:
+                st.session_state.df_clean.rename(columns={old: new}, inplace=True)
+                st.success(T['success'])
+                st.rerun()
+            if is_free:
+                st.info("Unlock in Pro - ₹299 or ₹1499")
+
+            st.write(f"**{T['tool8']}** ✅ Free + Pro")
+            if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
+                st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                 st.success(T['success'])
                 st.rerun()
 
