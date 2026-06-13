@@ -454,7 +454,8 @@ else:
             if is_free:
                 st.info("Unlock in Pro - ₹299 or ₹1499")
 
-            st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
+            st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always                    
+            st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
                 st.success(T['success'])
                 st.rerun()
             if is_free:
