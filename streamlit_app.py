@@ -3,7 +3,7 @@ import json, os, io, qrcode
 import pandas as pd
 import re
 from datetime import datetime, timedelta
-import difflib  # 🧠 खुद से बेस्ट आंसर ढूंढने के लिए इंजन
+import difflib # 🧠 खुद से बेस्ट आंसर ढूंढने के लिए इंजन
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
@@ -57,7 +57,7 @@ T = {
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
@@ -107,7 +107,7 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 
 .stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1rem!important; margin-top: 1rem;}
 .stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(147,51,234,0.5);}
-.stButton>button:disabled {background: #e0e0e0!important; color: #999!important; border: 2px dashed #ccc!important; cursor: not-allowed; box-shadow: none;}
+.stButton>button:disabled {background: #e0e0!important; color: #999!important; border: 2px dashed #ccc!important; cursor: not-allowed; box-shadow: none;}
 
 .pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
 .pro-banner h2 {color: white!important;}
@@ -133,43 +133,41 @@ div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; b
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, specific tools, safety, calculations, or data science utilities!"}]
 
-for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved']:
+for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
     if key not in st.session_state:
-        st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
+        st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# 🔥 PERFECTED AI KNOWLEDGE BASE ENGINE (WITH HIGH-INTELLIGENCE FILTERING)
+# 🔥 PERFECTED AI KNOWLEDGE BASE ENGINE
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
     target.markdown("### 🤖 VeriSame Live AI Chat Studio")
-    
+
     chat_html = "<div style='max-height: 260px; overflow-y: auto; padding: 10px; background: rgba(255,255,255,0.9); border: 2px solid #9333ea; border-radius: 14px; margin-bottom: 10px;'>"
     for chat in st.session_state.chat_history:
         if chat["role"] == "assistant":
-            chat_html += f"<p style='color: #6b21a8 !important; margin: 5px 0;'><b>🤖 AI:</b> {chat['message']}</p>"
+            chat_html += f"<p style='color: #6b21a8!important; margin: 5px 0;'><b>🤖 AI:</b> {chat['message']}</p>"
         else:
-            chat_html += f"<p style='color: #000 !important; margin: 5px 0;'><b>👤 You:</b> {chat['message']}</p>"
+            chat_html += f"<p style='color: #000!important; margin: 5px 0;'><b>👤 You:</b> {chat['message']}</p>"
     chat_html += "</div>"
     target.markdown(chat_html, unsafe_allow_html=True)
-    
+
     with target.form(key=f"ai_chat_form_{'side' if is_sidebar else 'main'}", clear_on_submit=True):
         user_msg = st.text_input("Ask a question...", placeholder="e.g., Are all tools good? / App limits?", key=f"chat_in_{'side' if is_sidebar else 'main'}")
         submit = st.form_submit_button(label="Send Message 🚀")
-        
+
         if submit and user_msg.strip():
             u = user_msg.lower().strip()
             st.session_state.chat_history.append({"role": "user", "message": user_msg})
-            
+
             reply = None
-            
-            # 🧠 1. AUTONOMOUS DECISION-MAKING & INTENT COGNITION
+
             if any(w in u for w in ["all tools", "every tool", "tool good", "are tools safe", "best tool", "useful app", "worth it"]):
                 reply = "💎 **Yes, absolutely! All 10 tools inside VeriSame are highly optimized and completely safe.** Every tool uses strict Python pandas vectorization to clean columns instantly without breaking other data rows. You can trust them 100% for corporate reporting inputs!"
-                
+
             elif any(w in u for w in ["which plan", "should i buy", "free or pro", "best plan for me"]):
                 reply = "🤔 **Decision Matrix Recommendation:**\n• If your file has **less than 1,000 rows** and you only need Date formatting, Case adjustment, or Duplicate removal, the **Free Lifetime Tier** is ideal.\n• If you deal with heavy datasets, phone validations, or blank rows, **upgrading to Pro (₹299/Month)** is the smartest decision to save time!"
 
-            # 🔢 2. ADVANCED MATH CALCULATOR ENGINE (Handles 2*8, 2x8, 50+50 etc.)
             if not reply:
                 math_clean = u.replace('x', '*')
                 match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
@@ -178,10 +176,9 @@ def render_ai_chatbot(is_sidebar=False):
                     if op == '+': res = n1 + n2
                     elif op == '-': res = n1 - n2
                     elif op == '*': res = n1 * n2
-                    elif op == '/': res = n1 / n2 if n2 != 0 else "Error"
+                    elif op == '/': res = n1 / n2 if n2!= 0 else "Error"
                     reply = f"🔢 **Math Calculator Engine:** \nExpression: `{n1} {op} {n2}` \n**Result:** `{res}`"
 
-            # 📚 3. STRICT KNOWLEDGE BASE WITH INTELLIGENT THRESHOLD
             if not reply:
                 knowledge_map = {
                     "hi hello hey hello ai hi ai ola salam": "👋 **Hello there!** Welcome to VeriSame! How can I speed up your dataset processing workflows today?",
@@ -220,39 +217,38 @@ def render_ai_chatbot(is_sidebar=False):
 
                 best_ratio = 0.0
                 best_key = None
-                
+
                 for keys in knowledge_map.keys():
                     words_in_key = keys.split()
                     user_words = u.split()
                     has_exact_keyword = any(uw in words_in_key for uw in user_words if len(uw) > 3)
-                    
+
                     ratio = difflib.SequenceMatcher(None, u, keys).ratio()
                     word_matches = sum(1 for word in u.split() if word in keys)
                     bonus_ratio = (word_matches / max(1, len(u.split()))) * 0.4
                     final_score = ratio + bonus_ratio
-                    
+
                     if has_exact_keyword:
                         final_score += 0.35
-                    
+
                     if final_score > best_ratio:
                         best_ratio = final_score
                         best_key = keys
-                
+
                 if best_ratio >= 0.55 and best_key:
                     reply = knowledge_map[best_key]
                 else:
                     reply = "🔍 **I couldn't find an exact match for that query.**\n\nAs VeriSame's Smart Assistant, you can ask me:\n• *Are all tools good? / Which plan should I buy?*\n• Simple math questions like *'50 * 5'*\n• Details about specific utilities like *'What is Tool 9 Trim?'*"
-            
+
             st.session_state.chat_history.append({"role": "assistant", "message": reply})
             st.rerun()
 
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], use_container_width=True):
-        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','selected_plan','admin_approved']:
-            st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
+        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
+            st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
         st.rerun()
 
-# 🛡️ DATABASE & EMAIL COGNITION LOGIC
 if st.session_state.email:
     user = load_db().get(st.session_state.email, {})
     st.sidebar.success(f"📧 {st.session_state.email}")
@@ -264,14 +260,13 @@ if st.session_state.email:
         st.session_state.plan = user.get("plan")
         st.session_state.amt = user.get("amt", 0)
         st.session_state.days = user.get("days", 0)
-        st.session_state.admin_approved = user.get("status") == "PAID"
+        st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
 
         if user.get("plan") == "free":
             st.sidebar.info("Plan: FREE LIFETIME ✨")
         elif days_left <= 5 and days_left > 0:
-            # 🔥 🔴 RED COLOR WARNING FOR ENDING PLANS (5 Days Priority Tracker)
             st.sidebar.markdown(f"""
-            <div style="background-color: #fee2e2; border: 2px solid #ef4444; padding: 12px; border-radius: 12px; color: #b91c1c !important;">
+            <div style="background-color: #fee2e2; border: 2px solid #ef4444; padding: 12px; border-radius: 12px; color: #b91c1c!important;">
                 ⚠️ <b>CRITICAL WARNING:</b> Your ₹{st.session_state.amt} plan is going to end in <b>{days_left} days</b>! Please renew now to avoid data loss.
             </div>
             """, unsafe_allow_html=True)
@@ -291,13 +286,12 @@ with col3:
     st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# 👑 SHERNI ADMIN CONTROL CENTER (EMAILS RETENTION FIX)
 if st.query_params.get("admin"):
     admin_pass = st.query_params.get("admin")
     if admin_pass == ADMIN_PASS:
         st.title(T['admin_title'])
         data = load_db()
-        
+
         st.subheader(T['admin_pending'])
         if data:
             for email, info in data.items():
@@ -305,7 +299,7 @@ if st.query_params.get("admin"):
                 amt = info.get('amt', 0)
                 status = info.get('status', 'PENDING')
                 plan_text = f"PRO Monthly ₹299" if amt == 299 else f"PRO 6M ₹1499" if amt == 1499 else "FREE Plan"
-                
+
                 col1, col2, col3 = st.columns([4, 2, 2])
                 with col1:
                     status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
@@ -337,7 +331,6 @@ if st.query_params.get("admin"):
             st.info("No records found in database.")
         st.stop()
 
-# 🛡️ LOGIN / SIGN-UP SESSION CHECKER
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
         col1,col2,col3 = st.columns(3, gap="medium")
@@ -360,9 +353,9 @@ if st.session_state.plan is None:
                 st.session_state.amt = PRO_6M
                 st.session_state.days = 180
                 st.rerun()
-        
+
         render_ai_chatbot(is_sidebar=False)
-        
+
     else:
         st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
@@ -370,7 +363,7 @@ if st.session_state.plan is None:
             if "@" in email_input and "." in email_input:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
-                
+
                 data = load_db()
                 if email_input in data:
                     st.session_state.plan = data[email_input]["plan"]
@@ -405,141 +398,158 @@ else:
             df = pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],"Email":["RAHUL@GMAIL.COM","bad@","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["one hundred","250","two thousand five hundred"]})
 
     if df is not None:
+    # 🔥 FIX: File ko sirf pehli baar load karo, baar baar nahi
+    if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
         st.session_state.df_clean = df.copy()
         orig_len = len(df)
         df_clean = st.session_state.df_clean.drop_duplicates()
         for col in df_clean.columns:
             df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-            if any(k in col.lower() for k in ['salary','amount','price']): df_clean[col] = df_clean[col].apply(words_to_num)
+            if any(k in col.lower() for k in ['salary','amount','price']): 
+                df_clean[col] = df_clean[col].apply(words_to_num)
         st.session_state.df_clean = df_clean
+        st.session_state.df_loaded = True
+        st.session_state.orig_len = orig_len
+        st.session_state.empty_fixed = df.isna().sum().sum()
+    
+    df_clean = st.session_state.df_clean
+    orig_len = st.session_state.orig_len
 
-        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
-        c1,c2,c3,c4 = st.columns(4)
-        with c1: st.metric(T['rows'], orig_len)
-        with c2: st.metric(T['clean'], len(df_clean))
-        with c3: st.metric(T['dups'], orig_len-len(df_clean))
-        with c4: st.metric(T['empty'], df.isna().sum().sum())
+    st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+    c1,c2,c3,c4 = st.columns(4)
+    with c1: st.metric(T['rows'], orig_len)
+    with c2: st.metric(T['clean'], len(df_clean))
+    with c3: st.metric(T['dups'], orig_len-len(df_clean))
+    with c4: st.metric(T['empty'], st.session_state.empty_fixed)
 
-        st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
-        st.caption(T['preview'])
-        st.dataframe(df_clean.head(10), use_container_width=True, height=300)
+    st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
+    st.caption(T['preview'])
+    st.dataframe(df_clean.head(10), use_container_width=True, height=300)
 
-        all_cols = df_clean.columns.tolist()
-        is_pro = st.session_state.plan == "pro"
-        is_free = st.session_state.plan == "free"
+    all_cols = df_clean.columns.tolist()
+    is_pro = st.session_state.plan == "pro"
+    is_free = st.session_state.plan == "free"
+    is_paid = st.session_state.admin_approved
 
-        tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
-        with tab1:
-            st.write(f"**{T['tool1']}** ✅ Free + Pro")
-            date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
-            if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
-                for col in date_cols: st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
-                st.success(T['success'])
+    tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
+    with tab1:
+        st.write(f"**{T['tool1']}** ✅ Free + Pro")
+        date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
+        if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
+            for col in date_cols: 
+                st.session_state.df_clean[col] = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True).dt.strftime('%Y-%m-%d')
+            st.success(T['success'])
+            st.rerun()
+
+        st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and is_paid else 'Pro Only'}")
+        fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free or not is_paid)
+        if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free or not is_paid):
+            st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
+            st.success(T['success'])
+            st.rerun()
+
+    with tab2:
+        st.write(f"**{T['tool3']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+        email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free or not is_paid)
+        if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free or not is_paid):
+            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+            for col in email_cols: 
+                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern, str(x)) else "")
+            st.success(T['success'])
+            st.rerun()
+
+        st.write(f"**{T['tool4']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+        phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free or not is_paid)
+        if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free or not is_paid):
+            for col in phone_cols: 
+                st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
+            st.success(T['success'])
+            st.rerun()
+
+    with tab3:
+        st.write(f"**{T['tool5']}** ✅ Free + Pro")
+        case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
+        case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
+        if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
+            for col in case_cols: 
+                st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper() if case_opt == "Uppercase" else st.session_state.df_clean[col].str.lower() if case_opt == "Lowercase" else st.session_state.df_clean[col].str.title()
+            st.success(T['success'])
+            st.rerun()
+
+        st.write(f"**{T['tool6']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+        spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free or not is_paid)
+        if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free or not is_paid):
+            for col in spec_cols: 
+                st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
+            st.success(T['success'])
+            st.rerun()
+
+        st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+        old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free or not is_paid)
+        new = st.text_input("New column name", key="inp_new", disabled=is_free or not is_paid)
+        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free or not is_paid) and new:
+            st.session_state.df_clean.rename(columns={old: new}, inplace=True)
+            st.success(T['success'])
+            st.rerun()
+
+        st.write(f"**{T['tool8']}** ✅ Free + Pro")
+        if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
+            st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
+            st.success(T['success'])
+            st.rerun()
+
+        st.write(f"**{T['tool9']}** ✅ Free + Pro")
+        trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
+        if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
+            for col in trim_cols: 
+                st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip()
+            st.success(T['success'])
+            st.rerun()
+
+        st.write(f"**{T['tool10']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+        spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free or not is_paid)
+        if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free or not is_paid):
+            for col in spell_cols: 
+                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).replace("teh", "the").replace("recieve", "receive").title())
+            st.success(T['success'])
+            st.rerun()
+
+    st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
+    if st.session_state.show_balloon:
+        st.balloons()
+        st.session_state.show_balloon = False
+
+    if st.session_state.plan == "free":
+        col1, col2 = st.columns(2)
+        csv = st.session_state.df_clean.to_csv(index=False).encode()
+        if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
+            st.session_state.show_balloon = True
+            st.rerun()
+        excel = io.BytesIO()
+        st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+        if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
+            st.session_state.show_balloon = True
+            st.rerun()
+    elif st.session_state.plan == "pro":
+        if not is_paid:
+            st.warning(T['wait_approval'])
+            st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
+            upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
+            qr = qrcode.make(upi_link)
+            buf = io.BytesIO()
+            qr.save(buf, format="PNG")
+            st.image(buf.getvalue(), width=220)
+            if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
+                st.session_state.payment_clicked = True
                 st.rerun()
-
-            st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and st.session_state.admin_approved else 'Pro Only'}")
-            fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free):
-                st.session_state.df_clean[fill_cols] = st.session_state.df_clean[fill_cols].fillna("N/A")
-                st.success(T['success'])
-                st.rerun()
-
-        with tab2:
-            st.write(f"**{T['tool3']}** {'🔓 Unlocked ✅' if is_pro and st.session_state.admin_approved else '🔒 Pro Only'}")
-            email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free):
-                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).lower() if re.match(pattern, str(x)) else "")
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool4']}** {'🔓 Unlocked ✅' if is_pro and st.session_state.admin_approved else '🔒 Pro Only'}")
-            phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free):
-                for col in phone_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
-                st.success(T['success'])
-                st.rerun()
-
-        with tab3:
-            st.write(f"**{T['tool5']}** ✅ Free + Pro")
-            case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
-            case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
-            if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
-                for col in case_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper() if case_opt == "Uppercase" else st.session_state.df_clean[col].str.lower() if case_opt == "Lowercase" else st.session_state.df_clean[col].str.title()
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool6']}** {'🔓 Unlocked ✅' if is_pro and st.session_state.admin_approved else '🔒 Pro Only'}")
-            spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free):
-                for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and st.session_state.admin_approved else '🔒 Pro Only'}")
-            old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
-            new = st.text_input("New column name", key="inp_new", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free) and new:
-                st.session_state.df_clean.rename(columns={old: new}, inplace=True)
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool8']}** ✅ Free + Pro")
-            if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-                st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool9']}** ✅ Free + Pro")
-            trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
-            if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
-                for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip()
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool10']}** {'🔓 Unlocked ✅' if is_pro and st.session_state.admin_approved else '🔒 Pro Only'}")
-            spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free):
-                for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: str(x).replace("teh", "the").replace("recieve", "receive").title())
-                st.success(T['success'])
-                st.rerun()
-
-        st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
-        if st.session_state.show_balloon:
-            st.balloons()
-            st.session_state.show_balloon = False
-
-        if st.session_state.plan == "free":
+        else:
             col1, col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
-            if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
+            if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
                 st.session_state.show_balloon = True
                 st.rerun()
             excel = io.BytesIO()
             st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
+            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
                 st.session_state.show_balloon = True
                 st.rerun()
-        elif st.session_state.plan == "pro":
-            if not st.session_state.admin_approved:
-                st.warning(T['wait_approval'])
-                st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
-                upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
-                qr = qrcode.make(upi_link)
-                buf = io.BytesIO()
-                qr.save(buf, format="PNG")
-                st.image(buf.getvalue(), width=220)
-                if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
-                    st.session_state.payment_clicked = True
-                    st.rerun()
-            else:
-                col1, col2 = st.columns(2)
-                csv = st.session_state.df_clean.to_csv(index=False).encode()
-                if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
-                    st.session_state.show_balloon = True
-                    st.rerun()
-                excel = io.BytesIO()
-                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
-                    st.session_state.show_balloon = True
-                    st.rerun()
