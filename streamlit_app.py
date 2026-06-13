@@ -137,7 +137,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# 🔥 PERFECTED AI KNOWLEDGE BASE ENGINE (50 QUESTIONS & ADVANCED SEARCH)
+# 🔥 PERFECTED AI KNOWLEDGE BASE ENGINE WITH EMOTION FILTERS
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -162,16 +162,27 @@ def render_ai_chatbot(is_sidebar=False):
 
             reply = None
 
-            # 🧮 Fast Math Engine
-            math_clean = u.replace('x', '*')
-            match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
-            if match:
-                n1, op, n2 = int(match.group(1)), match.group(2), int(match.group(3))
-                if op == '+': res = n1 + n2
-                elif op == '-': res = n1 - n2
-                elif op == '*': res = n1 * n2
-                elif op == '/': res = n1 / n2 if n2 != 0 else "Error"
-                reply = f"🔢 **Math Calculator Engine:** \nExpression: `{n1} {op} {n2}` \n**Result:** `{res}`"
+            # 🛠️ 1. EMOTION & CASUAL TALK FILTER (कैजुअल बातों के लिए लाइव रिस्पांस)
+            if any(x in u for x in ["bye", "going to clean", "tata", "see you", "alvida"]):
+                reply = "👋 **All the best, buddy!** जाओ और अपने डेटा को एकदम कड़क चमकाओ। 😉 कोई भी दिक़्क़त आए तो मैं यहीं हूँ, तुरंत वापस आ जाना!"
+            elif any(x in u for x in ["ok thanks", "okay thanks", "thank you", "thx", "shukriya"]):
+                reply = "💖 **Most welcome, dear!** मुझे तुम्हारी मदद करके बहुत ख़ुशी हुई। अब जल्दी से अपना काम निपटा लो! ✨"
+            elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉", "wink"]):
+                reply = "😜 **Haha!** डेटा क्लीनिंग बोरिंग हो सकती है, लेकिन हमारी बातें नहीं! मुस्कुराते रहो और काम करते रहो!"
+            elif any(x in u for x in ["you mad", "are you crazy", "pagal हो"]):
+                reply = "🤪 **अरे नहीं भाई!** मैं पागल नहीं हूँ, बस डेटा एरर्स को देखकर मेरा दिमाग थोड़ा सुपर-फ़ास्ट चलने लगता है! ⚡"
+
+            # 🧮 2. Fast Math Engine
+            if not reply:
+                math_clean = u.replace('x', '*')
+                match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
+                if match:
+                    n1, op, n2 = int(match.group(1)), match.group(2), int(match.group(3))
+                    if op == '+': res = n1 + n2
+                    elif op == '-': res = n1 - n2
+                    elif op == '*': res = n1 * n2
+                    elif op == '/': res = n1 / n2 if n2 != 0 else "Error"
+                    reply = f"🔢 **Math Calculator Engine:** \nExpression: `{n1} {op} {n2}` \n**Result:** `{res}`"
 
             if not reply:
                 # 🧠 50 MASTER QUESTIONS AND ANSWERS DATA MAP (BASIC TO ADVANCED)
@@ -185,12 +196,8 @@ def render_ai_chatbot(is_sidebar=False):
                         "✨ **I am doing fantastic!** Powered up, synchronized, and completely ready to smash data errors under 3 seconds.",
                     "your name naam kya who are you tum kaun ho identify system role profile": 
                         "💎 I am **VeriSame Engine AI**, a hyper-customized data assistant built to answer software queries and guide premium pipelines!",
-                    "thank you thanks shukriya dhanyawad great app awesome nice app good job appreciation": 
-                        "💖 **You are most welcome!** Making your data pipeline seamless is exactly what I live for.",
                     "founder made creator created developer owner built make kaun banaya owner kaun anugya sing": 
                         "👑 **Founder & Creator:** VeriSame was architected and developed by **Anugya Singh** to eliminate manual data cleaning frustration.",
-                    "bye goodnight good night tata see you alvida exit logout close": 
-                        "👋 **Goodbye!** Remember to download your processed files before closing your volatile session state.",
                     "how many tools number of tools total tools kitne tool counts": 
                         "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** plus a special financial **Word-to-Number conversion algorithm**!",
                     "is this app free free version tier lifetime free cost paisa lagega": 
@@ -292,25 +299,19 @@ def render_ai_chatbot(is_sidebar=False):
                 for key_string, answer_text in knowledge_map.items():
                     key_words = key_string.split()
                     
-                    # 1. Word Match Score (कितने शब्द मिल रहे हैं)
                     matched_words = sum(1 for w in user_words if w in key_words)
                     word_ratio = matched_words / max(1, len(user_words))
                     
-                    # 2. Sequence Similarity Score (वाक्य की बनावट कितनी मिल रही है)
                     seq_ratio = difflib.SequenceMatcher(None, u, key_string).ratio()
-                    
-                    # 3. Hybrid Final Score Calculation
                     final_score = (word_ratio * 0.7) + (seq_ratio * 0.3)
                     
-                    # 4. Critical Boost System (अगर मुख्य शब्द बिल्कुल मैच कर जाएँ)
-                    if any(w in key_string for w in ["can do", "app work", "app do", "what is app"]) and any(uw in u for uw in ["app", "work", "do", "use"]):
-                        final_score += 0.4
+                    if any(w in key_string for w in ["can do", "app work", "app do", "what is app", "how this app works"]) and any(uw in u for uw in ["app", "work", "do", "use", "works"]):
+                        final_score += 0.5
                         
                     if final_score > best_score:
                         best_score = final_score
                         best_reply = answer_text
 
-                # Confidence Threshold check
                 if best_score >= 0.35 and best_reply:
                     reply = best_reply
                 else:
