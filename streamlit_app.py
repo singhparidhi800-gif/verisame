@@ -3,7 +3,6 @@ import json, os, io, qrcode
 import pandas as pd
 import re
 from datetime import datetime, timedelta
-import difflib 
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
@@ -59,7 +58,6 @@ T = {
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
-# 🎨 CLEANED CSS RULES TO FIX THE MISSING BUTTON GLITCH
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -90,7 +88,6 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 .pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800; -webkit-text-fill-color: #6b21a8!important;}
 .pricing-card p {color: #000!important; font-size: 0.95rem!important; margin-bottom: 0.4rem!important;}
 
-/* Global Safe Button Overrides */
 .stButton>button {
     border-radius: 14px !important; 
     font-weight: 700 !important; 
@@ -117,7 +114,6 @@ div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; b
 .stDataFrame {background: rgba(255,255,255,0.9)!important;}
 .stFileUploader {background: rgba(255,255,255,0.8)!important; border: 2px dashed #9333ea;}
 
-/* Safe Text Inputs Rules */
 input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] input {
     background-color: #ffffff !important; 
     color: #000000 !important; 
@@ -137,90 +133,9 @@ input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] inpu
 <div class="cherry" style="left: 90%; animation-duration: 7s; animation-delay: 3s;">🌸</div>
 """, unsafe_allow_html=True)
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, specific tools, safety, calculations, or data science utilities!"}]
-
 for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
-
-def render_ai_chatbot(is_sidebar=False):
-    target = st.sidebar if is_sidebar else st
-    target.markdown("---")
-    target.markdown("### 🤖 VeriSame Live AI Chat Studio")
-
-    chat_html = "<div style='max-height: 260px; overflow-y: auto; padding: 12px; background: #ffffff !important; border: 2px solid #9333ea; border-radius: 14px; margin-bottom: 10px;'>"
-    for chat in st.session_state.chat_history:
-        if chat["role"] == "assistant":
-            chat_html += f"<p style='color: #6b21a8 !important; margin: 5px 0; font-weight: 700;'><b>🤖 AI:</b> {chat['message']}</p>"
-        else:
-            chat_html += f"<p style='color: #000000 !important; margin: 5px 0; font-weight: 600;'><b>👤 You:</b> {chat['message']}</p>"
-    chat_html += "</div>"
-    target.markdown(chat_html, unsafe_allow_html=True)
-
-    # 🛠️ Form Ke Saath Direct Explicit Keys Taaki Streamlit Render Engine Confusion Na Kare
-    form_key = f"ai_chat_form_{'side' if is_sidebar else 'main'}"
-    with target.form(key=form_key, clear_on_submit=True):
-        user_msg = st.text_input("Ask a question...", placeholder="e.g., What this app can do?", key=f"chat_in_{'side' if is_sidebar else 'main'}")
-        submit = st.form_submit_button(label="Send Message 🚀")
-
-        if submit and user_msg and user_msg.strip():
-            u = user_msg.lower().strip()
-            st.session_state.chat_history.append({"role": "user", "message": user_msg})
-            reply = None
-
-            if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
-                if "uplode" in u or "upload" in u: reply = "👋 **All the best, buddy! Go ahead and upload your files to clean them up instantly!**"
-                elif "clean" in u: reply = "👍 **Awesome! Go smash those data errors and make your dataset perfect!**"
-                else: reply = "👋 **Goodbye! Have a productive session ahead!**"
-            elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are most welcome!** Making your data pipeline seamless is exactly what I'm built for."
-            elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Data cleaning can be boring, but our conversations don't have to be!"
-            elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** I'm just hyper-engineered to clear errors at supersonic speeds!"
-            elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]): reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा को एकदम कड़क चमकाओ।"
-            elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **बहुत-बहुत स्वागत है तुम्हारा!** मुझे तुम्हारी मदद करके बेहद ख़ुशी हुई।"
-
-            if not reply:
-                math_clean = u.replace('x', '*')
-                match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
-                if match:
-                    n1, op, n2 = int(match.group(1)), match.group(2), int(match.group(3))
-                    if op == '+': res = n1 + n2
-                    elif op == '-': res = n1 - n2
-                    elif op == '*': res = n1 * n2
-                    elif op == '/': res = n1 / n2 if n2 != 0 else "Error"
-                    reply = f"🔢 **Math Calculator Engine:** \nResult: `{res}`"
-
-            if not reply:
-                knowledge_map = {
-                    "what this app can do what is app work app capability utility function software use details": "💎 **VeriSame App Capability:** This app functions as an automated data-cleaning pipeline! It repairs empty boxes, formats dates, filters emails, and converts word numbers into clean integers under 3 seconds!",
-                    "hi hello hey hello ai hi ai ola salam greeting system startup": "👋 **Hello there!** Welcome to VeriSame! How can I speed up your workflows today?",
-                    "how are you kaise ho kaise hain how it goes sab badhiya wellness state": "✨ **I am doing fantastic!** Completely ready to smash data errors under 3 seconds.",
-                    "your name naam kya who are you tum kaun ho identify system role profile": "💎 I am **VeriSame Engine AI**, a hyper-customized data assistant!",
-                    "founder made creator created developer owner built make kaun banaya owner kaun anugya sing": "👑 **Founder & Creator:** VeriSame was architected and developed by **Anugya Singh** to eliminate manual data cleaning frustration.",
-                    "how many tools number of tools total tools kitne tool counts": "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools**!",
-                    "is this app free free version tier lifetime free cost paisa lagega": "✨ **Yes, the base tier is Free Forever!** You get 1,000 rows processing, 3 basic pipeline tools.",
-                    "what is pro version premium cost details charges features upgrades": "💎 **Pro Plan:** Unlocks absolute unlimited rows, lightning-fast 3-second vector speed, and all **10 premium AI tools**!",
-                    "how to upload file select file spreadsheet csv excel insert data dataset load": "📤 **File Upload Steps:** Go to the 'Upload File' tab, drag and drop your `.csv`, `.xlsx`, or `.json` file.",
-                    "how to download file save file download csv excel export sheet download output": "🎯 **Downloading Data:** Scroll down to 'Export Data' section, choose 'Download as CSV' or 'Download as Excel'.",
-                    "what formats supported extension xlsx xls csv json files allowed file types": "📊 **Supported Extensions:** VeriSame handles `.csv`, `.xlsx`, `.xls`, and `.json` structures."
-                }
-                best_score = 0.0
-                best_reply = None
-                user_words = u.split()
-                for key_string, answer_text in knowledge_map.items():
-                    key_words = key_string.split()
-                    matched_words = sum(1 for w in user_words if w in key_words)
-                    word_ratio = matched_words / max(1, len(user_words))
-                    seq_ratio = difflib.SequenceMatcher(None, u, key_string).ratio()
-                    final_score = (word_ratio * 0.7) + (seq_ratio * 0.3)
-                    if final_score > best_score:
-                        best_score = final_score
-                        best_reply = answer_text
-                if best_score >= 0.35 and best_reply: reply = best_reply
-                else: reply = "🔍 **I couldn't find an exact match.** Try asking: *'What this app can do?'* or *'What is Tool 1?'*"
-
-            st.session_state.chat_history.append({"role": "assistant", "message": reply})
-            st.rerun()
 
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], use_container_width=True):
@@ -231,7 +146,6 @@ if st.session_state.plan or st.session_state.email_entered:
 if st.session_state.email:
     user = load_db().get(st.session_state.email, {})
     st.sidebar.success(f"📧 {st.session_state.email}")
-    render_ai_chatbot(is_sidebar=True)
     if user.get("plan"):
         exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
         days_left = (exp_date - datetime.now()).days
@@ -293,8 +207,6 @@ if st.session_state.plan is None:
             st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>180 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Get Pro+", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_6M; st.session_state.days = 180; st.rerun()
-        
-        render_ai_chatbot(is_sidebar=False)
     else:
         st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
