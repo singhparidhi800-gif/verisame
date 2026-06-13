@@ -130,15 +130,14 @@ div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; b
 <div class="cherry" style="left: 90%; animation-duration: 7s; animation-delay: 3s;">🌸</div>
 """, unsafe_allow_html=True)
 
-# 🧠 AI CHAT SESSION INITIALIZATION (Starting in English now!)
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! I am VeriSame's AI Assistant. 💎 Ask me anything about data cleaning, removing duplicates, or our AI tools! How can I help you perfect your data today?"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! I am VeriSame's AI Assistant. 💎 Ask me anything about how this app works, our pricing plans, or any of our 10 AI Studio tools!"}]
 
 for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved']:
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
 
-# 🤖 LIVE CHATBOT LOGIC FUNCTION (Fixed Form Bugs & Language Triggers)
+# 🤖 INTENT-BASED EXPERT ENGLISH CHATBOT
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -153,56 +152,60 @@ def render_ai_chatbot(is_sidebar=False):
     chat_html += "</div>"
     target.markdown(chat_html, unsafe_allow_html=True)
     
+    # Form used with proper st.form_submit_button to eliminate 'Missing Submit Button' error
     with target.form(key=f"ai_chat_form_{'side' if is_sidebar else 'main'}", clear_on_submit=True):
         user_msg = st.text_input("Type your message here...", placeholder="e.g., Hi, how to clean duplicates?", key=f"chat_in_{'side' if is_sidebar else 'main'}")
-        submit = st.form_submit_button(label="Send 🚀") # Fixed: Using standard form_submit_button
+        submit = st.form_submit_button(label="Send Message 🚀")
         
         if submit and user_msg.strip():
             u = user_msg.lower().strip()
             st.session_state.chat_history.append({"role": "user", "message": user_msg})
             
-            # Check if user wants to speak in Hindi/Hinglish
-            hindi_keywords = ["kaise", "karo", "batao", "नमस्ते", "हेलो", "kya", "hai", "bhai", "paisa", "tariq", "khali", "hataye"]
-            prefer_hindi = any(x in u for x in hindi_keywords) or any(ord(char) > 2300 for char in user_msg) # detects devanagari script too
+            # 1. Greetings
+            if any(x in u for x in ["hi", "hello", "hey", "namaste"]):
+                reply = "Hello! Welcome to VeriSame. 😊 I am here to make your data cleaning process incredibly easy. How can I help you perfect your sheet today?"
             
-            if prefer_hindi:
-                # Hindi Responses
-                if any(x in u for x in ["hi", "hello", "hey", "namaste", "नमस्ते"]):
-                    reply = "हेलो! आपका स्वागत है। 😊 मैं आपकी डेटा क्लीनिंग को आसान बनाने के लिए यहाँ हूँ। आप अपनी फ़ाइल को कैसे चमकाना चाहते हैं?"
-                elif "duplicate" in u or "dedup" in u or "एक जैसा" in u:
-                    reply = "डेटा में से डुप्लीकेट्स हटाना बेहद आसान है! बस 'Text Tools' टैब पर जाएँ, 'Remove Duplicates' को चुनें और 'Apply' दबा दें। सारा एक्स्ट्रा कचरा गायब हो जाएगा! 🔥"
-                elif "null" in u or "empty" in u or "blank" in u or "खाली" in u:
-                    reply = "अगर आपकी फ़ाइल में खाली सेल्स हैं, तो हमारा 'AI Fill Nulls' टूल (Tab 1 में) उन्हें स्मार्टली पहचानकर वहाँ 'N/A' भर देता है। यह प्रो टूल है! 🔓"
-                elif "date" in u or "format" in u or "तारीख" in u:
-                    reply = "तारीख सुधारने के लिए पहले टैब में 'Smart Date Converter' का इस्तेमाल करें। यह बिखरी हुई तारीखों को खुद समझकर शानदार 'YYYY-MM-DD' फॉर्मेट में सेट कर देता है! 🎯"
-                elif "salary" in u or "word" in u or "number" in u or "पैसा" in u:
-                    reply = "यह VeriSame का बेस्ट फीचर है! सैलरी वाले कॉलम में लिखे शब्दों (जैसे 'one hundred') को हमारा AI ऑटोमैटिकली नंबर्स (100) में बदल देता है। 🧠"
-                elif "free" in u or "plan" in u or "price" in u:
-                    reply = "हमारा 'FREE' प्लान लाइफटाइम के लिए मुफ्त है (1000 रोज़ तक)। अनलिमिटेड स्पीड और सभी 10 प्रीमियम टूल्स के लिए आप हमारा PRO प्लान (₹299/महीना) ले सकते हैं! 💎"
-                elif "data science" in u:
-                    reply = "डेटा साइंस में 80% समय डेटा को साफ़ करने में जाता है! VeriSame आपका कीमती समय बचाता है ताकि आपको मशीन लर्निंग के लिए एकदम क्लीन डेटा मिले। 📊🚀"
-                else:
-                    reply = "बढ़िया सवाल है! VeriSame AI डेटा क्लीनिंग स्टूडियो आपकी फ़ाइल को सिर्फ 3 सेकंड में परफेक्ट बना सकता है। आप अपनी फ़ाइल अपलोड करें या 'Try Demo' पर क्लिक करके इसका जादू खुद देखें! ✨"
+            # 2. App Workflow / How it works
+            elif any(x in u for x in ["work", "use", "step", "kaam", "kise", "how to"]):
+                reply = "VeriSame works smoothly in 3 simple steps: \n1. **Upload:** Drop your messy CSV/Excel sheet or click 'Try Demo' to test it instantly. \n2. **Clean:** Go to the 'AI Studio' tab, pick your columns, choose any of our 10 powerful data-cleaning tools, and hit 'Apply'. \n3. **Download:** Scroll down to download your fresh, 100% polished file! 🚀"
+            
+            # 3. Pricing, Plans & Payments
+            elif any(x in u for x in ["price", "plan", "pay", "premium", "free", "paisa", "subscription"]):
+                reply = "We have 3 awesome subscription tiers available: \n• **FREE Plan:** Lifetime access, handles up to 1000 rows, and gives you 3 basic cleaning tools. \n• **PRO Monthly (₹299):** 30 days of unlimited row cleaning with all 10 premium tools unlocked. \n• **PRO 6 Months (₹1499):** 180 days of absolute premium access. \n\n**How to Pay:** Choose your preferred PRO tier, enter your active email, scan the secure on-screen UPI QR code, and click the 'I Paid' button. The administrator will approve your premium download instantly! 💎"
+            
+            # 4. Detailed Explanations for All 10 Core Tools
+            elif "date" in u or "tariq" in u or "tool1" in u:
+                reply = "📅 **Smart Date Converter:** This feature automatically scans disorganized date formats (like 12/5, 15-03-2023) and standardizes them into a crisp, global 'YYYY-MM-DD' structure."
+            elif "null" in u or "empty" in u or "blank" in u or "khali" in u or "tool2" in u:
+                reply = "🔓 **AI Fill Nulls (PRO):** This tool scans your sheet for missing entries or blank boxes and replaces them with clean default text like 'N/A' or 0 to keep data coherent."
+            elif "email" in u or "tool3" in u:
+                reply = "📧 **Email Validator (PRO):** Instantly purges broken or typos-ridden email addresses, leaving only correctly structured, active email IDs."
+            elif "phone" in u or "mobile" in u or "tool4" in u:
+                reply = "📞 **Phone Formatter (PRO):** Strips away messy user inputs like dashes, weird brackets, or random spaces to preserve pure formatting numbers."
+            elif "case" in u or "capital" in u or "small" in u or "tool5" in u:
+                reply = "🔠 **Case Converter:** Instantly lets you format dirty textual data into uniform UPPERCASE, lowercase, or professional Title Case with one click."
+            elif "symbol" in u or "character" in u or "tool6" in u:
+                reply = "🔣 **Remove Symbols (PRO):** Cleans out disturbing non-alphanumeric punctuation marks (#, $, %, etc.) from your text columns effortlessly."
+            elif "rename" in u or "naam" in u or "tool7" in u:
+                reply = "✏️ **Bulk Rename (PRO):** Gives you the power to swap out heavy or incorrect spreadsheet headers for custom column labels smoothly."
+            elif "duplicate" in u or "dedup" in u or "same" in u or "tool8" in u:
+                reply = "🔥 **Remove Duplicates:** Wipes out annoying identical repeating records across your dataset to make every single row unique."
+            elif "trim" in u or "space" in u or "tool9" in u:
+                reply = "✂️ **Trim Spaces:** Traps and erases those invisible blank spaces hanging out at the very beginning or end of your cells."
+            elif "spell" in u or "wrong" in u or "tool10" in u:
+                reply = "🧠 **Spell Check (PRO):** Instantly auto-corrects high-frequency dataset typos (e.g., changes 'teh' to 'the' and 'recieve' to 'receive') perfectly."
+            
+            # 5. Advanced Word-to-Number Feature
+            elif any(x in u for x in ["salary", "word", "number", "digit"]):
+                reply = "🧠 **AI Word-to-Number Engine:** This is VeriSame's flagship automation! If a financial column contains written text numbers (like 'one hundred' or 'two thousand'), the algorithm actively converts them into neat mathematical digits (`100` or `2500`) automatically!"
+            
+            # 6. Fallback for General Math Questions
+            elif any(x in u for x in ["math", "solve", "kitna", "+", "-", "*", "/"]):
+                reply = "Currently, I am fine-tuned to answer queries regarding VeriSame app functions, plans, and its 10 studio tools. General math solving features will be integrated into my logic very soon! Try testing our cleaning features. 😊"
+            
+            # 7. Default Match
             else:
-                # Default English Responses
-                if any(x in u for x in ["hi", "hello", "hey"]):
-                    reply = "Hello! Welcome to VeriSame. 😊 I am here to make your data cleaning easy. How would you like to polish your dataset today?"
-                elif "duplicate" in u or "dedup" in u:
-                    reply = "Removing duplicate rows is super easy! Just head over to the 'Text Tools' tab, select 'Remove Duplicates', and hit 'Apply'. All redundant data will vanish! 🔥"
-                elif "null" in u or "empty" in u or "blank" in u:
-                    reply = "If your file has missing values, our 'AI Fill Nulls' tool (in Tab 1) will smartly detect them and fill them with 'N/A' so your workflows don't break. This is a PRO feature! 🔓"
-                elif "date" in u or "format" in u:
-                    reply = "To clean up messy dates, use the 'Smart Date Converter' in Tab 1. It auto-detects formats like 12/5/2024 or 15-03-2023 and converts them to standard 'YYYY-MM-DD'! 🎯"
-                elif "salary" in u or "word" in u or "number" in u:
-                    reply = "This is our smartest feature! When you upload a salary or amount column, our backend AI automatically converts word-based numbers (like 'one hundred') into clean digits (100)! 🧠"
-                elif "email" in u or "phone" in u:
-                    reply = "We have dedicated validators for emails and phone formats under Tab 2. It strips away garbage characters and invalid domains instantly! 📞"
-                elif "free" in u or "plan" in u or "price" in u:
-                    reply = "Our 'FREE FOREVER' plan supports up to 1000 rows. For unlimited row handling, blazing-fast 3s processing, and all 10 premium tools, unlock our PRO plan at just ₹299/month! 💎"
-                elif "data science" in u:
-                    reply = "In data science, 80% of the time goes into data cleaning. VeriSame is purpose-built to save your precious time and hand you crystal-clear data for analytics! 📊🚀"
-                else:
-                    reply = "Great question! VeriSame AI can make your datasets flawless in under 3 seconds. Upload your file or click 'Try Demo' to see the magic live! ✨"
+                reply = "Great question! VeriSame AI can perfect your untidy sheets in under 3 seconds. Upload your custom file or click the 'Try Demo' option above to watch the magic happen live! ✨"
             
             st.session_state.chat_history.append({"role": "assistant", "message": reply})
             st.rerun()
