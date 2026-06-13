@@ -7,12 +7,12 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-# ===== VERISAME CHAT AI SETUP - GEMINI-PRO WALA =====
+# ===== VERISAME CHAT AI SETUP - LATEST FREE MODEL =====
 GEMINI_KEY = st.secrets.get("GEMINI_API_KEY", "")
 if GEMINI_KEY:
     genai.configure(api_key=GEMINI_KEY)
     MODEL = genai.GenerativeModel(
-        model_name="gemini-pro", # <-- YAHI BADLAV HAI, FREE ME CHALEGA
+        model_name="models/gemini-1.5-flash-latest", # <-- FINAL FIX: YAHI FREE ME CHALEGA
         system_instruction="""Tera naam VeriSame Chat AI hai. Tu VeriSame app ka official AI hai.
         Teri 2 kaam hain:
         1. Data Science Expert: CSV, Excel, Pandas, SQL, data cleaning sab ka baap. User ka data dekh ke bol kya saaf karna hai + code de.
@@ -151,7 +151,7 @@ if st.session_state.email:
     user = load_db().get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
 
-    # ===== SIDEBAR VERISAME CHAT AI - ASLI ERROR DIKHEGA =====
+    # ===== SIDEBAR VERISAME CHAT AI =====
     if MODEL:
         st.sidebar.divider()
         st.sidebar.markdown("## 🤖 VeriSame Chat AI")
@@ -168,7 +168,7 @@ if st.session_state.email:
                             resp = MODEL.generate_content(sidebar_q + context)
                             st.success(f"**AI:** {resp.text}")
                         except Exception as e:
-                            st.error(f"Gemini Error: {str(e)}") # ASLI ERROR
+                            st.error(f"Gemini Error: {str(e)}")
     # ===== SIDEBAR AI END =====
 
     if user.get("plan"):
@@ -498,7 +498,7 @@ else:
                     st.success("Pro Download Success! Check your Downloads folder")
                     st.rerun()
 
-        # ===== FIRST PAGE BOTTOM VERISAME CHAT AI - GEMINI-PRO WALA =====
+        # ===== FIRST PAGE BOTTOM VERISAME CHAT AI - LATEST FREE MODEL =====
         st.divider()
         st.markdown("### 🤖 VeriSame Chat AI - Tera Data ka Dost")
         st.caption("CSV saaf karwao, 28x36 puchho, sab bata dega")
@@ -531,7 +531,7 @@ else:
                             st.write(ai_text)
                             st.session_state.vsai_messages.append({"role": "assistant", "content": ai_text})
                         except Exception as e:
-                            error_msg = f"Gemini Error: {str(e)}"  # <-- YAHI BADLAV HAI
+                            error_msg = f"Gemini Error: {str(e)}"
                             st.error(error_msg)
                             st.session_state.vsai_messages.append({"role": "assistant", "content": error_msg})
         # ===== BOTTOM AI END =====
