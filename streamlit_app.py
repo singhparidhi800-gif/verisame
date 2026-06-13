@@ -6,22 +6,22 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-# ===== VERISAME CHAT AI - LOCAL + HINGLISH SUPPORT =====
+# ===== VERISAME CHAT AI - LOCAL + HINGLISH + DATA SCIENTIST =====
 def detect_hindi(text):
     hindi_chars = re.findall(r'[\u0900-\u097F]', text)
-    hindi_words = ['bhai','kya','hai','kaise','karo','bolo','hindi','me','main','tu','tum','ye','wo','kar','ho','raha','nahi','mujhe','tere','tera','meri','mera']
+    hindi_words = ['bhai','kya','hai','kaise','karo','bolo','hindi','me','main','tu','tum','ye','wo','kar','ho','raha','nahi','mujhe','tere','tera','meri','mera','puch','sawal']
     return len(hindi_chars) > 3 or any(word in text.lower() for word in hindi_words)
 
 def local_ai_reply(prompt, df=None):
     is_hindi = detect_hindi(prompt)
     p = prompt.lower().strip()
 
-    # Language switch command
+    # Language switch
     if any(x in p for x in ['hindi me bolo','hindi mein','speak hindi','talk in hindi']):
-        return "Bhai thik hai, ab se Hindi me baat karunga. Pucho kya puchna hai?"
+        return "Bhai thik hai, ab se Hindi me baat karunga. CSV ya maths me kya puchna hai?"
 
     # Math calculations
-    if any(x in p for x in ['*','x','multiply','guna','x']):
+    if any(x in p for x in ['*','x','multiply','guna']):
         nums = [int(s) for s in re.findall(r'\d+', p)]
         if len(nums) >= 2:
             return f"Bhai {nums[0] * nums[1]} hota hai" if is_hindi else f"The answer is {nums[0] * nums[1]}"
@@ -36,30 +36,30 @@ def local_ai_reply(prompt, df=None):
     if any(x in p for x in ['hi','hello','hey','namaste','namaskar']):
         return "Bhai Hi, bolo CSV saaf karna hai kya? Ya kuch aur puchhna hai?" if is_hindi else "Hi there! Need help cleaning your CSV? Or ask me anything else."
 
-    # CSV help
+    # CSV Data Science help
     if df is not None:
         if any(x in p for x in ['column','columns','col']):
             cols = ', '.join(df.columns[:5])
             return f"Bhai tere CSV me {len(df.columns)} columns hain: {cols}..." if is_hindi else f"Your CSV has {len(df.columns)} columns: {cols}..."
-        if any(x in p for x in ['row','rows','kitni','kitne']):
+        if any(x in p for x in ['row','rows','kitni','kitne','data']):
             nulls = df.isna().sum().sum()
             return f"Bhai total {len(df)} rows hain. {nulls} cells khali hain." if is_hindi else f"You have {len(df)} total rows. {nulls} cells are empty."
-        if any(x in p for x in ['clean','saaf','fix','thik']):
+        if any(x in p for x in ['clean','saaf','fix','thik','process']):
             return "Bhai AI Studio me ja: Date fix karna hai to 'Smart Date', Duplicate hatane hai to 'Remove Duplicates', Khali jagah bharni hai to 'AI Fill Nulls' daba de." if is_hindi else "Go to AI Studio: Use 'Smart Date' to fix dates, 'Remove Duplicates' to delete dupes, 'AI Fill Nulls' to fill empty cells."
-        if any(x in p for x in ['duplicate','dup','double']):
+        if any(x in p for x in ['duplicate','dup','double','repeat']):
             dups = df.duplicated().sum()
             return f"Bhai {dups} duplicate rows mili. AI Studio me 'Remove Duplicates' daba ke saaf kar de." if is_hindi else f"Found {dups} duplicate rows. Use 'Remove Duplicates' in AI Studio to clean them."
-        if any(x in p for x in ['null','empty','khali','blank']):
+        if any(x in p for x in ['null','empty','khali','blank','missing']):
             nulls = df.isna().sum().sum()
             return f"Bhai {nulls} cells khali hain. 'AI Fill Nulls' tool use kar le." if is_hindi else f"You have {nulls} empty cells. Use the 'AI Fill Nulls' tool."
+        if any(x in p for x in ['date','time','format']):
+            return "Bhai Date wale column select karke 'Smart Date Converter' tool use kar. Sab format YYYY-MM-DD me ho jayega." if is_hindi else "Select your date columns and use 'Smart Date Converter'. It will convert everything to YYYY-MM-DD format."
 
     # General GK
     if "capital" in p and "india" in p:
         return "Bhai India ki capital New Delhi hai" if is_hindi else "The capital of India is New Delhi"
     if "pm" in p and "india" in p:
         return "Bhai India ke PM Narendra Modi hain" if is_hindi else "The PM of India is Narendra Modi"
-    if "cricket" in p:
-        return "Bhai cricket ke liye Kohli ko dekh le. Score puchhna hai to Google kar le" if is_hindi else "For cricket, check out Kohli. Google for live scores"
 
     # Default
     if is_hindi:
@@ -296,6 +296,7 @@ if st.session_state.plan is None:
                 <div>
                     {''.join([f'<p>✓ {f}</p>' for f in T['free_feat']])}
                 </div>
+            </div>
             """, unsafe_allow_html=True)
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"
@@ -440,40 +441,12 @@ else:
             case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
             if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
                 for col in case_cols:
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper() if case_opt == "Uppercase" else st.session_state.df_clean[col].str.lower() if case_opt == "Lowercase" else st.session_state.df_clean[col].str.title()
-                st.success(T['success'])
-                st.rerun()
-
-            st.write(f"**{T['tool6']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
-            spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free):
-                for col in spec_cols:
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'[^a-zA-Z0-9\s@.]', '', regex=True)
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
-
-            st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always                    
-                    st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace(r'\D', '', regex=True)
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
-
-            st.write(f"**{T['tool7']}** {'🔓 Pro Tool - Always Unlocked' if is_pro else '🔒 Pro Only'}")
-            old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
-            new = st.text_input("New column name", key="inp_new", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free) and new:
-                st.session_state.df_clean.rename(columns={old: new}, inplace=True)
-                st.success(T['success'])
-                st.rerun()
-            if is_free:
-                st.info("Unlock in Pro - ₹299 or ₹1499")
-
-            st.write(f"**{T['tool8']}** ✅ Free + Pro")
-            if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-                st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
+                    if case_opt == "Uppercase":
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.upper()
+                    elif case_opt == "Lowercase":
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.lower()
+                    else:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.title()
                 st.success(T['success'])
                 st.rerun()
 
