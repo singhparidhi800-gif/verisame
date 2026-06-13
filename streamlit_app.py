@@ -137,7 +137,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# 🔥 PERFECTED AI KNOWLEDGE BASE ENGINE WITH EMOTION FILTERS
+# 🔥 PERFECTED AI KNOWLEDGE BASE ENGINE WITH LANGUAGE-MATCHING EMOTIONS
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -162,15 +162,29 @@ def render_ai_chatbot(is_sidebar=False):
 
             reply = None
 
-            # 🛠️ 1. EMOTION & CASUAL TALK FILTER (कैजुअल बातों के लिए लाइव रिस्पांस)
-            if any(x in u for x in ["bye", "going to clean", "tata", "see you", "alvida"]):
-                reply = "👋 **All the best, buddy!** जाओ और अपने डेटा को एकदम कड़क चमकाओ। 😉 कोई भी दिक़्क़त आए तो मैं यहीं हूँ, तुरंत वापस आ जाना!"
-            elif any(x in u for x in ["ok thanks", "okay thanks", "thank you", "thx", "shukriya"]):
-                reply = "💖 **Most welcome, dear!** मुझे तुम्हारी मदद करके बहुत ख़ुशी हुई। अब जल्दी से अपना काम निपटा लो! ✨"
-            elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉", "wink"]):
-                reply = "😜 **Haha!** डेटा क्लीनिंग बोरिंग हो सकती है, लेकिन हमारी बातें नहीं! मुस्कुराते रहो और काम करते रहो!"
-            elif any(x in u for x in ["you mad", "are you crazy", "pagal हो"]):
-                reply = "🤪 **अरे नहीं भाई!** मैं पागल नहीं हूँ, बस डेटा एरर्स को देखकर मेरा दिमाग थोड़ा सुपर-फ़ास्ट चलने लगता है! ⚡"
+            # 🛠️ 1. SEPARATE ENGLISH & HINDI CASUAL CHAT ENGINE (भाषा के हिसाब से सटीक जवाब)
+            # --- English Casual Intent ---
+            if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
+                if "uplode" in u or "upload" in u:
+                    reply = "👋 **All the best, buddy! Go ahead and upload your files to clean them up instantly!** I am right here if you need anything else. 😉"
+                elif "clean" in u:
+                    reply = "👍 **Awesome! Go smash those data errors and make your dataset perfect!** Let me know if you run into any trouble. 😉"
+                else:
+                    reply = "👋 **Goodbye! Have a productive session ahead!** Come back whenever you have a query. ✨"
+            elif any(x in u for x in ["thank you", "thanks", "thx"]):
+                reply = "💖 **You are most welcome!** Making your data pipeline seamless is exactly what I'm built for. Let's get to work!"
+            elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]):
+                reply = "😜 **Haha!** Data cleaning can be boring, but our conversations don't have to be! Keep smiling and keep processing!"
+            elif "are you mad" in u or "crazy" in u:
+                reply = "🤪 **Haha, not at all!** I'm just hyper-engineered to clear errors at supersonic speeds! ⚡"
+
+            # --- Hindi/Hinglish Casual Intent ---
+            elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]):
+                reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा को एकदम कड़क चमकाओ। कोई भी दिक़्क़त आए तो तुरंत वापस आ जाना! 😉"
+            elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]):
+                reply = "💖 **बहुत-बहुत स्वागत है तुम्हारा!** मुझे तुम्हारी मदद करके बेहद ख़ुशी हुई। अब जल्दी से अपना काम ख़त्म कर लो! ✨"
+            elif any(x in u for x in ["pagal ho", "dimag kharab"]):
+                reply = "🤪 **अरे नहीं मेरे भाई!** मैं पागल नहीं हूँ, बस डेटा एरर्स को देखकर मेरा इंजन थोड़ा सुपर-फ़ास्ट दौड़ने लगता है! ⚡"
 
             # 🧮 2. Fast Math Engine
             if not reply:
