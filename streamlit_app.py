@@ -3,7 +3,7 @@ import json, os, io, qrcode
 import pandas as pd
 import re
 from datetime import datetime, timedelta
-import difflib  # 🧠 खुद से बेस्ट आंसर ढूंढने के लिए इन-बिल्ट इंजन
+import difflib  # 🧠 खुद से बेस्ट आंसर ढूंढने के लिए इंजन
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
@@ -138,7 +138,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
 
-# 🔥 ULTRA-ADVANCED SMART AI KNOWLEDGE BASE ENGINE (WITH FUZZY SELF-MATCHING BRAIN)
+# 🔥 ULTRA-ADVANCED SMART AI KNOWLEDGE BASE ENGINE (WITH AUTONOMOUS DECISION MAKING)
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -154,53 +154,26 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown(chat_html, unsafe_allow_html=True)
     
     with target.form(key=f"ai_chat_form_{'side' if is_sidebar else 'main'}", clear_on_submit=True):
-        user_msg = st.text_input("Ask a question...", placeholder="e.g., Hi! / What is your name? / File size limit?", key=f"chat_in_{'side' if is_sidebar else 'main'}")
+        user_msg = st.text_input("Ask a question...", placeholder="e.g., Are all tools good? / App limits?", key=f"chat_in_{'side' if is_sidebar else 'main'}")
         submit = st.form_submit_button(label="Send Message 🚀")
         
         if submit and user_msg.strip():
             u = user_msg.lower().strip()
             st.session_state.chat_history.append({"role": "user", "message": user_msg})
             
-            # 📚 संपूर्ण एआई नॉलेज बेस (Mapping Dictionary for Auto-Generated Thinking)
-            knowledge_map = {
-                "hi hello hey hello ai hi ai ola salam": "👋 **Hello there!** Welcome to VeriSame! I am your operational data-cleansing assistant. How can I speed up your dataset processing workflows today? Feed me a question!",
-                "how are you kaise ho kaise hain how it goes sab badhiya": "✨ **I am doing fantastic!** Powered up, synchronized, and completely ready to smash messy row formatting and trailing space errors under 3 seconds. How are you doing today?",
-                "your name naam kya who are you tum kaun ho identify": "💎 I am **VeriSame Engine AI**, a hyper-customized Streamlit data assistant architected to answer operational software queries, verify datasets, and guide users through premium automation pipelines!",
-                "thank you thanks shukriya dhanyawad great app awesome nice app good job": "💖 **You are most welcome!** Making your data pipeline seamless and saving hours of programming time is exactly what I live for. Let me know if you need help with any other tool matrix!",
-                "joke chutkula make me laugh funny": "😂 **Data Science Special Joke:**\n\nWhy did the Data Scientist break up with the Excel Sheet?\n*Because it had too many attachment issues and refused to structuralize its missing values!* 📊",
-                "bye goodnight good night tata see you alvida exit": "👋 **Goodbye!** Thank you for using VeriSame. Remember to download your processed CSV or Excel matrices before closing your volatile session state. Have a data-driven day ahead!",
-                "founder made creator created developer owner built make kaun banaya owner kaun": "👑 **Founder & Creator:**\nVeriSame was architected and developed by **Anugya Singh**. She designed this platform to eliminate the manual frustration of data cleaning and provide lightning-fast preprocessing utilities for professionals worldwide.",
-                "size limit mb gb file size heavy file large file badi file capacity": "💾 **File Size Capacity:**\nVeriSame easily supports spreadsheet engines up to **50 Megabytes (MB)** in size for live browser execution. For a pure text layout like CSV, 50MB can hold hundreds of thousands of rows seamlessly without any computational lag!",
-                "multiple together two tools both together ek sath ek saath saath me combination": "🔄 **Applying Multiple Tools:**\nYes, you can pile adjustments on top of each other! Simply choose your first target column, click **Apply**, and watch the live data table update below. Then, select your second feature matrix (or another column) and click Apply again before triggering the final export downpour!",
-                "hindi language bhasha multilingual other language script support": "🌍 **Language Stack Support:**\nWhile VeriSame's functional panel buttons are built in English, the text operations—such as **Tool 8 (Remove Duplicates)**, **Tool 9 (Trim Spaces)**, **Tool 2 (AI Fill Nulls)**, and **Tool 7 (Bulk Rename)**—work completely perfectly on **Hindi text entries** and UTF-8 script structures!",
-                "disappear delete column safe column sequence order change data lost data loss": "🛡️ **Data Integrity Guarantee:**\nApplying any transformation matrix inside VeriSame will **never** alter the horizontal row order or drop unselected peripheral columns. Only the precise cells matching your chosen column parameter will be cleaned—ensuring structural alignment stays 100% stable.",
-                "how long approval time how much time admin active kitni der kab hoga time lag": "⏳ **Admin Verification Time:**\nOnce you press the **'Customer I Paid'** action terminal, a notification grid renders inside the secure **Sherni Admin Panel**. Standard transaction approvals are cross-referenced manually and fully activated within **10 to 30 minutes** maximum!",
-                "failed deducted money cut paisa kat stuck payment payment issue error payment": "💳 **Payment & Discrepancies:**\nDon't worry! If your balance was deducted but your interface status remains pending, it means your local banking gateway took longer to update. Simply retain your **UPI Transaction Reference Number/Screenshot** and connect with email support to bypass manual wait queues immediately.",
-                "real ai regex how smart technology backend python logic backend code": "🧠 **System Engine Architecture:**\nVeriSame operates on a highly optimized hybrid architecture combining advanced functional programmatic heuristics, high-speed compiled vector computations via Python pandas libraries, and deep regular expression mapping filters to yield predictable data actions under 3 seconds.",
-                "safe safety secure privacy leak store data safe security surakshit chori": "🔒 **Data Privacy & Security:**\nYour files are **100% safe** with VeriSame. We use client-side operational state execution. Your uploaded rows are processed strictly in temporary volatile memory and are **never stored** on any database or permanent server cloud. Once you close the session, your data is wiped out permanently.",
-                "refund return money back paisa wapas cancel": "💸 **Refund Policy:**\nVeriSame does **not** support refund packages since it provides instant digital account infrastructure activations. We highly recommend using our **Free Lifetime Tier** to check compatibility before executing a Pro UPI upgrade.",
-                "crash error not working stuck slow bug kharab chal nahi raha": "🛠️ **Troubleshooting & Error Guide:**\nIf your file processing feels stuck, please check: \n1. **Format:** Ensure your file is explicitly `.csv`, `.xlsx`, or `.json`.\n2. **Headers:** Confirm that the target column names do not contain duplicate label names. \n3. **Refresh:** Try refreshing the web tab and loading via the 'Try Demo' sample block to test structural rendering.",
-                "csv vs excel difference between csv what is csv excel difference": "📊 **CSV vs Excel (Data Science Corner):**\n• **CSV (Comma Separated Values):** Plain text tabular format. It is highly lightweight, loads in milliseconds, and is universally preferred by Data Scientists for Machine Learning model inputs.\n• **Excel (.xlsx):** A heavy binary spreadsheet layout that supports styles, macros, and multiple sheets. Best for manual reporting, but slower for direct programmatic data feeds.",
-                "free vs pro compare why pro pro benefits difference plan": "💎 **Plan Breakdown:**\n• **Free Tier:** Caps processing at 1,000 dataset rows and gives access to 3 standard text manipulation tools.\n• **Pro Tiers:** Unlocks **Unlimited Dataset Rows**, hyper-speed 3-second backend transformation matrix, priority email tracking, and all **10 premium AI automation tools** (Null Fills, Email Validators, Phone Cleaners, and Typo Correctors).",
-                "contact support help email support complaint customer care baat karni": "📧 **Support Channels:**\nNeed technical support or custom corporate billing licensing? You can drop a query directly to our developer team via standard email channel support. (Response windows usually process within 12-24 business operational hours).",
-                "salary job scope career future earn money data science": "🚀 **Data Science Career Scope:**\nData Science is currently one of the highest-paying domains worldwide. Experienced engineers frequently secure premium average CTC packings ranging from ₹12 Lakhs to ₹25+ Lakhs annually in India. Mastering systematic data preprocessing (which VeriSame automates) is an essential milestone to breaking into top ML/AI roles!",
-                "tool 1 date converter date ai calendar tool": "📅 **Tool 1: Smart Date Converter (FREE & PRO)**\nScans columns containing chaotic user-entered date layouts (e.g., '12/5/2024', '15-03-2023') and unifies them cleanly into the standardized 'YYYY-MM-DD' layout while automatically skipping bad values.",
-                "tool 2 fill nulls null ai empty ai blank ai missing ai": "🔓 **Tool 2: AI Fill Nulls (PRO ONLY)**\nAutomatically scans selected data tables for completely blank or missing database values. It fills the structural gaps using clear logical tokens like 'N/A' or simple `0` integers to protect backend pipelines.",
-                "tool 3 email validator email ai mail ai": "📧 **Tool 3: Email Validator & Cleaner (PRO ONLY)**\nApplies high-speed computational expressions onto your column fields. It verifies structure blocks, extracts bad domains (e.g., matching missing '@'), and retains purely functional professional operational emails.",
-                "tool 4 phone formatter phone ai contact ai mobile ai number ai": "📞 **Tool 4: Phone Formatter (PRO ONLY)**\nStrips alphanumeric noise, brackets, hyphens, and wrong local prefix strings from your data lists, leaving beautifully structured pure numerical digits optimized for global CRM logging.",
-                "tool 5 case converter case ai text case caps ai": "🔠 **Tool 5: Case Converter (FREE & PRO)**\nEstablishes clean typographical standards across dataset cells. Safely alters text layout on the go into absolute Uppercase, small Lowercase, or uniform corporate Title Case formats.",
-                "tool 6 remove symbols symbol ai noise ai character ai": "🔣 **Tool 6: Remove Symbols & Noise (PRO ONLY)**\nSlices off messy, unreadable special character junk (like #, $, %, *, ~) from heavy string datasets while safely protecting alpha-numeric parameters and identifiers.",
-                "tool 7 bulk rename rename ai header ai column ai": "✏️ **Tool 7: Bulk Header Renamer (PRO ONLY)**\nAllows developers and users to pick complex structural dataset titles instantly from a selector menu and type clean, custom matching strings to rename headers seamlessly.",
-                "tool 8 remove duplicates duplicate ai dedup ai repeat ai copy ai": "🔥 **Tool 8: Remove Duplicates (FREE & PRO)**\nSifts through rows to completely catch overlapping matching data blocks. It safely drops repetitive rows, optimizes data size, and keeps exactly 1 pristine primary record.",
-                "tool 9 trim spaces trim ai space ai gap ai": "✂️ **Tool 9: Trim Spaces & Gaps (FREE & PRO)**\nEliminates invisible but hazardous trailing or leading whitespaces embedded inside database fields that cause search queries and indexes to fail.",
-                "tool 10 spell check spell ai typo ai correct ai": "🧠 **Tool 10: Spell Check & Auto-Correct (PRO ONLY)**\nMaps an array string logic onto messy texts to instantly wipe out manual typos (e.g., auto-fixing 'teh' to 'the'), ensuring high-end reporting quality.",
-                "how many tools number of tools total tools kitne tool": "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** plus a special financial **Word-to-Number conversion algorithm** for cleaning salaries and expenses!"
-            }
-
             reply = None
             
-            # 🔢 MATH/CALCULATOR ENGINE Check First
-            if re.search(r'(\d+)\s*([\+\-\*\/x])\s*(\d+)', u) or any(m in u for m in ["calculate", "solve", "math", "plus", "minus", "divided"]):
+            # 🧠 1. AUTONOMOUS DECISION-MAKING ENGINE (खुद से स्थिति समझकर फैसला लेना)
+            # केस ए: टूल्स की क्वालिटी या परफॉरमेंस पर सवाल (जैसे- Are all tools good?, Is it safe?)
+            if any(w in u for w in ["all tools", "every tool", "tool good", "are tools safe", "best tool", "useful app", "worth it"]):
+                reply = "💎 **Yes, absolutely! All 10 tools inside VeriSame are highly optimized and completely safe.** Every tool uses strict Python pandas vectorization to clean columns instantly without breaking other data rows. You can trust them 100% for corporate reporting inputs!"
+                
+            # केस बी: प्लान चुनने के लिए यूजर का कन्फ्यूजन दूर करना (Decision Support)
+            elif any(w in u for w in ["which plan", "should i buy", "free or pro", "best plan for me"]):
+                reply = "🤔 **Decision Matrix Recommendation:**\n• If your file has **less than 1,000 rows** and you only need Date formatting, Case adjustment, or Duplicate removal, the **Free Lifetime Tier** is ideal.\n• If you deal with heavy datasets, phone validations, or blank rows, **upgrading to Pro (₹299/Month)** is the smartest decision to save time!"
+
+            # 🔢 2. MATH/CALCULATOR ENGINE Check Next
+            if not reply and (re.search(r'(\d+)\s*([\+\-\*\/x])\s*(\d+)', u) or any(m in u for m in ["calculate", "solve", "math"])):
                 match = re.search(r'(\d+)\s*([\+\-\*\/x])\s*(\d+)', u)
                 if match:
                     n1, op, n2 = int(match.group(1)), match.group(2), int(match.group(3))
@@ -210,19 +183,50 @@ def render_ai_chatbot(is_sidebar=False):
                     elif op == '/': res = n1 / n2 if n2 != 0 else "Error"
                     reply = f"🔢 **Math Calculator Engine:** \nExpression: `{n1} {op} {n2}` \n**Result:** `{res}`"
                 else:
-                    reply = "🔢 **Math Engine:** Send me any expression like `50 * 5`, `250 + 75`, or `1000 / 4` and I'll compute it instantly!"
+                    reply = "🔢 **Math Engine:** Send me an expression like `50 * 5` or `1000 / 4`!"
 
-            # 🧠 SMART FUZZY MATCHING BRAIN (खुद से क्वेश्चन समझकर आंसर बनाना)
+            # 📚 3. SMART FUZZY MATCHING KNOWLEDGE BASE (बाकी सारे सवाल)
             if not reply:
+                knowledge_map = {
+                    "hi hello hey hello ai hi ai ola salam": "👋 **Hello there!** Welcome to VeriSame! How can I speed up your dataset processing workflows today?",
+                    "how are you kaise ho kaise hain how it goes sab badhiya": "✨ **I am doing fantastic!** Powered up, synchronized, and completely ready to smash data errors under 3 seconds.",
+                    "your name naam kya who are you tum kaun ho identify": "💎 I am **VeriSame Engine AI**, a hyper-customized data assistant built to answer software queries and guide premium pipelines!",
+                    "thank you thanks shukriya dhanyawad great app awesome nice app good job": "💖 **You are most welcome!** Making your data pipeline seamless is exactly what I live for.",
+                    "joke chutkula make me laugh funny": "😂 **Data Science Special Joke:** Why did the Data Scientist break up with the Excel Sheet? *Because it had too many attachment issues!*",
+                    "bye goodnight good night tata see you alvida exit": "👋 **Goodbye!** Remember to download your processed files before closing your volatile session state.",
+                    "founder made creator created developer owner built make kaun banaya owner kaun": "👑 **Founder & Creator:** VeriSame was architected and developed by **Anugya Singh** to eliminate manual data cleaning frustration.",
+                    "size limit mb gb file size heavy file large file badi file capacity": "💾 **File Size Capacity:** VeriSame easily supports spreadsheet engines up to **50 Megabytes (MB)** seamlessly without any computational lag!",
+                    "multiple together two tools both together ek sath ek saath saath me combination": "🔄 **Applying Multiple Tools:** Yes, you can pile adjustments! Choose your first column, click **Apply**, then select another tool/column and click Apply again before downloading.",
+                    "hindi language bhasha multilingual other language script support": "🌍 **Language Stack Support:** Text operations like **Tool 8 (Remove Duplicates)** and **Tool 9 (Trim Spaces)** work completely perfectly on **Hindi text entries**!",
+                    "disappear delete column safe column sequence order change data lost data loss": "🛡️ **Data Integrity Guarantee:** Applying transformations will **never** alter row sequence or drop unselected columns. Your data alignment stays 100% stable.",
+                    "how long approval time how much time admin active kitni der kab hoga time lag": "⏳ **Admin Verification Time:** Standard transaction approvals are cross-referenced manually and fully activated within **10 to 30 minutes** maximum!",
+                    "failed deducted money cut paisa kat stuck payment payment issue error payment": "💳 **Payment & Discrepancies:** Don't worry! Simply retain your **UPI Transaction Reference Number** and connect with email support to bypass manual wait queues.",
+                    "real ai regex how smart technology backend python logic backend code": "🧠 **System Engine Architecture:** VeriSame operates on a highly optimized hybrid architecture combining vector computations via Python pandas and deep regular expressions.",
+                    "safe safety secure privacy leak store data safe security surakshit chori": "🔒 **Data Privacy & Security:** Your files are **100% safe**. Rows are processed strictly in temporary volatile memory and are **never stored** on any database.",
+                    "refund return money back paisa wapas cancel": "💸 **Refund Policy:** VeriSame does **not** support refund packages since it provides instant digital updates. Please test via our Free Tier first.",
+                    "crash error not working stuck slow bug kharab chal nahi raha": "🛠️ **Troubleshooting Guide:** 1. Ensure file is `.csv`, `.xlsx`, or `.json`. 2. Confirm headers do not contain duplicate label names. 3. Try refreshing.",
+                    "csv vs excel difference between csv what is csv excel difference": "📊 **CSV vs Excel:** • **CSV:** Lightweight plain text format preferred for Machine Learning model feeds. • **Excel:** Heavy spreadsheet layout best for manual business reporting.",
+                    "free vs pro compare why pro pro benefits difference plan": "💎 **Plan Breakdown:** • **Free:** Caps at 1,000 rows & 3 basic tools. • **Pro:** Unlocks **Unlimited Dataset Rows**, 3s processing speed, and all **10 premium automation tools**.",
+                    "contact support help email support complaint customer care baat karni": "📧 **Support Channels:** Drop a query directly to our developer team via standard email support. Responses process within 12-24 hours.",
+                    "salary job scope career future earn money data science": "🚀 **Data Science Scope:** Data Science roles offer premium packages ranging from ₹12 Lakhs to ₹25+ Lakhs annually in India. Preprocessing automation is an essential step!",
+                    "tool 1 date converter date ai calendar tool": "📅 **Tool 1: Smart Date Converter (FREE & PRO)** Unifies chaotic date layouts cleanly into the standardized 'YYYY-MM-DD' layout automatically.",
+                    "tool 2 fill nulls null ai empty ai blank ai missing ai": "🔓 **Tool 2: AI Fill Nulls (PRO ONLY)** Automatically fills structural blank spaces using logical tokens like 'N/A' or `0` integers.",
+                    "tool 3 email validator email ai mail ai": "📧 **Tool 3: Email Validator & Cleaner (PRO ONLY)** Verifies structure blocks, extracts bad domains, and retains purely functional emails.",
+                    "tool 4 phone formatter phone ai contact ai mobile ai number ai": "📞 **Tool 4: Phone Formatter (PRO ONLY)** Strips alphabetic noise and hyphens, leaving beautifully structured pure numerical digits.",
+                    "tool 5 case converter case ai text case caps ai": "🔠 **Tool 5: Case Converter (FREE & PRO)** Safely alters column text layouts into absolute Uppercase, Lowercase, or Title Case formats.",
+                    "tool 6 remove symbols symbol ai noise ai character ai": "🔣 **Tool 6: Remove Symbols & Noise (PRO ONLY)** Slices off unreadable special character junk (like #, $, %, *) while protecting alpha-numeric parameters.",
+                    "tool 7 bulk rename rename ai header ai column ai": "✏️ **Tool 7: Bulk Header Renamer (PRO ONLY)** Allows users to pick dataset titles instantly from a selector menu and type clean matching strings.",
+                    "tool 8 remove duplicates duplicate ai dedup ai repeat ai copy ai": "🔥 **Tool 8: Remove Duplicates (FREE & PRO)** Drops repetitive row data chunks to optimize dataset footprint and keep exactly 1 primary record.",
+                    "tool 9 trim spaces trim ai space ai gap ai": "✂️ **Tool 9: Trim Spaces & Gaps (FREE & PRO)** Eliminates hazardous trailing or leading whitespaces embedded inside database fields.",
+                    "tool 10 spell check spell ai typo ai correct ai": "🧠 **Tool 10: Spell Check & Auto-Correct (PRO ONLY)** Maps logic to wipe out manual typos (e.g., fixing 'teh' to 'the'), ensuring high-end reporting quality.",
+                    "how many tools number of tools total tools kitne tool": "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** plus a special financial **Word-to-Number conversion algorithm**!"
+                }
+
                 best_ratio = 0.0
                 best_key = None
                 
-                # पूरे ज्ञान कोष में चक्कर लगाकर क्लोजेस्ट मैच ढूंढना
                 for keys in knowledge_map.keys():
-                    # difflib.SequenceMatcher से यूजर के सवाल और कीवर्ड्स का सिमिलैरिटी इंडेक्स निकालना
                     ratio = difflib.SequenceMatcher(None, u, keys).ratio()
-                    
-                    # वर्ड-बाय-वर्ड पार्शियल मैचिंग के लिए एक्स्ट्रा स्कोर बोनस देना
                     word_matches = sum(1 for word in u.split() if word in keys)
                     bonus_ratio = (word_matches / max(1, len(u.split()))) * 0.5
                     final_score = ratio + bonus_ratio
@@ -231,11 +235,10 @@ def render_ai_chatbot(is_sidebar=False):
                         best_ratio = final_score
                         best_key = keys
                 
-                # अगर सिमिलैरिटी स्कोर 0.35 (35% से ज्यादा कॉन्फिडेंस) है, तो सही जवाब अपने आप मैप हो जाएगा!
                 if best_ratio > 0.35 and best_key:
                     reply = knowledge_map[best_key]
                 else:
-                    reply = "I've processed your prompt! As VeriSame's system assistant, I can handle standard pleasantries (Hi, Hello), explain data metrics, plan comparisons, code errors, support limits, our founder (**Anugya Singh**), or any individual tool functionality. Please use direct keywords!"
+                    reply = "I've processed your prompt! As VeriSame's decision assistant, I can handle pleasantries, evaluate if tools are good, compare plans, check file limits, or detail our founder (**Anugya Singh**)."
             
             st.session_state.chat_history.append({"role": "assistant", "message": reply})
             st.rerun()
