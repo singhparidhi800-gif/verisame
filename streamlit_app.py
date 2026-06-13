@@ -51,9 +51,8 @@ T = {
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
     "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply","success":"Applied Successfully!",
-    "admin_title":"Sherni Admin Panel","admin_pending":"Pending Approvals","admin_approve_btn":"Mark Paid - Unlock Customer Download",
-    "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel",
-    "expiry_warning":"⚠️ WARNING: Plan expires in {days} days! Renew now to avoid data loss"
+    "admin_title":"Sherni Admin Panel","admin_pending":"User Databases & Requests","admin_approve_btn":"Mark Paid - Unlock Customer Download",
+    "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
 st.markdown("""
@@ -138,7 +137,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
 
-# 🔥 ULTRA-ADVANCED SMART AI KNOWLEDGE BASE ENGINE (WITH AUTONOMOUS DECISION MAKING)
+# 🔥 PERFECTED AI KNOWLEDGE BASE ENGINE (WITH HIGH-INTELLIGENCE FILTERING)
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -163,29 +162,26 @@ def render_ai_chatbot(is_sidebar=False):
             
             reply = None
             
-            # 🧠 1. AUTONOMOUS DECISION-MAKING ENGINE (खुद से स्थिति समझकर फैसला लेना)
-            # केस ए: टूल्स की क्वालिटी या परफॉरमेंस पर सवाल (जैसे- Are all tools good?, Is it safe?)
+            # 🧠 1. AUTONOMOUS DECISION-MAKING & INTENT COGNITION
             if any(w in u for w in ["all tools", "every tool", "tool good", "are tools safe", "best tool", "useful app", "worth it"]):
                 reply = "💎 **Yes, absolutely! All 10 tools inside VeriSame are highly optimized and completely safe.** Every tool uses strict Python pandas vectorization to clean columns instantly without breaking other data rows. You can trust them 100% for corporate reporting inputs!"
                 
-            # केस बी: प्लान चुनने के लिए यूजर का कन्फ्यूजन दूर करना (Decision Support)
             elif any(w in u for w in ["which plan", "should i buy", "free or pro", "best plan for me"]):
                 reply = "🤔 **Decision Matrix Recommendation:**\n• If your file has **less than 1,000 rows** and you only need Date formatting, Case adjustment, or Duplicate removal, the **Free Lifetime Tier** is ideal.\n• If you deal with heavy datasets, phone validations, or blank rows, **upgrading to Pro (₹299/Month)** is the smartest decision to save time!"
 
-            # 🔢 2. MATH/CALCULATOR ENGINE Check Next
-            if not reply and (re.search(r'(\d+)\s*([\+\-\*\/x])\s*(\d+)', u) or any(m in u for m in ["calculate", "solve", "math"])):
-                match = re.search(r'(\d+)\s*([\+\-\*\/x])\s*(\d+)', u)
+            # 🔢 2. ADVANCED MATH CALCULATOR ENGINE (Handles 2*8, 2x8, 50+50 etc.)
+            if not reply:
+                math_clean = u.replace('x', '*')
+                match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
                 if match:
                     n1, op, n2 = int(match.group(1)), match.group(2), int(match.group(3))
                     if op == '+': res = n1 + n2
                     elif op == '-': res = n1 - n2
-                    elif op in ['*', 'x']: res = n1 * n2
+                    elif op == '*': res = n1 * n2
                     elif op == '/': res = n1 / n2 if n2 != 0 else "Error"
                     reply = f"🔢 **Math Calculator Engine:** \nExpression: `{n1} {op} {n2}` \n**Result:** `{res}`"
-                else:
-                    reply = "🔢 **Math Engine:** Send me an expression like `50 * 5` or `1000 / 4`!"
 
-            # 📚 3. SMART FUZZY MATCHING KNOWLEDGE BASE (बाकी सारे सवाल)
+            # 📚 3. STRICT KNOWLEDGE BASE WITH INTELLIGENT THRESHOLD
             if not reply:
                 knowledge_map = {
                     "hi hello hey hello ai hi ai ola salam": "👋 **Hello there!** Welcome to VeriSame! How can I speed up your dataset processing workflows today?",
@@ -194,7 +190,7 @@ def render_ai_chatbot(is_sidebar=False):
                     "thank you thanks shukriya dhanyawad great app awesome nice app good job": "💖 **You are most welcome!** Making your data pipeline seamless is exactly what I live for.",
                     "joke chutkula make me laugh funny": "😂 **Data Science Special Joke:** Why did the Data Scientist break up with the Excel Sheet? *Because it had too many attachment issues!*",
                     "bye goodnight good night tata see you alvida exit": "👋 **Goodbye!** Remember to download your processed files before closing your volatile session state.",
-                    "founder made creator created developer owner built make kaun banaya owner kaun": "👑 **Founder & Creator:** VeriSame was architected and developed by **Anugya Singh** to eliminate manual data cleaning frustration.",
+                    "founder made creator created developer owner built make kaun banaya owner kaun anugya": "👑 **Founder & Creator:** VeriSame was architected and developed by **Anugya Singh** to eliminate manual data cleaning frustration.",
                     "size limit mb gb file size heavy file large file badi file capacity": "💾 **File Size Capacity:** VeriSame easily supports spreadsheet engines up to **50 Megabytes (MB)** seamlessly without any computational lag!",
                     "multiple together two tools both together ek sath ek saath saath me combination": "🔄 **Applying Multiple Tools:** Yes, you can pile adjustments! Choose your first column, click **Apply**, then select another tool/column and click Apply again before downloading.",
                     "hindi language bhasha multilingual other language script support": "🌍 **Language Stack Support:** Text operations like **Tool 8 (Remove Duplicates)** and **Tool 9 (Trim Spaces)** work completely perfectly on **Hindi text entries**!",
@@ -226,19 +222,26 @@ def render_ai_chatbot(is_sidebar=False):
                 best_key = None
                 
                 for keys in knowledge_map.keys():
+                    words_in_key = keys.split()
+                    user_words = u.split()
+                    has_exact_keyword = any(uw in words_in_key for uw in user_words if len(uw) > 3)
+                    
                     ratio = difflib.SequenceMatcher(None, u, keys).ratio()
                     word_matches = sum(1 for word in u.split() if word in keys)
-                    bonus_ratio = (word_matches / max(1, len(u.split()))) * 0.5
+                    bonus_ratio = (word_matches / max(1, len(u.split()))) * 0.4
                     final_score = ratio + bonus_ratio
+                    
+                    if has_exact_keyword:
+                        final_score += 0.35
                     
                     if final_score > best_ratio:
                         best_ratio = final_score
                         best_key = keys
                 
-                if best_ratio > 0.35 and best_key:
+                if best_ratio >= 0.55 and best_key:
                     reply = knowledge_map[best_key]
                 else:
-                    reply = "I've processed your prompt! As VeriSame's decision assistant, I can handle pleasantries, evaluate if tools are good, compare plans, check file limits, or detail our founder (**Anugya Singh**)."
+                    reply = "🔍 **I couldn't find an exact match for that query.**\n\nAs VeriSame's Smart Assistant, you can ask me:\n• *Are all tools good? / Which plan should I buy?*\n• Simple math questions like *'50 * 5'*\n• Details about specific utilities like *'What is Tool 9 Trim?'*"
             
             st.session_state.chat_history.append({"role": "assistant", "message": reply})
             st.rerun()
@@ -249,8 +252,9 @@ if st.session_state.plan or st.session_state.email_entered:
             st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
         st.rerun()
 
+# 🛡️ DATABASE & EMAIL COGNITION LOGIC
 if st.session_state.email:
-    user = load_db().get(st.session_state.email,{})
+    user = load_db().get(st.session_state.email, {})
     st.sidebar.success(f"📧 {st.session_state.email}")
     render_ai_chatbot(is_sidebar=True)
 
@@ -265,7 +269,12 @@ if st.session_state.email:
         if user.get("plan") == "free":
             st.sidebar.info("Plan: FREE LIFETIME ✨")
         elif days_left <= 5 and days_left > 0:
-            st.sidebar.error(T['expiry_warning'].format(days=days_left))
+            # 🔥 🔴 RED COLOR WARNING FOR ENDING PLANS (5 Days Priority Tracker)
+            st.sidebar.markdown(f"""
+            <div style="background-color: #fee2e2; border: 2px solid #ef4444; padding: 12px; border-radius: 12px; color: #b91c1c !important;">
+                ⚠️ <b>CRITICAL WARNING:</b> Your ₹{st.session_state.amt} plan is going to end in <b>{days_left} days</b>! Please renew now to avoid data loss.
+            </div>
+            """, unsafe_allow_html=True)
         elif days_left > 0:
             st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
         else:
@@ -282,37 +291,55 @@ with col3:
     st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
+# 👑 SHERNI ADMIN CONTROL CENTER (EMAILS RETENTION FIX)
 if st.query_params.get("admin"):
     admin_pass = st.query_params.get("admin")
     if admin_pass == ADMIN_PASS:
         st.title(T['admin_title'])
         data = load_db()
-        pending = {e:i for e,i in data.items() if i.get("status")=="PENDING" and "@" in e}
-        st.metric(T['admin_pending'], len(pending))
-        if pending:
-            st.subheader("⏳ Pending Approvals")
-            for email,info in pending.items():
-                amt = info.get('amt',0)
-                days = 30 if amt==299 else 180
-                plan_text = f"PRO Monthly ₹299 - {days} days" if amt==299 else f"PRO 6M ₹1499 - {days} days"
-                col1, col2, col3 = st.columns([4,2,2])
+        
+        # सभी यूजर्स का डेटा दिखाएं (चाहे Pending हो या Paid) ताकि लिस्ट से गायब न हो!
+        st.subheader(T['admin_pending'])
+        if data:
+            for email, info in data.items():
+                if "@" not in email: continue
+                amt = info.get('amt', 0)
+                status = info.get('status', 'PENDING')
+                plan_text = f"PRO Monthly ₹299" if amt == 299 else f"PRO 6M ₹1499" if amt == 1499 else "FREE Plan"
+                
+                col1, col2, col3 = st.columns([4, 2, 2])
                 with col1:
-                    st.markdown(f"<div class='pricing-card'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>{T['admin_expiry']}:</b> {info['expiry']}</div>", unsafe_allow_html=True)
+                    status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
+                    st.markdown(f"""
+                    <div class='pricing-card'>
+                        <b>{T['admin_user']}:</b> {email}<br>
+                        <b>{T['admin_plan']}:</b> {plan_text}<br>
+                        <b>Status:</b> {status_color}<br>
+                        <b>{T['admin_expiry']}:</b> {info.get('expiry','N/A')}
+                    </div>
+                    """, unsafe_allow_html=True)
                 with col2:
-                    if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
-                        data[email]["status"] = "PAID"
-                        save_db(data)
-                        st.success(f"✓ {email} unlocked!")
-                        st.balloons()
-                        st.rerun()
+                    # अगर यूजर पहले से Paid नहीं है तभी अप्रूव करने का बटन दिखेगा
+                    if status == "PENDING":
+                        if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
+                            data[email]["status"] = "PAID"
+                            save_db(data)
+                            st.success(f"✓ {email} unlocked!")
+                            st.balloons()
+                            st.rerun()
+                    else:
+                        st.button("✓ Already Active", key=f"active_{email}", disabled=True, use_container_width=True)
                 with col3:
                     if st.button(T['delete_btn'], key=f"delete_{email}", use_container_width=True):
                         del data[email]
                         save_db(data)
                         st.error(f"✓ {email} deleted")
                         st.rerun()
+        else:
+            st.info("No records found in database.")
         st.stop()
 
+# 🛡️ LOGIN / SIGN-UP SESSION CHECKER
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
         col1,col2,col3 = st.columns(3, gap="medium")
@@ -345,20 +372,27 @@ if st.session_state.plan is None:
             if "@" in email_input and "." in email_input:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
-                st.session_state.plan = st.session_state.selected_plan
+                
+                # 🧠 पुराने रिकॉर्ड्स की मेमोरी चेक करने का मैकेनिज्म
                 data = load_db()
-                if st.session_state.selected_plan == "free":
-                    expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                    data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
-                    save_db(data)
-                    st.balloons()
+                if email_input in data:
+                    st.session_state.plan = data[email_input]["plan"]
+                    st.session_state.amt = data[email_input].get("amt", 299)
                     st.rerun()
                 else:
-                    days = 30 if st.session_state.amt == 299 else 180
-                    expiry = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
-                    data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":days,"expiry":expiry,"created":str(datetime.now())}
-                    save_db(data)
-                    st.rerun()
+                    st.session_state.plan = st.session_state.selected_plan
+                    if st.session_state.selected_plan == "free":
+                        expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                        data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
+                        save_db(data)
+                        st.balloons()
+                        st.rerun()
+                    else:
+                        days = 30 if st.session_state.amt == 299 else 180
+                        expiry = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+                        data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":days,"expiry":expiry,"created":str(datetime.now())}
+                        save_db(data)
+                        st.rerun()
             else: st.error("Valid email required")
         st.stop()
 else:
@@ -446,7 +480,7 @@ else:
                 st.rerun()
 
             st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and st.session_state.admin_approved else '🔒 Pro Only'}")
-            old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
+ Old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
             new = st.text_input("New column name", key="inp_new", disabled=is_free)
             if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free) and new:
                 st.session_state.df_clean.rename(columns={old: new}, inplace=True)
@@ -490,6 +524,7 @@ else:
                 st.session_state.show_balloon = True
                 st.rerun()
         elif st.session_state.plan == "pro":
+            # 🔓 अगर एडमिन से अप्रूव हो गया है, तो QR कोड मत दिखाओ, सीधे डाउनलोड ऑप्शन दो!
             if not st.session_state.admin_approved:
                 st.warning(T['wait_approval'])
                 st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
