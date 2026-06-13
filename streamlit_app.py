@@ -59,7 +59,7 @@ T = {
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
-# 🎨 FORCE BRIGHT THEME RULES FOR CHATBOX ACROSS ALL BROWSERS (ANTI-DARK MODE DEV)
+# 🎨 CLEANED CSS RULES TO FIX THE MISSING BUTTON GLITCH
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -89,9 +89,24 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 .pricing-card h2 {font-size: 1.4rem!important; color: #6b21a8!important; margin-bottom: 0.5rem!important; font-weight: 700;}
 .pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800; -webkit-text-fill-color: #6b21a8!important;}
 .pricing-card p {color: #000!important; font-size: 0.95rem!important; margin-bottom: 0.4rem!important;}
-.stButton>button {border-radius: 14px; font-weight: 700; background: linear-gradient(90deg, #9333ea, #a855f7); color: white!important; border: none; padding: 13px 26px; width: 100%; box-shadow: 0 5px 18px rgba(147,51,234,0.4); transition: all 0.3s; cursor: pointer; font-size: 1rem!important; margin-top: 1rem;}
-.stButton>button:hover {transform: translateY(-3px) scale(1.02); box-shadow: 0 10px 28px rgba(147,51,234,0.5);}
-.stButton>button:disabled {background: #e0e0!important; color: #999!important; border: 2px dashed #ccc!important; cursor: not-allowed; box-shadow: none;}
+
+/* Global Safe Button Overrides */
+.stButton>button {
+    border-radius: 14px !important; 
+    font-weight: 700 !important; 
+    background: linear-gradient(90deg, #9333ea, #a855f7) !important; 
+    color: white !important; 
+    border: none !important; 
+    padding: 13px 26px !important; 
+    width: 100% !important; 
+    box-shadow: 0 5px 18px rgba(147,51,234,0.4) !important; 
+    transition: all 0.3s !important; 
+    cursor: pointer !important; 
+    font-size: 1rem !important; 
+    margin-top: 1rem !important;
+}
+.stButton>button:hover {transform: translateY(-3px) scale(1.02) !important; box-shadow: 0 10px 28px rgba(147,51,234,0.5) !important;}
+
 .pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
 .pro-banner h2 {color: white!important;}
 .tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 9px 17px; border-radius: 28px; margin: 4px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.92rem;}
@@ -102,7 +117,7 @@ div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; b
 .stDataFrame {background: rgba(255,255,255,0.9)!important;}
 .stFileUploader {background: rgba(255,255,255,0.8)!important; border: 2px dashed #9333ea;}
 
-/* 🎯 GLOBAL IMMUNITY FOR INPUT FIELDS AGAINST DARK INTERFACES */
+/* Safe Text Inputs Rules */
 input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] input {
     background-color: #ffffff !important; 
     color: #000000 !important; 
@@ -110,12 +125,6 @@ input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] inpu
     border: 2px solid #9333ea !important; 
     border-radius: 11px !important;
     font-weight: 600 !important;
-}
-div[data-testid="stForm"] {
-    background-color: #ffffff !important; 
-    border: 2px solid #9333ea !important; 
-    border-radius: 18px !important;
-    padding: 15px !important;
 }
 
 .cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 20px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
@@ -140,7 +149,6 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown("---")
     target.markdown("### 🤖 VeriSame Live AI Chat Studio")
 
-    # Pure white chat log background to prevent hidden texts
     chat_html = "<div style='max-height: 260px; overflow-y: auto; padding: 12px; background: #ffffff !important; border: 2px solid #9333ea; border-radius: 14px; margin-bottom: 10px;'>"
     for chat in st.session_state.chat_history:
         if chat["role"] == "assistant":
@@ -150,7 +158,9 @@ def render_ai_chatbot(is_sidebar=False):
     chat_html += "</div>"
     target.markdown(chat_html, unsafe_allow_html=True)
 
-    with target.form(key=f"ai_chat_form_{'side' if is_sidebar else 'main'}", clear_on_submit=True):
+    # 🛠️ Form Ke Saath Direct Explicit Keys Taaki Streamlit Render Engine Confusion Na Kare
+    form_key = f"ai_chat_form_{'side' if is_sidebar else 'main'}"
+    with target.form(key=form_key, clear_on_submit=True):
         user_msg = st.text_input("Ask a question...", placeholder="e.g., What this app can do?", key=f"chat_in_{'side' if is_sidebar else 'main'}")
         submit = st.form_submit_button(label="Send Message 🚀")
 
@@ -471,6 +481,5 @@ else:
                             st.session_state.show_balloon = True; st.rerun()
         except Exception: pass
 
-    # If the user hasn't logged in, main screen handles rendering. If logged in, sidebar takes care of it natively.
     if not st.session_state.plan and not st.session_state.email_entered:
         pass 
