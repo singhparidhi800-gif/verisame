@@ -131,13 +131,13 @@ div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; b
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, features, math, or data science automation!"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, specific tools, safety, calculations, or data science utilities!"}]
 
 for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved']:
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan'] else False
 
-# 🔥 ULTRA-SMART COMPREHENSIVE AI KNOWLEDGE CHATBOT
+# 🔥 ULTRA-ADVANCED RE-ENGINEERED KNOWLEDGE AI ENGINE (MAXIMUM EXPANSION WITH SIMPLE TALK)
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -153,45 +153,112 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown(chat_html, unsafe_allow_html=True)
     
     with target.form(key=f"ai_chat_form_{'side' if is_sidebar else 'main'}", clear_on_submit=True):
-        user_msg = st.text_input("Ask a question...", placeholder="e.g., Who made this app? How it helps Data Scientists?", key=f"chat_in_{'side' if is_sidebar else 'main'}")
+        user_msg = st.text_input("Ask a question...", placeholder="e.g., Hi! / What is your name? / File size limit?", key=f"chat_in_{'side' if is_sidebar else 'main'}")
         submit = st.form_submit_button(label="Send Message 🚀")
         
         if submit and user_msg.strip():
             u = user_msg.lower().strip()
             st.session_state.chat_history.append({"role": "user", "message": user_msg})
             
-            # 1. FOUNDER / DEVELOPER CREDIT (Anugya Singh)
-            if re.search(r'\b(founder|made|creator|created|developer|owner|built|make|kaun\s*banaya|owner\s*kaun)\b', u):
+            # --- 🐣 NEW SIMPLE SMALL TALK PATTERNS ---
+            if u in ['hi', 'hello', 'hey', 'hello ai', 'hi ai', 'ola', 'salam']:
+                reply = "👋 **Hello there!** Welcome to VeriSame! I am your operational data-cleansing assistant. How can I speed up your dataset processing workflows today? Feed me a question!"
+
+            elif re.search(r'\b(how\s*are\s*you|kaise\s*ho|kaise\s*hain|how\s*it\s*goes|sab\s*badhiya)\b', u):
+                reply = "✨ **I am doing fantastic!** Powered up, synchronized, and completely ready to smash messy row formatting and trailing space errors under 3 seconds. How are you doing today?"
+
+            elif re.search(r'\b(your\s*name|naam\s*kya|who\s*are\s*you|tum\s*kaun\s*ho|identify)\b', u):
+                reply = "💎 I am **VeriSame Engine AI**, a hyper-customized Streamlit data assistant architected to answer operational software queries, verify datasets, and guide users through premium automation pipelines!"
+
+            elif re.search(r'\b(thank\s*you|thanks|shukriya|dhanyawad|great\s*app|awesome|nice\s*app|good\s*job)\b', u):
+                reply = "💖 **You are most welcome!** Making your data pipeline seamless and saving hours of programming time is exactly what I live for. Let me know if you need help with any other tool matrix!"
+
+            elif re.search(r'\b(joke|chutkula|make\s*me\s*laugh|funny)\b', u):
+                reply = "😂 **Data Science Special Joke:**\n\nWhy did the Data Scientist break up with the Excel Sheet?\n*Because it had too many attachment issues and refused to structuralize its missing values!* 📊"
+
+            elif re.search(r'\b(bye|goodnight|good\s*night|tata|see\s*you|alvida|exit)\b', u):
+                reply = "👋 **Goodbye!** Thank you for using VeriSame. Remember to download your processed CSV or Excel matrices before closing your volatile session state. Have a data-driven day ahead!"
+
+            # --- 👑 PREVIOUS ADVANCED PATTERNS (DO NOT DELETE) ---
+            elif re.search(r'\b(founder|made|creator|created|developer|owner|built|make|kaun\s*banaya|owner\s*kaun)\b', u):
                 reply = "👑 **Founder & Creator:**\nVeriSame was architected and developed by **Anugya Singh**. She designed this platform to eliminate the manual frustration of data cleaning and provide lightning-fast preprocessing utilities for professionals worldwide."
-            
-            # 2. HOW MANY TOOLS IN THIS APP
+
+            elif re.search(r'\b(size|limit|mb|gb|file\s*size|heavy\s*file|large\s*file|badi\s*file|capacity)\b', u):
+                reply = "💾 **File Size Capacity:**\nVeriSame easily supports spreadsheet engines up to **50 Megabytes (MB)** in size for live browser execution. For a pure text layout like CSV, 50MB can hold hundreds of thousands of rows seamlessly without any computational lag!"
+
+            elif re.search(r'\b(multiple|together|two\s*tools|both|together|ek\s*sath|ek\s*saath|saath\s*me|combination)\b', u):
+                reply = "🔄 **Applying Multiple Tools:**\nYes, you can pile adjustments on top of each other! Simply choose your first target column, click **Apply**, and watch the live data table update below. Then, select your second feature matrix (or another column) and click Apply again before triggering the final export downpour!"
+
+            elif re.search(r'\b(hindi|language|bhasha|multilingual|other\s*language|script|support)\b', u):
+                reply = "🌍 **Language Stack Support:**\nWhile VeriSame's functional panel buttons are built in English, the text operations—such as **Tool 8 (Remove Duplicates)**, **Tool 9 (Trim Spaces)**, **Tool 2 (AI Fill Nulls)**, and **Tool 7 (Bulk Rename)**—work completely perfectly on **Hindi text entries** and UTF-8 script structures!"
+
+            elif re.search(r'\b(disappear|delete\s*column|safe\s*column|sequence|order|change\s*data|lost|data\s*loss)\b', u):
+                reply = "🛡️ **Data Integrity Guarantee:**\nApplying any transformation matrix inside VeriSame will **never** alter the horizontal row order or drop unselected peripheral columns. Only the precise cells matching your chosen column parameter will be cleaned—ensuring structural alignment stays 100% stable."
+
+            elif re.search(r'\b(how\s*long|approval\s*time|how\s*much\s*time|admin\s*active|kitni\s*der|kab\s*hoga|time\s*lag)\b', u):
+                reply = "⏳ **Admin Verification Time:**\nOnce you press the **'Customer I Paid'** action terminal, a notification grid renders inside the secure **Sherni Admin Panel**. Standard transaction approvals are cross-referenced manually and fully activated within **10 to 30 minutes** maximum!"
+
+            elif re.search(r'\b(failed|deducted|money\s*cut|paisa\s*kat|stuck\s*payment|payment\s*issue|error\s*payment)\b', u):
+                reply = "💳 **Payment & Discrepancies:**\nDon't worry! If your balance was deducted but your interface status remains pending, it means your local banking gateway took longer to update. Simply retain your **UPI Transaction Reference Number/Screenshot** and connect with email support to bypass manual wait queues immediately."
+
+            elif re.search(r'\b(real\s*ai|regex|how\s*smart|technology|backend|python\s*logic|backend\s*code)\b', u):
+                reply = "🧠 **System Engine Architecture:**\nVeriSame operates on a highly optimized hybrid architecture combining advanced functional programmatic heuristics, high-speed compiled vector computations via Python pandas libraries, and deep regular expression mapping filters to yield predictable data actions under 3 seconds."
+
+            elif re.search(r'\b(safe|safety|secure|privacy|leak|store|data\s*safe|security|surakshit|chori)\b', u):
+                reply = "🔒 **Data Privacy & Security:**\nYour files are **100% safe** with VeriSame. We use client-side operational state execution. Your uploaded rows are processed strictly in temporary volatile memory and are **never stored** on any database or permanent server cloud. Once you close the session, your data is wiped out permanently."
+
+            elif re.search(r'\b(refund|return|money\s*back|paisa\s*wapas|cancel)\b', u):
+                reply = "💸 **Refund Policy:**\nVeriSame does **not** support refund packages since it provides instant digital account infrastructure activations. We highly recommend using our **Free Lifetime Tier** to check compatibility before executing a Pro UPI upgrade."
+
+            elif re.search(r'\b(crash|error|not\s*working|stuck|slow|bug|kharab|chal\s*nahi\s*raha)\b', u):
+                reply = "🛠️ **Troubleshooting & Error Guide:**\nIf your file processing feels stuck, please check: \n1. **Format:** Ensure your file is explicitly `.csv`, `.xlsx`, or `.json`.\n2. **Headers:** Confirm that the target column names do not contain duplicate label names. \n3. **Refresh:** Try refreshing the web tab and loading via the 'Try Demo' sample block to test structural rendering."
+
+            elif re.search(r'\b(csv\s*vs\s*excel|difference\s*between\s*csv|what\s*is\s*csv|excel\s*difference)\b', u):
+                reply = "📊 **CSV vs Excel (Data Science Corner):**\n• **CSV (Comma Separated Values):** Plain text tabular format. It is highly lightweight, loads in milliseconds, and is universally preferred by Data Scientists for Machine Learning model inputs.\n• **Excel (.xlsx):** A heavy binary spreadsheet layout that supports styles, macros, and multiple sheets. Best for manual reporting, but slower for direct programmatic data feeds."
+
+            elif re.search(r'\b(free\s*vs\s*pro|compare|why\s*pro|pro\s*benefits|difference\s*plan)\b', u):
+                reply = "💎 **Plan Breakdown:**\n• **Free Tier:** Caps processing at 1,000 dataset rows and gives access to 3 standard text manipulation tools.\n• **Pro Tiers:** Unlocks **Unlimited Dataset Rows**, hyper-speed 3-second backend transformation matrix, priority email tracking, and all **10 premium AI automation tools** (Null Fills, Email Validators, Phone Cleaners, and Typo Correctors)."
+
+            elif re.search(r'\b(contact|support|help|email\s*support|complaint|customer\s*care|baat\s*karni)\b', u):
+                reply = "📧 **Support Channels:**\nNeed technical support or custom corporate billing licensing? You can drop a query directly to our developer team via standard email channel support. (Response windows usually process within 12-24 business operational hours)."
+
+            elif re.search(r'\b(salary|job|scope|career|future|earn|money\s*data\s*science)\b', u):
+                reply = "🚀 **Data Science Career Scope:**\nData Science is currently one of the highest-paying domains worldwide. Experienced engineers frequently secure premium average CTC packings ranging from ₹12 Lakhs to ₹25+ Lakhs annually in India. Mastering systematic data preprocessing (which VeriSame automates) is an essential milestone to breaking into top ML/AI roles!"
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*1|date\s*converter|date\s*ai|calendar\s*tool)\b', u):
+                reply = "📅 **Tool 1: Smart Date Converter (FREE & PRO)**\nScans columns containing chaotic user-entered date layouts (e.g., '12/5/2024', '15-03-2023') and unifies them cleanly into the standardized 'YYYY-MM-DD' layout while automatically skipping bad values."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*2|fill\s*nulls|null\s*ai|empty\s*ai|blank\s*ai|missing\s*ai)\b', u):
+                reply = "🔓 **Tool 2: AI Fill Nulls (PRO ONLY)**\nAutomatically scans selected data tables for completely blank or missing database values. It fills the structural gaps using clear logical tokens like 'N/A' or simple `0` integers to protect backend pipelines."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*3|email\s*validator|email\s*ai|mail\s*ai)\b', u):
+                reply = "📧 **Tool 3: Email Validator & Cleaner (PRO ONLY)**\nApplies high-speed computational expressions onto your column fields. It verifies structure blocks, extracts bad domains (e.g., matching missing '@'), and retains purely functional professional operational emails."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*4|phone\s*formatter|phone\s*ai|contact\s*ai|mobile\s*ai|number\s*ai)\b', u):
+                reply = "📞 **Tool 4: Phone Formatter (PRO ONLY)**\nStrips alphanumeric noise, brackets, hyphens, and wrong local prefix strings from your data lists, leaving beautifully structured pure numerical digits optimized for global CRM logging."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*5|case\s*converter|case\s*ai|text\s*case|caps\s*ai)\b', u):
+                reply = "🔠 **Tool 5: Case Converter (FREE & PRO)**\nEstablishes clean typographical standards across dataset cells. Safely alters text layout on the go into absolute Uppercase, small Lowercase, or uniform corporate Title Case formats."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*6|remove\s*symbols|symbol\s*ai|noise\s*ai|character\s*ai)\b', u):
+                reply = "🔣 **Tool 6: Remove Symbols & Noise (PRO ONLY)**\nSlices off messy, unreadable special character junk (like #, $, %, *, ~) from heavy string datasets while safely protecting alpha-numeric parameters and identifiers."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*7|bulk\s*rename|rename\s*ai|header\s*ai|column\s*ai)\b', u):
+                reply = "✏️ **Tool 7: Bulk Header Renamer (PRO ONLY)**\nAllows developers and users to pick complex structural dataset titles instantly from a selector menu and type clean, custom matching strings to rename headers seamlessly."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*8|remove\s*duplicates|duplicate\s*ai|dedup\s*ai|repeat\s*ai|copy\s*ai)\b', u):
+                reply = "🔥 **Tool 8: Remove Duplicates (FREE & PRO)**\nSifts through rows to completely catch overlapping matching data blocks. It safely drops repetitive rows, optimizes data size, and keeps exactly 1 pristine primary record."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*9|trim\s*spaces|trim\s*ai|space\s*ai|gap\s*ai)\b', u):
+                reply = "✂️ **Tool 9: Trim Spaces & Gaps (FREE & PRO)**\nEliminates invisible but hazardous trailing or leading whitespaces embedded inside database fields that cause search queries and indexes to fail."
+
+            elif re.search(r'\b(tool\s*(no\.)?\s*10|spell\s*check|spell\s*ai|typo\s*ai|correct\s*ai)\b', u):
+                reply = "🧠 **Tool 10: Spell Check & Auto-Correct (PRO ONLY)**\nMaps an array string logic onto messy texts to instantly wipe out manual typos (e.g., auto-fixing 'teh' to 'the'), ensuring high-end reporting quality."
+
             elif re.search(r'\b(how\s*many\s*tools|number\s*of\s*tools|total\s*tools|kitne\s*tool)\b', u):
-                reply = "🛠️ **Total Tools:** VeriSame packs exactly **10 Advanced Data-Cleaning Tools** divided into 3 modular sections: \n1. **Smart Date Converter** \n2. **AI Fill Nulls** \n3. **Email Validator** \n4. **Phone Formatter** \n5. **Case Converter** \n6. **Remove Symbols** \n7. **Bulk Rename** \n8. **Remove Duplicates** \n9. **Trim Spaces** \n10. **Spell Check**. Plus, it features a special automated **Word-to-Number conversion engine** for financial columns!"
+                reply = "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** plus a special financial **Word-to-Number conversion algorithm** for cleaning salaries and expenses!"
 
-            # 3. HOW MANY FILES AT ONE TIME
-            elif re.search(r'\b(how\s*many\s*files|file\s*limit|one\s*time|ek\s*saath|ek\s*baar\s*me)\b', u):
-                reply = "📤 **File Ingestion Limit:** You can upload and clean **1 file at a time** (CSV, Excel, or JSON format) to maintain optimal memory safety and processing speed. However, if you upgrade to our **PRO tier**, that single file can hold an **unlimited number of rows**!"
-
-            # 4. HOW IT WORKS / HOW IT CLEANS DATA
-            elif re.search(r'\b(how\s*it\s*works|how\s*to\s*clean|clean\s*data|working|workflow|process)\b', u):
-                reply = "⚙️ **How it Works & Cleans Data:** VeriSame employs custom Pandas algorithms behind the scenes. \n1. **Upload:** Drop your raw data file.\n2. **Clean:** Select a specific column, choose one of the 10 data-cleaning tools, and click 'Apply'. The backend instantly strips duplicates, formats strings, or maps headers through high-speed matrix transformation.\n3. **Export:** Your file is corrected in under 3 seconds and made instantly ready for pristine download."
-
-            # 5. DATA SCIENTIST BENEFIT & TIME SAVING
-            elif re.search(r'\b(data\s*scientist|save.*time|saving\s*time|time\s*save|use.*data\s*scientist|analytics|preprocessing)\b', u):
-                reply = "🧠 **For Data Scientists & Machine Learning Engineers:**\n\n" \
-                        "• **How it Saves Time:** Data Scientists spend up to **80% of their working hours** writing boring code just to clean messy datasets. VeriSame automates this entire step, compressing hours of scripting into a **3-second mechanical click**.\n" \
-                        "• **How They Use It:** They utilize VeriSame for high-speed **Data Preprocessing and Feature Engineering**. It converts chaotic text-written strings into mathematical numbers, filters invalid emails, standardizes global timestamps, and eliminates duplicated target labels so that clean tables can be straightaway fed into ML training models!"
-
-            # 6. WHO CAN USE THIS APP (TARGET AUDIENCE)
-            elif re.search(r'\b(who\s*can\s*use|target\s*audience|which\s*people|users|kaun\s*use)\b', u):
-                reply = "👥 **Who is VeriSame built for?**\n" \
-                        "VeriSame is highly versatile and used daily by: \n" \
-                        "• **Data Scientists & Analysts** needing quick dataset preprocessing.\n" \
-                        "• **Business Owners & Marketers** sorting clean client phone/email CRM lists.\n" \
-                        "• **Students & Researchers** formatting experimental database parameters.\n" \
-                        "• **Administrative Executives** fixing messy manual data entries in corporate spreadsheets."
-
-            # 7. LIVE BASIC MATH ENGINE (+, -, *, /)
+            # CALCULATOR ENGINE
             elif re.search(r'(\d+)\s*([\+\-\*\/x])\s*(\d+)', u) or any(m in u for m in ["calculate", "solve", "math", "plus", "minus", "divided"]):
                 match = re.search(r'(\d+)\s*([\+\-\*\/x])\s*(\d+)', u)
                 if match:
@@ -200,26 +267,13 @@ def render_ai_chatbot(is_sidebar=False):
                     elif op == '-': res = n1 - n2
                     elif op in ['*', 'x']: res = n1 * n2
                     elif op == '/': res = n1 / n2 if n2 != 0 else "Error (Division by Zero)"
-                    reply = f"🔢 **Math Calculator Engine:** I can definitely help with basic arithmetic! \nExpression: `{n1} {op} {n2}` \n**Result:** `{res}`"
+                    reply = f"🔢 **Math Calculator Engine:** \nExpression: `{n1} {op} {n2}` \n**Result:** `{res}`"
                 else:
-                    reply = "🔢 **Math Engine:** I can execute arithmetic computations easily! Just type the expression directly like: `45 + 5`, `100 * 2`, or `500 / 4`."
+                    reply = "🔢 **Math Engine:** Send me any expression like `50 * 5`, `250 + 75`, or `1000 / 4` and I'll compute it instantly!"
 
-            # 8. GENERAL KNOWLEDGE & DOMAIN AWARENESS
-            elif re.search(r'\b(gk|general\s*knowledge|what\s*is\s*data|definition|science|python)\b', u):
-                reply = "🌍 **VeriSame Knowledge Base:**\n" \
-                        "• **What is Data Science?** It is the multidisciplinary field that extracts structural patterns from raw datasets using math, statistics, and automation algorithms.\n" \
-                        "• **Why clean data?** Machine learning models follow the *'Garbage In, Garbage Out'* rule. If input data contains missing slots, symbols, or bad duplicates, predictions fail completely. VeriSame guarantees complete pipeline integrity."
-
-            # 9. standard PRICING CORES
-            elif re.search(r'\b(price|plan|cost|subscription|premium|free)\b', u):
-                reply = "💎 **Subscription Model:** \n" \
-                        "• **FREE:** 1,000 max rows, 3 basic tools, standard speed. \n" \
-                        "• **PRO Monthly (₹299):** Unlimited dataset rows, all 10 Premium AI Tools, instant 3s operational speed. \n" \
-                        "• **PRO 6 Months (₹1499):** Premium long-term licensing with dedicated update packages."
-
-            # 10. DYNAMIC ERROR FALLBACK
+            # FALLBACK
             else:
-                reply = "I've processed your message! As VeriSame's embedded AI, I can tell you about our Founder (**Anugya Singh**), explain our **10 tools**, explain how we save **Data Scientists'** time, solve **basic math operations** (e.g., `25 * 4`), or outline our file limit of **1 file at a time**. Please rephrase with direct keywords!"
+                reply = "I've processed your prompt! As VeriSame's system assistant, I can handle standard pleasantries (Hi, Hello), explain data metrics, plan comparisons, code errors, support limits, our founder (**Anugya Singh**), or any individual tool functionality. Please use direct keywords!"
             
             st.session_state.chat_history.append({"role": "assistant", "message": reply})
             st.rerun()
