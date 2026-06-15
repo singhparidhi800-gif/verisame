@@ -339,8 +339,20 @@ if st.session_state.plan is None:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
                 data = load_db()
+                
+                # FIX GLITCH: Force update configuration state if user switches from Free to Pro
                 if email_input in data:
-                    st.session_state.plan = data[email_input]["plan"]; st.session_state.amt = data[email_input].get("amt", 299); st.rerun()
+                    if st.session_state.selected_plan == "pro" and data[email_input]["plan"] == "free":
+                        days = 30 if st.session_state.amt == 299 else 180
+                        data[email_input]["plan"] = "pro"
+                        data[email_input]["status"] = "PENDING"
+                        data[email_input]["amt"] = st.session_state.amt
+                        data[email_input]["days"] = days
+                        data[email_input]["expiry"] = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+                        save_db(data)
+                    st.session_state.plan = data[email_input]["plan"]
+                    st.session_state.amt = data[email_input].get("amt", 299)
+                    st.rerun()
                 else:
                     st.session_state.plan = st.session_state.selected_plan
                     if st.session_state.selected_plan == "free":
@@ -359,9 +371,15 @@ else:
     tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
     df = None
     with tab1:
-        file = st.file_uploader(T['upload_text'], type=["csv","xlsx","xls","json"])
+        # ALLOW MULTIPLE FILES IN THE UPLOADER GRID INTERFACE
+        file = st.file_uploader(T['upload_text'], type=["csv","xlsx","xls","json"], accept_multiple_files=True)
         if file:
-            try: df = pd.read_csv(file) if file.name.endswith(".csv") else pd.read_excel(file) if file.name.endswith(("xlsx","xls")) else pd.read_json(file)
+            try: 
+                df_list = []
+                for f in file:
+                    sub_df = pd.read_csv(f) if f.name.endswith(".csv") else pd.read_excel(f) if f.name.endswith(("xlsx","xls")) else pd.read_json(f)
+                    df_list.append(sub_df)
+                df = pd.concat(df_list, ignore_index=True) if df_list else None
             except Exception as e: st.error(f"Error reading file: {str(e)}")
     with tab2:
         if st.button(T['sample_btn'], use_container_width=True):
