@@ -283,36 +283,36 @@ with col2:
 with col3: st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# 🔒 HIGHLY SECURE ADMIN ROUTING & GATEWAY PANEL (FIXED ROUTING GLITCH)
-if "admin" in st.query_params and st.query_params["admin"] == ADMIN_PASS:
-    st.title(T['admin_title'])
-    data = load_db()
-    st.subheader(T['admin_pending'])
-    if data:
-        for email, info in list(data.items()):
-            if "@" not in email: continue
-            amt = info.get('amt', 0)
-            status = info.get('status', 'PENDING')
-            plan_text = f"PRO Monthly ₹299" if amt == 299 else f"PRO 6M ₹1499" if amt == 1499 else "FREE Plan"
-            col1, col2, col3 = st.columns([4, 2, 2])
-            with col1:
-                status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
-                st.markdown(f"""<div class='pricing-card'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>Status:</b> {status_color}<br><b>{T['admin_expiry']}:</b> {info.get('expiry','N/A')}</div>""", unsafe_allow_html=True)
-            with col2:
-                if status == "PENDING":
-                    if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
-                        data[email]["status"] = "PAID"
-                        save_db(data); st.success(f"✓ {email} unlocked!"); st.balloons(); st.rerun()
-                else: st.button("✓ Already Active", key=f"active_{email}", disabled=True, use_container_width=True)
-            with col3:
-                if st.button(T['delete_btn'], key=f"delete_{email}", use_container_width=True):
-                    del data[email]; save_db(data); st.error(f"✓ {email} deleted"); st.rerun()
-    else: st.info("No records found in database.")
-    st.stop()
-
-elif "admin" in st.query_params and st.query_params["admin"] != ADMIN_PASS:
-    st.error("🔒 Unauthorized Access Detected. Admin Routing Halted.")
-    st.stop()
+# 🔒 FIXED ADMIN ROUTING CHECK TO PREVENT CRASHES ON NORMAL LINKS
+if "admin" in st.query_params:
+    if st.query_params["admin"] == ADMIN_PASS:
+        st.title(T['admin_title'])
+        data = load_db()
+        st.subheader(T['admin_pending'])
+        if data:
+            for email, info in list(data.items()):
+                if "@" not in email: continue
+                amt = info.get('amt', 0)
+                status = info.get('status', 'PENDING')
+                plan_text = f"PRO Monthly ₹299" if amt == 299 else f"PRO 6M ₹1499" if amt == 1499 else "FREE Plan"
+                col1, col2, col3 = st.columns([4, 2, 2])
+                with col1:
+                    status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
+                    st.markdown(f"""<div class='pricing-card'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>Status:</b> {status_color}<br><b>{T['admin_expiry']}:</b> {info.get('expiry','N/A')}</div>""", unsafe_allow_html=True)
+                with col2:
+                    if status == "PENDING":
+                        if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
+                            data[email]["status"] = "PAID"
+                            save_db(data); st.success(f"✓ {email} unlocked!"); st.balloons(); st.rerun()
+                    else: st.button("✓ Already Active", key=f"active_{email}", disabled=True, use_container_width=True)
+                with col3:
+                    if st.button(T['delete_btn'], key=f"delete_{email}", use_container_width=True):
+                        del data[email]; save_db(data); st.error(f"✓ {email} deleted"); st.rerun()
+        else: st.info("No records found in database.")
+        st.stop()
+    else:
+        st.error("🔒 Unauthorized Access Detected. Admin Routing Halted.")
+        st.stop()
 
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
@@ -340,7 +340,7 @@ if st.session_state.plan is None:
                 st.session_state.email_entered = True
                 data = load_db()
                 
-                # FIX GLITCH: Force update configuration state if user switches from Free to Pro
+                # FORCE UPDATE CONFIGURATION STATE IF USER SWITCHES FROM FREE TO PRO
                 if email_input in data:
                     if st.session_state.selected_plan == "pro" and data[email_input]["plan"] == "free":
                         days = 30 if st.session_state.amt == 299 else 180
