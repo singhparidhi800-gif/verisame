@@ -20,7 +20,8 @@ st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initi
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
-ADMIN_PASS = "Sherni@123"
+ADMIN_PASS = st.secrets["ADMIN_PASSWORD"]
+
 DB_FILE = "orders.json"
 
 # SECURE DB OPERATIONS WITH ERROR HANDLING
