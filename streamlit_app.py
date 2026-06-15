@@ -5,11 +5,16 @@ import re
 from datetime import datetime, timedelta
 import difflib 
 
-# Safe imports for optional rendering libraries
+# Safe imports to completely avoid Streamlit Deployment Crashes
 try:
     import qrcode
-except ImportError:
+except Exception:
     qrcode = None
+
+try:
+    import openpyxl
+except Exception:
+    openpyxl = None
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
@@ -63,7 +68,7 @@ def words_to_num(s):
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
-    "free_feat":["1000 Rows Lifetime","CSV + Excel Export","3 Basic Tools","30s Processing","Email Support"],
+    "free_feat":["1000 Rows Lifetime","CSV Export","3 Basic Tools","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
@@ -186,7 +191,6 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
-        # Quick Conversational Triggers
         if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
             if "uplode" in u or "upload" in u: reply = "👋 **All the best, buddy! Go ahead and upload your files to clean them up instantly!**"
             elif "clean" in u: reply = "👍 **Awesome! Go smash those data errors and make your dataset perfect!**"
@@ -197,7 +201,6 @@ def render_ai_chatbot(is_sidebar=False):
         elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]): reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा को एकदम कड़क चमकाओ।"
         elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **बहुत-बहुत स्वागत है तुम्हारा!** मुझे तुम्हारी मदद करके बेहद ख़ुशी हुई।"
 
-        # Calculator Trigger
         if not reply:
             math_clean = u.replace('x', '*')
             match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
@@ -211,7 +214,6 @@ def render_ai_chatbot(is_sidebar=False):
                     reply = f"🔢 **Math Calculator Engine:** \nResult: `{res}`"
                 except Exception: pass
 
-        # Massive Core Intelligence Knowledge Base Mapping
         if not reply:
             knowledge_map = {
                 "what this app can do what is app work app capability utility function software use details": "💎 **VeriSame App Capability:** This app functions as an automated data-cleaning pipeline! It repairs empty boxes, formats dates, filters emails, and converts word numbers into clean integers under 3 seconds!",
@@ -225,10 +227,9 @@ def render_ai_chatbot(is_sidebar=False):
                 "how to upload file select file spreadsheet csv excel insert data dataset load": "📤 **File Upload Steps:** Go to the 'Upload File' tab, drag and drop your `.csv`, `.xlsx`, or `.json` file.",
                 "how to download file save file download csv excel export sheet download output": "🎯 **Downloading Data:** Scroll down to 'Export Data' section, choose 'Download as CSV' or 'Download as Excel'.",
                 "what formats supported extension xlsx xls csv json files allowed file types": "📊 **Supported Extensions:** VeriSame handles `.csv`, `.xlsx`, `.xls`, and `.json` structures.",
-                # EXPANDED DATA SCIENCE & ENGINEERING KNOWLEDGE
                 "data science workflow pipeline step data processing cycle steps clean engineering": "⚙️ **Data Science Workflow:** Raw Data ➔ Data Cleaning (using VeriSame!) ➔ Exploratory Data Analysis (EDA) ➔ Feature Engineering ➔ Machine Learning Training ➔ Model Deployment. VeriSame automates the initial 40% of manual cleaning time!",
                 "python script pandas vectorization clean dataframe speed optimize memory runtime": "🐍 **Python Engine:** This application uses highly optimized vector operations via the `pandas` library instead of iterative loops, ensuring full table computation executes in under 3 seconds.",
-                "tool 1 smart date converter conversion custom mixed parsing check": "📅 **Tool 1 (Smart Date):** Automatically standardizes inconsistent strings (like `12/05/2024` and `2023-11-02`) into uniform, system-ready `%Y-%m-%d` structures seamlessly.",
+                "tool 1 smart date converter conversion custom mixed parsing check": "📅 **Tool 1 (Smart Date):** Automatically standardizes inconsistent strings (like `12/05/2024` and `2023-11-02`) into uniform, system-ready structures seamlessly.",
                 "tool 2 ai fill nulls blank data empty records missing values values fill": "🔮 **Tool 2 (AI Fill Nulls):** Smart data-type detection engine. It inserts specific fallbacks like numeric `0` for financial variables and `Unknown` for descriptive text structures.",
                 "backend database orders json dynamic data security structure layout details encryption": "🛡️ **Backend Architecture:** VeriSame uses an explicit context isolation gate tied to a local persistent structural storage (`orders.json`). Admin actions require authenticated high-entropy password clearance."
             }
@@ -413,7 +414,8 @@ else:
                             except Exception: pass
                         st.success(T['success']); st.rerun()
 
-                    st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and is_paid else 'Pro Only'}")
+                    # STRICT BLOCK FOR FREE USERS: LOCKING PREMIUM TOOLS
+                    st.write(f"**{T['tool2']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 PRO EXCLUSIVE (Locked for Free)'}")
                     fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free or not is_paid)
                     if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free or not is_paid):
                         for col in fill_cols:
@@ -425,14 +427,14 @@ else:
                         st.success(T['success']); st.rerun()
 
                 with tab2:
-                    st.write(f"**{T['tool3']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    st.write(f"**{T['tool3']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 PRO EXCLUSIVE (Locked for Free)'}")
                     email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free or not is_paid)
                     if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free or not is_paid):
                         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                         for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
                         st.success(T['success']); st.rerun()
 
-                    st.write(f"**{T['tool4']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    st.write(f"**{T['tool4']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 PRO EXCLUSIVE (Locked for Free)'}")
                     phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free or not is_paid)
                     if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free or not is_paid):
                         for col in phone_cols: 
@@ -451,13 +453,13 @@ else:
                             else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
                         st.success(T['success']); st.rerun()
 
-                    st.write(f"**{T['tool6']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    st.write(f"**{T['tool6']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 PRO EXCLUSIVE (Locked for Free)'}")
                     spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free or not is_paid)
                     if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free or not is_paid):
                         for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
                         st.success(T['success']); st.rerun()
 
-                    st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    st.write(f"**{T['tool7']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 PRO EXCLUSIVE (Locked for Free)'}")
                     old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free or not is_paid)
                     new = st.text_input("New column name", key="inp_new", disabled=is_free or not is_paid)
                     if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free or not is_paid) and new:
@@ -475,7 +477,7 @@ else:
                         for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                         st.success(T['success']); st.rerun()
 
-                    st.write(f"**{T['tool10']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 Pro Only'}")
+                    st.write(f"**{T['tool10']}** {'🔓 Unlocked ✅' if is_pro and is_paid else '🔒 PRO EXCLUSIVE (Locked for Free)'}")
                     spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free or not is_paid)
                     if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free or not is_paid):
                         typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
@@ -493,13 +495,6 @@ else:
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
                     if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
                         st.session_state.show_balloon = True; st.rerun()
-                    try:
-                        excel = io.BytesIO()
-                        st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                        if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
-                            st.session_state.show_balloon = True; st.rerun()
-                    except Exception:
-                        col2.warning("Excel export requires openpyxl package installed.")
                 elif st.session_state.plan == "pro":
                     if not is_paid:
                         st.warning(T['wait_approval'])
@@ -518,12 +513,12 @@ else:
                         if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
                             st.session_state.show_balloon = True; st.rerun()
                         try:
-                            excel = io.BytesIO()
-                            st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
-                                st.session_state.show_balloon = True; st.rerun()
-                        except Exception:
-                            col2.warning("Excel export requires openpyxl package installed.")
+                            if openpyxl is not None:
+                                excel = io.BytesIO()
+                                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
+                                    st.session_state.show_balloon = True; st.rerun()
+                        except Exception: pass
         except Exception: pass
 
     if not st.session_state.plan and not st.session_state.email_entered:
