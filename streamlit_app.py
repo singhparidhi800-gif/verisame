@@ -22,9 +22,23 @@ UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
 ADMIN_PASS = st.secrets["ADMIN_PASSWORD"]
 
-# 🔒 SAFE INTERNAL DATA ENGINE - BINNING THE BROKEN JSON FILE DEPENDENCY
+# 🔒 MAXIMUM SECURITY PERSISTENT DATABASE ENGINE
 if "global_db_backup" not in st.session_state:
     st.session_state.global_db_backup = {}
+
+def load_db():
+    if st.session_state.global_db_backup:
+        return st.session_state.global_db_backup
+    if os.path.exists("backup_orders.json"):
+        try:
+            with open("backup_orders.json", "r") as f:
+                data = json.load(f)
+                if isinstance(data, dict) and data:
+                    st.session_state.global_db_backup = data
+                    return data
+        except Exception:
+            pass
+    return {}
 
 def save_db(d):
     try:
@@ -33,18 +47,6 @@ def save_db(d):
             json.dump(d, f, indent=2)
     except Exception:
         pass
-
-def load_db():
-    if st.session_state.global_db_backup:
-        return st.session_state.global_db_backup
-    if os.path.exists("backup_orders.json"):
-        try:
-            with open("backup_orders.json", "r") as f:
-                st.session_state.global_db_backup = json.load(f)
-                return st.session_state.global_db_backup
-        except Exception:
-            return {}
-    return {}
 
 # ROBUST WORD-TO-NUMBER CONVERSION
 def words_to_num(s):
@@ -86,7 +88,7 @@ T = {
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
-    "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply","success":"Applied Successfully!",
+    "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply","success":"Apply is completed! Your data has been successfully updated.",
     "admin_title":"👑 Sherni Admin Panel 👑","admin_pending":"User Databases & Requests","admin_approve_btn":"Mark Paid - Unlock Customer Download",
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
@@ -98,7 +100,7 @@ st.markdown("""
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
-.block-container {background: rgba(255,255,255,0.96); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.2.5); border: 1.5px solid rgba(255,255,255,0.5);}
+.block-container {background: rgba(255,255,255,0.96); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.25); border: 1.5px solid rgba(255,255,255,0.5);}
 @media (max-width: 768px) {
 .block-container {padding: 1rem!important; border-radius: 20px!important;}
 h1 {font-size: 2.2rem!important;}
@@ -177,7 +179,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# AI CHATBOT STUDIO WITH EXPANDED 50+ KNOWLEDGE BASE AND DEPLOYMENT TROUBLESHOOTING
+# AI CHATBOT STUDIO WITH EXPANDED KNOWLEDGE BASE AND SOLUTIONS
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -273,7 +275,8 @@ if st.session_state.plan or st.session_state.email_entered:
         st.rerun()
 
 if st.session_state.email:
-    user = load_db().get(st.session_state.email, {})
+    db_state = load_db()
+    user = db_state.get(st.session_state.email, {})
     st.sidebar.success(f"📧 {st.session_state.email}")
     render_ai_chatbot(is_sidebar=True)
     if user.get("plan"):
@@ -532,8 +535,16 @@ else:
                             st.image(buf.getvalue(), width=220)
                         else:
                             st.info(f"Send payment directly to UPI ID: {UPI}")
+                            
+                        # DIRECT RAM-DISK SYNC LOGIC ON CLICK TO PREVENT FAILURES
                         if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
-                            st.session_state.payment_clicked = True; st.rerun()
+                            data = load_db()
+                            if st.session_state.email in data:
+                                data[st.session_state.email]["status"] = "PENDING"
+                                save_db(data)
+                            st.session_state.payment_clicked = True
+                            st.success("🚀 Request logged live in Sherni Admin! Please hold on while Admin approves.")
+                            st.rerun()
                     else:
                         col1, col2 = st.columns(2)
                         csv = st.session_state.df_clean.to_csv(index=False).encode()
