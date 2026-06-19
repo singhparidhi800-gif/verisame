@@ -77,7 +77,7 @@ def words_to_num(s):
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
-    "free_feat":["1000 Rows Lifetime","CSV & Excel Export","4 Free Tools Built-in","30s Processing","Email Support"],
+    "free_feat":["1000 Rows Limit","CSV & Excel Export","4 Free Tools Built-in","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
@@ -96,10 +96,9 @@ T = {
 # ANTI-DARK MODE ENFORCED GLOSSY CSS
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 
-/* Forces Light Mode Layout baseline even if device uses Dark Mode */
 .stApp {
     background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 25%, #d8b4fe 50%, #c084fc 75%, #a855f7 100%) !important; 
     background-size: 400% 400% !important; 
@@ -121,7 +120,6 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 @media (max-width: 768px) {
     .block-container {padding: 1.2rem!important; border-radius: 24px!important;}
     h1 {font-size: 2.4rem!important;}
-    .pricing-card {margin-bottom: 25px!important;}
 }
 
 h1,h2,h3,p,span,label,div,li {color: #1e1b4b!important; font-weight: 600!important;}
@@ -146,7 +144,6 @@ h1 {
     box-shadow: 0 20px 45px rgba(76,29,149,0.25); border: 3px solid #7c3aed;
     transition: transform 0.4s ease;
 }
-.anime-container:hover {transform: scale(1.02) rotate(0.5deg);}
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
 
 .pricing-card {
@@ -207,7 +204,6 @@ div[data-testid="stTabs"] button[aria-selected="true"] {
     border-color: #7c3aed!important; background: #f5f3ff!important;
 }
 
-/* Hardcoded text contrast safety layer for all standard elements */
 div[data-baseweb="select"] *, div[data-testid="stMarkdownContainer"] p, label[data-testid="stWidgetLabel"] p {
     color: #1e1b4b !important;
 }
@@ -248,7 +244,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# AI CHATBOT STUDIO ENGINE
+# AI CHATBOT STUDIO ENGINE (INTELLIGENT UPDATE)
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -264,7 +260,7 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown(chat_html, unsafe_allow_html=True)
 
     s_id = "side" if is_sidebar else "main"
-    user_msg = target.text_input("Ask a question...", placeholder="e.g., Who is the founder?", key=f"chat_in_{s_id}")
+    user_msg = target.text_input("Ask a question...", placeholder="e.g., Tool 4 kya kaam karta hai?", key=f"chat_in_{s_id}")
     submit = target.button("Send Message 🚀", key=f"btn_send_chat_{s_id}")
 
     if submit and user_msg and user_msg.strip():
@@ -272,7 +268,30 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
-        if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
+        # 🧠 INTELLIGENT TOOL EXTRACTOR & EXPLAINER
+        if "tool 1" in u or "date converter" in u or "smart date" in u:
+            reply = "📅 **Tool 1: Smart Date Converter (FREE)**\n\n**Kaam:** Ye tool aapke columns me mixed ya galat formatted dates (jaise 12/5, 15-03-2023) ko pehchan kar unhe ek standard standard format (`YYYY-MM-DD`) me badal deta hai. Invalid values ko ye 'None' kar deta hai."
+        elif "tool 2" in u or "fill null" in u or "ai fill" in u:
+            reply = "🔒 **Tool 2: AI Fill Nulls (PRO ONLY)**\n\n**Kaam:** Agar aapke data me blank cells ya khali dabbe (NaN/Null) hain, to ye unhe intelligently fill karta hai. Numbers ke liye `0`, Emails ke liye `missing@email.com`, aur baaki text ke liye `Unknown` daal deta hai."
+        elif "tool 3" in u or "email validator" in u or "email ai" in u:
+            reply = "🔒 **Tool 3: Email Validator (PRO ONLY)**\n\n**Kaam:** Ye poore column ko scan karta hai aur check karta hai ki emails ka format sahi hai ya nahi. Jo emails galat hote hain (jaise bina @ ke), unhe replace karke `Invalid Email` likh deta hai."
+        elif "tool 4" in u or "phone formatter" in u or "phone ai" in u:
+            reply = "🔒 **Tool 4: Phone Formatter (PRO ONLY)**\n\n**Kaam:** Ye phone numbers me se faltu spaces, brackets, ya symbols ko hata deta hai aur end ke kora **10 digits ka clean mobile number** filter karke save karta hai."
+        elif "tool 5" in u or "case converter" in u:
+            reply = "🔠 **Tool 5: Case Converter (FREE)**\n\n**Kaam:** Ye aapke text columns ke letter style ko badalta hai. Aap isse apne poore text ko ek saath **UPPERCASE**, **lowercase**, ya **Title Case** (Har word ka pehla letter capital) me convert kar sakte hain."
+        elif "tool 6" in u or "remove symbol" in u:
+            reply = "🔒 **Tool 6: Remove Symbols (PRO ONLY)**\n\n**Kaam:** Ye aapke text columns me se ajeeb-o-gareeb emojis ya junk characters ko hata deta hai, aur sirf zaroori letters, numbers, spaces, aur currency symbols (₹, $) ko hi safe rakhta hai."
+        elif "tool 7" in u or "bulk rename" in u or "rename column" in u:
+            reply = "🔒 **Tool 7: Bulk Rename (PRO ONLY)**\n\n**Kaam:** Iski madad se aap kisi bhi column ka purana naam badalkar turant ek naya clean heading/name set kar sakte hain pure data frame me."
+        elif "tool 8" in u or "remove duplicate" in u or "dedup" in u:
+            reply = "🔁 **Tool 8: Remove Duplicates (FREE)**\n\n**Kaam:** Agar aapki file me ek hi entry baar-baar repeat ho rahi hai, to ye ek single click me saari **Duplicate Rows** ko remove karke sirf unique rows bachaata hai."
+        elif "tool 9" in u or "trim space" in u or "trimming" in u:
+            reply = "✂️ **Tool 9: Trim Spaces (FREE)**\n\n**Kaam:** Words ke aage ya peeche lagne waale faltu khali spaces (extra spaces) ko completely saaf kar deta hai taaki data matching me koi error na aaye."
+        elif "tool 10" in u or "spell check" in u:
+            reply = "🔒 **Tool 10: Spell Check (PRO ONLY)**\n\n**Kaam:** Ye common typos aur spelling mistakes (jaise teh -> the, salery -> salary, amout -> amount) ko automatic scan karke theek kar deta hai."
+            
+        # Standard Responses
+        elif any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
             if "uplode" in u or "upload" in u: reply = "👋 **All the best, buddy! Go ahead and upload your files to clean them up instantly!**"
             elif "clean" in u: reply = "👍 **Awesome! Go smash those data errors and make your dataset perfect!**"
             else: reply = "👋 **Goodbye! Have a productive session ahead!**"
@@ -332,7 +351,7 @@ def render_ai_chatbot(is_sidebar=False):
             if best_score >= 0.25 and best_reply: 
                 reply = best_reply
             else: 
-                reply = "🔍 **Query logged in AI memory base.** I am fully trained on pipeline architecture, troubleshooting, cloud deployment fixes, founder info, and data science math calculations. Try asking: *'Who is the founder?'* or *'How to fix a deployment error?'*"
+                reply = "🔍 **Query logged in AI memory base.** Main pipeline architecture, tool info (Tool 1-10), troubleshooting, cloud deployment aur data science computations samajh sakta hoon. Mujhe kisi bhi tool ka number ya naam daal kar poochiye!"
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
@@ -348,21 +367,23 @@ if st.session_state.email:
     user = db_state.get(st.session_state.email, {})
     st.sidebar.success(f"📧 {st.session_state.email}")
     render_ai_chatbot(is_sidebar=True)
-    if user.get("plan"):
-        st.session_state.plan = user.get("plan")
-        st.session_state.amt = user.get("amt", 0)
-        st.session_state.days = user.get("days", 0)
-        
-        if user.get("plan") == "free": 
-            st.sidebar.info("Plan: FREE LIFETIME ✨")
+    
+    # 🌟 ALWAYS ENFORCE DISPLAY LABELS REGARDLESS OF STORAGE MAPPING
+    if user.get("plan") == "free" or st.session_state.plan == "free": 
+        st.sidebar.markdown("""
+        <div style='background-color: #E8F5E9; padding: 12px; border-radius: 8px; border-left: 5px solid #2E7D32; margin-top: 15px;'>
+            <p style='color: #2E7D32; margin: 0; font-weight: bold; font-size: 14px;'>Plan: FREE FOREVER</p>
+            <p style='color: #4CAF50; margin: 5px 0 0 0; font-size: 12px;'>4 Tools Unlocked</p>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        exp_date = datetime.strptime(user.get("expiry", (datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d")), "%Y-%m-%d")
+        days_left = (exp_date - datetime.now()).days
+        st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
+        if days_left > 0: 
+            st.sidebar.info(f"Plan: {user.get('plan','PRO').upper()}\nValid Till: {user.get('expiry')}\n{days_left} days left")
         else:
-            exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
-            days_left = (exp_date - datetime.now()).days
-            st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
-            if days_left > 0: 
-                st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
-            else:
-                st.sidebar.warning("Plan Expired")
+            st.sidebar.warning("Plan Expired")
 
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 with col1: st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
@@ -475,10 +496,12 @@ else:
     if df is not None:
         orig_len = len(df)
         is_free = st.session_state.plan == "free"
+        is_pro = st.session_state.plan == "pro"
+        is_paid = st.session_state.admin_approved
         
-        # 🚨 BLOCK FREE USERS EXCEEDING 1000 ROWS IMMEDIATELY
+        # 🚨 ROW LIMIT CHECK FOR FREE USERS
         if is_free and orig_len > 1000:
-            st.error(f"You can only clean up to 1000 rows in the Free Plan. This dataset has {orig_len} rows, which exceeds the limit. Please upgrade to our 299 INR or 1499 INR plan to unlock unlimited data cleaning processing.")
+            st.error(f"⚠️ Limits Exceeded: Free Plan allows up to 1000 rows only. Your dataset has {orig_len} rows. Please upgrade to Pro Plan to clean unlimited rows.")
             st.stop()
 
         if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
@@ -511,15 +534,12 @@ else:
                 st.dataframe(df_clean.head(10), use_container_width=True, height=300)
 
                 all_cols = df_clean.columns.tolist()
-                is_pro = st.session_state.plan == "pro"
-                is_paid = st.session_state.admin_approved
 
                 tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 with tab1:
-                    # 🛠️ TOOL 1: Smart Date Converter (Free + Pro)
+                    # 🛠️ TOOL 1: Smart Date Converter (FREE)
                     with st.container():
-                        tool1_status = "Unlock ✅" if is_pro else "✅ Unlocked (Free + Pro)"
-                        st.write(f"**{T['tool1']}** {tool1_status}")
+                        st.write(f"**{T['tool1']}** ✅ Unlocked (Free + Pro)")
                         date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                         if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
                             for col in date_cols: 
@@ -534,8 +554,7 @@ else:
 
                     # 🛠️ TOOL 2: AI Fill Nulls (PRO ONLY)
                     with st.container():
-                        tool2_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
-                        st.write(f"**{T['tool2']}** {tool2_status}")
+                        st.write(f"**{T['tool2']}** {'✅ Unlocked' if is_pro else '🔒 Locked (Pro Plan Only)'}")
                         fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free)
                         if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free):
                             for col in fill_cols:
@@ -549,8 +568,7 @@ else:
                 with tab2:
                     # 🛠️ TOOL 3: Email Validator (PRO ONLY)
                     with st.container():
-                        tool3_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
-                        st.write(f"**{T['tool3']}** {tool3_status}")
+                        st.write(f"**{T['tool3']}** {'✅ Unlocked' if is_pro else '🔒 Locked (Pro Plan Only)'}")
                         email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free)
                         if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free):
                             pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
@@ -559,8 +577,7 @@ else:
 
                     # 🛠️ TOOL 4: Phone Formatter (PRO ONLY)
                     with st.container():
-                        tool4_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
-                        st.write(f"**{T['tool4']}** {tool4_status}")
+                        st.write(f"**{T['tool4']}** {'✅ Unlocked' if is_pro else '🔒 Locked (Pro Plan Only)'}")
                         phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free)
                         if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free):
                             for col in phone_cols: 
@@ -569,10 +586,9 @@ else:
                             st.success(T['success'])
 
                 with tab3:
-                    # 🛠️ TOOL 5: Case Converter (Free + Pro)
+                    # 🛠️ TOOL 5: Case Converter (FREE)
                     with st.container():
-                        tool5_status = "Unlock ✅" if is_pro else "✅ Unlocked (Free + Pro)"
-                        st.write(f"**{T['tool5']}** {tool5_status}")
+                        st.write(f"**{T['tool5']}** ✅ Unlocked (Free + Pro)")
                         case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
                         case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
                         if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
@@ -584,8 +600,7 @@ else:
 
                     # 🛠️ TOOL 6: Remove Symbols (PRO ONLY)
                     with st.container():
-                        tool6_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
-                        st.write(f"**{T['tool6']}** {tool6_status}")
+                        st.write(f"**{T['tool6']}** {'✅ Unlocked' if is_pro else '🔒 Locked (Pro Plan Only)'}")
                         spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free)
                         if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free):
                             for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
@@ -593,26 +608,23 @@ else:
 
                     # 🛠️ TOOL 7: Bulk Rename (PRO ONLY)
                     with st.container():
-                        tool7_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
-                        st.write(f"**{T['tool7']}** {tool7_status}")
+                        st.write(f"**{T['tool7']}** {'✅ Unlocked' if is_pro else '🔒 Locked (Pro Plan Only)'}")
                         old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
                         new = st.text_input("New column name", key="inp_new", disabled=is_free)
                         if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free) and new:
                             st.session_state.df_clean.rename(columns={old: new}, inplace=True)
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 8: Remove Duplicates (Free + Pro)
+                    # 🛠️ TOOL 8: Remove Duplicates (FREE)
                     with st.container():
-                        tool8_status = "Unlock ✅" if is_pro else "✅ Unlocked (Free + Pro)"
-                        st.write(f"**{T['tool8']}** {tool8_status}")
+                        st.write(f"**{T['tool8']}** ✅ Unlocked (Free + Pro)")
                         if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                             st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 9: Trim Spaces (Free + Pro)
+                    # 🛠️ TOOL 9: Trim Spaces (FREE)
                     with st.container():
-                        tool9_status = "Unlock ✅" if is_pro else "✅ Unlocked (Free + Pro)"
-                        st.write(f"**{T['tool9']}** {tool9_status}")
+                        st.write(f"**{T['tool9']}** ✅ Unlocked (Free + Pro)")
                         trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
                         if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
                             for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
@@ -620,8 +632,7 @@ else:
 
                     # 🛠️ TOOL 10: Spell Check (PRO ONLY)
                     with st.container():
-                        tool10_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
-                        st.write(f"**{T['tool10']}** {tool10_status}")
+                        st.write(f"**{T['tool10']}** {'✅ Unlocked' if is_pro else '🔒 Locked (Pro Plan Only)'}")
                         spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free)
                         if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free):
                             typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
@@ -634,7 +645,8 @@ else:
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
-                if st.session_state.plan == "free":
+                # 🚀 NO PAYMENT GATEWAY VALIDATION FOR FREE PLAN USERS
+                if is_free:
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
                     if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
@@ -650,7 +662,7 @@ else:
                     except Exception as e:
                         col2.error(f"Excel generation failed: {str(e)}")
                         
-                elif st.session_state.plan == "pro":
+                elif is_pro:
                     if not is_paid:
                         st.warning(T['wait_approval'])
                         st.info(f"Send payment directly to UPI ID: {UPI}")
