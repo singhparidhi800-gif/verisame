@@ -3,7 +3,6 @@ import json, os, io
 import pandas as pd
 import re
 from datetime import datetime, timedelta
-import difflib 
 
 # Safe imports to completely avoid Streamlit Deployment Crashes
 try:
@@ -20,7 +19,19 @@ st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initi
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
-ADMIN_PASS = st.secrets["ADMIN_PASSWORD"]
+ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "sherni_admin")
+
+# 🎵 BACKGROUND MUSIC SYSTEM INTEGRATION
+# Aap is URL ko apni kisi bhi pasandida song link (.mp3) se replace kar sakti hain
+MUSIC_URL = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" 
+
+st.markdown(f"""
+    <iframe src="{MUSIC_URL}" allow="autoplay" style="display:none" id="iframeAudio"></iframe>
+    <audio autoplay loop volume="0.3" style="display:none;">
+        <source src="{MUSIC_URL}" type="audio/mp3">
+    </audio>
+""", unsafe_allow_html=True)
+
 
 # 🔒 MAXIMUM SECURITY PERSISTENT DATABASE ENGINE
 if "global_db_backup" not in st.session_state:
@@ -83,7 +94,7 @@ T = {
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
     "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
-    "paid_msg":"Step 1: Pay ₹299 for 1 Month or ₹1499 for 6 Months via UPI. Step 2: Click I Paid button below. Step 3: Admin will approve. Step 4: Download unlocks",
+    "paid_msg":"Step 1: Pay via UPI QR Code. Step 2: Click 'Customer I Paid' button. Step 3: Admin will approve and unlock download.",
     "upi_text":"Scan QR to Pay ₹{amount}","paid_btn":"Customer I Paid ₹{amount}","wait_approval":"⏳ Waiting for Admin Approval... Click I Paid after payment",
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
@@ -93,7 +104,7 @@ T = {
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
-# ANTI-DARK MODE ENFORCED GLOSSY CSS
+# ANTI-DARK MODE ENFORCED GLOSSY CSS WITH MOBILE FIXES
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -103,7 +114,7 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
     background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 25%, #d8b4fe 50%, #c084fc 75%, #a855f7 100%) !important; 
     background-size: 400% 400% !important; 
     animation: aurora 20s ease infinite !important; 
-    padding-top: 0.3rem !important;
+    padding-top: 0.1rem !important;
 }
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
 
@@ -111,49 +122,42 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
     background: rgba(255,255,255,0.97) !important; 
     backdrop-filter: blur(30px) saturate(200%) !important; 
     border-radius: 30px !important; 
-    padding: 2.5rem !important; 
+    padding: 1.5rem !important; 
     max-width: 1240px; 
-    margin: 1.5rem auto !important; 
+    margin: 1rem auto !important; 
     box-shadow: 0 40px 80px rgba(147,51,234,0.18) !important; 
     border: 2px solid rgba(255,255,255,0.7) !important;
 }
 
-h1,h2,h3,p,span,label,div,li {color: #1e1b4b!important; font-weight: 600!important;}
-h1 {
-    font-weight: 900!important; 
-    font-size: 3.6rem!important; 
-    margin-bottom: 0.1rem!important; 
-    background: linear-gradient(90deg, #4c1d95, #7c3aed, #c084fc, #6d28d9, #4c1d95) !important; 
-    background-size: 200% auto !important; 
-    -webkit-background-clip: text !important; 
-    -webkit-text-fill-color: transparent !important; 
-    animation: shine 4s linear infinite !important;
+/* Hero Section Custom Responsive Flex Grid */
+.hero-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(147,51,234,0.05);
 }
-@keyframes shine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
-.subtitle {text-align: left; color: #4b5563!important; font-size: 1.2rem!important; font-weight: 500!important; margin-bottom: 1.2rem!important; letter-spacing: 0.5px;}
+.hero-left { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 280px; }
+.hero-logo img { width: 70px; height: auto; border-radius: 14px; }
+.hero-text h1 { font-size: 2.4rem !important; font-weight: 900 !important; margin: 0 !important; color: #4c1d95 !important; }
+.hero-text p { font-size: 1rem !important; margin: 0 !important; color: #6b7280 !important; }
+.hero-anime img { width: 100%; max-width: 130px; height: auto; border-radius: 18px; object-fit: cover; }
 
-.logo-float {animation: float 4s ease-in-out infinite; filter: drop-shadow(0 15px 25px rgba(147,51,234,0.25));}
-@keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-12px);}}
-
-.anime-container {
-    position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; 
-    box-shadow: 0 20px 45px rgba(76,29,149,0.25); border: 3px solid #7c3aed;
-    transition: transform 0.4s ease;
-}
-
+/* Pricing Cards */
 .pricing-card {
-    position: relative; border-radius: 24px; padding: 2rem; background: linear-gradient(145deg, #ffffff, #fefeff)!important;
+    position: relative; border-radius: 24px; padding: 1.5rem; background: linear-gradient(145deg, #ffffff, #fefeff)!important;
     backdrop-filter: blur(15px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-    box-shadow: 0 10px 30px rgba(147,51,234,0.08), 0 2px 8px rgba(147,51,234,0.05);
+    box-shadow: 0 10px 30px rgba(147,51,234,0.08);
     height: 100%; border: 2.5px solid #e9d5ff !important;
+    margin-bottom: 15px;
 }
-.pricing-card:hover {
-    transform: translateY(-10px); 
-    border-color: #a855f7 !important; 
-    box-shadow: 0 25px 50px rgba(147,51,234,0.2), 0 12px 24px rgba(147,51,234,0.1) !important;
-}
-.pricing-card h2 {font-size: 1.5rem!important; color: #6d28d9!important; margin-bottom: 0.6rem!important; font-weight: 800;}
-.pricing-card h1 {font-size: 2.8rem!important; color: #4c1d95!important; margin: 0.6rem 0!important; font-weight: 900; -webkit-text-fill-color: #4c1d95!important;}
+.pricing-card h2 {font-size: 1.3rem!important; color: #6d28d9!important; margin-bottom: 0.4rem!important; font-weight: 800;}
+.pricing-card h1 {font-size: 2.4rem!important; color: #4c1d95!important; margin: 0.4rem 0!important; font-weight: 900;}
 
 .stButton>button {
     border-radius: 16px !important; 
@@ -161,50 +165,29 @@ h1 {
     background: linear-gradient(90deg, #7c3aed, #a855f7) !important; 
     color: white !important; 
     border: none !important; 
-    padding: 14px 28px !important; 
+    padding: 12px 24px !important; 
     width: 100% !important; 
-    box-shadow: 0 8px 20px rgba(124,58,237,0.3) !important; 
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; 
-    cursor: pointer !important; 
-    font-size: 1.05rem !important; 
-    margin-top: 1rem !important;
+    box-shadow: 0 6px 15px rgba(124,58,237,0.25) !important; 
+    font-size: 1rem !important;
 }
 
-.pro-banner {
-    background: linear-gradient(135deg, #5b21b6, #7c3aed, #d946ef) !important; 
-    padding: 1.8rem; border-radius: 24px; color: white!important; 
-    text-align: center; margin: 1.5rem 0; border: none; 
-    box-shadow: 0 12px 28px rgba(124,58,237,0.25);
-}
-.tool-chip {
-    display: inline-block; background: rgba(255,255,255,0.98) !important; padding: 8px 18px; 
-    border-radius: 30px; margin: 6px; font-weight: 700; border: 2px solid #7c3aed !important; 
-    color: #4c1d95!important; font-size: 0.92rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
-
-div[data-testid="stTabs"] button p {color: #4b5563!important; font-weight: 700!important; font-size: 1.05rem!important;}
-div[data-testid="stTabs"] button[aria-selected="true"] p {color: #7c3aed!important; font-weight: 800!important;}
-
-.stAlert,.stInfo,.stSuccess,.stError {
-    background: #ffffff !important; border-radius: 16px; border: 2.5px solid #c084fc !important;
-}
-.stDataFrame {border-radius: 16px; overflow: hidden; border: 2px solid #e5e7eb;}
-.stFileUploader {background: #ffffff!important; border: 2.5px dashed #a855f7!important; border-radius: 20px;}
-
-input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] input {
-    background-color: #ffffff !important; 
-    color: #111827 !important; 
-    border: 2px solid #cdb4db !important; 
-    border-radius: 14px !important;
+.qr-container {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 20px;
+    border: 2.5px solid #a855f7;
+    text-align: center;
+    margin: 15px auto;
+    max-width: 240px;
+    box-shadow: 0 10px 25px rgba(147,51,234,0.1);
 }
 
 .cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 22px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
 @keyframes fall {0%{transform: translateY(0vh) translateX(0vw) rotate(0deg); opacity: 1;} 100%{transform: translateY(110vh) translateX(10vw) rotate(360deg); opacity: 0;}}
 </style>
-<div class="cherry" style="left: 10%; animation-duration: 8s;">🌸</div>
-<div class="cherry" style="left: 30%; animation-duration: 10s; animation-delay: 2s;">🌸</div>
-<div class="cherry" style="left: 55%; animation-duration: 9s; animation-delay: 4s;">🌸</div>
-<div class="cherry" style="left: 80%; animation-duration: 13s; animation-delay: 2.5s;">🌸</div>
+<div class="cherry" style="left: 15%; animation-duration: 8s;">🌸</div>
+<div class="cherry" style="left: 45%; animation-duration: 10s; animation-delay: 2s;">🌸</div>
+<div class="cherry" style="left: 75%; animation-duration: 9s; animation-delay: 4s;">🌸</div>
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
@@ -220,12 +203,12 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown("---")
     target.markdown("### 🤖 VeriSame Live AI Chat Studio")
 
-    chat_html = "<div style='max-height: 280px; overflow-y: auto; padding: 14px; background: #ffffff !important; border: 2px solid #7c3aed; border-radius: 16px; margin-bottom: 12px;'>"
+    chat_html = "<div style='max-height: 240px; overflow-y: auto; padding: 12px; background: #ffffff !important; border: 2px solid #7c3aed; border-radius: 16px; margin-bottom: 12px;'>"
     for chat in st.session_state.chat_history:
         if chat["role"] == "assistant":
-            chat_html += f"<p style='color: #6d28d9 !important; margin: 6px 0; font-weight: 700;'><b>🤖 AI:</b> {chat['message']}</p>"
+            chat_html += f"<p style='color: #6d28d9 !important; margin: 4px 0; font-weight: 700;'><b>🤖 AI:</b> {chat['message']}</p>"
         else:
-            chat_html += f"<p style='color: #111827 !important; margin: 6px 0; font-weight: 600;'><b>👤 You:</b> {chat['message']}</p>"
+            chat_html += f"<p style='color: #111827 !important; margin: 4px 0; font-weight: 600;'><b>👤 You:</b> {chat['message']}</p>"
     chat_html += "</div>"
     target.markdown(chat_html, unsafe_allow_html=True)
 
@@ -302,17 +285,28 @@ if st.session_state.email:
         st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
         st.sidebar.info(f"Plan: PRO VERSION\nValid Till: {user.get('expiry')}\n{days_left} days left")
 
-col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
-with col1: st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
-with col2:
-    st.markdown("<h1 style='margin-top: 5px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
-    st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
-with col3: st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
+# FIXED FLEXBOX HERO SECTION (NO GAP / COMPACT ON MOBILE)
+st.markdown(f"""
+<div class="hero-wrapper">
+    <div class="hero-left">
+        <div class="hero-logo">
+            <img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" alt="VeriSame Logo">
+        </div>
+        <div class="hero-text">
+            <h1>VeriSame</h1>
+            <p>{T["subtitle"]}</p>
+        </div>
+    </div>
+    <div class="hero-anime">
+        <img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg" alt="Anime Banner">
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # PLAN SETUP INTERFACE
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
-        col1,col2,col3 = st.columns(3, gap="medium")
+        col1,col2,col3 = st.columns([1, 1, 1])
         with col1:
             st.markdown(f"""<div class='pricing-card'><h2>{T['free_title']}</h2><h1>FREE</h1><p>Lifetime</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['free_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
@@ -370,9 +364,8 @@ else:
         orig_len = len(df)
         is_free = (st.session_state.plan == "free")
         
-        # 🚨 BLOCK FREE PLAN USER EXCEEDING 1000 ROWS IMMEDIATELY
         if is_free and orig_len > 1000:
-            st.error(f"⚠️ Limits Exceeded: Free Plan allows up to 1000 rows only. Your dataset has {orig_len} rows. Please logout or upgrade to use unlimited row parsing.")
+            st.error(f"⚠️ Limits Exceeded: Free Plan allows up to 1000 rows only. Your dataset has {orig_len} rows. Please upgrade to use unlimited row parsing.")
             st.stop()
 
         if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
@@ -401,13 +394,12 @@ else:
                 with c4: st.metric(T['empty'], st.session_state.empty_fixed)
 
                 st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
-                st.dataframe(df_clean.head(10), use_container_width=True, height=300)
+                st.dataframe(df_clean.head(10), use_container_width=True, height=260)
 
                 all_cols = df_clean.columns.tolist()
                 tab1_ui, tab2_ui, tab3_ui = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 
                 with tab1_ui:
-                    # 🛠️ TOOL 1: Smart Date Converter (FREE)
                     with st.container():
                         st.write(f"**{T['tool1']}** ✅ Unlocked (Free + Pro)")
                         date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
@@ -420,7 +412,6 @@ else:
                                 except Exception: pass
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 2: AI Fill Nulls (PRO ONLY)
                     with st.container():
                         st.write(f"**{T['tool2']}** {'🔒 Locked (Pro Plan Only)' if is_free else '✅ Unlocked'}")
                         fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free)
@@ -432,7 +423,6 @@ else:
                             st.success(T['success'])
 
                 with tab2_ui:
-                    # 🛠️ TOOL 3: Email Validator (PRO ONLY)
                     with st.container():
                         st.write(f"**{T['tool3']}** {'🔒 Locked (Pro Plan Only)' if is_free else '✅ Unlocked'}")
                         email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free)
@@ -441,7 +431,6 @@ else:
                             for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 4: Phone Formatter (PRO ONLY)
                     with st.container():
                         st.write(f"**{T['tool4']}** {'🔒 Locked (Pro Plan Only)' if is_free else '✅ Unlocked'}")
                         phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free)
@@ -452,7 +441,6 @@ else:
                             st.success(T['success'])
 
                 with tab3_ui:
-                    # 🛠️ TOOL 5: Case Converter (FREE)
                     with st.container():
                         st.write(f"**{T['tool5']}** ✅ Unlocked (Free + Pro)")
                         case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
@@ -464,7 +452,6 @@ else:
                                 else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 6: Remove Symbols (PRO ONLY)
                     with st.container():
                         st.write(f"**{T['tool6']}** {'🔒 Locked (Pro Plan Only)' if is_free else '✅ Unlocked'}")
                         spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free)
@@ -472,7 +459,6 @@ else:
                             for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 7: Bulk Rename (PRO ONLY)
                     with st.container():
                         st.write(f"**{T['tool7']}** {'🔒 Locked (Pro Plan Only)' if is_free else '✅ Unlocked'}")
                         old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
@@ -481,14 +467,12 @@ else:
                             st.session_state.df_clean.rename(columns={old: new}, inplace=True)
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 8: Remove Duplicates (FREE)
                     with st.container():
                         st.write(f"**{T['tool8']}** ✅ Unlocked (Free + Pro)")
                         if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                             st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 9: Trim Spaces (FREE)
                     with st.container():
                         st.write(f"**{T['tool9']}** ✅ Unlocked (Free + Pro)")
                         trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
@@ -496,7 +480,6 @@ else:
                             for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                             st.success(T['success'])
 
-                    # 🛠️ TOOL 10: Spell Check (PRO ONLY)
                     with st.container():
                         st.write(f"**{T['tool10']}** {'🔒 Locked (Pro Plan Only)' if is_free else '✅ Unlocked'}")
                         spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free)
@@ -511,7 +494,7 @@ else:
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
-                # 🚀 DOWNLOAD ROUTING INTERFACE (SEPARATED CLEARLY)
+                # DOWNLOAD & PAYMENT SYSTEM
                 if is_free:
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -523,12 +506,28 @@ else:
                 else:
                     if not st.session_state.admin_approved:
                         st.warning(T['wait_approval'])
-                        st.info(f"Send payment directly to UPI ID: {UPI}")
+                        
+                        # ✨ DYNAMIC QR CODE GENERATOR FOR PRO PLAN UNLOCK
+                        if qrcode is not None:
+                            pay_url = f"upi://pay?pa={UPI}&pn=VeriSamePro&am={st.session_state.amt}&cu=INR"
+                            qr = qrcode.QRCode(version=1, box_size=10, border=2)
+                            qr.add_data(pay_url)
+                            qr.make(fit=True)
+                            img = qr.make_image(fill_color="black", back_color="white")
+                            
+                            buf = io.BytesIO()
+                            img.save(buf, format="PNG")
+                            
+                            st.markdown(f"<div class='qr-container'><p style='color:#7c3aed !important; margin-bottom:10px;'>Scan QR to Pay ₹{st.session_state.amt}</p></div>", unsafe_allow_html=True)
+                            st.image(buf.getvalue(), width=200, use_column_width=False)
+                        else:
+                            st.info(f"Send payment directly to UPI ID: {UPI}")
+                            
                         if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
                             data = load_db()
                             if st.session_state.email in data: data[st.session_state.email]["status"] = "PENDING"
                             save_db(data)
-                            st.success("🚀 Request logged live in Sherni Admin Panel!")
+                            st.success("🚀 Request logged live in Admin Panel!")
                     else:
                         col1, col2 = st.columns(2)
                         csv = st.session_state.df_clean.to_csv(index=False).encode()
