@@ -349,14 +349,20 @@ if st.session_state.email:
     st.sidebar.success(f"📧 {st.session_state.email}")
     render_ai_chatbot(is_sidebar=True)
     if user.get("plan"):
-        exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
-        days_left = (exp_date - datetime.now()).days
         st.session_state.plan = user.get("plan")
         st.session_state.amt = user.get("amt", 0)
         st.session_state.days = user.get("days", 0)
-        st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
-        if user.get("plan") == "free": st.sidebar.info("Plan: FREE LIFETIME ✨")
-        elif days_left > 0: st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
+        
+        if user.get("plan") == "free": 
+            st.sidebar.info("Plan: FREE LIFETIME ✨")
+        else:
+            exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
+            days_left = (exp_date - datetime.now()).days
+            st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
+            if days_left > 0: 
+                st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
+            else:
+                st.sidebar.warning("Plan Expired")
 
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 with col1: st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
@@ -467,9 +473,16 @@ else:
             df = pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],"Email":["RAHUL@GMAIL.COM","bad@","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["one hundred","250","two thousand five hundred"]})
 
     if df is not None:
+        orig_len = len(df)
+        is_free = st.session_state.plan == "free"
+        
+        # 🚨 BLOCK FREE USERS EXCEEDING 1000 ROWS IMMEDIATELY
+        if is_free and orig_len > 1000:
+            st.error(f"You can only clean up to 1000 rows in the Free Plan. This dataset has {orig_len} rows, which exceeds the limit. Please upgrade to our 299 INR or 1499 INR plan to unlock unlimited data cleaning processing.")
+            st.stop()
+
         if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
             st.session_state.df_clean = df.copy()
-            orig_len = len(df)
             df_clean = st.session_state.df_clean.drop_duplicates()
             for col in df_clean.columns:
                 if df_clean[col].dtype == object:
@@ -499,13 +512,14 @@ else:
 
                 all_cols = df_clean.columns.tolist()
                 is_pro = st.session_state.plan == "pro"
-                is_free = st.session_state.plan == "free"
                 is_paid = st.session_state.admin_approved
 
                 tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 with tab1:
+                    # 🛠️ TOOL 1: Smart Date Converter (Free + Pro)
                     with st.container():
-                        st.write(f"**{T['tool1']}** ✅ Unlocked (Free + Pro)")
+                        tool1_status = "Unlock ✅" if is_pro else "✅ Unlocked (Free + Pro)"
+                        st.write(f"**{T['tool1']}** {tool1_status}")
                         date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                         if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
                             for col in date_cols: 
@@ -518,10 +532,12 @@ else:
                                 except Exception: pass
                             st.success(T['success'])
 
+                    # 🛠️ TOOL 2: AI Fill Nulls (PRO ONLY)
                     with st.container():
-                        st.write(f"**{T['tool2']}** 🔓 Always Open for Testing (Pro Tool)")
-                        fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
-                        if st.button(T['apply_btn'], key="btn_fill", use_container_width=True):
+                        tool2_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
+                        st.write(f"**{T['tool2']}** {tool2_status}")
+                        fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free)
+                        if st.button(T['apply_btn'], key="btn_fill", use_container_width=True, disabled=is_free):
                             for col in fill_cols:
                                 sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
                                 if sample.isdigit() or '.' in sample: fill_val = "0"
@@ -531,26 +547,32 @@ else:
                             st.success(T['success'])
 
                 with tab2:
+                    # 🛠️ TOOL 3: Email Validator (PRO ONLY)
                     with st.container():
-                        st.write(f"**{T['tool3']}** 🔓 Always Open for Testing (Pro Tool)")
-                        email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
-                        if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
+                        tool3_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
+                        st.write(f"**{T['tool3']}** {tool3_status}")
+                        email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free)
+                        if st.button(T['apply_btn'], key="btn_email", use_container_width=True, disabled=is_free):
                             pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                             for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
                             st.success(T['success'])
 
+                    # 🛠️ TOOL 4: Phone Formatter (PRO ONLY)
                     with st.container():
-                        st.write(f"**{T['tool4']}** 🔓 Always Open for Testing (Pro Tool)")
-                        phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
-                        if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
+                        tool4_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
+                        st.write(f"**{T['tool4']}** {tool4_status}")
+                        phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free)
+                        if st.button(T['apply_btn'], key="btn_phone", use_container_width=True, disabled=is_free):
                             for col in phone_cols: 
                                 st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
                                 st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
                             st.success(T['success'])
 
                 with tab3:
+                    # 🛠️ TOOL 5: Case Converter (Free + Pro)
                     with st.container():
-                        st.write(f"**{T['tool5']}** ✅ Unlocked (Free + Pro)")
+                        tool5_status = "Unlock ✅" if is_pro else "✅ Unlocked (Free + Pro)"
+                        st.write(f"**{T['tool5']}** {tool5_status}")
                         case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
                         case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
                         if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
@@ -560,38 +582,48 @@ else:
                                 else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
                             st.success(T['success'])
 
+                    # 🛠️ TOOL 6: Remove Symbols (PRO ONLY)
                     with st.container():
-                        st.write(f"**{T['tool6']}** 🔓 Always Open for Testing (Pro Tool)")
-                        spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
-                        if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
+                        tool6_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
+                        st.write(f"**{T['tool6']}** {tool6_status}")
+                        spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec", disabled=is_free)
+                        if st.button(T['apply_btn'], key="btn_spec", use_container_width=True, disabled=is_free):
                             for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
                             st.success(T['success'])
 
+                    # 🛠️ TOOL 7: Bulk Rename (PRO ONLY)
                     with st.container():
-                        st.write(f"**{T['tool7']}** 🔓 Always Open for Testing (Pro Tool)")
-                        old = st.selectbox("Old column name", all_cols, key="sel_old")
-                        new = st.text_input("New column name", key="inp_new")
-                        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True) and new:
+                        tool7_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
+                        st.write(f"**{T['tool7']}** {tool7_status}")
+                        old = st.selectbox("Old column name", all_cols, key="sel_old", disabled=is_free)
+                        new = st.text_input("New column name", key="inp_new", disabled=is_free)
+                        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True, disabled=is_free) and new:
                             st.session_state.df_clean.rename(columns={old: new}, inplace=True)
                             st.success(T['success'])
 
+                    # 🛠️ TOOL 8: Remove Duplicates (Free + Pro)
                     with st.container():
-                        st.write(f"**{T['tool8']}** ✅ Unlocked (Free + Pro)")
+                        tool8_status = "Unlock ✅" if is_pro else "✅ Unlocked (Free + Pro)"
+                        st.write(f"**{T['tool8']}** {tool8_status}")
                         if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                             st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                             st.success(T['success'])
 
+                    # 🛠️ TOOL 9: Trim Spaces (Free + Pro)
                     with st.container():
-                        st.write(f"**{T['tool9']}** ✅ Unlocked (Free + Pro)")
+                        tool9_status = "Unlock ✅" if is_pro else "✅ Unlocked (Free + Pro)"
+                        st.write(f"**{T['tool9']}** {tool9_status}")
                         trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
                         if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
                             for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                             st.success(T['success'])
 
+                    # 🛠️ TOOL 10: Spell Check (PRO ONLY)
                     with st.container():
-                        st.write(f"**{T['tool10']}** 🔓 Always Open for Testing (Pro Tool)")
-                        spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
-                        if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
+                        tool10_status = "Unlock ✅" if is_pro else "🔒 Locked (Pro Plan Only)"
+                        st.write(f"**{T['tool10']}** {tool10_status}")
+                        spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell", disabled=is_free)
+                        if st.button(T['apply_btn'], key="btn_spell", use_container_width=True, disabled=is_free):
                             typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
                             def fix_typos(text):
                                 words = str(text).split()
@@ -621,13 +653,7 @@ else:
                 elif st.session_state.plan == "pro":
                     if not is_paid:
                         st.warning(T['wait_approval'])
-                        st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
-                        if qrcode is not None:
-                            upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
-                            qr = qrcode.make(upi_link); buf = io.BytesIO(); qr.save(buf, format="PNG")
-                            st.image(buf.getvalue(), width=220)
-                        else:
-                            st.info(f"Send payment directly to UPI ID: {UPI}")
+                        st.info(f"Send payment directly to UPI ID: {UPI}")
                             
                         if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
                             data = load_db()
