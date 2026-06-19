@@ -8,5 +8,6 @@ requests
 word2number
 firebase-admin
 pillow
+matplotlib
 
 
