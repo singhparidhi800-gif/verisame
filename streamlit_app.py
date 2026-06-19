@@ -19,17 +19,56 @@ st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initi
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
-ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "sherni_admin")
-ADMIN_WHATSAPP = "9794906852"
 
-# 🎵 BACKGROUND MUSIC SYSTEM INTEGRATION
-MUSIC_URL = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" 
+# 🎵 PEACEFUL AUDIO & INTERACTIVE BUTTON SOUND ENGINE
+# Background Music: Soft, peaceful ambient melody (stops after 20 seconds)
+BACKGROUND_MUSIC = "https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" 
+CLICK_SOUND = "https://assets.mixkit.co/active_storage/sfx/2571/2571-84.wav"
 
 st.markdown(f"""
-    <iframe src="{MUSIC_URL}" allow="autoplay" style="display:none" id="iframeAudio"></iframe>
-    <audio autoplay loop volume="0.3" style="display:none;">
-        <source src="{MUSIC_URL}" type="audio/mp3">
+    <audio id="bgMusic" autoplay>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" type="audio/mp3">
     </audio>
+    
+    <audio id="clickSound" src="{CLICK_SOUND}" preload="auto"></audio>
+
+    <script>
+        // Background Music Timer
+        var bg = document.getElementById("bgMusic");
+        if(bg) {{
+            bg.volume = 0.25;
+            setTimeout(function() {{
+                bg.pause();
+            }}, 20000); // 20 Seconds Exact Cutoff
+        }}
+
+        // Interactive Click Trigger Engine
+        function playClick() {{
+            var snd = document.getElementById("clickSound");
+            if(snd) {{
+                snd.currentTime = 0;
+                snd.volume = 0.4;
+                snd.play();
+            }}
+        }}
+
+        // Sync with Streamlit Dynamic Rendered Buttons
+        document.addEventListener("DOMContentLoaded", function() {{
+            const targetNode = document.body;
+            const config = {{ childList: true, subtree: true }};
+            const callback = function(mutationsList, observer) {{
+                let buttons = document.querySelectorAll("button");
+                buttons.forEach(function(btn) {{
+                    if (!btn.hasAttribute("data-click-bound")) {{
+                        btn.setAttribute("data-click-bound", "true");
+                        btn.addEventListener("click", playClick);
+                    }}
+                }});
+            }};
+            const observer = new MutationObserver(callback);
+            observer.observe(targetNode, config);
+        }});
+    </script>
 """, unsafe_allow_html=True)
 
 # 🔒 MAXIMUM SECURITY PERSISTENT DATABASE ENGINE
@@ -99,8 +138,7 @@ T = {
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
     "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply","success":"Apply is completed! Your data has been successfully updated.",
-    "admin_title":"👑 Sherni Admin Panel 👑","admin_pending":"User Databases & Requests","admin_approve_btn":"Mark Paid - Unlock Customer Download",
-    "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
+    "download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
 # ANTI-DARK MODE ENFORCED GLOSSY CSS
@@ -146,20 +184,43 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .hero-text h1 { font-size: 4.2rem !important; font-weight: 900 !important; margin: 0 !important; color: #4c1d95 !important; line-height: 1.1; }
 .hero-text p { font-size: 1.4rem !important; margin-top: 8px !important; color: #6b7280 !important; font-weight: 500; }
 
+/* 10 Premium Tools Container Layout */
+.tools-showcase-container {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    padding: 30px;
+    border-radius: 28px;
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    box-shadow: 0 20px 45px rgba(124,58,237,0.25);
+}
+.tools-showcase-container h3 {
+    font-size: 1.8rem !important; font-weight: 850 !important; margin: 0 0 20px 0 !important; color: white !important; letter-spacing: 0.5px;
+}
+.badge-flex-grid {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 850px; margin: 0 auto;
+}
+.tool-pill-badge {
+    background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(8px);
+    padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.3); color: white !important; display: inline-block;
+}
+
 /* Pricing Cards Setup */
 .pricing-card {
-    position: relative; border-radius: 28px; padding: 2.5rem; background: linear-gradient(145deg, #ffffff, #fefeff)!important;
-    backdrop-filter: blur(15px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    position: relative; border-radius: 28px; padding: 2.2rem; background: linear-gradient(145deg, #ffffff, #fefeff)!important;
+    backdrop-filter: blur(15px); transition: all 0.4s ease; 
     box-shadow: 0 20px 40px rgba(147,51,234,0.08);
-    height: 100%; border: 2.5px solid #e9d5ff !important;
+    height: auto; border: 2.5px solid #e9d5ff !important;
     margin-bottom: 25px;
 }
-.pricing-card h2 {font-size: 1.8rem!important; color: #6d28d9!important; margin-bottom: 0.8rem!important; font-weight: 800;}
-.pricing-card h1 {font-size: 3.8rem!important; color: #4c1d95!important; margin: 0.8rem 0!important; font-weight: 900;}
-.pricing-card p {font-size: 1.1rem!important; color: #4b5563;}
+.pricing-card h2 {font-size: 1.6rem!important; color: #6d28d9!important; margin-bottom: 0.5rem!important; font-weight: 800;}
+.pricing-card h1 {font-size: 3.2rem!important; color: #4c1d95!important; margin: 0.5rem 0!important; font-weight: 900;}
+.pricing-card p {font-size: 1.05rem!important; color: #4b5563; margin-bottom: 8px;}
 
 .side-anime-box img {
     width: 100%;
+    max-height: 480px;
     border-radius: 28px;
     box-shadow: 0 20px 40px rgba(147,51,234,0.15);
     object-fit: cover;
@@ -171,10 +232,10 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
     background: linear-gradient(90deg, #7c3aed, #a855f7) !important; 
     color: white !important; 
     border: none !important; 
-    padding: 16px 32px !important; 
+    padding: 14px 28px !important; 
     width: 100% !important; 
     box-shadow: 0 10px 25px rgba(124,58,237,0.3) !important; 
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
 }
 
 .qr-container {
@@ -197,7 +258,7 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, specific tools, safety, troubleshooting errors, or data science utilities!"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about data cleaning features!"}]
 
 for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','alert_triggered']:
     if key not in st.session_state:
@@ -271,31 +332,6 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
-# 👑 SHERNI ADMIN CONTROL SIDEBAR
-st.sidebar.markdown(f"## {T['admin_title']}")
-admin_key = st.sidebar.text_input("Admin Security Password", type="password")
-if admin_key == ADMIN_PASS:
-    st.sidebar.success("Access Granted, Sherni Queen! 👑")
-    db_admin = load_db()
-    if db_admin:
-        st.sidebar.markdown(f"### {T['admin_pending']}")
-        for mail_id, info in list(db_admin.items()):
-            if info.get("status") == "PENDING":
-                st.sidebar.write(f"📧 **{mail_id}** ({info.get('plan', 'pro').upper()})")
-                st.sidebar.write(f"Amt: ₹{info.get('amt', 299)}")
-                if st.sidebar.button(f"Approve {mail_id}", key=f"app_{mail_id}"):
-                    db_admin[mail_id]["status"] = "PAID"
-                    save_db(db_admin)
-                    st.sidebar.success(f"Approved {mail_id}!")
-                    st.rerun()
-                if st.sidebar.button(f"Delete {mail_id}", key=f"del_{mail_id}"):
-                    del db_admin[mail_id]
-                    save_db(db_admin)
-                    st.sidebar.warning(f"Deleted {mail_id}!")
-                    st.rerun()
-    else:
-        st.sidebar.info("No logs registered in system database.")
-
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], use_container_width=True):
         for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','alert_triggered']:
@@ -331,9 +367,29 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# CLEAN CLEAN LANDING PAGE (NO BULLY BOXES)
+# CLEAN CLEAN LANDING PAGE
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
+        
+        # 💎 10 PREMIUM TOOLS BOX ON FRONT MAIN HEADER
+        st.markdown(f"""
+        <div class="tools-showcase-container">
+            <h3>💎 {T["pro_banner"]} 💎</h3>
+            <div class="badge-flex-grid">
+                <span class="tool-pill-badge">Smart Date</span>
+                <span class="tool-pill-badge">AI Fill</span>
+                <span class="tool-pill-badge">Email AI</span>
+                <span class="tool-pill-badge">Phone AI</span>
+                <span class="tool-pill-badge">Case</span>
+                <span class="tool-pill-badge">Clean</span>
+                <span class="tool-pill-badge">Rename</span>
+                <span class="tool-pill-badge">Dedup</span>
+                <span class="tool-pill-badge">Trim</span>
+                <span class="tool-pill-badge">Spell</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         left_grid, right_grid = st.columns([2.2, 1])
         
         with left_grid:
@@ -395,7 +451,6 @@ else:
                     df_list.append(sub_df)
                 df = pd.concat(df_list, ignore_index=True) if df_list else None
                 
-                # 📦 BATCH PROCESSING NOTIFICATION SET UP IN MULTI-FILE SCENARIOS
                 if len(df_list) > 1:
                     st.success(f"📦 System Multi-File Batch Processing Engine: Merged {len(df_list)} active data sheets smoothly into standard data layout structure pipeline.")
             except Exception as e: st.error(f"Error reading file: {str(e)}")
@@ -447,7 +502,7 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 🧠 SMART COLUMN PREDICTION (DISPLAYED RIGHT BELOW AS REQ)
+                # 🧠 SMART COLUMN PREDICTION
                 broken_emails = [c for c in df_clean.columns if 'email' in c.lower()]
                 if broken_emails:
                     st.markdown(f"""
@@ -606,12 +661,12 @@ else:
                             if st.session_state.email in data: data[st.session_state.email]["status"] = "PENDING"
                             save_db(data)
                             st.session_state.alert_triggered = True
-                            st.success("🚀 Request logged live in Admin Panel!")
+                            st.success("🚀 Request logged live!")
                         
                         if st.session_state.alert_triggered:
                             st.markdown(f"""
                             <div style="background: #fee2e2; color: #ef4444; padding: 10px 15px; border-radius: 12px; font-weight: 700; font-size: 13px; border: 1px solid #fca5a5; margin-top: 10px;">
-                                🔔 System Log: WhatsApp Alert route initialized out to admin backend. Request queue updated!
+                                🔔 System Log: Alert route initialized out to admin backend. Request queue updated!
                             </div>
                             """, unsafe_allow_html=True)
                     else:
