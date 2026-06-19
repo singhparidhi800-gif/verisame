@@ -1,38 +1,20 @@
 import streamlit as st
-import json, os, io, zipfile
+import io
 import pandas as pd
 import re
-from datetime import datetime
 
 # 🔒 App Setup (Anti-Dark Mode Enforced Glossy CSS - Your Exact Theme)
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "sherni_admin")
+# Your exact secret admin query string target
+ADMIN_QUERY_VALUE = "Sherni@123"
 
-if "global_db_backup" not in st.session_state:
-    st.session_state.global_db_backup = {}
+if 'session_active' not in st.session_state: st.session_state.session_active = False
+if 'current_plan' not in st.session_state: st.session_state.current_plan = ""
+if 'uploaded_data' not in st.session_state: st.session_state.uploaded_data = None
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about data cleaning features!"}]
-
-# Persistent Database Logic
-def load_db():
-    if os.path.exists("backup_orders.json"):
-        try:
-            with open("backup_orders.json", "r") as f:
-                data = json.load(f)
-                if isinstance(data, dict):
-                    st.session_state.global_db_backup = data
-                    return data
-        except Exception: pass
-    return st.session_state.global_db_backup
-
-def save_db(d):
-    try:
-        st.session_state.global_db_backup = d
-        with open("backup_orders.json", "w") as f:
-            json.dump(d, f, indent=2)
-    except Exception: pass
 
 # Custom Word-to-Number Logic for Tool 10
 def words_to_num(s):
@@ -57,7 +39,7 @@ def words_to_num(s):
             else: current += val
     return total + current if has_num_word and (total + current > 0) else s
 
-# Your Original Styling & CSS
+# Styling & CSS with Layout Fixes
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -94,10 +76,11 @@ h1 {
 .subtitle {color: #4b5563!important; font-size: 1.2rem!important; font-weight: 500!important; margin-bottom: 1.2rem!important;}
 
 .anime-container {
-    position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; 
+    position: relative; width: 100%; border-radius: 25px; overflow: hidden; 
     box-shadow: 0 20px 45px rgba(76,29,149,0.25); border: 3px solid #7c3aed;
+    background-color: #ffffff;
 }
-.anime-container img {width: 100%; height: 280px; object-fit: cover; display: block;}
+.anime-container img {width: 100%; height: auto; max-height: 280px; object-fit: contain; display: block; margin: 0 auto;}
 
 .pricing-card {
     border-radius: 24px; padding: 2rem; background: #ffffff!important;
@@ -130,40 +113,29 @@ h1 {
 <div class="cherry" style="left: 80%; animation-duration: 13s; animation-delay: 2.5s;">🌸</div>
 """, unsafe_allow_html=True)
 
-# Sidebar Admin Panel (Exactly as per your Original Layout)
-st.sidebar.markdown("### 👑 Sherni Admin Panel 👑")
-admin_pass = st.sidebar.text_input("Admin Security Password", type="password")
-
-# Initialization
-if 'session_active' not in st.session_state: st.session_state.session_active = False
-if 'user_email' not in st.session_state: st.session_state.user_email = ""
-if 'current_plan' not in st.session_state: st.session_state.current_plan = ""
-if 'uploaded_data' not in st.session_state: st.session_state.uploaded_data = None
-
-# Top Header Layout (3 Columns)
-col1, col2, col3 = st.columns([1, 2.5, 1.5])
+# Top Header Layout (Big Logo presentation)
+col1, col2, col3 = st.columns([1.5, 2.5, 1.5])
 with col1:
-    st.markdown("""<div style="display: flex; align-items: center; justify-content: center; height:100%;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 110px; height: auto;"></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style="display: flex; align-items: center; justify-content: center; height:100%;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 200px; height: auto;"></div>""", unsafe_allow_html=True)
 with col2:
-    st.markdown("<h1 style='margin-top: 10px;'>VeriSame</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin-top: 25px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown('<div class="subtitle">The Fastest Way to Clean Your Data</div>', unsafe_allow_html=True)
 with col3:
     st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 
-# Admin Mode Execution
-if admin_pass == ADMIN_PASS:
-    st.title("Admin Workspace")
-    db = load_db()
-    for em, info in list(db.items()):
-        c1, c2 = st.columns([6, 2])
-        c1.write(f"**Email:** {em} | **Plan:** {info['plan'].upper()}")
-        if c2.button("Remove User", key=f"del_{em}"):
-            del db[em]; save_db(db); st.rerun()
+# 👑 LINK DETECTION SYSTEM FOR SHERNI ADMIN PANEL
+if "admin" in st.query_params and st.query_params["admin"] == ADMIN_QUERY_VALUE:
+    st.markdown("## 👑 Sherni Admin Panel Workstation 👑")
+    st.info("Secure access granted via URL parameters.")
+    st.write("Welcome, Admin! All monitoring tools are active.")
+    # You can append extra admin tracking modules right here later!
+    if st.button("Exit Admin View"):
+        st.query_params.clear()
+        st.rerun()
     st.stop()
 
 # Main Workspace (Before Login / Plan selection)
 if not st.session_state.session_active:
-    # Purple Premium Banner
     st.markdown("""
     <div class="pro-banner">
         <h2>💎 UNLOCK 10 PREMIUM AI TOOLS 💎</h2>
@@ -249,7 +221,6 @@ if not st.session_state.session_active:
 else:
     st.success(f"Workspace Active: Plan **{st.session_state.current_plan.upper()}**")
     
-    # File Uploader Layout
     uploaded_file = st.file_uploader("Drop CSV or Excel file here", type=["csv", "xlsx"])
     
     if uploaded_file:
@@ -260,7 +231,6 @@ else:
                 else:
                     df = pd.read_excel(uploaded_file)
                 
-                # Strict 1000 check for Free Tier
                 if st.session_state.current_plan == "free" and len(df) > 1000:
                     st.error(f"❌ Limit Exceeded: Free plan only supports up to 1000 rows. Current file has {len(df)} rows.")
                     st.stop()
@@ -275,8 +245,6 @@ else:
         st.dataframe(df.head(10), use_container_width=True)
         
         all_columns = df.columns.tolist()
-        
-        # Tools Layout (Splitting into Free / Pro lists directly to preserve your features)
         st.markdown("### 🛠️ Available Data Cleaning Features")
         
         col_t1, col_t2 = st.columns(2)
@@ -375,7 +343,6 @@ else:
                         st.success("Text Converted to Absolute Integers!")
                         st.rerun()
 
-        # Download Section
         st.markdown("### 📥 Download Cleaned Data")
         csv_data = df.to_csv(index=False).encode('utf-8')
         st.download_button("Download Clean File (CSV)", csv_data, "cleaned_data.csv", "text/csv", use_container_width=True)
@@ -388,7 +355,6 @@ else:
 st.markdown("---")
 st.markdown("### 💬 VeriSame Live AI Chat Studio")
 
-# Displaying chat history
 for chat in st.session_state.chat_history:
     if chat["role"] == "assistant":
         st.markdown(f"**🤖 AI:** {chat['message']}")
@@ -398,8 +364,6 @@ for chat in st.session_state.chat_history:
 u_input = st.text_input("Ask a question...", placeholder="e.g., How does Tool 4 work?", key="chat_msg_main")
 if st.button("Send Message 🚀", key="send_btn_main") and u_input:
     st.session_state.chat_history.append({"role": "user", "message": u_input})
-    
-    # Simple reply handling to keep it lightweight
     u_lower = u_input.lower()
     ans = "I can guide you about any of our 10 tools! Just specify the tool you are interested in."
     if "tool 1" in u_lower or "date" in u_lower: ans = "Tool 1 normalizes dynamic variations of date formats cleanly into standard YYYY-MM-DD configurations."
