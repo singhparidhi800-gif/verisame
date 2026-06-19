@@ -22,7 +22,6 @@ PRO_1M, PRO_6M = 299, 1499
 ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "sherni_admin")
 
 # 🎵 BACKGROUND MUSIC SYSTEM INTEGRATION
-# Aap is URL ko apni kisi bhi pasandida song link (.mp3) se replace kar sakti hain
 MUSIC_URL = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" 
 
 st.markdown(f"""
@@ -31,7 +30,6 @@ st.markdown(f"""
         <source src="{MUSIC_URL}" type="audio/mp3">
     </audio>
 """, unsafe_allow_html=True)
-
 
 # 🔒 MAXIMUM SECURITY PERSISTENT DATABASE ENGINE
 if "global_db_backup" not in st.session_state:
@@ -104,7 +102,7 @@ T = {
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
-# ANTI-DARK MODE ENFORCED GLOSSY CSS WITH MOBILE FIXES
+# ANTI-DARK MODE ENFORCED GLOSSY CSS WITH LARGE ORIGINAL FRONT LAYOUT
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -122,64 +120,65 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
     background: rgba(255,255,255,0.97) !important; 
     backdrop-filter: blur(30px) saturate(200%) !important; 
     border-radius: 30px !important; 
-    padding: 1.5rem !important; 
+    padding: 2.5rem !important; 
     max-width: 1240px; 
-    margin: 1rem auto !important; 
+    margin: 1.5rem auto !important; 
     box-shadow: 0 40px 80px rgba(147,51,234,0.18) !important; 
     border: 2px solid rgba(255,255,255,0.7) !important;
 }
 
-/* Hero Section Custom Responsive Flex Grid */
+/* Original Large Front Header Section Layout */
 .hero-wrapper {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 30px;
+    margin-bottom: 40px;
     background: white;
-    padding: 15px;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(147,51,234,0.05);
+    padding: 35px;
+    border-radius: 32px;
+    box-shadow: 0 20px 50px rgba(147,51,234,0.08);
 }
-.hero-left { display: flex; align-items: center; gap: 15px; flex: 1; min-width: 280px; }
-.hero-logo img { width: 70px; height: auto; border-radius: 14px; }
-.hero-text h1 { font-size: 2.4rem !important; font-weight: 900 !important; margin: 0 !important; color: #4c1d95 !important; }
-.hero-text p { font-size: 1rem !important; margin: 0 !important; color: #6b7280 !important; }
-.hero-anime img { width: 100%; max-width: 130px; height: auto; border-radius: 18px; object-fit: cover; }
+.hero-left { display: flex; align-items: center; gap: 25px; flex: 1; min-width: 320px; }
+.hero-logo img { width: 110px; height: auto; border-radius: 24px; }
+.hero-text h1 { font-size: 4.2rem !important; font-weight: 900 !important; margin: 0 !important; color: #4c1d95 !important; line-height: 1.1; }
+.hero-text p { font-size: 1.4rem !important; margin-top: 8px !important; color: #6b7280 !important; font-weight: 500; }
+.hero-anime img { width: 100%; max-width: 260px; height: auto; border-radius: 28px; object-fit: cover; }
 
-/* Pricing Cards */
+/* Pricing Cards Bada Size */
 .pricing-card {
-    position: relative; border-radius: 24px; padding: 1.5rem; background: linear-gradient(145deg, #ffffff, #fefeff)!important;
+    position: relative; border-radius: 28px; padding: 2.5rem; background: linear-gradient(145deg, #ffffff, #fefeff)!important;
     backdrop-filter: blur(15px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-    box-shadow: 0 10px 30px rgba(147,51,234,0.08);
+    box-shadow: 0 20px 40px rgba(147,51,234,0.08);
     height: 100%; border: 2.5px solid #e9d5ff !important;
-    margin-bottom: 15px;
+    margin-bottom: 25px;
 }
-.pricing-card h2 {font-size: 1.3rem!important; color: #6d28d9!important; margin-bottom: 0.4rem!important; font-weight: 800;}
-.pricing-card h1 {font-size: 2.4rem!important; color: #4c1d95!important; margin: 0.4rem 0!important; font-weight: 900;}
+.pricing-card h2 {font-size: 1.8rem!important; color: #6d28d9!important; margin-bottom: 0.8rem!important; font-weight: 800;}
+.pricing-card h1 {font-size: 3.8rem!important; color: #4c1d95!important; margin: 0.8rem 0!important; font-weight: 900;}
+.pricing-card p {font-size: 1.1rem!important; color: #4b5563;}
 
 .stButton>button {
-    border-radius: 16px !important; 
-    font-weight: 700 !important; 
+    border-radius: 20px !important; 
+    font-weight: 800 !important; 
     background: linear-gradient(90deg, #7c3aed, #a855f7) !important; 
     color: white !important; 
     border: none !important; 
-    padding: 12px 24px !important; 
+    padding: 16px 32px !important; 
     width: 100% !important; 
-    box-shadow: 0 6px 15px rgba(124,58,237,0.25) !important; 
-    font-size: 1rem !important;
+    box-shadow: 0 10px 25px rgba(124,58,237,0.3) !important; 
+    font-size: 1.2rem !important;
 }
 
 .qr-container {
     background: #ffffff;
-    padding: 15px;
-    border-radius: 20px;
-    border: 2.5px solid #a855f7;
+    padding: 20px;
+    border-radius: 24px;
+    border: 3px solid #a855f7;
     text-align: center;
-    margin: 15px auto;
-    max-width: 240px;
-    box-shadow: 0 10px 25px rgba(147,51,234,0.1);
+    margin: 20px auto;
+    max-width: 260px;
+    box-shadow: 0 15px 35px rgba(147,51,234,0.15);
 }
 
 .cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 22px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
@@ -197,7 +196,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# AI CHATBOT STUDIO ENGINE
+# AI CHATBOT STUDIO ENGINE (STRICT ENGLISH ENFORCED)
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -213,7 +212,7 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown(chat_html, unsafe_allow_html=True)
 
     s_id = "side" if is_sidebar else "main"
-    user_msg = target.text_input("Ask a question...", placeholder="e.g., Tool 4 kya kaam karta hai?", key=f"chat_in_{s_id}")
+    user_msg = target.text_input("Ask a question...", placeholder="e.g., How does Tool 4 work?", key=f"chat_in_{s_id}")
     submit = target.button("Send Message 🚀", key=f"btn_send_chat_{s_id}")
 
     if submit and user_msg and user_msg.strip():
@@ -222,25 +221,25 @@ def render_ai_chatbot(is_sidebar=False):
         reply = None
 
         if "tool 1" in u or "date converter" in u or "smart date" in u:
-            reply = "📅 **Tool 1: Smart Date Converter (FREE)**\n\n**Kaam:** Ye tool aapke columns me mixed ya galat formatted dates ko standard format (`YYYY-MM-DD`) me badal deta hai."
+            reply = "📅 **Tool 1: Smart Date Converter (FREE)**\n\n**Function:** This utility transforms mixed or incorrectly formatted dates inside selected columns into a single standardized format (`YYYY-MM-DD`)."
         elif "tool 2" in u or "fill null" in u or "ai fill" in u:
-            reply = "🔒 **Tool 2: AI Fill Nulls (PRO ONLY)**\n\n**Kaam:** Data me blank cells ya khali dabbe (NaN/Null) ko intelligently values ke aadhar par fill karta hai."
+            reply = "🔒 **Tool 2: AI Fill Nulls (PRO ONLY)**\n\n**Function:** This tool intelligently inspects blank or empty cells (NaN/Null) across data records and updates them based on contextual attributes."
         elif "tool 3" in u or "email validator" in u or "email ai" in u:
-            reply = "🔒 **Tool 3: Email Validator (PRO ONLY)**\n\n**Kaam:** Check karta hai ki email formats valid hain ya nahi aur galat emails ko `Invalid Email` likh deta hai."
+            reply = "🔒 **Tool 3: Email Validator (PRO ONLY)**\n\n**Function:** Validates structure patterns for emails across records, automatically replacing faulty inputs with an `Invalid Email` flag."
         elif "tool 4" in u or "phone formatter" in u or "phone ai" in u:
-            reply = "🔒 **Tool 4: Phone Formatter (PRO ONLY)**\n\n**Kaam:** Numbers me se unwanted formatting hata kar kora clear **10 digits ka mobile number** bachaata hai."
+            reply = "🔒 **Tool 4: Phone Formatter (PRO ONLY)**\n\n**Function:** Strips out unwanted characters, spaces, and formatting flags to preserve a clean **10-digit mobile number**."
         elif "tool 5" in u or "case converter" in u:
-            reply = "🔠 **Tool 5: Case Converter (FREE)**\n\n**Kaam:** Aapke text columns ke case style ko ek sath **UPPERCASE**, **lowercase**, ya **Title Case** me badalta hai."
+            reply = "🔠 **Tool 5: Case Converter (FREE)**\n\n**Function:** Instantly normalizes layout configurations by converting text inputs into **UPPERCASE**, **lowercase**, or **Title Case** layouts."
         elif "tool 6" in u or "remove symbol" in u:
-            reply = "🔒 **Tool 6: Remove Symbols (PRO ONLY)**\n\n**Kaam:** Special junk characters ko clean karta hai jabki currency icons safe rakhta hai."
+            reply = "🔒 **Tool 6: Remove Symbols (PRO ONLY)**\n\n**Function:** Removes unwanted junk data characters and special symbols while keeping essential currency parameters safe."
         elif "tool 7" in u or "bulk rename" in u or "rename column" in u:
-            reply = "🔒 **Tool 7: Bulk Rename (PRO ONLY)**\n\n**Kaam:** Kisi bhi column ke header heading ko turant badalkar naya name set karta hai."
+            reply = "🔒 **Tool 7: Bulk Rename (PRO ONLY)**\n\n**Function:** Dynamically renames specific tracking attributes and header configurations inside the file."
         elif "tool 8" in u or "remove duplicate" in u or "dedup" in u:
-            reply = "🔁 **Tool 8: Remove Duplicates (FREE)**\n\n**Kaam:** Pure dataset me se repeated rows ko instantly remove karke unique rows bachaata hai."
+            reply = "🔁 **Tool 8: Remove Duplicates (FREE)**\n\n**Function:** Scans structural duplicates and immediately purges duplicate entries to retain unique row indices."
         elif "tool 9" in u or "trim space" in u or "trimming" in u:
-            reply = "✂️ **Tool 9: Trim Spaces (FREE)**\n\n**Kaam:** Word string ke aage-peeche maujood extra faltu white spaces ko trim kar deta hai."
+            reply = "✂️ **Tool 9: Trim Spaces (FREE)**\n\n**Function:** Trims annoying trailing and leading white spaces from target strings automatically."
         elif "tool 10" in u or "spell check" in u:
-            reply = "🔒 **Tool 10: Spell Check (PRO ONLY)**\n\n**Kaam:** Common typing spelling mistakes ko automatic core vocabulary se correct karta hai."
+            reply = "🔒 **Tool 10: Spell Check (PRO ONLY)**\n\n**Function:** Cross-checks core structures to dynamically fix common typographical or spelling mistakes."
         elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are most welcome!** Happy to optimize your data workflow."
         elif any(x in u for x in ["hi", "hello", "hey"]): reply = "👋 **Hello there!** Welcome to VeriSame! How can I speed up your workflows today?"
 
@@ -260,7 +259,7 @@ def render_ai_chatbot(is_sidebar=False):
                     best_score = word_ratio
                     best_reply = answer_text
             if best_score >= 0.25 and best_reply: reply = best_reply
-            else: reply = "🔍 Main pipeline architecture aur tools (Tool 1-10) ki details samajh sakta hoon. Kisi bhi tool ka number ya naam daal kar poocho!"
+            else: reply = "🔍 I can assist you with our pipelines or features (Tool 1 to Tool 10). Simply specify a tool name or ask a question!"
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
@@ -285,7 +284,7 @@ if st.session_state.email:
         st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
         st.sidebar.info(f"Plan: PRO VERSION\nValid Till: {user.get('expiry')}\n{days_left} days left")
 
-# FIXED FLEXBOX HERO SECTION (NO GAP / COMPACT ON MOBILE)
+# BADA FRONT BANNER WITH NO EXTRA PADDING BREAKS
 st.markdown(f"""
 <div class="hero-wrapper">
     <div class="hero-left">
@@ -494,7 +493,7 @@ else:
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
-                # DOWNLOAD & PAYMENT SYSTEM
+                # DOWNLOAD & PAYMENT SYSTEM (AUTOMATIC QR GENERATOR ENABLED)
                 if is_free:
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -507,7 +506,7 @@ else:
                     if not st.session_state.admin_approved:
                         st.warning(T['wait_approval'])
                         
-                        # ✨ DYNAMIC QR CODE GENERATOR FOR PRO PLAN UNLOCK
+                        # ✨ DYNAMIC UPI QR CODE
                         if qrcode is not None:
                             pay_url = f"upi://pay?pa={UPI}&pn=VeriSamePro&am={st.session_state.amt}&cu=INR"
                             qr = qrcode.QRCode(version=1, box_size=10, border=2)
@@ -519,7 +518,7 @@ else:
                             img.save(buf, format="PNG")
                             
                             st.markdown(f"<div class='qr-container'><p style='color:#7c3aed !important; margin-bottom:10px;'>Scan QR to Pay ₹{st.session_state.amt}</p></div>", unsafe_allow_html=True)
-                            st.image(buf.getvalue(), width=200, use_column_width=False)
+                            st.image(buf.getvalue(), width=220, use_column_width=False)
                         else:
                             st.info(f"Send payment directly to UPI ID: {UPI}")
                             
