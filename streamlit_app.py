@@ -3,6 +3,7 @@ import json, os, io
 import pandas as pd
 import re
 from datetime import datetime, timedelta
+import difflib 
 
 # Safe imports to completely avoid Streamlit Deployment Crashes
 try:
@@ -15,64 +16,18 @@ try:
 except Exception:
     openpyxl = None
 
-st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
-ADMIN_PASSWORD = "sherni_power"  # Aapka admin password
+ADMIN_PASS = st.secrets["ADMIN_PASSWORD"]
 
-# 🎵 PEACEFUL AUDIO & INTERACTIVE BUTTON SOUND ENGINE
-BACKGROUND_MUSIC = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"
-CLICK_SOUND = "https://assets.mixkit.co/active_storage/sfx/2571/2571-84.wav"
-
-st.markdown(f"""
-    <audio id="bgMusic" autoplay>
-        <source src="{BACKGROUND_MUSIC}" type="audio/mp3">
-    </audio>
-    <audio id="clickSound" src="{CLICK_SOUND}" preload="auto"></audio>
-
-    <script>
-        var bg = document.getElementById("bgMusic");
-        if(bg) {{
-            bg.volume = 0.20;
-            setTimeout(function() {{
-                bg.pause();
-            }}, 20000); // 20 Seconds Auto-Stop
-        }}
-
-        function playClick() {{
-            var snd = document.getElementById("clickSound");
-            if(snd) {{
-                snd.currentTime = 0;
-                snd.volume = 0.4;
-                snd.play();
-            }}
-        }}
-
-        document.addEventListener("DOMContentLoaded", function() {{
-            const targetNode = document.body;
-            const config = {{ childList: true, subtree: true }};
-            const callback = function(mutationsList, observer) {{
-                let buttons = document.querySelectorAll("button");
-                buttons.forEach(function(btn) {{
-                    if (!btn.hasAttribute("data-click-bound")) {{
-                        btn.setAttribute("data-click-bound", "true");
-                        btn.addEventListener("click", playClick);
-                    }}
-                }});
-            }};
-            const observer = new MutationObserver(callback);
-            observer.observe(targetNode, config);
-        }});
-    </script>
-""", unsafe_allow_html=True)
-
-# DATABASE MANAGEMENT
+# 🔒 MAXIMUM SECURITY PERSISTENT DATABASE ENGINE
 if "global_db_backup" not in st.session_state:
     st.session_state.global_db_backup = {}
 
 def load_db():
-    if st.session_state.global_db_backup: return st.session_state.global_db_backup
+    # Pehle file se fresh data check karenge taaki Admin ke changes live dikhein
     if os.path.exists("backup_orders.json"):
         try:
             with open("backup_orders.json", "r") as f:
@@ -80,21 +35,31 @@ def load_db():
                 if isinstance(data, dict) and data:
                     st.session_state.global_db_backup = data
                     return data
-        except Exception: pass
+        except Exception:
+            pass
+    if st.session_state.global_db_backup:
+        return st.session_state.global_db_backup
     return {}
 
 def save_db(d):
     try:
         st.session_state.global_db_backup = d
-        with open("backup_orders.json", "w") as f: json.dump(d, f, indent=2)
-    except Exception: pass
+        with open("backup_orders.json", "w") as f:
+            json.dump(d, f, indent=2)
+    except Exception:
+        pass
 
+# ROBUST WORD-TO-NUMBER CONVERSION
 def words_to_num(s):
     if pd.isna(s): return s
     s_str = str(s).lower().strip()
-    if s_str.isdigit(): return int(s_str)
-    try: return float(s_str)
-    except ValueError: pass
+    if s_str.isdigit(): 
+        return int(s_str)
+    try:
+        return float(s_str)
+    except ValueError:
+        pass
+        
     num_words = {'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,'seventy':70,'eighty':80,'ninety':90,'hundred':100,'thousand':1000,'lakh':100000,'crore':10000000}
     total = 0; current = 0
     words = re.findall(r'\w+', s_str)
@@ -113,22 +78,23 @@ def words_to_num(s):
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
-    "free_feat":["1000 Rows Limit","CSV & Excel Export","4 Free Tools Built-in","30s Processing","Email Support"],
+    "free_feat":["1000 Rows Lifetime","CSV & Excel Export","4 Free Tools Built-in","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
-    "upload_text":"Drop CSV, Excel, JSON or Multiple Batch Files here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
+    "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
     "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
-    "paid_msg":"Step 1: Pay via UPI QR Code. Step 2: Click 'Customer I Paid' button.",
+    "paid_msg":"Step 1: Pay ₹299 for 1 Month or ₹1499 for 6 Months via UPI. Step 2: Click I Paid button below. Step 3: Admin will approve. Step 4: Download unlocks",
     "upi_text":"Scan QR to Pay ₹{amount}","paid_btn":"Customer I Paid ₹{amount}","wait_approval":"⏳ Waiting for Admin Approval... Click I Paid after payment",
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
     "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply","success":"Apply is completed! Your data has been successfully updated.",
-    "download_csv":"Download as CSV","download_excel":"Download as Excel"
+    "admin_title":"👑 Sherni Admin Panel 👑","admin_pending":"User Databases & Requests","admin_approve_btn":"Mark Paid - Unlock Customer Download",
+    "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
-# MOBILE RESPONSIVE & ANTI-CRASH STYLING
+# ANTI-DARK MODE ENFORCED GLOSSY CSS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -137,123 +103,242 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .stApp {
     background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 25%, #d8b4fe 50%, #c084fc 75%, #a855f7 100%) !important; 
     background-size: 400% 400% !important; 
-    animation: aurora 20s ease infinite !important;
+    animation: aurora 20s ease infinite !important; 
+    padding-top: 0.3rem !important;
 }
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
 
 .block-container {
-    background: rgba(255,255,255,0.98) !important; 
-    backdrop-filter: blur(20px) !important; 
-    border-radius: 24px !important; 
-    padding: 1.5rem !important; 
-    max-width: 1200px; 
-    margin: 1rem auto !important; 
-    box-shadow: 0 30px 60px rgba(147,51,234,0.15) !important;
+    background: rgba(255,255,255,0.97) !important; 
+    backdrop-filter: blur(30px) saturate(200%) !important; 
+    border-radius: 30px !important; 
+    padding: 2.5rem !important; 
+    max-width: 1240px; 
+    margin: 1.5rem auto !important; 
+    box-shadow: 0 40px 80px rgba(147,51,234,0.18) !important; 
+    border: 2px solid rgba(255,255,255,0.7) !important;
+}
+@media (max-width: 768px) {
+    .block-container {padding: 1.2rem!important; border-radius: 24px!important;}
+    h1 {font-size: 2.4rem!important;}
+    .pricing-card {margin-bottom: 25px!important;}
 }
 
-/* BRAND HEADER */
-.hero-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 30px;
-    background: #ffffff;
-    padding: 24px;
-    border-radius: 24px;
-    box-shadow: 0 15px 35px rgba(147,51,234,0.06);
-    border: 1.5px solid #f3e8ff;
+h1,h2,h3,p,span,label,div,li {color: #1e1b4b!important; font-weight: 600!important;}
+h1 {
+    font-weight: 900!important; 
+    font-size: 3.6rem!important; 
+    margin-bottom: 0.1rem!important; 
+    background: linear-gradient(90deg, #4c1d95, #7c3aed, #c084fc, #6d28d9, #4c1d95) !important; 
+    background-size: 200% auto !important; 
+    -webkit-background-clip: text !important; 
+    -webkit-text-fill-color: transparent !important; 
+    animation: shine 4s linear infinite !important;
 }
-.hero-left { display: flex; align-items: center; gap: 20px; flex: 1; }
-.hero-logo img { width: 90px !important; height: auto; filter: drop-shadow(0px 8px 16px rgba(124,58,237,0.2)); }
-.hero-text h1 { font-size: 3.2rem !important; font-weight: 900 !important; margin: 0 !important; color: #4c1d95 !important; }
-.hero-text p { font-size: 1.1rem !important; margin: 4px 0 0 0 !important; color: #6b7280 !important; font-weight: 500; }
-.hero-anime-right img { width: 140px; height: 140px; border-radius: 20px; object-fit: cover; box-shadow: 0 10px 25px rgba(147,51,234,0.12); }
+@keyframes shine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
+.subtitle {text-align: left; color: #4b5563!important; font-size: 1.2rem!important; font-weight: 500!important; margin-bottom: 1.2rem!important; letter-spacing: 0.5px;}
 
-/* PREMIUM BOX */
-.tools-showcase-container {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-    padding: 25px 20px; border-radius: 24px; color: white; text-align: center; margin-bottom: 25px;
-}
-.tools-showcase-container h3 { font-size: 1.5rem !important; font-weight: 850 !important; margin: 0 0 15px 0 !important; color: white !important; }
-.badge-flex-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 15px; }
-.tool-pill-badge { background: rgba(255, 255, 255, 0.2); padding: 6px 14px; border-radius: 50px; font-weight: 700; font-size: 0.85rem; color: white !important; }
-.features-footer-text { font-size: 0.85rem; font-weight: 600; opacity: 0.95; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; margin-top: 5px; color: #fff8ff; }
+.logo-float {animation: float 4s ease-in-out infinite; filter: drop-shadow(0 15px 25px rgba(147,51,234,0.25));}
+@keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-12px);}}
 
-/* PRICING ROBUST CARD */
-.pricing-card-wrapper {
-    background: #ffffff; border: 2px solid #e9d5ff; border-radius: 24px; padding: 20px; text-align: center; margin-bottom: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.02);
+.anime-container {
+    position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; 
+    box-shadow: 0 20px 45px rgba(76,29,149,0.25); border: 3px solid #7c3aed;
+    transition: transform 0.4s ease;
 }
-.pricing-card-wrapper h2 { font-size: 1.3rem !important; color: #6d28d9 !important; font-weight: 800; margin: 0; }
-.pricing-card-wrapper h1 { font-size: 2.5rem !important; color: #4c1d95 !important; font-weight: 900; margin: 5px 0; white-space: nowrap; }
-.pricing-card-wrapper p { font-size: 0.95rem !important; color: #4b5563; margin: 0 0 12px 0; }
-.feature-list { text-align: left; margin: 10px auto; max-width: 200px; font-size: 0.85rem; color: #4b5563; line-height: 1.6; }
+.anime-container:hover {transform: scale(1.02) rotate(0.5deg);}
+.anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
+
+.pricing-card {
+    position: relative; border-radius: 24px; padding: 2rem; background: linear-gradient(145deg, #ffffff, #fefeff)!important;
+    backdrop-filter: blur(15px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    box-shadow: 0 10px 30px rgba(147,51,234,0.08), 0 2px 8px rgba(147,51,234,0.05);
+    height: 100%; border: 2.5px solid #e9d5ff !important;
+}
+.pricing-card:hover {
+    transform: translateY(-10px); 
+    border-color: #a855f7 !important; 
+    box-shadow: 0 25px 50px rgba(147,51,234,0.2), 0 12px 24px rgba(147,51,234,0.1) !important;
+}
+.pricing-card h2 {font-size: 1.5rem!important; color: #6d28d9!important; margin-bottom: 0.6rem!important; font-weight: 800;}
+.pricing-card h1 {font-size: 2.8rem!important; color: #4c1d95!important; margin: 0.6rem 0!important; font-weight: 900; -webkit-text-fill-color: #4c1d95!important;}
+.pricing-card p {color: #374151!important; font-size: 0.98rem!important; margin-bottom: 0.5rem!important;}
 
 .stButton>button {
-    border-radius: 16px !important; font-weight: 800 !important; background: linear-gradient(90deg, #7c3aed, #a855f7) !important; 
-    color: white !important; border: none !important; padding: 12px 24px !important; width: 100% !important; box-shadow: 0 8px 20px rgba(124,58,237,0.25) !important;
+    border-radius: 16px !important; 
+    font-weight: 700 !important; 
+    background: linear-gradient(90deg, #7c3aed, #a855f7) !important; 
+    color: white !important; 
+    border: none !important; 
+    padding: 14px 28px !important; 
+    width: 100% !important; 
+    box-shadow: 0 8px 20px rgba(124,58,237,0.3) !important; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; 
+    cursor: pointer !important; 
+    font-size: 1.05rem !important; 
+    margin-top: 1rem !important;
+}
+.stButton>button:hover {
+    transform: translateY(-3px)!important; 
+    box-shadow: 0 15px 30px rgba(124,58,237,0.45) !important;
+    background: linear-gradient(90deg, #6d28d9, #9333ea) !important;
 }
 
-/* ADMIN PANEL DESIGN */
-.admin-header { background: #4c1d95; color: white; padding: 15px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-align:center;}
+.pro-banner {
+    background: linear-gradient(135deg, #5b21b6, #7c3aed, #d946ef) !important; 
+    padding: 1.8rem; border-radius: 24px; color: white!important; 
+    text-align: center; margin: 1.5rem 0; border: none; 
+    box-shadow: 0 12px 28px rgba(124,58,237,0.25);
+}
+.pro-banner h2 {color: white!important; font-weight: 800!important; font-size: 1.6rem!important;}
+.tool-chip {
+    display: inline-block; background: rgba(255,255,255,0.98) !important; padding: 8px 18px; 
+    border-radius: 30px; margin: 6px; font-weight: 700; border: 2px solid #7c3aed !important; 
+    color: #4c1d95!important; font-size: 0.92rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+div[data-testid="stTabs"] button p {color: #4b5563!important; font-weight: 700!important; font-size: 1.05rem!important;}
+div[data-testid="stTabs"] button[aria-selected="true"] p {color: #7c3aed!important; font-weight: 800!important;}
+div[data-testid="stTabs"] button {
+    background: #f9fafb!important; border-radius: 14px; 
+    margin-right: 10px; border: 2px solid #e5e7eb!important; padding: 6px 16px;
+}
+div[data-testid="stTabs"] button[aria-selected="true"] {
+    border-color: #7c3aed!important; background: #f5f3ff!important;
+}
+
+div[data-baseweb="select"] *, div[data-testid="stMarkdownContainer"] p, label[data-testid="stWidgetLabel"] p {
+    color: #1e1b4b !important;
+}
+
+.stAlert,.stInfo,.stSuccess,.stError {
+    background: #ffffff !important; border-radius: 16px; border: 2.5px solid #c084fc !important;
+}
+.stDataFrame {border-radius: 16px; overflow: hidden; border: 2px solid #e5e7eb;}
+.stFileUploader {background: #ffffff!important; border: 2.5px dashed #a855f7!important; border-radius: 20px;}
+
+input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] input {
+    background-color: #ffffff !important; 
+    color: #111827 !important; 
+    -webkit-text-fill-color: #111827 !important; 
+    border: 2px solid #cdb4db !important; 
+    border-radius: 14px !important;
+    font-weight: 600 !important;
+    padding: 10px !important;
+}
+
+.cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 22px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
+@keyframes fall {0%{transform: translateY(0vh) translateX(0vw) rotate(0deg); opacity: 1;} 100%{transform: translateY(110vh) translateX(10vw) rotate(360deg); opacity: 0;}}
 </style>
+<div class="cherry" style="left: 10%; animation-duration: 8s;">🌸</div>
+<div class="cherry" style="left: 20%; animation-duration: 12s; animation-delay: 1s;">🌸</div>
+<div class="cherry" style="left: 30%; animation-duration: 10s; animation-delay: 2s;">🌸</div>
+<div class="cherry" style="left: 45%; animation-duration: 14s; animation-delay: 0.5s;">🌸</div>
+<div class="cherry" style="left: 55%; animation-duration: 9s; animation-delay: 4s;">🌸</div>
+<div class="cherry" style="left: 70%; animation-duration: 11s; animation-delay: 1s;">🌸</div>
+<div class="cherry" style="left: 80%; animation-duration: 13s; animation-delay: 2.5s;">🌸</div>
+<div class="cherry" style="left: 90%; animation-duration: 7s; animation-delay: 3s;">🌸</div>
 """, unsafe_allow_html=True)
 
-# SIDEBAR ADMIN PANEL AUTHENTICATION SYSTEM
-st.sidebar.markdown("### 👑 Sherni Admin Panel")
-admin_pass = st.sidebar.text_input("Admin Security Password", type="password", key="admin_secret_key")
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, specific tools, safety, troubleshooting errors, or data science utilities!"}]
 
-# Load State Keys
-for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','alert_triggered']:
-    if key not in st.session_state: st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
+for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
+    if key not in st.session_state:
+        st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# -----------------------------------------------------------------
-# 🚨 CASE 1: ADMIN PANEL ACTIVATED (Completely hides the frontend app)
-# -----------------------------------------------------------------
-if admin_pass == ADMIN_PASSWORD:
-    st.markdown("<div class='admin-header'>🐆 WELCOME TO SHERNI ADMIN DATABASE MANAGEMENT PANEL 🐆</div>", unsafe_allow_html=True)
-    
-    db_state = load_db()
-    
-    if not db_state:
-        st.info("Abhi tak database mein koi bhi users/orders nahi hain.")
-    else:
-        st.markdown("### 🕒 Active Customer Orders List & Status")
-        
-        # Iterating database seamlessly
-        for user_email, info in list(db_state.items()):
-            # Creating unique rows with action buttons
-            with st.container():
-                c1, c2, c3, c4, c5 = st.columns([2, 1, 1.5, 1.5, 2])
-                
-                c1.markdown(f"**Email:** `{user_email}`")
-                c2.markdown(f"**Plan:** `{info.get('plan','').upper()}`")
-                c3.markdown(f"**Date:** {info.get('created','').split('.')[0]}")
-                
-                status = info.get("status", "PENDING")
-                if status == "PAID":
-                    c4.markdown("🟢 <span style='color:green;font-weight:bold;'>PAID / UNLOCKED</span>", unsafe_allow_html=True)
-                    c5.write("Already Active")
-                else:
-                    c4.markdown("🔴 <span style='color:red;font-weight:bold;'>PENDING (I Paid)</span>", unsafe_allow_html=True)
-                    # Simple Activation Button right in front of user details
-                    if c5.button(f"Unlock Pro Now", key=f"unlock_{user_email}"):
-                        db_state[user_email]["status"] = "PAID"
-                        # Extra dynamic boost: Give it 30 or 180 days from current moment
-                        days_to_add = info.get("days", 30)
-                        db_state[user_email]["expiry"] = (datetime.now() + timedelta(days=days_to_add)).strftime("%Y-%m-%d")
-                        save_db(db_state)
-                        st.success(f"Verified! {user_email} has been upgraded to PRO successfully!")
-                        st.rerun()
-                st.markdown("<hr style='margin:10px 0; opacity:0.2;'>", unsafe_allow_html=True)
-    st.stop() # Prevents VeriSame App execution on Admin Mode
+# AI CHATBOT STUDIO ENGINE
+def render_ai_chatbot(is_sidebar=False):
+    target = st.sidebar if is_sidebar else st
+    target.markdown("---")
+    target.markdown("### 🤖 VeriSame Live AI Chat Studio")
 
-# -----------------------------------------------------------------
-# 💻 CASE 2: REGULAR VERISAME APP FRONTEND INTERFACE
-# -----------------------------------------------------------------
+    chat_html = "<div style='max-height: 280px; overflow-y: auto; padding: 14px; background: #ffffff !important; border: 2px solid #7c3aed; border-radius: 16px; margin-bottom: 12px;'>"
+    for chat in st.session_state.chat_history:
+        if chat["role"] == "assistant":
+            chat_html += f"<p style='color: #6d28d9 !important; margin: 6px 0; font-weight: 700;'><b>🤖 AI:</b> {chat['message']}</p>"
+        else:
+            chat_html += f"<p style='color: #111827 !important; margin: 6px 0; font-weight: 600;'><b>👤 You:</b> {chat['message']}</p>"
+    chat_html += "</div>"
+    target.markdown(chat_html, unsafe_allow_html=True)
+
+    s_id = "side" if is_sidebar else "main"
+    user_msg = target.text_input("Ask a question...", placeholder="e.g., Who is the founder?", key=f"chat_in_{s_id}")
+    submit = target.button("Send Message 🚀", key=f"btn_send_chat_{s_id}")
+
+    if submit and user_msg and user_msg.strip():
+        u = user_msg.lower().strip()
+        st.session_state.chat_history.append({"role": "user", "message": user_msg})
+        reply = None
+
+        if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
+            if "uplode" in u or "upload" in u: reply = "👋 **All the best, buddy! Go ahead and upload your files to clean them up instantly!**"
+            elif "clean" in u: reply = "👍 **Awesome! Go smash those data errors and make your dataset perfect!**"
+            else: reply = "👋 **Goodbye! Have a productive session ahead!**"
+        elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are most welcome!** Making your data pipeline seamless is exactly what I'm built for."
+        elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Data cleaning can be boring, but our conversations don't have to be!"
+        elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** I'm just hyper-engineered to clear errors at supersonic speeds!"
+        elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]): reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा को एकदम कड़क चमकाओ।"
+        elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **बहुत-बहुत स्वागत है तुम्हारा!** मुझे तुम्हारी मदद करके बेहद ख़ुशी हुई।"
+
+        if not reply:
+            math_clean = u.replace('x', '*')
+            match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
+            if match:
+                try:
+                    n1, op, n2 = int(match.group(1)), match.group(2), int(match.group(3))
+                    if op == '+': res = n1 + n2
+                    elif op == '-': res = n1 - n2
+                    elif op == '*': res = n1 * n2
+                    elif op == '/': res = n1 / n2 if n2 != 0 else "Error"
+                    reply = f"🔢 **Math Calculator Engine:** \nResult: `{res}`"
+                except Exception: pass
+
+        if not reply:
+            knowledge_map = {
+                "founder made creator created developer owner built make kaun banaya owner kaun anugya singh app architecture who designed": "👑 **Founder & Creator:** VeriSame was architected, designed, and developed entirely by **Anugya Singh** to eliminate manual data cleaning frustration globally!",
+                "what this app can do what is app work app capability utility function software use details purpose system tool utility": "💎 **VeriSame App Capability:** This app functions as an automated data-cleaning pipeline! It repairs empty boxes, formats dates, filters emails, and converts word numbers into clean integers under 3 seconds!",
+                "hi hello hey hello ai hi ai ola salam greeting system startup start beginning greeting": "👋 **Hello there!** Welcome to VeriSame! How can I speed up your workflows today?",
+                "how are you kaise ho kaise hain how it goes sab badhiya wellness state mood status health": "✨ **I am doing fantastic!** Completely ready to smash data errors under 3 seconds.",
+                "your name naam kya who are you tum kaun ho identify system role profile system bot": "💎 I am **VeriSame Engine AI**, a hyper-customized data assistant!",
+                "how many tools number of tools total tools kitne tool counts listing available features": "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** divided into 3 responsive interface tabs!",
+                "is this app free free version tier lifetime free cost paisa lagega trials base subscription": "✨ **Yes, the base tier is Free Forever!** You get 1,000 rows processing, 4 free pipeline tools, and unlimited interface access.",
+                "what is pro version premium cost details charges features upgrades price models subscription plans": "💎 **Pro Plan:** Unlocks absolute unlimited rows, lightning-fast 3-second vector speed, and all **10 premium AI tools**! Available in 1-Month and 6-Month premium segments.",
+                "how to upload file select file spreadsheet csv excel insert data dataset load file injection": "📤 **File Upload Steps:** Go to the 'Upload File' tab, drag and drop your `.csv`, `.xlsx`, or `.json` file directly into the dropbox layer.",
+                "how to download file save file download csv excel export sheet download output save localized": "🎯 **Downloading Data:** Scroll down to 'Export Data' section, choose 'Download as CSV' or 'Download as Excel'. Note: Pro exports require admin clearance payment validation.",
+                "what formats supported extension xlsx xls csv json files allowed file types input extension configuration": "📊 **Supported Extensions:** VeriSame handles `.csv`, `.xlsx`, `.xls`, and `.json` data frameworks smoothly.",
+                "data science workflow pipeline step data processing cycle steps clean engineering model cycle data analysis steps": "⚙️ **Data Science Workflow:** Raw Data ➔ Data Cleaning (using VeriSame!) ➔ Exploratory Data Analysis (EDA) ➔ Feature Engineering ➔ Machine Learning Training ➔ Model Deployment. VeriSame automates the initial 40% of manual cleaning time!",
+                "python script pandas vectorization clean dataframe speed optimize memory runtime engine speed code compile": "🐍 **Python Engine:** This application uses highly optimized vector operations via the `pandas` library instead of iterative loops, ensuring full table computation executes in under 3 seconds.",
+                "app error code crash malfunction troubleshooting debug fix problem fail issue broken application error solution": "🛠️ **Troubleshooting Hub:** Most runtime errors happen due to unmatched data columns, mixed empty structures, or missing libraries. Check file formats first or pass the exact crash trace log here for immediate resolution!",
+                "streamlit deployment error cloud crash environment setup requirements text server down reboot log mismatch": "📦 **Streamlit Error Fix:** Ensure your `requirements.txt` includes `pandas`, `openpyxl`, and `qrcode` to prevent cloud initialization crashes during deployment cycles.",
+                "openpyxl module missing excel download failed format issue library setup crash read error excel dependency": "📊 **Excel Import/Export Fix:** If Excel download button causes a crash, the target system lacks `openpyxl`. Use the 'Download as CSV' option as a safe backup or install openpyxl via pip configuration.",
+                "row index error mismatch rows mismatched calculation dimensions size out of bounds loop structure failed length check": "🔢 **Row Index Fix:** This happens if empty rows are completely wiped out while mapping custom columns. VeriSame protects your structure by converting invalid entries to 'Unknown' or 'None' instead of shifting indexes!",
+                "why did my data upload fail bad format corruption password protected parse error reader crash file block": "🚫 **Upload Failure Fix:** Ensure your file is not password-protected, encrypted, or open in another application like Microsoft Excel during injection. Convert to standard UTF-8 `.csv` for best performance."
+            }
+            best_score = 0.0
+            best_reply = None
+            user_words = u.split()
+            for key_string, answer_text in knowledge_map.items():
+                key_words = key_string.split()
+                matched_words = sum(1 for w in user_words if w in key_words)
+                word_ratio = matched_words / max(1, len(user_words))
+                seq_ratio = difflib.SequenceMatcher(None, u, key_string).ratio()
+                final_score = (word_ratio * 0.7) + (seq_ratio * 0.3)
+                if final_score > best_score:
+                    best_score = final_score
+                    best_reply = answer_text
+            
+            if best_score >= 0.25 and best_reply: 
+                reply = best_reply
+            else: 
+                reply = "🔍 **Query logged in AI memory base.** I am fully trained on pipeline architecture, troubleshooting, cloud deployment fixes, founder info, and data science math calculations. Try asking: *'Who is the founder?'* or *'How to fix a deployment error?'*"
+
+        st.session_state.chat_history.append({"role": "assistant", "message": reply})
+        st.rerun()
+
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], use_container_width=True):
-        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','alert_triggered']:
+        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
             st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
         st.rerun()
 
@@ -261,77 +346,75 @@ if st.session_state.email:
     db_state = load_db()
     user = db_state.get(st.session_state.email, {})
     st.sidebar.success(f"📧 {st.session_state.email}")
-    
-    # Check live approval inside client machine from dynamic DB
-    if user.get("status") == "PAID":
-        st.session_state.admin_approved = True
+    render_ai_chatbot(is_sidebar=True)
+    if user.get("plan"):
+        exp_date = datetime.strptime(user["expiry"].split()[0], "%Y-%m-%d")
+        days_left = (exp_date - datetime.now()).days
+        st.session_state.plan = user.get("plan")
+        st.session_state.amt = user.get("amt", 0)
+        st.session_state.days = user.get("days", 0)
+        # Real-time data validation update engine
+        st.session_state.admin_approved = user.get("status") == "PAID"
+        if user.get("plan") == "free": st.sidebar.info("Plan: FREE LIFETIME ✨")
+        elif days_left > 0: st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
 
-    if user.get("plan") == "free": 
-        st.sidebar.markdown("<div style='background-color:#E8F5E9; padding:12px; border-radius:8px;'><b>Plan: FREE FOREVER</b></div>", unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
+with col1: st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
+with col2:
+    st.markdown("<h1 style='margin-top: 5px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
+    st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
+with col3: st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
+st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
+
+# ADMIN PANEL GATEWAY (?admin=your_password)
+if "admin" in st.query_params:
+    if st.query_params["admin"] == ADMIN_PASS:
+        st.title(T['admin_title'])
+        data = load_db()
+        st.subheader(T['admin_pending'])
+        if data:
+            for email, info in list(data.items()):
+                if "@" not in email: continue
+                amt = info.get('amt', 0)
+                status = info.get('status', 'PENDING')
+                plan_text = f"PRO Monthly ₹299" if amt == 299 else f"PRO 6M ₹1499" if amt == 1499 else "FREE Plan"
+                col1, col2, col3 = st.columns([4, 2, 2])
+                with col1:
+                    status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
+                    st.markdown(f"""<div class='pricing-card' style='background: rgba(243, 232, 255, 0.9) !important;'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>Status:</b> {status_color}<br><b>{T['admin_expiry']}:</b> {info.get('expiry','N/A')}</div>""", unsafe_allow_html=True)
+                with col2:
+                    if status == "PENDING":
+                        # Instant activation mapping
+                        if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
+                            data[email]["status"] = "PAID"
+                            save_db(data); st.success(f"✓ {email} unlocked!"); st.balloons(); st.rerun()
+                    else: st.button("✓ Already Active", key=f"active_{email}", disabled=True, use_container_width=True)
+                with col3:
+                    if st.button(T['delete_btn'], key=f"delete_{email}", use_container_width=True):
+                        del data[email]; save_db(data); st.error(f"✓ {email} deleted"); st.rerun()
+        else: st.info("No records found in database.")
+        st.stop()
     else:
-        if st.session_state.admin_approved:
-            exp_date = datetime.strptime(user.get("expiry", (datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d")), "%Y-%m-%d")
-            days_left = max(0, (exp_date - datetime.now()).days)
-            st.sidebar.info(f"Plan: PRO VERSION\nValid Till: {user.get('expiry')}\n{days_left} days left")
-        else:
-            st.sidebar.warning("Plan: PRO (Waiting Admin Sync)")
-
-# ⚡ LIVE BRAND NEW HEADER LAYOUT
-st.markdown(f"""
-<div class="hero-wrapper">
-    <div class="hero-left">
-        <div class="hero-logo">
-            <img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" alt="Big VeriSame Logo">
-        </div>
-        <div class="hero-text">
-            <h1>VeriSame</h1>
-            <p>{T["subtitle"]}</p>
-        </div>
-    </div>
-    <div class="hero-anime-right">
-        <img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg" alt="Anime Art Placement">
-    </div>
-</div>
-""", unsafe_allow_html=True)
+        st.error("🔒 Unauthorized Access Detected. Admin Routing Halted.")
+        st.stop()
 
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
-        
-        # 💎 10 TOOLS BANNER BOX
-        st.markdown(f"""
-        <div class="tools-showcase-container">
-            <h3>💎 {T["pro_banner"]} 💎</h3>
-            <div class="badge-flex-grid">
-                <span class="tool-pill-badge">Smart Date</span>
-                <span class="tool-pill-badge">AI Fill</span>
-                <span class="tool-pill-badge">Email AI</span>
-                <span class="tool-pill-badge">Phone AI</span>
-                <span class="tool-pill-badge">Case</span>
-                <span class="tool-pill-badge">Clean</span>
-                <span class="tool-pill-badge">Rename</span>
-                <span class="tool-pill-badge">Dedup</span>
-                <span class="tool-pill-badge">Trim</span>
-                <span class="tool-pill-badge">Spell</span>
-            </div>
-            <div class="features-footer-text">
-                🎵 Peaceful 20s Welcome Track Active • 🧠 Interactive Audio Effects Enabled On UI Action Buttons
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        col1, col2, col3 = st.columns([1, 1, 1])
+        col1,col2,col3 = st.columns(3, gap="medium")
         with col1:
-            st.markdown(f"""<div class='pricing-card-wrapper'><h2>{T['free_title']}</h2><h1>FREE</h1><p>Lifetime</p><div class='feature-list'>{''.join([f'<div>✓ {f}</div>' for f in T['free_feat']])}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card'><h2>{T['free_title']}</h2><h1>FREE</h1><p>Lifetime</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['free_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"; st.rerun()
         with col2:
-            st.markdown(f"""<div class='pricing-card-wrapper' style='border-color: #7c3aed;'><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days</p><div class='feature-list'>{''.join([f'<div>✓ {f}</div>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #7c3aed; box-shadow:0 15px 35px rgba(124,58,237,0.15)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Get Pro", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_1M; st.session_state.days = 30; st.rerun()
         with col3:
-            st.markdown(f"""<div class='pricing-card-wrapper'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>180 Days</p><div class='feature-list'>{''.join([f'<div>✓ {f}</div>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>180 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Get Pro+", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_6M; st.session_state.days = 180; st.rerun()
+        
+        render_ai_chatbot(is_sidebar=False)
     else:
         st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
@@ -340,19 +423,34 @@ if st.session_state.plan is None:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
                 data = load_db()
-                if st.session_state.selected_plan == "free":
-                    st.session_state.plan = "free"
-                    expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                    data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
-                    save_db(data); st.rerun()
+                
+                if email_input in data:
+                    if st.session_state.selected_plan == "pro" and data[email_input]["plan"] == "free":
+                        days = 30 if st.session_state.amt == 299 else 180
+                        data[email_input]["plan"] = "pro"
+                        data[email_input]["status"] = "PENDING"
+                        data[email_input]["amt"] = st.session_state.amt
+                        data[email_input]["days"] = days
+                        data[email_input]["expiry"] = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+                        save_db(data)
+                    st.session_state.plan = data[email_input]["plan"]
+                    st.session_state.amt = data[email_input].get("amt", 299)
+                    st.rerun()
                 else:
-                    st.session_state.plan = "pro"
-                    expiry = (datetime.now() + timedelta(days=st.session_state.days)).strftime("%Y-%m-%d")
-                    data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":st.session_state.days,"expiry":expiry,"created":str(datetime.now())}
-                    save_db(data); st.rerun()
+                    st.session_state.plan = st.session_state.selected_plan
+                    if st.session_state.selected_plan == "free":
+                        expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                        data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now().date())}
+                        save_db(data); st.balloons(); st.rerun()
+                    else:
+                        days = 30 if st.session_state.amt == 299 else 180
+                        expiry = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+                        data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":days,"expiry":expiry,"created":str(datetime.now().date())}
+                        save_db(data); st.rerun()
             else: st.error("Valid email required")
         st.stop()
 else:
+    # CORE CLEANING ENGINE PIPELINE
     tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
     df = None
     with tab1:
@@ -364,125 +462,200 @@ else:
                     sub_df = pd.read_csv(f) if f.name.endswith(".csv") else pd.read_excel(f) if f.name.endswith(("xlsx","xls")) else pd.read_json(f)
                     df_list.append(sub_df)
                 df = pd.concat(df_list, ignore_index=True) if df_list else None
-            except Exception as e: st.error(f"Error: {str(e)}")
+            except Exception as e: st.error(f"Error reading file: {str(e)}")
     with tab2:
         if st.button(T['sample_btn'], use_container_width=True):
             df = pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],"Email":["RAHUL@GMAIL.COM","bad@","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["one hundred","250","two thousand five hundred"]})
 
     if df is not None:
-        orig_len = len(df)
-        is_free = (st.session_state.plan == "free")
-        
-        if is_free and orig_len > 1000:
-            st.error("⚠️ Limits Exceeded: Free Plan allows up to 1000 rows only.")
-            st.stop()
-
         if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
             st.session_state.df_clean = df.copy()
+            orig_len = len(df)
             df_clean = st.session_state.df_clean.drop_duplicates()
             for col in df_clean.columns:
                 if df_clean[col].dtype == object:
                     df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                if any(k in col.lower() for k in ['salary','amount','price']): df_clean[col] = df_clean[col].apply(words_to_num)
+                if any(k in col.lower() for k in ['salary','amount','price','paisa']): 
+                    df_clean[col] = df_clean[col].apply(words_to_num)
             st.session_state.df_clean = df_clean
             st.session_state.df_loaded = True
             st.session_state.orig_len = orig_len
             st.session_state.empty_fixed = int(df.isna().sum().sum())
         
-        df_clean = st.session_state.df_clean
-        orig_len = st.session_state.orig_len
+        try:
+            if st.session_state.get('df_clean') is not None:
+                df_clean = st.session_state.df_clean
+                orig_len = st.session_state.orig_len
 
-        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
-        c1,c2,c3,c4 = st.columns(4)
-        with c1: st.metric(T['rows'], orig_len)
-        with c2: st.metric(T['clean'], len(df_clean))
-        with c3: st.metric(T['dups'], orig_len-len(df_clean))
-        with c4: st.metric(T['empty'], st.session_state.empty_fixed)
+                st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+                c1,c2,c3,c4 = st.columns(4)
+                with c1: st.metric(T['rows'], orig_len)
+                with c2: st.metric(T['clean'], len(df_clean))
+                with c3: st.metric(T['dups'], orig_len-len(df_clean))
+                with c4: st.metric(T['empty'], st.session_state.empty_fixed)
 
-        # 📊 DYNAMIC VISUALIZATION CHART METRIC
-        chart_data = pd.DataFrame({
-            'Data Categories': ['Original Loaded Rows', 'Clean Valid Rows', 'Purged Duplicates'],
-            'Count Records': [orig_len, len(df_clean), (orig_len - len(df_clean))]
-        })
-        st.bar_chart(data=chart_data, x='Data Categories', y='Count Records', color='#7c3aed')
+                st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
+                st.caption(T['preview'])
+                st.dataframe(df_clean.head(10), use_container_width=True, height=300)
 
-        st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
-        st.dataframe(df_clean.head(10), use_container_width=True, height=220)
+                all_cols = df_clean.columns.tolist()
+                is_pro = st.session_state.plan == "pro"
+                is_free = st.session_state.plan == "free"
+                
+                # Check directly from JSON database for customer login flow
+                db_refresh = load_db()
+                user_record = db_refresh.get(st.session_state.email, {})
+                st.session_state.admin_approved = user_record.get("status") == "PAID"
+                is_paid = st.session_state.admin_approved
 
-        all_cols = df_clean.columns.tolist()
-        tab1_ui, tab2_ui, tab3_ui = st.tabs([T['tab1'], T['tab2'], T['tab3']])
-        
-        with tab1_ui:
-            st.write(f"**{T['tool1']}** ✅ Free")
-            date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
-            if st.button(T['apply_btn'], key="btn_date"):
-                for col in date_cols:
+                tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
+                with tab1:
+                    with st.container():
+                        st.write(f"**{T['tool1']}** ✅ Unlocked (Free + Pro)")
+                        date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
+                        if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
+                            for col in date_cols: 
+                                try:
+                                    try:
+                                        converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
+                                    except TypeError:
+                                        converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True)
+                                    st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
+                                except Exception: pass
+                            st.success(T['success'])
+
+                    with st.container():
+                        st.write(f"**{T['tool2']}** 🔓 Always Open for Testing (Pro Tool)")
+                        fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
+                        if st.button(T['apply_btn'], key="btn_fill", use_container_width=True):
+                            for col in fill_cols:
+                                sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
+                                if sample.isdigit() or '.' in sample: fill_val = "0"
+                                elif '@' in sample: fill_val = "missing@email.com"
+                                else: fill_val = "Unknown"
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
+                            st.success(T['success'])
+
+                with tab2:
+                    with st.container():
+                        st.write(f"**{T['tool3']}** 🔓 Always Open for Testing (Pro Tool)")
+                        email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
+                        if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
+                            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                            for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
+                            st.success(T['success'])
+
+                    with st.container():
+                        st.write(f"**{T['tool4']}** 🔓 Always Open for Testing (Pro Tool)")
+                        phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
+                        if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
+                            for col in phone_cols: 
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
+                            st.success(T['success'])
+
+                with tab3:
+                    with st.container():
+                        st.write(f"**{T['tool5']}** ✅ Unlocked (Free + Pro)")
+                        case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
+                        case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
+                        if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
+                            for col in case_cols: 
+                                if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
+                                elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
+                                else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
+                            st.success(T['success'])
+
+                    with st.container():
+                        st.write(f"**{T['tool6']}** 🔓 Always Open for Testing (Pro Tool)")
+                        spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
+                        if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
+                            for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
+                            st.success(T['success'])
+
+                    with st.container():
+                        st.write(f"**{T['tool7']}** 🔓 Always Open for Testing (Pro Tool)")
+                        old = st.selectbox("Old column name", all_cols, key="sel_old")
+                        new = st.text_input("New column name", key="inp_new")
+                        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True) and new:
+                            st.session_state.df_clean.rename(columns={old: new}, inplace=True)
+                            st.success(T['success'])
+
+                    with st.container():
+                        st.write(f"**{T['tool8']}** ✅ Unlocked (Free + Pro)")
+                        if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
+                            st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
+                            st.success(T['success'])
+
+                    with st.container():
+                        st.write(f"**{T['tool9']}** ✅ Unlocked (Free + Pro)")
+                        trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
+                        if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
+                            for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                            st.success(T['success'])
+
+                    with st.container():
+                        st.write(f"**{T['tool10']}** 🔓 Always Open for Testing (Pro Tool)")
+                        spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
+                        if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
+                            typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
+                            def fix_typos(text):
+                                words = str(text).split()
+                                return " ".join([typo_dict.get(w.lower(), w) for w in words])
+                            for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
+                            st.success(T['success'])
+
+                st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
+                if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
+
+                if st.session_state.plan == "free":
+                    col1, col2 = st.columns(2)
+                    csv = st.session_state.df_clean.to_csv(index=False).encode()
+                    if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
+                        st.session_state.show_balloon = True
                     try:
-                        converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
-                        st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
-                    except Exception: pass
-                st.success(T['success'])
+                        if openpyxl is not None:
+                            excel = io.BytesIO()
+                            st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
+                                st.session_state.show_balloon = True
+                        else:
+                            col2.warning("Excel layout missing openpyxl package dependency")
+                    except Exception as e:
+                        col2.error(f"Excel generation failed: {str(e)}")
+                        
+                elif st.session_state.plan == "pro":
+                    if not is_paid:
+                        st.warning(T['wait_approval'])
+                        st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
+                        if qrcode is not None:
+                            upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
+                            qr = qrcode.make(upi_link); buf = io.BytesIO(); qr.save(buf, format="PNG")
+                            st.image(buf.getvalue(), width=220)
+                        else:
+                            st.info(f"Send payment directly to UPI ID: {UPI}")
+                            
+                        if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
+                            data = load_db()
+                            if st.session_state.email in data:
+                                data[st.session_state.email]["status"] = "PENDING"
+                                save_db(data)
+                            st.session_state.payment_clicked = True
+                            st.success("🚀 Request logged live in Sherni Admin! Please hold on while Admin approves.")
+                            st.rerun()
+                    else:
+                        col1, col2 = st.columns(2)
+                        csv = st.session_state.df_clean.to_csv(index=False).encode()
+                        if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
+                            st.session_state.show_balloon = True
+                        try:
+                            if openpyxl is not None:
+                                excel = io.BytesIO()
+                                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
+                                    st.session_state.show_balloon = True
+                        except Exception: pass
+        except Exception: pass
 
-            st.write(f"**{T['tool2']}** {'🔒 Pro' if is_free else '✅ Unlocked'}")
-            fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_fill", disabled=is_free):
-                for col in fill_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna("Unknown")
-                st.success(T['success'])
-
-        with tab2_ui:
-            st.write(f"**{T['tool3']}** {'🔒 Pro' if is_free else '✅ Unlocked'}")
-            email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_email", disabled=is_free):
-                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: x if re.match(pattern, x.strip()) else "Invalid Email")
-                st.success(T['success'])
-
-            st.write(f"**{T['tool4']}** {'🔒 Pro' if is_free else '✅ Unlocked'}")
-            phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone", disabled=is_free)
-            if st.button(T['apply_btn'], key="btn_phone", disabled=is_free):
-                for col in phone_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x))[-10:])
-                st.success(T['success'])
-
-        with tab3_ui:
-            st.write(f"**{T['tool5']}** ✅ Free")
-            case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
-            case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"])
-            if st.button(T['apply_btn'], key="btn_case"):
-                for col in case_cols:
-                    if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
-                    elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
-                    else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
-                st.success(T['success'])
-
-            st.write(f"**{T['tool8']}** ✅ Free")
-            if st.button("Purge Duplicates Now", key="btn_dedup"):
-                st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
-                st.success(T['success'])
-
-        st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
-        if is_free:
-            csv = st.session_state.df_clean.to_csv(index=False).encode()
-            st.download_button(T['download_csv'], csv, "verisame_free.csv", mime="text/csv")
-        else:
-            if not st.session_state.admin_approved:
-                st.warning(T['wait_approval'])
-                if qrcode is not None:
-                    pay_url = f"upi://pay?pa={UPI}&pn=VeriSamePro&am={st.session_state.amt}&cu=INR"
-                    qr = qrcode.QRCode(version=1, box_size=6, border=2)
-                    qr.add_data(pay_url)
-                    qr.make(fit=True)
-                    buf = io.BytesIO()
-                    qr.make_image().save(buf, format="PNG")
-                    st.image(buf.getvalue(), width=180)
-                
-                # 💬 LIVE REAL-TIME WHATSAPP INSTANT LINK TRIGGER
-                wa_msg = f"Hello Admin, I have paid ₹{st.session_state.amt} for VeriSame Pro Plan. Please approve my email ID: {st.session_state.email}"
-                wa_url = f"https://wa.me/919876543210?text={wa_msg.replace(' ', '%20')}" 
-                
-                st.markdown(f' <a href="{wa_url}" target="_blank" style="text-decoration:none;"><button style="background-color:#25D366 !important; color:white; border-radius:12px; padding:12px; border:none; font-weight:bold; width:100%; cursor:pointer;">💬 Send Payment Alert on WhatsApp</button></a>', unsafe_allow_html=True)
-                
-                if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary"):
-                    st.success("Payment log updated! Waiting for admin manual verification sync.")
-            else:
-                csv = st.session_state.df_clean.to_csv(index=False).encode()
-                st.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv")
+    if not st.session_state.plan and not st.session_state.email_entered:
+        pass
