@@ -55,7 +55,7 @@ def words_to_num(s):
     if s_str.isdigit(): 
         return int(s_str)
     try:
-        if float(s_str): return float(s_str)
+        return float(s_str)
     except ValueError:
         pass
         
@@ -77,7 +77,7 @@ def words_to_num(s):
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
-    "free_feat":["1000 Rows Lifetime","CSV Export","4 Free Tools Built-in","30s Processing","Email Support"],
+    "free_feat":["1000 Rows Lifetime","CSV & Excel Export","4 Free Tools Built-in","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
@@ -93,73 +93,142 @@ T = {
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
-# CSS STYLING WITH CHERRY BLOSSOMS & PREMIUM GRAPHICS
+# ANTI-DARK MODE ENFORCED GLOSSY CSS
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
-.stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
+
+/* Forces Light Mode Layout baseline even if device uses Dark Mode */
+.stApp {
+    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 25%, #d8b4fe 50%, #c084fc 75%, #a855f7 100%) !important; 
+    background-size: 400% 400% !important; 
+    animation: aurora 20s ease infinite !important; 
+    padding-top: 0.3rem !important;
+}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
-.block-container {background: rgba(255,255,255,0.96); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.25); border: 1.5px solid rgba(255,255,255,0.5);}
+
+.block-container {
+    background: rgba(255,255,255,0.97) !important; 
+    backdrop-filter: blur(30px) saturate(200%) !important; 
+    border-radius: 30px !important; 
+    padding: 2.5rem !important; 
+    max-width: 1240px; 
+    margin: 1.5rem auto !important; 
+    box-shadow: 0 40px 80px rgba(147,51,234,0.18) !important; 
+    border: 2px solid rgba(255,255,255,0.7) !important;
+}
 @media (max-width: 768px) {
-.block-container {padding: 1rem!important; border-radius: 20px!important;}
-h1 {font-size: 2.2rem!important;}
-.pricing-card {margin-bottom: 20px!important;}
+    .block-container {padding: 1.2rem!important; border-radius: 24px!important;}
+    h1 {font-size: 2.4rem!important;}
+    .pricing-card {margin-bottom: 25px!important;}
 }
-h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
-h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; background: linear-gradient(90deg, #6b21a8, #9333ea, #c084fc, #a855f7, #6b21a8); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite;}
+
+h1,h2,h3,p,span,label,div,li {color: #1e1b4b!important; font-weight: 600!important;}
+h1 {
+    font-weight: 900!important; 
+    font-size: 3.6rem!important; 
+    margin-bottom: 0.1rem!important; 
+    background: linear-gradient(90deg, #4c1d95, #7c3aed, #c084fc, #6d28d9, #4c1d95) !important; 
+    background-size: 200% auto !important; 
+    -webkit-background-clip: text !important; 
+    -webkit-text-fill-color: transparent !important; 
+    animation: shine 4s linear infinite !important;
+}
 @keyframes shine {0%{background-position: 0% center;} 100%{background-position: 200% center;}}
-.subtitle {text-align: left; color: #000!important; font-size: 1.1rem!important; font-weight: 600!important; margin-bottom: 1rem!important;}
-.logo-float {animation: float 3s ease-in-out infinite;}
-@keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
-.anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3); border: 3px solid #9333ea;}
-.anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
-.pricing-card {
-  position: relative; border-radius: 22px; padding: 1.6rem; background: rgba(255,255,255,0.92)!important;
-  backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(147,51,234,0.15), 0 2px 6px rgba(147,51,234,0.1);
-  height: 100%; transform: translateZ(0); border: 2.5px solid #9333ea; clip-path: polygon(0% 3%, 3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%);
+.subtitle {text-align: left; color: #4b5563!important; font-size: 1.2rem!important; font-weight: 500!important; margin-bottom: 1.2rem!important; letter-spacing: 0.5px;}
+
+.logo-float {animation: float 4s ease-in-out infinite; filter: drop-shadow(0 15px 25px rgba(147,51,234,0.25));}
+@keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-12px);}}
+
+.anime-container {
+    position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; 
+    box-shadow: 0 20px 45px rgba(76,29,149,0.25); border: 3px solid #7c3aed;
+    transition: transform 0.4s ease;
 }
-.pricing-card:hover {transform: translateY(-8px) scale(1.01); box-shadow: 0 20px 40px rgba(147,51,234,0.25), 0 8px 16px rgba(147,51,234,0.15);}
-.pricing-card h2 {font-size: 1.4rem!important; color: #6b21a8!important; margin-bottom: 0.5rem!important; font-weight: 700;}
-.pricing-card h1 {font-size: 2.6rem!important; color: #6b21a8!important; margin: 0.5rem 0!important; font-weight: 800; -webkit-text-fill-color: #6b21a8!important;}
-.pricing-card p {color: #000!important; font-size: 0.95rem!important; margin-bottom: 0.4rem!important;}
+.anime-container:hover {transform: scale(1.02) rotate(0.5deg);}
+.anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
+
+.pricing-card {
+    position: relative; border-radius: 24px; padding: 2rem; background: linear-gradient(145deg, #ffffff, #fefeff)!important;
+    backdrop-filter: blur(15px); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    box-shadow: 0 10px 30px rgba(147,51,234,0.08), 0 2px 8px rgba(147,51,234,0.05);
+    height: 100%; border: 2.5px solid #e9d5ff !important;
+}
+.pricing-card:hover {
+    transform: translateY(-10px); 
+    border-color: #a855f7 !important; 
+    box-shadow: 0 25px 50px rgba(147,51,234,0.2), 0 12px 24px rgba(147,51,234,0.1) !important;
+}
+.pricing-card h2 {font-size: 1.5rem!important; color: #6d28d9!important; margin-bottom: 0.6rem!important; font-weight: 800;}
+.pricing-card h1 {font-size: 2.8rem!important; color: #4c1d95!important; margin: 0.6rem 0!important; font-weight: 900; -webkit-text-fill-color: #4c1d95!important;}
+.pricing-card p {color: #374151!important; font-size: 0.98rem!important; margin-bottom: 0.5rem!important;}
 
 .stButton>button {
-    border-radius: 14px !important; 
+    border-radius: 16px !important; 
     font-weight: 700 !important; 
-    background: linear-gradient(90deg, #9333ea, #a855f7) !important; 
+    background: linear-gradient(90deg, #7c3aed, #a855f7) !important; 
     color: white !important; 
     border: none !important; 
-    padding: 13px 26px !important; 
+    padding: 14px 28px !important; 
     width: 100% !important; 
-    box-shadow: 0 5px 18px rgba(147,51,234,0.4) !important; 
-    transition: all 0.3s !important; 
+    box-shadow: 0 8px 20px rgba(124,58,237,0.3) !important; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important; 
     cursor: pointer !important; 
-    font-size: 1rem !important; 
+    font-size: 1.05rem !important; 
     margin-top: 1rem !important;
 }
-.stButton>button:hover {transform: translateY(-3px) scale(1.02) !important; box-shadow: 0 10px 28px rgba(147,51,234,0.5) !important;}
+.stButton>button:hover {
+    transform: translateY(-3px)!important; 
+    box-shadow: 0 15px 30px rgba(124,58,237,0.45) !important;
+    background: linear-gradient(90deg, #6d28d9, #9333ea) !important;
+}
 
-.pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
-.pro-banner h2 {color: white!important;}
-.tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 9px 17px; border-radius: 28px; margin: 4px; font-weight: 700; border: 2px solid #9333ea; color: #000!important; font-size: 0.92rem;}
-div[data-testid="stTabs"] button p {color: #000!important; font-weight: 700!important; font-size: 1rem!important;}
-div[data-testid="stTabs"] button[aria-selected="true"] p {color: #6b21a8!important; font-weight: 800!important; border-bottom: 3px solid #9333ea;}
-div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; backdrop-filter: blur(5px); border-radius: 12px; margin-right: 8px; border: 2px solid #9333ea;}
-.stAlert,.stInfo,.stSuccess,.stError {color: #000!important; font-weight: 600!important; background: rgba(255,255,255,0.8)!important; backdrop-filter: blur(5px); border-radius: 12px; border: 2px solid #9333ea;}
-.stDataFrame {background: rgba(255,255,255,0.9)!important;}
-.stFileUploader {background: rgba(255,255,255,0.8)!important; border: 2px dashed #9333ea;}
+.pro-banner {
+    background: linear-gradient(135deg, #5b21b6, #7c3aed, #d946ef) !important; 
+    padding: 1.8rem; border-radius: 24px; color: white!important; 
+    text-align: center; margin: 1.5rem 0; border: none; 
+    box-shadow: 0 12px 28px rgba(124,58,237,0.25);
+}
+.pro-banner h2 {color: white!important; font-weight: 800!important; font-size: 1.6rem!important;}
+.tool-chip {
+    display: inline-block; background: rgba(255,255,255,0.98) !important; padding: 8px 18px; 
+    border-radius: 30px; margin: 6px; font-weight: 700; border: 2px solid #7c3aed !important; 
+    color: #4c1d95!important; font-size: 0.92rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+div[data-testid="stTabs"] button p {color: #4b5563!important; font-weight: 700!important; font-size: 1.05rem!important;}
+div[data-testid="stTabs"] button[aria-selected="true"] p {color: #7c3aed!important; font-weight: 800!important;}
+div[data-testid="stTabs"] button {
+    background: #f9fafb!important; border-radius: 14px; 
+    margin-right: 10px; border: 2px solid #e5e7eb!important; padding: 6px 16px;
+}
+div[data-testid="stTabs"] button[aria-selected="true"] {
+    border-color: #7c3aed!important; background: #f5f3ff!important;
+}
+
+/* Hardcoded text contrast safety layer for all standard elements */
+div[data-baseweb="select"] *, div[data-testid="stMarkdownContainer"] p, label[data-testid="stWidgetLabel"] p {
+    color: #1e1b4b !important;
+}
+
+.stAlert,.stInfo,.stSuccess,.stError {
+    background: #ffffff !important; border-radius: 16px; border: 2.5px solid #c084fc !important;
+}
+.stDataFrame {border-radius: 16px; overflow: hidden; border: 2px solid #e5e7eb;}
+.stFileUploader {background: #ffffff!important; border: 2.5px dashed #a855f7!important; border-radius: 20px;}
 
 input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] input {
     background-color: #ffffff !important; 
-    color: #000000 !important; 
-    -webkit-text-fill-color: #000000 !important; 
-    border: 2px solid #9333ea !important; 
-    border-radius: 11px !important;
+    color: #111827 !important; 
+    -webkit-text-fill-color: #111827 !important; 
+    border: 2px solid #cdb4db !important; 
+    border-radius: 14px !important;
     font-weight: 600 !important;
+    padding: 10px !important;
 }
 
-.cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 20px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
+.cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 22px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
 @keyframes fall {0%{transform: translateY(0vh) translateX(0vw) rotate(0deg); opacity: 1;} 100%{transform: translateY(110vh) translateX(10vw) rotate(360deg); opacity: 0;}}
 </style>
 <div class="cherry" style="left: 10%; animation-duration: 8s;">🌸</div>
@@ -179,18 +248,18 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
-# AI CHATBOT STUDIO WITH EXPANDED KNOWLEDGE BASE AND SOLUTIONS
+# AI CHATBOT STUDIO ENGINE
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
     target.markdown("### 🤖 VeriSame Live AI Chat Studio")
 
-    chat_html = "<div style='max-height: 280px; overflow-y: auto; padding: 12px; background: #ffffff !important; border: 2px solid #9333ea; border-radius: 14px; margin-bottom: 10px;'>"
+    chat_html = "<div style='max-height: 280px; overflow-y: auto; padding: 14px; background: #ffffff !important; border: 2px solid #7c3aed; border-radius: 16px; margin-bottom: 12px;'>"
     for chat in st.session_state.chat_history:
         if chat["role"] == "assistant":
-            chat_html += f"<p style='color: #6b21a8 !important; margin: 5px 0; font-weight: 700;'><b>🤖 AI:</b> {chat['message']}</p>"
+            chat_html += f"<p style='color: #6d28d9 !important; margin: 6px 0; font-weight: 700;'><b>🤖 AI:</b> {chat['message']}</p>"
         else:
-            chat_html += f"<p style='color: #000000 !important; margin: 5px 0; font-weight: 600;'><b>👤 You:</b> {chat['message']}</p>"
+            chat_html += f"<p style='color: #111827 !important; margin: 6px 0; font-weight: 600;'><b>👤 You:</b> {chat['message']}</p>"
     chat_html += "</div>"
     target.markdown(chat_html, unsafe_allow_html=True)
 
@@ -297,7 +366,7 @@ with col2:
 with col3: st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# FIXED ADMIN ROUTING CHECK WITH PREMIUM DESIGN ELEMENTS
+# ADMIN PANEL GATEWAY
 if "admin" in st.query_params:
     if st.query_params["admin"] == ADMIN_PASS:
         st.title(T['admin_title'])
@@ -336,7 +405,7 @@ if st.session_state.plan is None:
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"; st.rerun()
         with col2:
-            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #7c3aed; box-shadow:0 15px 35px rgba(124,58,237,0.15)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Get Pro", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_1M; st.session_state.days = 30; st.rerun()
         with col3:
@@ -380,7 +449,7 @@ if st.session_state.plan is None:
             else: st.error("Valid email required")
         st.stop()
 else:
-    # DATA LOADING & CLEANING PIPELINE ENGINE
+    # CORE CLEANING ENGINE PIPELINE
     tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
     df = None
     with tab1:
@@ -403,7 +472,8 @@ else:
             orig_len = len(df)
             df_clean = st.session_state.df_clean.drop_duplicates()
             for col in df_clean.columns:
-                df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                if df_clean[col].dtype == object:
+                    df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                 if any(k in col.lower() for k in ['salary','amount','price','paisa']): 
                     df_clean[col] = df_clean[col].apply(words_to_num)
             st.session_state.df_clean = df_clean
@@ -432,90 +502,102 @@ else:
                 is_free = st.session_state.plan == "free"
                 is_paid = st.session_state.admin_approved
 
-                # 🔓 DYNAMIC PERMISSION CONTROL - TOOLS ALWAYS OPEN FOR PRE-TESTING
                 tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 with tab1:
-                    st.write(f"**{T['tool1']}** ✅ Unlocked (Free + Pro)")
-                    date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
-                    if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
-                        for col in date_cols: 
-                            try:
-                                converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
-                                st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
-                            except Exception: pass
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool1']}** ✅ Unlocked (Free + Pro)")
+                        date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
+                        if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
+                            for col in date_cols: 
+                                try:
+                                    try:
+                                        converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
+                                    except TypeError:
+                                        converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', dayfirst=True)
+                                    st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
+                                except Exception: pass
+                            st.success(T['success'])
 
-                    st.write(f"**{T['tool2']}** 🔓 Always Open for Testing (Pro Tool)")
-                    fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
-                    if st.button(T['apply_btn'], key="btn_fill", use_container_width=True):
-                        for col in fill_cols:
-                            sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
-                            if sample.isdigit() or '.' in sample: fill_val = "0"
-                            elif '@' in sample: fill_val = "missing@email.com"
-                            else: fill_val = "Unknown"
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool2']}** 🔓 Always Open for Testing (Pro Tool)")
+                        fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
+                        if st.button(T['apply_btn'], key="btn_fill", use_container_width=True):
+                            for col in fill_cols:
+                                sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
+                                if sample.isdigit() or '.' in sample: fill_val = "0"
+                                elif '@' in sample: fill_val = "missing@email.com"
+                                else: fill_val = "Unknown"
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
+                            st.success(T['success'])
 
                 with tab2:
-                    st.write(f"**{T['tool3']}** 🔓 Always Open for Testing (Pro Tool)")
-                    email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
-                    if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
-                        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                        for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool3']}** 🔓 Always Open for Testing (Pro Tool)")
+                        email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
+                        if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
+                            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                            for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
+                            st.success(T['success'])
 
-                    st.write(f"**{T['tool4']}** 🔓 Always Open for Testing (Pro Tool)")
-                    phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
-                    if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
-                        for col in phone_cols: 
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool4']}** 🔓 Always Open for Testing (Pro Tool)")
+                        phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
+                        if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
+                            for col in phone_cols: 
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
+                            st.success(T['success'])
 
                 with tab3:
-                    st.write(f"**{T['tool5']}** ✅ Unlocked (Free + Pro)")
-                    case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
-                    case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
-                    if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
-                        for col in case_cols: 
-                            if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
-                            elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
-                            else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool5']}** ✅ Unlocked (Free + Pro)")
+                        case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
+                        case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
+                        if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
+                            for col in case_cols: 
+                                if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
+                                elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
+                                else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
+                            st.success(T['success'])
 
-                    st.write(f"**{T['tool6']}** 🔓 Always Open for Testing (Pro Tool)")
-                    spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
-                    if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
-                        for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool6']}** 🔓 Always Open for Testing (Pro Tool)")
+                        spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
+                        if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
+                            for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
+                            st.success(T['success'])
 
-                    st.write(f"**{T['tool7']}** 🔓 Always Open for Testing (Pro Tool)")
-                    old = st.selectbox("Old column name", all_cols, key="sel_old")
-                    new = st.text_input("New column name", key="inp_new")
-                    if st.button(T['apply_btn'], key="btn_rename", use_container_width=True) and new:
-                        st.session_state.df_clean.rename(columns={old: new}, inplace=True)
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool7']}** 🔓 Always Open for Testing (Pro Tool)")
+                        old = st.selectbox("Old column name", all_cols, key="sel_old")
+                        new = st.text_input("New column name", key="inp_new")
+                        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True) and new:
+                            st.session_state.df_clean.rename(columns={old: new}, inplace=True)
+                            st.success(T['success'])
 
-                    st.write(f"**{T['tool8']}** ✅ Unlocked (Free + Pro)")
-                    if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-                        st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool8']}** ✅ Unlocked (Free + Pro)")
+                        if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
+                            st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
+                            st.success(T['success'])
 
-                    st.write(f"**{T['tool9']}** ✅ Unlocked (Free + Pro)")
-                    trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
-                    if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
-                        for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool9']}** ✅ Unlocked (Free + Pro)")
+                        trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
+                        if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
+                            for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                            st.success(T['success'])
 
-                    st.write(f"**{T['tool10']}** 🔓 Always Open for Testing (Pro Tool)")
-                    spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
-                    if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
-                        typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
-                        def fix_typos(text):
-                            words = str(text).split()
-                            return " ".join([typo_dict.get(w.lower(), w) for w in words])
-                        for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
-                        st.success(T['success']); st.rerun()
+                    with st.container():
+                        st.write(f"**{T['tool10']}** 🔓 Always Open for Testing (Pro Tool)")
+                        spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
+                        if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
+                            typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
+                            def fix_typos(text):
+                                words = str(text).split()
+                                return " ".join([typo_dict.get(w.lower(), w) for w in words])
+                            for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
+                            st.success(T['success'])
 
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
@@ -524,7 +606,18 @@ else:
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
                     if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
-                        st.session_state.show_balloon = True; st.rerun()
+                        st.session_state.show_balloon = True
+                    try:
+                        if openpyxl is not None:
+                            excel = io.BytesIO()
+                            st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
+                                st.session_state.show_balloon = True
+                        else:
+                            col2.warning("Excel layout missing openpyxl package dependency")
+                    except Exception as e:
+                        col2.error(f"Excel generation failed: {str(e)}")
+                        
                 elif st.session_state.plan == "pro":
                     if not is_paid:
                         st.warning(T['wait_approval'])
@@ -536,7 +629,6 @@ else:
                         else:
                             st.info(f"Send payment directly to UPI ID: {UPI}")
                             
-                        # DIRECT RAM-DISK SYNC LOGIC ON CLICK TO PREVENT FAILURES
                         if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
                             data = load_db()
                             if st.session_state.email in data:
@@ -549,13 +641,13 @@ else:
                         col1, col2 = st.columns(2)
                         csv = st.session_state.df_clean.to_csv(index=False).encode()
                         if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
-                            st.session_state.show_balloon = True; st.rerun()
+                            st.session_state.show_balloon = True
                         try:
                             if openpyxl is not None:
                                 excel = io.BytesIO()
                                 st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
                                 if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
-                                    st.session_state.show_balloon = True; st.rerun()
+                                    st.session_state.show_balloon = True
                         except Exception: pass
         except Exception: pass
 
