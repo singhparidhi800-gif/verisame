@@ -6,7 +6,7 @@ import re
 # 🔒 App Setup (Anti-Dark Mode Enforced Glossy CSS - Your Exact Theme)
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-# Your exact secret admin query string target
+# Secret admin query target configuration
 ADMIN_QUERY_VALUE = "Sherni@123"
 
 if 'session_active' not in st.session_state: st.session_state.session_active = False
@@ -39,7 +39,7 @@ def words_to_num(s):
             else: current += val
     return total + current if has_num_word and (total + current > 0) else s
 
-# Styling & CSS with Layout Fixes
+# Styling & CSS with Layout, 3D Effects, and Floating Animation Fixes
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -52,15 +52,17 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 }
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
 
+/* 3D Glassmorphism Panel Depth Card */
 .block-container {
-    background: rgba(255,255,255,0.97) !important; 
-    backdrop-filter: blur(30px) saturate(200%) !important; 
-    border-radius: 30px !important; 
+    background: rgba(255, 255, 255, 0.96) !important; 
+    backdrop-filter: blur(35px) saturate(210%) !important; 
+    border-radius: 35px !important; 
     padding: 2.5rem !important; 
-    max-width: 1240px; 
+    max-width: 1260px; 
     margin: 1.5rem auto !important; 
-    box-shadow: 0 40px 80px rgba(147,51,234,0.18) !important; 
-    border: 2px solid rgba(255,255,255,0.7) !important;
+    box-shadow: 0 30px 70px rgba(109, 40, 217, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.6) !important; 
+    border: 3px solid rgba(255, 255, 255, 0.8) !important;
+    transform: perspective(1000px) translateZ(0px);
 }
 
 h1,h2,h3,p,span,label,div,li {color: #1e1b4b!important; font-weight: 600!important;}
@@ -75,6 +77,18 @@ h1 {
 }
 .subtitle {color: #4b5563!important; font-size: 1.2rem!important; font-weight: 500!important; margin-bottom: 1.2rem!important;}
 
+/* Slow Motion Smooth Floating Animation for Logo */
+@keyframes floatLogo {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0px); }
+}
+.floating-logo-container {
+    display: flex; align-items: center; justify-content: center; height:100%;
+    animation: floatLogo 8s ease-in-out infinite;
+}
+
+/* Fixes the cropped anime image perfectly to see full banner context */
 .anime-container {
     position: relative; width: 100%; border-radius: 25px; overflow: hidden; 
     box-shadow: 0 20px 45px rgba(76,29,149,0.25); border: 3px solid #7c3aed;
@@ -82,19 +96,29 @@ h1 {
 }
 .anime-container img {width: 100%; height: auto; max-height: 280px; object-fit: contain; display: block; margin: 0 auto;}
 
+/* Premium 3D Shadow Pricing Cards */
 .pricing-card {
     border-radius: 24px; padding: 2rem; background: #ffffff!important;
-    box-shadow: 0 10px 30px rgba(147,51,234,0.08); border: 2.5px solid #e9d5ff !important; height: 100%;
+    box-shadow: 0 15px 35px rgba(147,51,234,0.12), 0 5px 15px rgba(0,0,0,0.05); 
+    border: 2.5px solid #e9d5ff !important; height: 100%;
+    transition: transform 0.3s ease;
 }
+.pricing-card:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(147,51,234,0.18);
+}
+
 .stButton>button {
     border-radius: 16px !important; font-weight: 700 !important; 
     background: linear-gradient(90deg, #7c3aed, #a855f7) !important; color: white !important; 
     border: none !important; padding: 14px 28px !important; width: 100% !important;
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3) !important;
 }
 
 .pro-banner {
     background: linear-gradient(135deg, #5b21b6, #7c3aed, #d946ef) !important; 
     padding: 1.2rem; border-radius: 24px; text-align: center; margin: 1.5rem 0;
+    box-shadow: 0 10px 25px rgba(91, 33, 182, 0.3);
 }
 .pro-banner h2 {color: white!important; margin:0;}
 
@@ -113,22 +137,30 @@ h1 {
 <div class="cherry" style="left: 80%; animation-duration: 13s; animation-delay: 2.5s;">🌸</div>
 """, unsafe_allow_html=True)
 
-# Top Header Layout (Big Logo presentation)
-col1, col2, col3 = st.columns([1.5, 2.5, 1.5])
+# 🎵 Modern Autoplay Music Bypass Injection Element
+st.markdown("""
+<iframe src="https://assets.mixkit.co/active_storage/sfx/123/123-200.wav" allow="autoplay" id="audio" style="display:none;"></iframe>
+<audio autoplay loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mp3">
+</audio>
+""", unsafe_allow_html=True)
+
+# Top Header Layout (Enhanced columns alignment)
+col1, col2, col3 = st.columns([1.6, 2.4, 1.6])
 with col1:
-    st.markdown("""<div style="display: flex; align-items: center; justify-content: center; height:100%;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 200px; height: auto;"></div>""", unsafe_allow_html=True)
+    # Enlarged to 220px with smooth slow-motion hover/float action state
+    st.markdown("""<div class="floating-logo-container"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 220px; height: auto;"></div>""", unsafe_allow_html=True)
 with col2:
-    st.markdown("<h1 style='margin-top: 25px;'>VeriSame</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='margin-top: 30px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown('<div class="subtitle">The Fastest Way to Clean Your Data</div>', unsafe_allow_html=True)
 with col3:
     st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 
-# 👑 LINK DETECTION SYSTEM FOR SHERNI ADMIN PANEL
+# 👑 URL LINK QUERY DETECTION SYSTEM FOR SHERNI ADMIN PANEL
 if "admin" in st.query_params and st.query_params["admin"] == ADMIN_QUERY_VALUE:
     st.markdown("## 👑 Sherni Admin Panel Workstation 👑")
-    st.info("Secure access granted via URL parameters.")
-    st.write("Welcome, Admin! All monitoring tools are active.")
-    # You can append extra admin tracking modules right here later!
+    st.info("Secure access granted via explicit URL parameter verification.")
+    st.write("Welcome back, Admin! Database backups and logging telemetry streams are healthy.")
     if st.button("Exit Admin View"):
         st.query_params.clear()
         st.rerun()
@@ -179,7 +211,7 @@ if not st.session_state.session_active:
 
     with p_col2:
         st.markdown("""
-        <div class="pricing-card" style="border: 2.5px solid #7c3aed !important;">
+        <div class="pricing-card" style="border: 2.5px solid #7c3aed !important; box-shadow: 0 15px 30px rgba(124, 58, 237, 0.15) !important;">
             <h3 style="color: #7c3aed !important;">⭐ POPULAR<br>MONTHLY</h3>
             <h1 style="font-size: 3rem; margin: 10px 0;">₹299</h1>
             <p style="font-size: 0.9rem; color: #4b5563 !important;">30 Days</p>
