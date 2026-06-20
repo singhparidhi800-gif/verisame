@@ -114,6 +114,16 @@ h1 {
     box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3) !important;
 }
 
+/* Individual Premium Box Container Styling for Tools Workspace Layout */
+.tool-box-container {
+    background: #ffffff !important;
+    border: 2px solid #e9d5ff !important;
+    border-radius: 20px !important;
+    padding: 1.2rem !important;
+    margin-bottom: 1.5rem !important;
+    box-shadow: 0 8px 25px rgba(147,51,234,0.05) !important;
+}
+
 .pro-banner {
     background: linear-gradient(135deg, #5b21b6, #7c3aed, #d946ef) !important; 
     padding: 1.2rem; border-radius: 24px; text-align: center; margin: 1.5rem 0;
@@ -303,15 +313,18 @@ else:
         with col_t1:
             st.markdown("#### 🆓 Core Tools (Unlocked)")
             
-            # Tool 1: Smart Date Converter
+            # Tool 1: Smart Date Converter Box
+            st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
             with st.expander("📆 Smart Date Converter"):
                 sel_col = st.selectbox("Select Date Column", all_columns, key="t1")
                 if st.button("Convert Date Format", key="btn_t1"):
                     st.session_state.uploaded_data[sel_col] = pd.to_datetime(st.session_state.uploaded_data[sel_col], errors='coerce').dt.strftime('%Y-%m-%d')
                     st.success("Successfully Normalized Dates!")
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            # Tool 5: Case Converter
+            # Tool 5: Case Converter Box
+            st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
             with st.expander("🔤 Case Converter"):
                 sel_col = st.selectbox("Select Text Column", all_columns, key="t5")
                 case_mode = st.selectbox("Format Type", ["UPPERCASE", "lowercase", "Title Case"], key="mode_t5")
@@ -321,21 +334,26 @@ else:
                     else: st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.title()
                     st.success("Case Updated Successfully!")
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            # Tool 8: Remove Duplicates
+            # Tool 8: Remove Duplicates Box
+            st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
             with st.expander("👥 Remove Duplicates"):
                 if st.button("Purge Duplicated Rows", key="btn_t8"):
                     st.session_state.uploaded_data = st.session_state.uploaded_data.drop_duplicates()
                     st.success("Duplicates Removed!")
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
-            # Tool 9: Trim Spaces
+            # Tool 9: Trim Spaces Box
+            st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
             with st.expander("✂️ Trim Spaces"):
                 sel_col = st.selectbox("Select Target Column", all_columns, key="t9")
                 if st.button("Clean Whitespaces", key="btn_t9"):
                     st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.strip()
                     st.success("Whitespaces Trimmed!")
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
         with col_t2:
             st.markdown("#### 💎 Premium Tools")
@@ -343,7 +361,8 @@ else:
             if st.session_state.current_plan != "pro":
                 st.warning("🔒 Upgrade to Pro to unlock Premium AI modules.")
             else:
-                # Tool 2: AI Fill Nulls
+                # Tool 2: AI Fill Nulls Box
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
                 with st.expander("✨ AI Fill Nulls"):
                     sel_col = st.selectbox("Select Target Column", all_columns, key="t2")
                     fill_val = st.text_input("Fill Value", placeholder="e.g. Unknown")
@@ -351,8 +370,10 @@ else:
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].fillna(fill_val)
                         st.success("Null Values Handled!")
                         st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-                # Tool 3: Email Validator
+                # Tool 3: Email Validator Box
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
                 with st.expander("📧 Email Validator"):
                     sel_col = st.selectbox("Select Email Column", all_columns, key="t3")
                     if st.button("Validate Emails", key="btn_t3"):
@@ -360,24 +381,30 @@ else:
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
                         st.success("Emails Evaluated!")
                         st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-                # Tool 4: Phone Formatter
+                # Tool 4: Phone Formatter Box
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
                 with st.expander("📱 Phone Formatter"):
                     sel_col = st.selectbox("Select Phone Column", all_columns, key="t4")
                     if st.button("Format Phone Numbers", key="btn_t4"):
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x))[-10:])
                         st.success("Phone Formats Cleaned!")
                         st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-                # Tool 6: Remove Symbols
+                # Tool 6: Remove Symbols Box
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
                 with st.expander("🚫 Remove Symbols"):
                     sel_col = st.selectbox("Select Column", all_columns, key="t6")
                     if st.button("Strip Special Characters", key="btn_t6"):
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s]', '', x))
                         st.success("Symbols Stripped!")
                         st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-                # Tool 7: Bulk Rename
+                # Tool 7: Bulk Rename Box
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
                 with st.expander("✏️ Rename Columns"):
                     old_n = st.selectbox("Pick Column", all_columns, key="t7")
                     new_n = st.text_input("New Name Title", key="t7_new")
@@ -385,14 +412,17 @@ else:
                         st.session_state.uploaded_data.rename(columns={old_n: new_n}, inplace=True)
                         st.success("Column Renamed!")
                         st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
-                # Tool 10: Words-to-Number
+                # Tool 10: Words-to-Number Box
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
                 with st.expander("🔢 Words To Numbers Engine"):
                     sel_col = st.selectbox("Pick Target Text Column", all_columns, key="t10")
                     if st.button("Apply Lexical Parsing", key="btn_t10"):
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].apply(words_to_num)
                         st.success("Text Converted to Absolute Integers!")
                         st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown("### 📥 Download Cleaned Data")
         d_col1, d_col2 = st.columns(2)
