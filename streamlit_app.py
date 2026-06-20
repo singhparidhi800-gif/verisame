@@ -495,13 +495,18 @@ else:
                 # 🔓 DYNAMIC PERMISSION CONTROL - TOOLS INTERFACE TABS
                 tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 with tab1:
-                    # Tool 1: Smart Date Converter (Free + Pro)
+                    # Tool 1: Smart Date Converter (Free + Pro) with Smart Safeguard
                     st.write(f"**{T['tool1']}** ✅ Unlocked")
                     date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                     if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
                         old_snapshot = st.session_state.df_clean.copy()
                         for col in date_cols: 
                             try:
+                                # Smart Safeguard to check numeric metrics first
+                                if any(k in col.lower() for k in ['salary', 'amount', 'price', 'phone', 'id', 'score', 'age']):
+                                    st.error(f"⚠️ Column '{col}' contains numbers/money, not dates! Skipped to protect your data layout.")
+                                    continue
+                                    
                                 converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
                                 st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
                             except Exception: pass
