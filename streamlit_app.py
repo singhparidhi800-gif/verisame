@@ -2,7 +2,6 @@ import streamlit as st
 import json, os, io
 import pandas as pd
 import re
-import time
 from datetime import datetime, timedelta
 import difflib 
 
@@ -76,7 +75,7 @@ def words_to_num(s):
     return total + current if has_num_word and (total + current > 0) else s
 
 T = {
-    "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"AUTOMATED AI DATA CLEANING PIPELINE",
+    "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
     "free_feat":["1000 Rows Lifetime","CSV Export","4 Free Tools Built-in","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
@@ -174,8 +173,9 @@ input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] inpu
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about data cleaning utilities!"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, specific tools, safety, troubleshooting errors, or data science utilities!"}]
 
+# Initialize tracking variable for tracking cell modifications
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 
@@ -183,6 +183,7 @@ for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sa
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
 
+# HELPER TO AUTOMATICALLY HIGHLIGHT CHANGED CELLS IN GREEN
 def track_modifications(old_df, new_df):
     try:
         for col in old_df.columns:
@@ -198,11 +199,11 @@ def apply_cell_styling(df_to_style):
         df_colors = pd.DataFrame('', index=x.index, columns=x.columns)
         for row, col in st.session_state.changed_cells:
             if row in df_colors.index and col in df_colors.columns:
-                df_colors.at[row, col] = 'background-color: #bbf7d0; color: #047857; font-weight: bold;'
+                df_colors.at[row, col] = 'background-color: #bbf7d0; color: #047857; font-weight: bold;' # Beautiful Soft Green
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
-# AI CHATBOT STUDIO
+# AI CHATBOT STUDIO WITH EXPANDED KNOWLEDGE BASE AND DATA-AWARE CONNECTIONS
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -226,19 +227,60 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
+        # 📊 LIVE CONNECTED DATA SCIENCE CHAT REPLIES
         if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
             live_df = st.session_state.df_clean
-            if any(x in u for x in ["column", "columns", "fields"]):
-                reply = f"📊 **Live Dataset Columns:** `{', '.join(live_df.columns.tolist())}`."
-            elif any(x in u for x in ["rows", "size", "shape"]):
-                reply = f"🔢 **Live Dataset Dimensions:** `{len(live_df)}` rows and `{len(live_df.columns)}` columns."
+            if any(x in u for x in ["column", "columns", "what fields", "variables"]):
+                reply = f"📊 **Live Dataset Columns:** Your data currently contains the following columns: `{', '.join(live_df.columns.tolist())}`."
+            elif any(x in u for x in ["how many rows", "row count", "total rows", "dataset size", "shape"]):
+                reply = f"🔢 **Live Dataset Dimensions:** Your active pipeline currently has `{len(live_df)}` fully processed rows and `{len(live_df.columns)}` distinct columns."
+            elif any(x in u for x in ["missing", "nulls", "empty boxes", "dirty boxes"]):
+                reply = f"🛠️ **Live Cleanliness Status:** We have already repaired `{st.session_state.get('empty_fixed', 0)}` missing values across your uploaded sheets!"
+
+        if not reply:
+            if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
+                if "uplode" in u or "upload" in u: reply = "👋 **All the best, buddy! Go ahead and upload your files to clean them up instantly!**"
+                elif "clean" in u: reply = "👍 **Awesome! Go smash those data errors and make your dataset perfect!**"
+                else: reply = "👋 **Goodbye! Have a productive session ahead!**"
+            elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are most welcome!** Making your data pipeline seamless is exactly what I'm built for."
+            elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Data cleaning can be boring, but our conversations don't have to be!"
+            elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** I'm just hyper-engineered to clear errors at supersonic speeds!"
+            elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]): reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा को एकदम कड़क चमकाओ।"
+            elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **बहुत-बहुत स्वागत है तुम्हारा!** मुझे तुम्हारी मदद करके बेहद ख़ुशी हुई।"
+
+        if not reply:
+            math_clean = u.replace('x', '*')
+            match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
+            if match:
+                try:
+                    n1, op, n2 = int(match.group(1)), match.group(2), int(match.group(3))
+                    if op == '+': res = n1 + n2
+                    elif op == '-': res = n1 - n2
+                    elif op == '*': res = n1 * n2
+                    elif op == '/': res = n1 / n2 if n2 != 0 else "Error"
+                    reply = f"🔢 **Math Calculator Engine:** \nResult: `{res}`"
+                except Exception: pass
 
         if not reply:
             knowledge_map = {
-                "founder made creator created developer owner built make kaun banaya owner kaun anugya singh": "👑 **Founder & Creator:** VeriSame was architected, designed, and developed entirely by **Anugya Singh**!",
-                "what this app can do what is app work": "💎 **VeriSame:** This app automates data-cleaning pipeline actions smoothly!",
-                "hi hello hey greeting": "👋 **Hello there!** Welcome to VeriSame! How can I help you today?",
-                "is this app free free version tier cost paisa lagega": "✨ **Yes!** Our base tier is Free Forever!"
+                "founder made creator created developer owner built make kaun banaya owner kaun anugya singh app architecture who designed": "👑 **Founder & Creator:** VeriSame was architected, designed, and developed entirely by **Anugya Singh** to eliminate manual data cleaning frustration globally!",
+                "what this app can do what is app work app capability utility function software use details purpose system tool utility": "💎 **VeriSame App Capability:** This app functions as an automated data-cleaning pipeline! It repairs empty boxes, formats dates, filters emails, and converts word numbers into clean integers under 3 seconds!",
+                "hi hello hey hello ai hi ai ola salam greeting system startup start beginning greeting": "👋 **Hello there!** Welcome to VeriSame! How can I speed up your workflows today?",
+                "how are you kaise ho kaise hain how it goes sab badhiya wellness state mood status health": "✨ **I am doing fantastic!** Completely ready to smash data errors under 3 seconds.",
+                "your name naam kya who are you tum kaun ho identify system role profile system bot": "💎 I am **VeriSame Engine AI**, a hyper-customized data assistant!",
+                "how many tools number of tools total tools kitne tool counts listing available features": "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** divided into 3 responsive interface tabs!",
+                "is this app free free version tier lifetime free cost paisa lagega trials base subscription": "✨ **Yes, the base tier is Free Forever!** You get 1,000 rows processing, 4 free pipeline tools, and unlimited interface access.",
+                "what is pro version premium cost details charges features upgrades price models subscription plans": "💎 **Pro Plan:** Unlocks absolute unlimited rows, lightning-fast 3-second vector speed, and all **10 premium AI tools**! Available in 1-Month and 6-Month premium segments.",
+                "how to upload file select file spreadsheet csv excel insert data dataset load file injection": "📤 **File Upload Steps:** Go to the 'Upload File' tab, drag and drop your `.csv`, `.xlsx`, or `.json` file directly into the dropbox layer.",
+                "how to download file save file download csv excel export sheet download output save localized": "🎯 **Downloading Data:** Scroll down to 'Export Data' section, choose 'Download as CSV' or 'Download as Excel'. Note: Pro exports require admin clearance payment validation.",
+                "what formats supported extension xlsx xls csv json files allowed file types input extension configuration": "📊 **Supported Extensions:** VeriSame handles `.csv`, `.xlsx`, `.xls`, and `.json` data frameworks smoothly.",
+                "data science workflow pipeline step data processing cycle steps clean engineering model cycle data analysis steps": "⚙️ **Data Science Workflow:** Raw Data ➔ Data Cleaning (using VeriSame!) ➔ Exploratory Data Analysis (EDA) ➔ Feature Engineering ➔ Machine Learning Training ➔ Model Deployment. VeriSame automates the initial 40% of manual cleaning time!",
+                "python script pandas vectorization clean dataframe speed optimize memory runtime engine speed code compile": "🐍 **Python Engine:** This application uses highly optimized vector operations via the `pandas` library instead of iterative loops, ensuring full table computation executes in under 3 seconds.",
+                "app error code crash malfunction troubleshooting debug fix problem fail issue broken application error solution": "🛠️ **Troubleshooting Hub:** Most runtime errors happen due to unmatched data columns, mixed empty structures, or missing libraries. Check file formats first or pass the exact crash trace log here for immediate resolution!",
+                "streamlit deployment error cloud crash environment setup requirements text server down reboot log mismatch": "📦 **Streamlit Error Fix:** Ensure your `requirements.txt` includes `pandas`, `openpyxl`, and `qrcode` to prevent cloud initialization crashes during deployment cycles.",
+                "openpyxl module missing excel download failed format issue library setup crash read error excel dependency": "📊 **Excel Import/Export Fix:** If Excel download button causes a crash, the target system lacks `openpyxl`. Use the 'Download as CSV' option as a safe backup or install openpyxl via pip configuration.",
+                "row index error mismatch rows mismatched calculation dimensions size out of bounds loop structure failed length check": "🔢 **Row Index Fix:** This happens if empty rows are completely wiped out while mapping custom columns. VeriSame protects your structure by converting invalid entries to 'Unknown' or 'None' instead of shifting indexes!",
+                "why did my data upload fail bad format corruption password protected parse error reader crash file block": "🚫 **Upload Failure Fix:** Ensure your file is not password-protected, encrypted, or open in another application like Microsoft Excel during injection. Convert to standard UTF-8 `.csv` for best performance."
             }
             best_score = 0.0
             best_reply = None
@@ -247,11 +289,16 @@ def render_ai_chatbot(is_sidebar=False):
                 key_words = key_string.split()
                 matched_words = sum(1 for w in user_words if w in key_words)
                 word_ratio = matched_words / max(1, len(user_words))
-                if word_ratio > best_score:
-                    best_score = word_ratio
+                seq_ratio = difflib.SequenceMatcher(None, u, key_string).ratio()
+                final_score = (word_ratio * 0.7) + (seq_ratio * 0.3)
+                if final_score > best_score:
+                    best_score = final_score
                     best_reply = answer_text
-            if best_score >= 0.25 and best_reply: reply = best_reply
-            else: reply = "🔍 I am ready to assist you with your data pipeline cleaning jobs!"
+            
+            if best_score >= 0.25 and best_reply: 
+                reply = best_reply
+            else: 
+                reply = "🔍 **Query logged in AI memory base.** I am fully trained on pipeline architecture, troubleshooting, cloud deployment fixes, founder info, and data science math calculations. Try asking: *'Who is the founder?'* or *'How to fix a deployment error?'*"
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
@@ -260,7 +307,7 @@ if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], use_container_width=True):
         for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
             st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
-        st.session_state.changed_cells = set()
+        st.session_state.changed_cells = set() # Reset cell memory tracker
         st.rerun()
 
 if st.session_state.email:
@@ -270,10 +317,19 @@ if st.session_state.email:
     render_ai_chatbot(is_sidebar=True)
     if user.get("plan"):
         st.session_state.plan = user.get("plan")
+        st.session_state.amt = user.get("amt", 0)
+        st.session_state.days = user.get("days", 0)
+        
         if user.get("plan") == "free": 
             st.sidebar.info("Plan: FREE FOREVER ✨")
         else:
-            st.sidebar.info("Plan: PRO PREMIUM")
+            exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
+            days_left = (exp_date - datetime.now()).days
+            st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
+            if days_left > 0: 
+                st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
+            else:
+                st.sidebar.info(f"Plan: {user['plan'].upper()}\nStatus: {user.get('status')}")
 
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 with col1: st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
@@ -281,58 +337,92 @@ with col2:
     st.markdown("<h1 style='margin-top: 5px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
 with col3: st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
+st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# Cleaned up top banner text
-st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2></div>", unsafe_allow_html=True)
-
-# Admin Panel Logic
+# FIXED ADMIN ROUTING CHECK WITH PREMIUM DESIGN ELEMENTS
 if "admin" in st.query_params:
     if st.query_params["admin"] == ADMIN_PASS:
         st.title(T['admin_title'])
         data = load_db()
+        st.subheader(T['admin_pending'])
         if data:
             for email, info in list(data.items()):
                 if "@" not in email: continue
-                col1, col2 = st.columns([6, 2])
-                with col1: st.write(f"User: {email} | Plan: {info.get('plan')}")
+                amt = info.get('amt', 0)
+                status = info.get('status', 'PENDING')
+                plan_text = f"PRO Monthly ₹299" if amt == 299 else f"PRO 6M ₹1499" if amt == 1499 else "FREE Plan"
+                col1, col2, col3 = st.columns([4, 2, 2])
+                with col1:
+                    status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
+                    st.markdown(f"""<div class='pricing-card' style='background: rgba(243, 232, 255, 0.9) !important;'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>Status:</b> {status_color}<br><b>{T['admin_expiry']}:</b> {info.get('expiry','N/A')}</div>""", unsafe_allow_html=True)
                 with col2:
+                    if status == "PENDING" and info.get("plan") == "pro":
+                        if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
+                            data[email]["status"] = "PAID"
+                            save_db(data); st.success(f"✓ {email} unlocked!"); st.balloons(); st.rerun()
+                    else: st.button("✓ Already Active", key=f"active_{email}", disabled=True, use_container_width=True)
+                with col3:
                     if st.button(T['delete_btn'], key=f"delete_{email}", use_container_width=True):
-                        del data[email]; save_db(data); st.rerun()
+                        del data[email]; save_db(data); st.error(f"✓ {email} deleted"); st.rerun()
+        else: st.info("No records found in database.")
+        st.stop()
+    else:
+        st.error("🔒 Unauthorized Access Detected. Admin Routing Halted.")
         st.stop()
 
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
         col1,col2,col3 = st.columns(3, gap="medium")
         with col1:
-            st.markdown(f"""<div class='pricing-card'><h2>{T['free_title']}</h2><h1>FREE</h1><p>Lifetime Free Forever</p></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card'><h2>{T['free_title']}</h2><h1>FREE</h1><p>Lifetime</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['free_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"; st.rerun()
         with col2:
-            st.markdown(f"""<div class='pricing-card'><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days Pro</p></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Get Pro", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_1M; st.session_state.days = 30; st.rerun()
         with col3:
-            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>180 Days Pro</p></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>180 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Get Pro+", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_6M; st.session_state.days = 180; st.rerun()
+        
         render_ai_chatbot(is_sidebar=False)
     else:
-        st.markdown(f"<h2>Enter your email to continue</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
         if st.button(T['continue_btn'], key="btn_continue", type="primary", use_container_width=True):
             if "@" in email_input and "." in email_input:
                 st.session_state.email = email_input
                 st.session_state.email_entered = True
                 data = load_db()
+                
                 if email_input in data:
+                    if st.session_state.selected_plan == "pro" and data[email_input]["plan"] == "free":
+                        days = 30 if st.session_state.amt == 299 else 180
+                        data[email_input]["plan"] = "pro"
+                        data[email_input]["status"] = "PENDING"
+                        data[email_input]["amt"] = st.session_state.amt
+                        data[email_input]["days"] = days
+                        data[email_input]["expiry"] = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+                        save_db(data)
                     st.session_state.plan = data[email_input]["plan"]
+                    st.session_state.amt = data[email_input].get("amt", 299)
                     st.rerun()
                 else:
                     st.session_state.plan = st.session_state.selected_plan
-                    data[email_input] = {"plan": st.session_state.selected_plan, "status":"PAID", "created":str(datetime.now())}
-                    save_db(data); st.rerun()
+                    if st.session_state.selected_plan == "free":
+                        expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                        data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
+                        save_db(data); st.balloons(); st.rerun()
+                    else:
+                        days = 30 if st.session_state.amt == 299 else 180
+                        expiry = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+                        data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":days,"expiry":expiry,"created":str(datetime.now())}
+                        save_db(data); st.rerun()
+            else: st.error("Valid email required")
         st.stop()
 else:
+    # DATA LOADING & CLEANING PIPELINE ENGINE
     tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
     df = None
     with tab1:
@@ -343,7 +433,9 @@ else:
                 for f in file:
                     if f.name.endswith((".xlsx", ".xls")):
                         excel_file = pd.ExcelFile(f)
-                        sub_df = pd.read_excel(f, sheet_name=excel_file.sheet_names[0])
+                        sheet_names = excel_file.sheet_names
+                        selected_sheet = st.selectbox(f"📄 Select Sheet to Clean for {f.name}", sheet_names, key=f"sheet_sel_{f.name}")
+                        sub_df = pd.read_excel(f, sheet_name=selected_sheet)
                     elif f.name.endswith(".csv"):
                         sub_df = pd.read_csv(f)
                     else:
@@ -362,13 +454,13 @@ else:
             df_clean = st.session_state.df_clean.drop_duplicates()
             for col in df_clean.columns:
                 df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                if any(k in col.lower() for k in ['salary','amount','price']): 
+                if any(k in col.lower() for k in ['salary','amount','price','paisa']): 
                     df_clean[col] = df_clean[col].apply(words_to_num)
             st.session_state.df_clean = df_clean
             st.session_state.df_loaded = True
             st.session_state.orig_len = orig_len
             st.session_state.empty_fixed = int(df.isna().sum().sum())
-            st.session_state.changed_cells = set()
+            st.session_state.changed_cells = set() # Flush any older stylings
         
         try:
             if st.session_state.get('df_clean') is not None:
@@ -382,89 +474,102 @@ else:
                 with c3: st.metric(T['dups'], orig_len-len(df_clean))
                 with c4: st.metric(T['empty'], st.session_state.empty_fixed)
 
+                # 📊 VISUAL DATA HEALTH INSIGHTS DASHBOARD
+                with st.expander("📊 Visual Data Health Insights Dashboard", expanded=True):
+                    row_counts = [len(df_clean)] * len(df_clean.columns)
+                    chart_data = pd.DataFrame({"Columns": df_clean.columns, "Healthy Rows": row_counts}).set_index("Columns")
+                    st.bar_chart(chart_data)
+
                 st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
                 st.caption(T['preview'])
                 
+                # Render Preview with styled green highlights for modified boxes
                 styled_df = apply_cell_styling(df_clean.head(10))
                 st.dataframe(styled_df, use_container_width=True, height=300)
 
                 all_cols = df_clean.columns.tolist()
                 is_pro = st.session_state.plan == "pro"
+                is_free = st.session_state.plan == "free"
+                is_paid = st.session_state.admin_approved
 
-                # 🔓 DYNAMIC ACCESS TABS
+                # 🔓 DYNAMIC PERMISSION CONTROL - TOOLS INTERFACE TABS
                 tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 with tab1:
-                    # Tool 1: Smart Date Converter (Free & Pro)
+                    # Tool 1: Smart Date Converter (Free + Pro) with Smart Safeguard
                     st.write(f"**{T['tool1']}** ✅ Unlocked")
                     date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                     if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
-                        st.session_state.changed_cells = set() # Clear older cell styling
                         old_snapshot = st.session_state.df_clean.copy()
-                        has_error = False
                         for col in date_cols: 
-                            if any(k in col.lower() for k in ['salary', 'amount', 'price', 'phone', 'id', 'score', 'age']):
-                                st.error(f"⚠️ Column '{col}' contains numeric values or salary strings, not dates! Action stopped to protect data columns.")
-                                has_error = True
-                                continue
                             try:
+                                # Smart Safeguard to check numeric metrics first
+                                if any(k in col.lower() for k in ['salary', 'amount', 'price', 'phone', 'id', 'score', 'age']):
+                                    st.error(f"⚠️ Column '{col}' contains numbers/money, not dates! Skipped to protect your data layout.")
+                                    continue
+                                    
                                 converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
                                 st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
                             except Exception: pass
-                        
-                        if has_error:
-                            st.info("ℹ️ System notice: Page layout reloads automatically in 60 seconds...")
-                            time.sleep(60) # 1-Minute exact visual block wait
-                            st.rerun()
-                        else:
-                            track_modifications(old_snapshot, st.session_state.df_clean)
-                            st.success(T['success']); st.rerun()
+                        track_modifications(old_snapshot, st.session_state.df_clean)
+                        st.success(T['success']); st.rerun()
 
-                    # Tool 2: AI Fill Nulls (PRO ONLY - Completely Hidden on Free Plan)
-                    if is_pro:
+                    # Tool 2: AI Fill Nulls (Pro Only)
+                    if is_free:
+                        st.write(f"**{T['tool2']}** 🔒 Locked (Upgrade to Pro)")
+                        st.multiselect(T['select_col'], all_cols, key="ms_fill_disabled", disabled=True)
+                        st.button(T['apply_btn'], key="btn_fill_disabled", disabled=True, use_container_width=True)
+                    else:
                         st.write(f"**{T['tool2']}** ✅ Unlocked")
                         fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
                         if st.button(T['apply_btn'], key="btn_fill", use_container_width=True):
-                            st.session_state.changed_cells = set()
                             old_snapshot = st.session_state.df_clean.copy()
                             for col in fill_cols:
                                 sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
-                                fill_val = "0" if (sample.isdigit() or '.' in sample) else "Unknown"
+                                if sample.isdigit() or '.' in sample: fill_val = "0"
+                                elif '@' in sample: fill_val = "missing@email.com"
+                                else: fill_val = "Unknown"
                                 st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
 
                 with tab2:
-                    # Tool 3: Email Validator (PRO ONLY - Completely Hidden on Free Plan)
-                    if is_pro:
+                    # Tool 3: Email Validator (Pro Only)
+                    if is_free:
+                        st.write(f"**{T['tool3']}** 🔒 Locked (Upgrade to Pro)")
+                        st.multiselect(T['select_col'], all_cols, key="ms_email_disabled", disabled=True)
+                        st.button(T['apply_btn'], key="btn_email_disabled", disabled=True, use_container_width=True)
+                    else:
                         st.write(f"**{T['tool3']}** ✅ Unlocked")
                         email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
                         if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
-                            st.session_state.changed_cells = set()
                             old_snapshot = st.session_state.df_clean.copy()
                             pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                             for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
 
-                    # Tool 4: Phone Formatter (PRO ONLY - Completely Hidden on Free Plan)
-                    if is_pro:
+                    # Tool 4: Phone Formatter (Pro Only)
+                    if is_free:
+                        st.write(f"**{T['tool4']}** 🔒 Locked (Upgrade to Pro)")
+                        st.multiselect(T['select_col'], all_cols, key="ms_phone_disabled", disabled=True)
+                        st.button(T['apply_btn'], key="btn_phone_disabled", disabled=True, use_container_width=True)
+                    else:
                         st.write(f"**{T['tool4']}** ✅ Unlocked")
                         phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
                         if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
-                            st.session_state.changed_cells = set()
                             old_snapshot = st.session_state.df_clean.copy()
                             for col in phone_cols: 
                                 st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
 
                 with tab3:
-                    # Tool 5: Case Converter (Free & Pro)
+                    # Tool 5: Case Converter (Free + Pro)
                     st.write(f"**{T['tool5']}** ✅ Unlocked")
                     case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
                     case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
                     if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
-                        st.session_state.changed_cells = set()
                         old_snapshot = st.session_state.df_clean.copy()
                         for col in case_cols: 
                             if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
@@ -473,19 +578,27 @@ else:
                         track_modifications(old_snapshot, st.session_state.df_clean)
                         st.success(T['success']); st.rerun()
 
-                    # Tool 6: Remove Symbols (PRO ONLY - Completely Hidden on Free Plan)
-                    if is_pro:
+                    # Tool 6: Remove Symbols (Pro Only)
+                    if is_free:
+                        st.write(f"**{T['tool6']}** 🔒 Locked (Upgrade to Pro)")
+                        st.multiselect(T['select_col'], all_cols, key="ms_spec_disabled", disabled=True)
+                        st.button(T['apply_btn'], key="btn_spec_disabled", disabled=True, use_container_width=True)
+                    else:
                         st.write(f"**{T['tool6']}** ✅ Unlocked")
                         spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
                         if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
-                            st.session_state.changed_cells = set()
                             old_snapshot = st.session_state.df_clean.copy()
                             for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
 
-                    # Tool 7: Bulk Rename (PRO ONLY - Completely Hidden on Free Plan)
-                    if is_pro:
+                    # Tool 7: Bulk Rename (Pro Only)
+                    if is_free:
+                        st.write(f"**{T['tool7']}** 🔒 Locked (Upgrade to Pro)")
+                        st.selectbox("Old column name", all_cols, key="sel_old_disabled", disabled=True)
+                        st.text_input("New column name", key="inp_new_disabled", disabled=True)
+                        st.button(T['apply_btn'], key="btn_rename_disabled", disabled=True, use_container_width=True)
+                    else:
                         st.write(f"**{T['tool7']}** ✅ Unlocked")
                         old = st.selectbox("Old column name", all_cols, key="sel_old")
                         new = st.text_input("New column name", key="inp_new")
@@ -493,47 +606,88 @@ else:
                             st.session_state.df_clean.rename(columns={old: new}, inplace=True)
                             st.success(T['success']); st.rerun()
 
-                    # Tool 8: Remove Duplicates (Free & Pro)
+                    # Tool 8: Remove Duplicates (Free + Pro)
                     st.write(f"**{T['tool8']}** ✅ Unlocked")
                     if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-                        st.session_state.changed_cells = set()
                         st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                         st.success(T['success']); st.rerun()
 
-                    # Tool 9: Trim Spaces (Free & Pro)
+                    # Tool 9: Trim Spaces (Free + Pro)
                     st.write(f"**{T['tool9']}** ✅ Unlocked")
                     trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
                     if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
-                        st.session_state.changed_cells = set()
                         old_snapshot = st.session_state.df_clean.copy()
                         for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                         track_modifications(old_snapshot, st.session_state.df_clean)
                         st.success(T['success']); st.rerun()
 
-                    # Tool 10: Spell Check (PRO ONLY - Completely Hidden on Free Plan)
-                    if is_pro:
+                    # Tool 10: Spell Check (Pro Only)
+                    if is_free:
+                        st.write(f"**{T['tool10']}** 🔒 Locked (Upgrade to Pro)")
+                        st.multiselect(T['select_col'], all_cols, key="ms_spell_disabled", disabled=True)
+                        st.button(T['apply_btn'], key="btn_spell_disabled", disabled=True, use_container_width=True)
+                    else:
                         st.write(f"**{T['tool10']}** ✅ Unlocked")
                         spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
                         if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
-                            st.session_state.changed_cells = set()
                             old_snapshot = st.session_state.df_clean.copy()
-                            typo_dict = {"teh":"the","recieve":"receive","salery":"salary"}
+                            typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
                             def fix_typos(text):
-                                return " ".join([typo_dict.get(w.lower(), w) for w in str(text).split()])
+                                words = str(text).split()
+                                return " ".join([typo_dict.get(w.lower(), w) for w in words])
                             for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
 
-                # EXPORT LAYOUT (No QR Code or payment requests ever block the Free tier here)
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
-                col1, col2 = st.columns(2)
-                csv = st.session_state.df_clean.to_csv(index=False).encode()
-                col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv", use_container_width=True)
-                try:
-                    if openpyxl is not None:
-                        excel = io.BytesIO()
-                        st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                        col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel", use_container_width=True)
-                except Exception: pass
+                if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
+                # EXPORT CAPABILITIES SECTION
+                if st.session_state.plan == "free":
+                    col1, col2 = st.columns(2)
+                    csv = st.session_state.df_clean.to_csv(index=False).encode()
+                    if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
+                        st.session_state.show_balloon = True; st.rerun()
+                    try:
+                        if openpyxl is not None:
+                            excel = io.BytesIO()
+                            st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
+                                st.session_state.show_balloon = True; st.rerun()
+                    except Exception: pass
+                    
+                elif st.session_state.plan == "pro":
+                    if not is_paid:
+                        st.warning(T['wait_approval'])
+                        st.markdown(f"### {T['upi_text'].format(amount=st.session_state.amt)}")
+                        if qrcode is not None:
+                            upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
+                            qr = qrcode.make(upi_link); buf = io.BytesIO(); qr.save(buf, format="PNG")
+                            st.image(buf.getvalue(), width=220)
+                        else:
+                            st.info(f"Send payment directly to UPI ID: {UPI}")
+                            
+                        if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
+                            data = load_db()
+                            if st.session_state.email in data:
+                                data[st.session_state.email]["status"] = "PENDING"
+                                save_db(data)
+                            st.session_state.payment_clicked = True
+                            st.success("🚀 Request logged live in Sherni Admin! Please hold on while Admin approves.")
+                            st.rerun()
+                    else:
+                        col1, col2 = st.columns(2)
+                        csv = st.session_state.df_clean.to_csv(index=False).encode()
+                        if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
+                            st.session_state.show_balloon = True; st.rerun()
+                        try:
+                            if openpyxl is not None:
+                                excel = io.BytesIO()
+                                st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
+                                    st.session_state.show_balloon = True; st.rerun()
+                        except Exception: pass
         except Exception: pass
+
+    if not st.session_state.plan and not st.session_state.email_entered:
+        pass
