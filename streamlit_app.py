@@ -4,7 +4,7 @@ import pandas as pd
 import re
 
 # 🔒 App Setup (Anti-Dark Mode Enforced Glossy CSS - Your Exact Theme)
-st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
 # Secret admin query target configuration
 ADMIN_QUERY_VALUE = "Sherni@123"
@@ -64,14 +64,6 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
     border: 3px solid rgba(255, 255, 255, 0.8) !important;
 }
 
-/* Sidebar Styling match for premium 3D look */
-[data-testid="stSidebar"] {
-    background: rgba(255, 255, 255, 0.95) !important;
-    backdrop-filter: blur(20px) !important;
-    border-right: 2px solid #e9d5ff !important;
-    padding: 1.5rem 1rem !important;
-}
-
 h1,h2,h3,p,span,label,div,li {color: #1e1b4b!important; font-weight: 600!important;}
 h1 {
     font-weight: 900!important; 
@@ -95,26 +87,31 @@ h1 {
     animation: floatLogo 8s ease-in-out infinite;
 }
 
-/* Made wide and covers the frame fully to remove white gaps around the crop area */
+/* Wide anime layout config to drop out the unnecessary white gaps */
 .anime-container {
     position: relative; width: 100%; border-radius: 25px; overflow: hidden; 
     box-shadow: 0 20px 45px rgba(76,29,149,0.25); border: 3px solid #7c3aed;
-    background-color: #ffffff; height: 180px;
+    background-color: #ffffff; height: 250px; padding: 0 !important;
 }
 .anime-container img {width: 100%; height: 100%; object-fit: cover; display: block;}
 
-/* Premium 3D Shadow Pricing Cards inside sidebar */
+/* Premium 3D Shadow Pricing Cards w/ hover properties */
 .pricing-card {
-    border-radius: 20px; padding: 1.2rem; background: #ffffff!important;
-    box-shadow: 0 10px 25px rgba(147,51,234,0.1); 
-    border: 2px solid #e9d5ff !important; margin-bottom: 1.5rem;
+    border-radius: 24px; padding: 2rem; background: #ffffff!important;
+    box-shadow: 0 15px 35px rgba(147,51,234,0.12), 0 5px 15px rgba(0,0,0,0.05); 
+    border: 2.5px solid #e9d5ff !important; height: 100%;
+    transition: transform 0.3s ease;
+}
+.pricing-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(147,51,234,0.18);
 }
 
 .stButton>button {
     border-radius: 16px !important; font-weight: 700 !important; 
     background: linear-gradient(90deg, #7c3aed, #a855f7) !important; color: white !important; 
-    border: none !important; padding: 10px 20px !important; width: 100% !important;
-    box-shadow: 0 6px 15px rgba(124, 58, 237, 0.25) !important;
+    border: none !important; padding: 14px 28px !important; width: 100% !important;
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3) !important;
 }
 
 .pro-banner {
@@ -125,14 +122,14 @@ h1 {
 .pro-banner h2 {color: white!important; margin:0;}
 
 .tool-chip {
-    display: inline-block; background: rgba(255,255,255,0.2) !important; padding: 6px 14px; 
-    border-radius: 30px; margin: 4px; border: 1px solid white !important; color: white !important;
-    font-size: 0.85rem;
+    display: inline-block; background: rgba(255,255,255,0.2) !important; padding: 8px 18px; 
+    border-radius: 30px; margin: 6px; border: 1px solid white !important; color: white !important;
+    font-size: 0.9rem;
 }
 
 .qr-card {
     background: #ffffff !important; border-radius: 24px; padding: 1.5rem; text-align: center;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 3px dashed #7c3aed; margin-bottom: 1.5rem;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 3px dashed #7c3aed; margin-bottom: 2rem;
 }
 
 .cherry {position: fixed; top: -10vh; color: #FFB7C5; font-size: 22px; animation: fall linear infinite; z-index: 9999; pointer-events: none;}
@@ -152,81 +149,7 @@ st.markdown("""
 </audio>
 """, unsafe_allow_html=True)
 
-# --- SIDEBAR WORKSPACE: CHAT, PRICING, & ACCOUNT CONFIGURATIONS ---
-with st.sidebar:
-    st.markdown("### 💎 VeriSame Center")
-    
-    if st.session_state.session_active:
-        st.success(f"Plan Active: **{st.session_state.current_plan.upper()}**")
-        if st.button("← Back (Reset Plan Session)"):
-            st.session_state.session_active = False
-            st.session_state.uploaded_data = None
-            st.rerun()
-    else:
-        st.markdown("#### 💳 Choose Your Access Plan")
-        
-        # Plan 1: Free
-        st.markdown("""
-        <div class="pricing-card">
-            <h4 style="color: #7c3aed !important; margin:0;">FREE FOREVER</h4>
-            <h2 style="margin: 5px 0;">FREE</h2>
-            <p style="font-size:0.8rem; margin:0;">✓ 1000 Rows Limit</p>
-            <p style="font-size:0.8rem; margin:0;">✓ 4 Free Tools Built-in</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Activate Free", key="sidebar_free"):
-            st.session_state.current_plan = "free"
-            st.session_state.session_active = True
-            st.rerun()
-            
-        # Plan 2: 1 Month
-        st.markdown("""
-        <div class="pricing-card" style="border: 2px solid #7c3aed !important;">
-            <h4 style="color: #7c3aed !important; margin:0;">⭐ POPULAR MONTHLY</h4>
-            <h2 style="margin: 5px 0;">₹299 <span style="font-size:0.8rem;">/30 Days</span></h2>
-            <p style="font-size:0.8rem; margin:0;">✓ 10 Premium AI Tools</p>
-            <p style="font-size:0.8rem; margin:0;">✓ Unlimited Rows Processing</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Get Pro (1 Month)", key="sidebar_monthly"):
-            st.session_state.current_plan = "pro"
-            st.session_state.session_active = True
-            st.rerun()
-            
-        # Plan 3: 6 Months
-        st.markdown("""
-        <div class="pricing-card">
-            <h4 style="color: #7c3aed !important; margin:0;">PREMIUM SAVER</h4>
-            <h2 style="margin: 5px 0;">₹1499 <span style="font-size:0.8rem;">/180 Days</span></h2>
-            <p style="font-size:0.8rem; margin:0;">✓ Full Suite Access</p>
-            <p style="font-size:0.8rem; margin:0;">✓ Priority Speed & Support</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Get Pro+ (6 Months)", key="sidebar_6months"):
-            st.session_state.current_plan = "pro"
-            st.session_state.session_active = True
-            st.rerun()
-
-    st.markdown("---")
-    st.markdown("### 💬 Studio AI Chatbot")
-    for chat in st.session_state.chat_history[-4:]:  # Show last few messages efficiently
-        if chat["role"] == "assistant":
-            st.markdown(f"**🤖 AI:** {chat['message']}")
-        else:
-            st.markdown(f"**👤 You:** {chat['message']}")
-            
-    u_input = st.text_input("Ask assistant...", placeholder="Type message...", key="sidebar_chat_input")
-    if st.button("Send 🚀", key="sidebar_chat_btn") and u_input:
-        st.session_state.chat_history.append({"role": "user", "message": u_input})
-        u_lower = u_input.lower()
-        ans = "I can guide you about any of our 10 tools! Just specify the tool you are interested in."
-        if "tool 1" in u_lower or "date" in u_lower: ans = "Tool 1 normalizes dynamic variations of date formats cleanly into standard YYYY-MM-DD configurations."
-        elif "free" in u_lower: ans = "The free tier gives access to exactly 4 unlocked core layout tools with a 1000 row restriction."
-        elif "creator" in u_lower or "founder" in u_lower: ans = "👑 VeriSame's system platform architecture was completely envisioned and built by **Anugya Singh**."
-        st.session_state.chat_history.append({"role": "assistant", "message": ans})
-        st.rerun()
-
-# --- MAIN PAGE HEADER LAYOUT ---
+# Top Header Layout (Enhanced columns alignment)
 col1, col2, col3 = st.columns([1.6, 2.4, 1.6])
 with col1:
     st.markdown("""<div class="floating-logo-container"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 220px; height: auto;"></div>""", unsafe_allow_html=True)
@@ -234,7 +157,6 @@ with col2:
     st.markdown("<h1 style='margin-top: 30px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown('<div class="subtitle">The Fastest Way to Clean Your Data</div>', unsafe_allow_html=True)
 with col3:
-    # Adjusted with cover style and optimized frame heights to ensure VeriSame text pops clearly
     st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 
 # 👑 URL LINK QUERY DETECTION SYSTEM FOR SHERNI ADMIN PANEL
@@ -247,7 +169,7 @@ if "admin" in st.query_params and st.query_params["admin"] == ADMIN_QUERY_VALUE:
         st.rerun()
     st.stop()
 
-# --- MAIN WORKSPACE SUBMISSION CONSOLE ---
+# Main Workspace (Before Login / Plan selection)
 if not st.session_state.session_active:
     st.markdown("""
     <div class="pro-banner">
@@ -265,15 +187,81 @@ if not st.session_state.session_active:
             <span class="tool-chip">Spell</span>
         </div>
         <div style="color: white !important; font-size: 0.85rem; margin-top: 5px; opacity: 0.9;">
-            🎵 Peaceful 20s Welcome Track Active • ⚙️ Configuration Controls Mounted inside Sidebar Layout
+            🎵 Peaceful 20s Welcome Track Active • 🧠 Interactive Audio Effects Enabled On UI Action Buttons
         </div>
     </div>
     """, unsafe_allow_html=True)
-    st.info("💡 Please choose an access plan from the left sidebar panel to initialize the workspace tools.")
+
+    # Front Page Pricing Matrix Columns Layout
+    p_col1, p_col2, p_col3 = st.columns(3)
+    with p_col1:
+        st.markdown("""
+        <div class="pricing-card">
+            <h3 style="color: #7c3aed !important;">FREE FOREVER</h3>
+            <h1 style="font-size: 3rem; margin: 10px 0;">FREE</h1>
+            <p style="font-size: 0.9rem; color: #4b5563 !important;">Lifetime</p>
+            <p>✓ 1000 Rows Limit</p>
+            <p>✓ CSV & Excel Export</p>
+            <p>✓ 4 Free Tools Built-in</p>
+            <p>✓ 30s Processing</p>
+            <p>✓ Email Support</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Start Free", key="plan_free"):
+            st.session_state.current_plan = "free"
+            st.session_state.session_active = True
+            st.rerun()
+
+    with p_col2:
+        st.markdown("""
+        <div class="pricing-card" style="border: 2.5px solid #7c3aed !important; box-shadow: 0 15px 30px rgba(124, 58, 237, 0.15) !important;">
+            <h3 style="color: #7c3aed !important;">⭐ POPULAR<br>MONTHLY</h3>
+            <h1 style="font-size: 3rem; margin: 10px 0;">₹299</h1>
+            <p style="font-size: 0.9rem; color: #4b5563 !important;">30 Days</p>
+            <p>✓ Unlimited Rows</p>
+            <p>✓ CSV + Excel Export</p>
+            <p>✓ 10 Premium AI Tools</p>
+            <p>✓ 3s Speed</p>
+            <p>✓ Priority Support</p>
+            <p>✓ No Watermark</p>
+            <p>✓ Lifetime Updates</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Get Pro", key="plan_monthly"):
+            st.session_state.current_plan = "pro"
+            st.session_state.session_active = True
+            st.rerun()
+
+    with p_col3:
+        st.markdown("""
+        <div class="pricing-card">
+            <h3 style="color: #7c3aed !important;">6 MONTHS</h3>
+            <h1 style="font-size: 3rem; margin: 10px 0;">₹1499</h1>
+            <p style="font-size: 0.9rem; color: #4b5563 !important;">180 Days</p>
+            <p>✓ Unlimited Rows</p>
+            <p>✓ CSV + Excel Export</p>
+            <p>✓ 10 Premium AI Tools</p>
+            <p>✓ 3s Speed</p>
+            <p>✓ Priority Support</p>
+            <p>✓ No Watermark</p>
+            <p>✓ Lifetime Updates</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button("Get Pro+", key="plan_6months"):
+            st.session_state.current_plan = "pro"
+            st.session_state.session_active = True
+            st.rerun()
 
 # Logged In Layout
 else:
-    # Display Premium 3D QR Code Payment Box if Pro plan is clicked
+    st.success(f"Workspace Active: Plan **{st.session_state.current_plan.upper()}**")
+    
+    if st.button("← Back to Plan Selection"):
+        st.session_state.session_active = False
+        st.session_state.uploaded_data = None
+        st.rerun()
+        
+    # Premium 3D QR Code Payment Box if Pro plan is active
     if st.session_state.current_plan == "pro":
         st.markdown("""
         <div class="qr-card">
@@ -412,8 +400,29 @@ else:
             csv_data = df.to_csv(index=False).encode('utf-8')
             st.download_button("Download Clean File (CSV)", csv_data, "cleaned_data.csv", "text/csv", use_container_width=True)
         with d_col2:
-            # Excel download channel converter buffer engine
             towrite = io.BytesIO()
             df.to_excel(towrite, index=False, header=True, engine='openpyxl')
             towrite.seek(0)
             st.download_button("Download Clean File (Excel)", towrite, "cleaned_data.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+
+# Chatbot Placement on the absolute front page bottom layout
+st.markdown("---")
+st.markdown("### 💬 VeriSame Live AI Chat Studio")
+
+for chat in st.session_state.chat_history:
+    if chat["role"] == "assistant":
+        st.markdown(f"**🤖 AI:** {chat['message']}")
+    else:
+        st.markdown(f"**👤 You:** {chat['message']}")
+
+u_input = st.text_input("Ask a question...", placeholder="e.g., How does Tool 4 work?", key="chat_msg_main")
+if st.button("Send Message 🚀", key="send_btn_main") and u_input:
+    st.session_state.chat_history.append({"role": "user", "message": u_input})
+    u_lower = u_input.lower()
+    ans = "I can guide you about any of our 10 tools! Just specify the tool you are interested in."
+    if "tool 1" in u_lower or "date" in u_lower: ans = "Tool 1 normalizes dynamic variations of date formats cleanly into standard YYYY-MM-DD configurations."
+    elif "free" in u_lower: ans = "The free tier gives access to exactly 4 unlocked core layout tools with a 1000 row restriction."
+    elif "creator" in u_lower or "founder" in u_lower: ans = "👑 VeriSame's system platform architecture was completely envisioned and built by **Anugya Singh**."
+    
+    st.session_state.chat_history.append({"role": "assistant", "message": ans})
+    st.rerun()
