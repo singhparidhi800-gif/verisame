@@ -8,13 +8,12 @@ from datetime import datetime, timedelta
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
 # 🔐 Fetching Secret Admin Query Target Configuration Securely from Streamlit Secrets
-# Make sure to add ADMIN_PASSWORD = "your_password" in your secrets.toml file!
 try:
     ADMIN_QUERY_VALUE = st.secrets["ADMIN_PASSWORD"]
 except Exception:
     ADMIN_QUERY_VALUE = "FallbackSecureDefaultAdminKey999!" # Safe backup if secrets aren't loaded locally yet
 
-# System Memory Database Initialization
+# System Memory Database Initialization (Global Persistent State)
 if 'session_active' not in st.session_state: st.session_state.session_active = False
 if 'current_plan' not in st.session_state: st.session_state.current_plan = ""
 if 'uploaded_data' not in st.session_state: st.session_state.uploaded_data = None
@@ -168,22 +167,24 @@ if "admin" in st.query_params and st.query_params["admin"] == ADMIN_QUERY_VALUE:
     st.info("Manage User Payments and Verify Plan Status.")
     
     if len(st.session_state.admin_user_db) == 0:
-        st.write("No dynamic active transaction registration context records logs found.")
+        st.write("No active transaction records found.")
     else:
         for email, u_data in list(st.session_state.admin_user_db.items()):
-            st.markdown(f"**User Email:** {email} | **Requested Plan:** {u_data['plan'].upper()} | **Status:** {u_data['status']}")
+            st.markdown(f"---")
+            st.markdown(f"**User Email:** `{email}` | **Requested Plan:** `{u_data['plan'].upper()}` | **Status:** `{u_data['status']}`")
             if u_data['status'] == "Pending Verification":
-                if st.button(f"Verify iPaid ({email})", key=f"verify_{email}"):
+                if st.button(f"Verify iPaid && Unlock ({email})", key=f"verify_{email}"):
                     st.session_state.admin_user_db[email]['status'] = "Verified Paid"
-                    st.success(f"Payment approved for {email}!")
+                    st.success(f"Payment approved and files unlocked for {email}!")
+                    st.balloons()
                     st.rerun()
                     
-    if st.button("Exit Admin View"):
+    if st.button("Exit Admin View", type="primary"):
         st.query_params.clear()
         st.rerun()
     st.stop()
 
-# Main Workspace (Before Login / Plan selection)
+# PAGE 1: Pricing Table & Email Setup Layout
 if not st.session_state.session_active:
     st.markdown("""
     <div class="pro-banner">
@@ -203,11 +204,9 @@ if not st.session_state.session_active:
     </div>
     """, unsafe_allow_html=True)
 
-    # Required Credentials Collection Console Form
     st.markdown("### 🔑 Setup Identity Context Before Access")
-    c_email = st.text_input("Enter Your Email Address", placeholder="name@example.com")
+    c_email = st.text_input("Enter Your Email Address", placeholder="name@example.com").strip()
 
-    # Front Page Pricing Matrix Columns Layout
     p_col1, p_col2, p_col3 = st.columns(3)
     with p_col1:
         st.markdown("""
@@ -221,7 +220,7 @@ if not st.session_state.session_active:
         </div>
         """, unsafe_allow_html=True)
         if st.button("Start Free", key="plan_free"):
-            if c_email:
+            if c_email and "@" in c_email:
                 st.session_state.user_email = c_email
                 st.session_state.current_plan = "free"
                 st.session_state.session_active = True
@@ -243,7 +242,7 @@ if not st.session_state.session_active:
         </div>
         """, unsafe_allow_html=True)
         if st.button("Get Pro (1 Month)", key="plan_monthly"):
-            if c_email:
+            if c_email and "@" in c_email:
                 st.session_state.user_email = c_email
                 st.session_state.current_plan = "pro"
                 st.session_state.session_active = True
@@ -266,7 +265,7 @@ if not st.session_state.session_active:
         </div>
         """, unsafe_allow_html=True)
         if st.button("Get Pro+ (6 Months)", key="plan_6months"):
-            if c_email:
+            if c_email and "@" in c_email:
                 st.session_state.user_email = c_email
                 st.session_state.current_plan = "pro"
                 st.session_state.session_active = True
@@ -277,25 +276,21 @@ if not st.session_state.session_active:
             else:
                 st.error("Please enter a valid email address first!")
 
-# Logged In Workspace Engine Layout Configuration
+# PAGE 2: Main Workspace & File Upload Engine Layout
 else:
     exp_date_str = st.session_state.plan_expiry.strftime('%Y-%m-%d %H:%M')
     st.success(f"Workspace User Reference: **{st.session_state.user_email}** | Plan Type: **{st.session_state.current_plan.upper()}**")
     
     if st.session_state.current_plan == "pro":
-        st.info(f"📆 Plan Termination Target Context Timeline: **{exp_date_str}**")
-        
-        days_remaining = (st.session_state.plan_expiry - datetime.now()).days
-        if days_remaining <= 5:
-            st.warning(f"⚠️ Alert: Your Premium Access Session is scheduled to expire in {days_remaining} days! Please renew soon.")
+        st.info(f"📆 Plan Duration Timeline: **{exp_date_str}**")
 
-    if st.button("← Back to Plan Selection"):
+    if st.button("← Back to Plan Selection", type="secondary"):
         st.session_state.session_active = False
         st.session_state.uploaded_data = None
         st.session_state.is_cleaned = False
         st.rerun()
 
-    uploaded_file = st.file_uploader("Drop CSV or Excel file here", type=["csv", "xlsx"])
+    uploaded_file = st.file_uploader("Drop CSV or Excel file here to clean", type=["csv", "xlsx"])
     
     if uploaded_file:
         if st.session_state.uploaded_data is None:
@@ -333,8 +328,7 @@ else:
                 if st.button("Convert Date Format", key="btn_t1"):
                     st.session_state.uploaded_data[sel_col] = pd.to_datetime(st.session_state.uploaded_data[sel_col], errors='coerce').dt.strftime('%Y-%m-%d')
                     st.session_state.is_cleaned = True
-                    st.success("Successfully Normalized Dates!")
-                    st.rerun()
+                    st.success("Successfully Normalized Dates! ✅"); st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
             # Tool 5: Case Converter
@@ -347,8 +341,7 @@ else:
                     elif case_mode == "lowercase": st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.lower()
                     else: st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.title()
                     st.session_state.is_cleaned = True
-                    st.success("Case Updated Successfully!")
-                    st.rerun()
+                    st.success("Case Updated Successfully! ✅"); st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
             # Tool 8: Remove Duplicates
@@ -357,8 +350,7 @@ else:
                 if st.button("Purge Duplicated Rows", key="btn_t8"):
                     st.session_state.uploaded_data = st.session_state.uploaded_data.drop_duplicates()
                     st.session_state.is_cleaned = True
-                    st.success("Duplicates Removed!")
-                    st.rerun()
+                    st.success("Duplicates Removed Successfully! ✅"); st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
             # Tool 9: Trim Spaces
@@ -368,8 +360,7 @@ else:
                 if st.button("Clean Whitespaces", key="btn_t9"):
                     st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.strip()
                     st.session_state.is_cleaned = True
-                    st.success("Whitespaces Trimmed!")
-                    st.rerun()
+                    st.success("Whitespaces Trimmed! ✅"); st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
         with col_t2:
@@ -386,8 +377,7 @@ else:
                     if st.button("Fill Empty Cells", key="btn_t2"):
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].fillna(fill_val)
                         st.session_state.is_cleaned = True
-                        st.success("Null Values Handled!")
-                        st.rerun()
+                        st.success("Null Values Handled! ✅"); st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
 
                 # Tool 3: Email Validator
@@ -398,8 +388,7 @@ else:
                         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
                         st.session_state.is_cleaned = True
-                        st.success("Emails Evaluated!")
-                        st.rerun()
+                        st.success("Emails Evaluated! ✅"); st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
 
                 # Tool 4: Phone Formatter
@@ -409,8 +398,7 @@ else:
                     if st.button("Format Phone Numbers", key="btn_t4"):
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x))[-10:])
                         st.session_state.is_cleaned = True
-                        st.success("Phone Formats Cleaned!")
-                        st.rerun()
+                        st.success("Phone Formats Cleaned! ✅"); st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
 
                 # Tool 6: Remove Symbols
@@ -420,8 +408,7 @@ else:
                     if st.button("Strip Special Characters", key="btn_t6"):
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s]', '', x))
                         st.session_state.is_cleaned = True
-                        st.success("Symbols Stripped!")
-                        st.rerun()
+                        st.success("Symbols Stripped! ✅"); st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
 
                 # Tool 7: Bulk Rename
@@ -432,8 +419,7 @@ else:
                     if st.button("Rename Layout Now", key="btn_t7") and new_n:
                         st.session_state.uploaded_data.rename(columns={old_n: new_n}, inplace=True)
                         st.session_state.is_cleaned = True
-                        st.success("Column Renamed!")
-                        st.rerun()
+                        st.success("Column Renamed! ✅"); st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
 
                 # Tool 10: Words-to-Number
@@ -443,25 +429,30 @@ else:
                     if st.button("Apply Lexical Parsing", key="btn_t10"):
                         st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].apply(words_to_num)
                         st.session_state.is_cleaned = True
-                        st.success("Text Converted to Absolute Integers!")
-                        st.rerun()
+                        st.success("Text Converted to Absolute Integers! ✅"); st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
 
         # 💸 AFTER FILE CLEANING QR ENGINE ROUTING LOGIC
         user_email_ref = st.session_state.user_email
-        is_verified_paid = st.session_state.admin_user_db.get(user_email_ref, {}).get("status") == "Verified Paid"
+        user_db_status = st.session_state.admin_user_db.get(user_email_ref, {}).get("status", "Pending Verification")
+        is_verified_paid = (user_db_status == "Verified Paid")
 
         if st.session_state.is_cleaned and st.session_state.current_plan == "pro" and not is_verified_paid:
-            st.markdown("""
+            st.markdown(f"""
             <div class="qr-card">
                 <h3 style="color: #7c3aed !important; margin:0;">⚡ FILE PROCESSING COMPLETE: PAYMENT REQUIRED</h3>
                 <p style="color: #4b5563 !important; font-size: 0.9rem; margin-bottom: 10px;">Please complete the UPI transfer to unlock your clean data downloads. Admin will review immediately.</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=UPI://pay?pa=verisame@upi" style="border: 4px solid #7c3aed; border-radius: 12px; margin: 10px 0;">
-                <div style="font-size: 0.8rem; opacity: 0.8; font-weight: bold; color: #dc2626 !important;">Status: Awaiting Admin iPaid Action Approval</div>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UPI://pay?pa=playwithreyansh0@okhdfcbank&pn=VeriSame&cu=INR" style="border: 4px solid #7c3aed; border-radius: 12px; margin: 10px 0;">
+                <div style="font-size: 0.9rem; margin-top: 5px; font-weight: bold; color: #d97706 !important;">Current Status: {user_db_status}</div>
             </div>
             """, unsafe_allow_html=True)
+            
+            if st.button("🙋‍♂️ Click Here After Payment (I Paid)", key="btn_customer_ipaid", type="primary"):
+                st.session_state.admin_user_db[user_email_ref]["status"] = "Pending Verification"
+                st.success("Your payment declaration has been logged live in Sherni Admin Panel! Please wait for approval.")
+                st.rerun()
         else:
-            # Displays download interface seamlessly with Balloons active
+            # Show download layout once free or paid-verified pro conditions meet
             st.markdown("### 📥 Download Cleaned Data")
             d_col1, d_col2 = st.columns(2)
             with d_col1:
@@ -475,7 +466,7 @@ else:
                 if st.download_button("Download Clean File (Excel)", towrite, "cleaned_data.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True):
                     st.balloons()
 
-# Chatbot Placement on the absolute front page bottom layout
+# Chatbot Layout Configuration
 st.markdown("---")
 st.markdown("### 💬 VeriSame Live AI Chat Studio")
 
