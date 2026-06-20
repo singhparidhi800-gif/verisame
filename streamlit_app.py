@@ -4,31 +4,32 @@ import pandas as pd
 import re
 from datetime import datetime, timedelta
 
-# 🔒 App Setup (Anti-Dark Mode Enforced Glossy CSS)
+# 🔒 App Setup (Enforced Anti-Dark Mode Layout)
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
 # 🔐 Fetching Secret Admin Query Target Configuration Securely from Streamlit Secrets
 try:
     ADMIN_QUERY_VALUE = st.secrets["ADMIN_PASSWORD"]
 except Exception:
-    ADMIN_QUERY_VALUE = "FallbackSecureDefaultAdminKey999!" # Safe backup if secrets aren't loaded locally yet
+    ADMIN_QUERY_VALUE = "FallbackSecureDefaultAdminKey999!" # Backup secure key
 
-# System Memory Database Initialization (Global Persistent State)
+# Persistent System Memory Init
 if 'session_active' not in st.session_state: st.session_state.session_active = False
-if 'current_plan' not in st.session_state: st.session_state.current_plan = ""
+if 'selected_plan' not in st.session_state: st.session_state.selected_plan = ""  # Holds chosen plan temporarily
+if 'current_plan' not in st.session_state: st.session_state.current_plan = ""    # Set after email activation
 if 'uploaded_data' not in st.session_state: st.session_state.uploaded_data = None
 if 'is_cleaned' not in st.session_state: st.session_state.is_cleaned = False
 if 'user_email' not in st.session_state: st.session_state.user_email = ""
 if 'plan_expiry' not in st.session_state: st.session_state.plan_expiry = None
 
-# Global Admin Database Simulation for Verification Processes
+# Global Admin Database Simulation (Sherni Core)
 if 'admin_user_db' not in st.session_state:
     st.session_state.admin_user_db = {}
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about data cleaning features!"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame Studio. 💎 Ask me anything about our premium tools!"}]
 
-# Custom Word-to-Number Logic for Tool 10
+# Custom Word-to-Number Engine Logic
 def words_to_num(s):
     if pd.isna(s): return s
     s_str = str(s).lower().strip()
@@ -51,7 +52,7 @@ def words_to_num(s):
             else: current += val
     return total + current if has_num_word and (total + current > 0) else s
 
-# Styling & CSS with Layout, 3D Effects, and Responsive Text Fixes
+# Styling Architecture Glossy Injector
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -87,15 +88,11 @@ h1 {
 }
 .subtitle {color: #4b5563!important; font-size: 1.2rem!important; font-weight: 500!important; margin-bottom: 1.2rem!important;}
 
-@keyframes floatLogo {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-12px); }
-    100% { transform: translateY(0px); }
-}
 .floating-logo-container {
     display: flex; align-items: center; justify-content: center; height:100%;
     animation: floatLogo 8s ease-in-out infinite;
 }
+@keyframes floatLogo { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
 
 .anime-container {
     position: relative; width: 100%; border-radius: 25px; overflow: hidden; 
@@ -123,11 +120,8 @@ h1 {
 }
 
 .tool-box-container {
-    background: #ffffff !important;
-    border: 2px solid #e9d5ff !important;
-    border-radius: 20px !important;
-    padding: 1.2rem !important;
-    margin-bottom: 1.5rem !important;
+    background: #ffffff !important; border: 2px solid #e9d5ff !important;
+    border-radius: 20px !important; padding: 1.2rem !important; margin-bottom: 1.5rem !important;
     box-shadow: 0 8px 25px rgba(147,51,234,0.05) !important;
 }
 
@@ -151,7 +145,7 @@ h1 {
 </style>
 """, unsafe_allow_html=True)
 
-# Top Header Layout
+# Top Brand Header Layout
 col1, col2, col3 = st.columns([1.6, 2.4, 1.6])
 with col1:
     st.markdown("""<div class="floating-logo-container"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 220px; height: auto;"></div>""", unsafe_allow_html=True)
@@ -161,31 +155,31 @@ with col2:
 with col3:
     st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 
-# 👑 SHERNI ADMIN CONTROL TELEMETRY DESK
+# 👑 SHERNI ADMIN DESK TELEMETRY ROUTER
 if "admin" in st.query_params and st.query_params["admin"] == ADMIN_QUERY_VALUE:
     st.markdown("## 👑 Sherni Admin Panel Workstation 👑")
-    st.info("Manage User Payments and Verify Plan Status.")
+    st.info("Verify User Transactions & Unlock Data Access Toggles Dynamically.")
     
     if len(st.session_state.admin_user_db) == 0:
-        st.write("No active transaction records found.")
+        st.write("No active transaction entries registered in database.")
     else:
         for email, u_data in list(st.session_state.admin_user_db.items()):
             st.markdown(f"---")
-            st.markdown(f"**User Email:** `{email}` | **Requested Plan:** `{u_data['plan'].upper()}` | **Status:** `{u_data['status']}`")
+            st.markdown(f"👤 **User:** `{email}` | 🎯 **Selected Plan:** `{u_data['plan'].upper()}` | 🚦 **Status:** `{u_data['status']}`")
             if u_data['status'] == "Pending Verification":
-                if st.button(f"Verify iPaid && Unlock ({email})", key=f"verify_{email}"):
+                if st.button(f"Approve Payment && Verify Enforced Access ({email})", key=f"verify_{email}"):
                     st.session_state.admin_user_db[email]['status'] = "Verified Paid"
-                    st.success(f"Payment approved and files unlocked for {email}!")
+                    st.success(f"Payment approved! Files unlocked safely for {email}.")
                     st.balloons()
                     st.rerun()
                     
-    if st.button("Exit Admin View", type="primary"):
+    if st.button("Exit Sherni Workspace View", type="primary"):
         st.query_params.clear()
         st.rerun()
     st.stop()
 
-# PAGE 1: Pricing Table & Email Setup Layout
-if not st.session_state.session_active:
+# STAGE 1: Check if Plan Selection is Empty (Front Landing View)
+if not st.session_state.selected_plan and not st.session_state.session_active:
     st.markdown("""
     <div class="pro-banner">
         <h2>💎 UNLOCK 10 PREMIUM AI TOOLS 💎</h2>
@@ -204,286 +198,244 @@ if not st.session_state.session_active:
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("### 🔑 Setup Identity Context Before Access")
-    c_email = st.text_input("Enter Your Email Address", placeholder="name@example.com").strip()
-
     p_col1, p_col2, p_col3 = st.columns(3)
     with p_col1:
-        st.markdown("""
-        <div class="pricing-card">
-            <h3 style="color: #7c3aed !important;">FREE FOREVER</h3>
-            <h1 style="font-size: 3rem; margin: 10px 0;">FREE</h1>
-            <p style="font-size: 0.9rem; color: #4b5563 !important;">Lifetime</p>
-            <p>✓ 1000 Rows Limit</p>
-            <p>✓ CSV & Excel Export</p>
-            <p>✓ 4 Free Tools Built-in</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Start Free", key="plan_free"):
-            if c_email and "@" in c_email:
-                st.session_state.user_email = c_email
-                st.session_state.current_plan = "free"
-                st.session_state.session_active = True
-                st.session_state.plan_expiry = datetime.now() + timedelta(days=9999)
-                st.session_state.admin_user_db[c_email] = {"plan": "free", "status": "Verified Paid", "expiry": st.session_state.plan_expiry}
-                st.rerun()
-            else:
-                st.error("Please enter a valid email address first!")
+        st.markdown("""<div class="pricing-card"><h3>FREE FOREVER</h3><h1 style="font-size: 3rem; margin: 10px 0;">FREE</h1><p>✓ 1000 Rows Limit</p><p>✓ CSV & Excel Export</p><p>✓ 4 Free Tools</p></div>""", unsafe_allow_html=True)
+        if st.button("Select Free Tier Plan", key="p_free"):
+            st.session_state.selected_plan = "free"
+            st.rerun()
 
     with p_col2:
-        st.markdown("""
-        <div class="pricing-card" style="border: 2.5px solid #7c3aed !important;">
-            <h3 style="color: #7c3aed !important;">⭐ POPULAR<br>MONTHLY</h3>
-            <h1 style="font-size: 3rem; margin: 10px 0;">₹299</h1>
-            <p style="font-size: 0.9rem; color: #4b5563 !important;">30 Days Duration</p>
-            <p>✓ Unlimited Rows</p>
-            <p>✓ 10 Premium AI Tools</p>
-            <p>✓ Priority Execution Engine</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Get Pro (1 Month)", key="plan_monthly"):
-            if c_email and "@" in c_email:
-                st.session_state.user_email = c_email
-                st.session_state.current_plan = "pro"
-                st.session_state.session_active = True
-                st.session_state.plan_expiry = datetime.now() + timedelta(days=30)
-                if c_email not in st.session_state.admin_user_db:
-                    st.session_state.admin_user_db[c_email] = {"plan": "pro", "status": "Pending Verification", "expiry": st.session_state.plan_expiry}
-                st.rerun()
-            else:
-                st.error("Please enter a valid email address first!")
+        st.markdown("""<div class="pricing-card" style="border: 2.5px solid #7c3aed !important;"><h3>⭐ POPULAR<br>MONTHLY</h3><h1 style="font-size: 3rem; margin: 10px 0;">₹299</h1><p>✓ Unlimited Rows Suite</p><p>✓ 10 Premium AI Tools</p><p>✓ Priority Engine</p></div>""", unsafe_allow_html=True)
+        if st.button("Select Pro 1-Month Plan", key="p_monthly"):
+            st.session_state.selected_plan = "pro_1m"
+            st.rerun()
 
     with p_col3:
-        st.markdown("""
-        <div class="pricing-card">
-            <h3 style="color: #7c3aed !important;">6 MONTHS PLAN</h3>
-            <h1 style="font-size: 3rem; margin: 10px 0;">₹1499</h1>
-            <p style="font-size: 0.9rem; color: #4b5563 !important;">180 Days Duration</p>
-            <p>✓ Unlimited Rows Suite</p>
-            <p>✓ 10 Premium AI Tools</p>
-            <p>✓ Priority Support & Security</p>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("Get Pro+ (6 Months)", key="plan_6months"):
+        st.markdown("""<div class="pricing-card"><h3>6 MONTHS SUITE</h3><h1 style="font-size: 3rem; margin: 10px 0;">₹1499</h1><p>✓ Unlimited Rows Suite</p><p>✓ 10 Premium AI Tools</p><p>✓ Priority Support</p></div>""", unsafe_allow_html=True)
+        if st.button("Select Pro+ 6-Month Plan", key="p_6m"):
+            st.session_state.selected_plan = "pro_6m"
+            st.rerun()
+
+# STAGE 2: Plan is Selected but Email Context is Missing (Inner Identity View)
+elif st.session_state.selected_plan and not st.session_state.session_active:
+    st.markdown(f"### 🔑 Activate Identity Context for Plan: `{st.session_state.selected_plan.upper()}`")
+    
+    # Structural Layout for Inner Actions
+    c_email = st.text_input("Enter Your Email Address to Continue", placeholder="username@example.com").strip()
+    
+    back_col, confirm_col = st.columns([1, 4])
+    with back_col:
+        if st.button("← Back to Plans"):
+            st.session_state.selected_plan = ""
+            st.rerun()
+            
+    with confirm_col:
+        if st.button("Activate Plan and Open Workspace", type="primary"):
             if c_email and "@" in c_email:
                 st.session_state.user_email = c_email
-                st.session_state.current_plan = "pro"
-                st.session_state.session_active = True
-                st.session_state.plan_expiry = datetime.now() + timedelta(days=180)
-                if c_email not in st.session_state.admin_user_db:
-                    st.session_state.admin_user_db[c_email] = {"plan": "pro", "status": "Pending Verification", "expiry": st.session_state.plan_expiry}
-                st.rerun()
-            else:
-                st.error("Please enter a valid email address first!")
-
-# PAGE 2: Main Workspace & File Upload Engine Layout
-else:
-    exp_date_str = st.session_state.plan_expiry.strftime('%Y-%m-%d %H:%M')
-    st.success(f"Workspace User Reference: **{st.session_state.user_email}** | Plan Type: **{st.session_state.current_plan.upper()}**")
-    
-    if st.session_state.current_plan == "pro":
-        st.info(f"📆 Plan Duration Timeline: **{exp_date_str}**")
-
-    if st.button("← Back to Plan Selection", type="secondary"):
-        st.session_state.session_active = False
-        st.session_state.uploaded_data = None
-        st.session_state.is_cleaned = False
-        st.rerun()
-
-    uploaded_file = st.file_uploader("Drop CSV or Excel file here to clean", type=["csv", "xlsx"])
-    
-    if uploaded_file:
-        if st.session_state.uploaded_data is None:
-            try:
-                if uploaded_file.name.endswith('.csv'):
-                    df = pd.read_csv(uploaded_file)
-                else:
-                    df = pd.read_excel(uploaded_file)
                 
-                if st.session_state.current_plan == "free" and len(df) > 1000:
-                    st.error(f"❌ Limit Exceeded: Free plan only supports up to 1000 rows. Current file has {len(df)} rows.")
-                    st.stop()
-                    
-                st.session_state.uploaded_data = df
-            except Exception as e:
-                st.error(f"Error reading file: {e}")
-
-    if st.session_state.uploaded_data is not None:
-        df = st.session_state.uploaded_data
-        st.markdown("### 📊 Live Preview")
-        st.dataframe(df.head(10), use_container_width=True)
-        
-        all_columns = df.columns.tolist()
-        st.markdown("### 🛠️ Available Data Cleaning Features")
-        
-        col_t1, col_t2 = st.columns(2)
-        
-        with col_t1:
-            st.markdown("#### 🆓 Core Tools (Unlocked)")
-            
-            # Tool 1: Smart Date Converter
-            st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-            with st.expander("📆 Smart Date Converter"):
-                sel_col = st.selectbox("Select Date Column", all_columns, key="t1")
-                if st.button("Convert Date Format", key="btn_t1"):
-                    st.session_state.uploaded_data[sel_col] = pd.to_datetime(st.session_state.uploaded_data[sel_col], errors='coerce').dt.strftime('%Y-%m-%d')
-                    st.session_state.is_cleaned = True
-                    st.success("Successfully Normalized Dates! ✅"); st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            # Tool 5: Case Converter
-            st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-            with st.expander("🔤 Case Converter"):
-                sel_col = st.selectbox("Select Text Column", all_columns, key="t5")
-                case_mode = st.selectbox("Format Type", ["UPPERCASE", "lowercase", "Title Case"], key="mode_t5")
-                if st.button("Apply Case Change", key="btn_t5"):
-                    if case_mode == "UPPERCASE": st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.upper()
-                    elif case_mode == "lowercase": st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.lower()
-                    else: st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.title()
-                    st.session_state.is_cleaned = True
-                    st.success("Case Updated Successfully! ✅"); st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            # Tool 8: Remove Duplicates
-            st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-            with st.expander("👥 Remove Duplicates"):
-                if st.button("Purge Duplicated Rows", key="btn_t8"):
-                    st.session_state.uploaded_data = st.session_state.uploaded_data.drop_duplicates()
-                    st.session_state.is_cleaned = True
-                    st.success("Duplicates Removed Successfully! ✅"); st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-            # Tool 9: Trim Spaces
-            st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-            with st.expander("✂️ Trim Spaces"):
-                sel_col = st.selectbox("Select Target Column", all_columns, key="t9")
-                if st.button("Clean Whitespaces", key="btn_t9"):
-                    st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.strip()
-                    st.session_state.is_cleaned = True
-                    st.success("Whitespaces Trimmed! ✅"); st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        with col_t2:
-            st.markdown("#### 💎 Premium Tools")
-            
-            if st.session_state.current_plan != "pro":
-                st.warning("🔒 Upgrade to Pro to unlock Premium AI modules.")
-            else:
-                # Tool 2: AI Fill Nulls
-                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-                with st.expander("✨ AI Fill Nulls"):
-                    sel_col = st.selectbox("Select Target Column", all_columns, key="t2")
-                    fill_val = st.text_input("Fill Value", placeholder="e.g. Unknown")
-                    if st.button("Fill Empty Cells", key="btn_t2"):
-                        st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].fillna(fill_val)
-                        st.session_state.is_cleaned = True
-                        st.success("Null Values Handled! ✅"); st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-
-                # Tool 3: Email Validator
-                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-                with st.expander("📧 Email Validator"):
-                    sel_col = st.selectbox("Select Email Column", all_columns, key="t3")
-                    if st.button("Validate Emails", key="btn_t3"):
-                        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                        st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
-                        st.session_state.is_cleaned = True
-                        st.success("Emails Evaluated! ✅"); st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-
-                # Tool 4: Phone Formatter
-                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-                with st.expander("📱 Phone Formatter"):
-                    sel_col = st.selectbox("Select Phone Column", all_columns, key="t4")
-                    if st.button("Format Phone Numbers", key="btn_t4"):
-                        st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x))[-10:])
-                        st.session_state.is_cleaned = True
-                        st.success("Phone Formats Cleaned! ✅"); st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-
-                # Tool 6: Remove Symbols
-                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-                with st.expander("🚫 Remove Symbols"):
-                    sel_col = st.selectbox("Select Column", all_columns, key="t6")
-                    if st.button("Strip Special Characters", key="btn_t6"):
-                        st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s]', '', x))
-                        st.session_state.is_cleaned = True
-                        st.success("Symbols Stripped! ✅"); st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-
-                # Tool 7: Bulk Rename
-                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-                with st.expander("✏️ Rename Columns"):
-                    old_n = st.selectbox("Pick Column", all_columns, key="t7")
-                    new_n = st.text_input("New Name Title", key="t7_new")
-                    if st.button("Rename Layout Now", key="btn_t7") and new_n:
-                        st.session_state.uploaded_data.rename(columns={old_n: new_n}, inplace=True)
-                        st.session_state.is_cleaned = True
-                        st.success("Column Renamed! ✅"); st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-
-                # Tool 10: Words-to-Number
-                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
-                with st.expander("🔢 Words To Numbers Engine"):
-                    sel_col = st.selectbox("Pick Target Text Column", all_columns, key="t10")
-                    if st.button("Apply Lexical Parsing", key="btn_t10"):
-                        st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].apply(words_to_num)
-                        st.session_state.is_cleaned = True
-                        st.success("Text Converted to Absolute Integers! ✅"); st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
-
-        # 💸 AFTER FILE CLEANING QR ENGINE ROUTING LOGIC
-        user_email_ref = st.session_state.user_email
-        user_db_status = st.session_state.admin_user_db.get(user_email_ref, {}).get("status", "Pending Verification")
-        is_verified_paid = (user_db_status == "Verified Paid")
-
-        if st.session_state.is_cleaned and st.session_state.current_plan == "pro" and not is_verified_paid:
-            st.markdown(f"""
-            <div class="qr-card">
-                <h3 style="color: #7c3aed !important; margin:0;">⚡ FILE PROCESSING COMPLETE: PAYMENT REQUIRED</h3>
-                <p style="color: #4b5563 !important; font-size: 0.9rem; margin-bottom: 10px;">Please complete the UPI transfer to unlock your clean data downloads. Admin will review immediately.</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UPI://pay?pa=playwithreyansh0@okhdfcbank&pn=VeriSame&cu=INR" style="border: 4px solid #7c3aed; border-radius: 12px; margin: 10px 0;">
-                <div style="font-size: 0.9rem; margin-top: 5px; font-weight: bold; color: #d97706 !important;">Current Status: {user_db_status}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("🙋‍♂️ Click Here After Payment (I Paid)", key="btn_customer_ipaid", type="primary"):
-                st.session_state.admin_user_db[user_email_ref]["status"] = "Pending Verification"
-                st.success("Your payment declaration has been logged live in Sherni Admin Panel! Please wait for approval.")
+                if st.session_state.selected_plan == "free":
+                    st.session_state.current_plan = "free"
+                    st.session_state.plan_expiry = datetime.now() + timedelta(days=9999)
+                    st.session_state.admin_user_db[c_email] = {"plan": "free", "status": "Verified Paid", "expiry": st.session_state.plan_expiry}
+                else:
+                    st.session_state.current_plan = "pro"
+                    days = 30 if st.session_state.selected_plan == "pro_1m" else 180
+                    st.session_state.plan_expiry = datetime.now() + timedelta(days=days)
+                    if c_email not in st.session_state.admin_user_db:
+                        st.session_state.admin_user_db[c_email] = {"plan": "pro", "status": "Pending Verification", "expiry": st.session_state.plan_expiry}
+                
+                st.session_state.session_active = True
+                st.success("Plan activated successfully!")
                 st.rerun()
-        else:
-            # Show download layout once free or paid-verified pro conditions meet
-            st.markdown("### 📥 Download Cleaned Data")
-            d_col1, d_col2 = st.columns(2)
-            with d_col1:
-                csv_data = df.to_csv(index=False).encode('utf-8')
-                if st.download_button("Download Clean File (CSV)", csv_data, "cleaned_data.csv", "text/csv", use_container_width=True):
-                    st.balloons()
-            with d_col2:
-                towrite = io.BytesIO()
-                df.to_excel(towrite, index=False, header=True, engine='openpyxl')
-                towrite.seek(0)
-                if st.download_button("Download Clean File (Excel)", towrite, "cleaned_data.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True):
-                    st.balloons()
+            else:
+                st.error("Please insert a valid target email configuration address!")
 
-# Chatbot Layout Configuration
-st.markdown("---")
-st.markdown("### 💬 VeriSame Live AI Chat Studio")
-
-for chat in st.session_state.chat_history:
-    if chat["role"] == "assistant":
-        st.markdown(f"**🤖 AI:** {chat['message']}")
-    else:
-        st.markdown(f"**👤 You:** {chat['message']}")
-
-u_input = st.text_input("Ask a question...", placeholder="e.g., How does Tool 4 work?", key="chat_msg_main")
-if st.button("Send Message 🚀", key="send_btn_main") and u_input:
-    st.session_state.chat_history.append({"role": "user", "message": u_input})
-    u_lower = u_input.lower()
-    ans = "I can guide you about any of our 10 tools! Just specify the tool you are interested in."
-    if "tool 1" in u_lower or "date" in u_lower: ans = "Tool 1 normalizes dynamic variations of date formats cleanly into standard YYYY-MM-DD configurations."
-    elif "free" in u_lower: ans = "The free tier gives access to exactly 4 unlocked core layout tools with a 1000 row restriction."
-    elif "creator" in u_lower or "founder" in u_lower: ans = "👑 VeriSame's system platform architecture was completely envisioned and built by **Anugya Singh**."
+# STAGE 3: Main Workspace Execution View Activated
+else:
+    workspace_layout_main, workspace_layout_side = st.columns([2.1, 0.9])
     
-    st.session_state.chat_history.append({"role": "assistant", "message": ans})
-    st.rerun()
+    with workspace_layout_main:
+        exp_date_str = st.session_state.plan_expiry.strftime('%Y-%m-%d %H:%M') if st.session_state.plan_expiry else ""
+        st.success(f"Workspace Token: **{st.session_state.user_email}** | Level: **{st.session_state.current_plan.upper()}**")
+        
+        uploaded_file = st.file_uploader("Drop CSV or Excel dataset file here to parse", type=["csv", "xlsx"])
+        
+        if uploaded_file:
+            if st.session_state.uploaded_data is None:
+                try:
+                    if uploaded_file.name.endswith('.csv'): df = pd.read_csv(uploaded_file)
+                    else: df = pd.read_excel(uploaded_file)
+                    
+                    if st.session_state.current_plan == "free" and len(df) > 1000:
+                        st.error(f"❌ Tier Restriction: Free plan handles maximum 1000 rows. Found {len(df)} rows.")
+                        st.stop()
+                    st.session_state.uploaded_data = df
+                except Exception as e:
+                    st.error(f"Read error logged: {e}")
+
+        if st.session_state.uploaded_data is not None:
+            df = st.session_state.uploaded_data
+            st.markdown("### 📊 Live Preview Frame")
+            st.dataframe(df.head(10), use_container_width=True)
+            
+            all_columns = df.columns.tolist()
+            st.markdown("### 🛠️ Workspace Pipeline Tool Control Blocks")
+            
+            col_t1, col_t2 = st.columns(2)
+            with col_t1:
+                st.markdown("#### 🆓 Core Data Tools")
+                
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                with st.expander("📆 Smart Date Converter"):
+                    sel_col = st.selectbox("Select Date Column", all_columns, key="t1")
+                    if st.button("Convert Date Format", key="btn_t1"):
+                        st.session_state.uploaded_data[sel_col] = pd.to_datetime(st.session_state.uploaded_data[sel_col], errors='coerce').dt.strftime('%Y-%m-%d')
+                        st.session_state.is_cleaned = True; st.success("Normalized! ✅"); st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                with st.expander("🔤 Case Converter"):
+                    sel_col = st.selectbox("Select Text Column", all_columns, key="t5")
+                    case_mode = st.selectbox("Format Type", ["UPPERCASE", "lowercase", "Title Case"], key="mode_t5")
+                    if st.button("Apply Case Change", key="btn_t5"):
+                        if case_mode == "UPPERCASE": st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.upper()
+                        elif case_mode == "lowercase": st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.lower()
+                        else: st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.title()
+                        st.session_state.is_cleaned = True; st.success("Case Synchronized! ✅"); st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                with st.expander("👥 Remove Duplicates"):
+                    if st.button("Purge Duplicated Rows", key="btn_t8"):
+                        st.session_state.uploaded_data = st.session_state.uploaded_data.drop_duplicates()
+                        st.session_state.is_cleaned = True; st.success("Duplicates Purged! ✅"); st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
+                st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                with st.expander("✂️ Trim Spaces"):
+                    sel_col = st.selectbox("Select Target Column", all_columns, key="t9")
+                    if st.button("Clean Whitespaces", key="btn_t9"):
+                        st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).str.strip()
+                        st.session_state.is_cleaned = True; st.success("Trimmed! ✅"); st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
+            with col_t2:
+                st.markdown("#### 💎 Premium AI Layer")
+                if st.session_state.current_plan != "pro":
+                    st.warning("🔒 Features locked. Upgrade plan to deploy Premium AI.")
+                else:
+                    st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                    with st.expander("✨ AI Fill Nulls"):
+                        sel_col = st.selectbox("Select Target Column", all_columns, key="t2")
+                        fill_val = st.text_input("Fill Value", placeholder="e.g. Unknown")
+                        if st.button("Fill Empty Cells", key="btn_t2"):
+                            st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].fillna(fill_val)
+                            st.session_state.is_cleaned = True; st.success("Filled! ✅"); st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                    st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                    with st.expander("📧 Email Validator"):
+                        sel_col = st.selectbox("Select Email Column", all_columns, key="t3")
+                        if st.button("Validate Emails", key="btn_t3"):
+                            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                            st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
+                            st.session_state.is_cleaned = True; st.success("Emails Audited! ✅"); st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                    st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                    with st.expander("📱 Phone Formatter"):
+                        sel_col = st.selectbox("Select Phone Column", all_columns, key="t4")
+                        if st.button("Format Phone Numbers", key="btn_t4"):
+                            st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x))[-10:])
+                            st.session_state.is_cleaned = True; st.success("Phone Formats Cleaned! ✅"); st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                    st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                    with st.expander("🚫 Remove Symbols"):
+                        sel_col = st.selectbox("Select Column", all_columns, key="t6")
+                        if st.button("Strip Special Characters", key="btn_t6"):
+                            st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s]', '', x))
+                            st.session_state.is_cleaned = True; st.success("Symbols Stripped! ✅"); st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                    st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                    with st.expander("✏️ Rename Columns"):
+                        old_n = st.selectbox("Pick Column", all_columns, key="t7")
+                        new_n = st.text_input("New Name Title", key="t7_new")
+                        if st.button("Rename Layout Now", key="btn_t7") and new_n:
+                            st.session_state.uploaded_data.rename(columns={old_n: new_n}, inplace=True)
+                            st.session_state.is_cleaned = True; st.success("Renamed! ✅"); st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+                    st.markdown('<div class="tool-box-container">', unsafe_allow_html=True)
+                    with st.expander("🔢 Words To Numbers Engine"):
+                        sel_col = st.selectbox("Pick Target Text Column", all_columns, key="t10")
+                        if st.button("Apply Lexical Parsing", key="btn_t10"):
+                            st.session_state.uploaded_data[sel_col] = st.session_state.uploaded_data[sel_col].apply(words_to_num)
+                            st.session_state.is_cleaned = True; st.success("Lexical Engine Completed! ✅"); st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+            # Payment Routing Core Logic Validation
+            user_ref = st.session_state.user_email
+            db_status = st.session_state.admin_user_db.get(user_ref, {}).get("status", "Pending Verification")
+            is_verified = (db_status == "Verified Paid")
+
+            if st.session_state.is_cleaned and st.session_state.current_plan == "pro" and not is_verified:
+                st.markdown(f"""
+                <div class="qr-card">
+                    <h3 style="color: #7c3aed !important; margin:0;">⚡ DATA ARCHIVE LOCKED: UPGRADE DEPLOYMENT REQUIRED</h3>
+                    <p style="color: #4b5563 !important; font-size: 0.9rem; margin-bottom: 10px;">Please scan the verified interface QR code and complete payment to unlock production download blocks.</p>
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UPI://pay?pa=playwithreyansh0@okhdfcbank&pn=VeriSame&cu=INR" style="border: 4px solid #7c3aed; border-radius: 12px; margin: 10px 0;">
+                    <div style="font-size: 0.9rem; margin-top: 5px; font-weight: bold; color: #d97706 !important;">Database Sync Status: {db_status}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button("🙋‍♂️ Click Here After Completing Payment (I Paid)", key="btn_customer_ipaid", type="primary"):
+                    st.session_state.admin_user_db[user_ref]["status"] = "Pending Verification"
+                    st.success("Declaration broadcasted directly to Sherni Panel! Wait for admin confirmation.")
+                    st.rerun()
+            else:
+                st.markdown("### 📥 Output Package Distribution Download")
+                d_col1, d_col2 = st.columns(2)
+                with d_col1:
+                    csv_data = df.to_csv(index=False).encode('utf-8')
+                    if st.download_button("Download Packaged CSV", csv_data, "clean_output.csv", "text/csv", use_container_width=True):
+                        st.balloons()
+                with d_col2:
+                    towrite = io.BytesIO()
+                    df.to_excel(towrite, index=False, header=True, engine='openpyxl')
+                    towrite.seek(0)
+                    if st.download_button("Download Packaged Excel", towrite, "clean_output.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True):
+                        st.balloons()
+
+    # Right Aligned Utility Control Sidebar Workspace (Bot & Operations Container)
+    with workspace_layout_side:
+        st.markdown("### ⚙️ Workspace Actions")
+        if st.button("← Logout / Reset Session", type="secondary", use_container_width=True):
+            st.session_state.session_active = False
+            st.session_state.selected_plan = ""
+            st.session_state.current_plan = ""
+            st.session_state.uploaded_data = None
+            st.session_state.is_cleaned = False
+            st.rerun()
+            
+        st.markdown("---")
+        st.markdown("### 💬 Live AI Studio")
+        
+        # Chat History Context Render
+        for chat in st.session_state.chat_history[-4:]:  # Optimized display length
+            role_label = "🤖 AI" if chat["role"] == "assistant" else "👤 You"
+            st.markdown(f"**{role_label}:** {chat['message']}")
+            
+        u_input = st.text_input("Type question...", placeholder="Ask about Tools...", key="chat_side_input")
+        if st.button("Send 🚀", key="send_side_btn") and u_input:
+            st.session_state.chat_history.append({"role": "user", "message": u_input})
+            u_lower = u_input.lower()
+            ans = "I am ready to help you navigate VeriSame's system engine modules."
+            if "tool 1" in u_lower or "date" in u_lower: ans = "Tool 1 formats and normalizes dynamic variation of timestamp rows into standard YYYY-MM-DD configurations."
+            elif "creator" in u_lower or "founder" in u_lower: ans = "👑 VeriSame's system platform architecture was completely envisioned and built by **Anugya Singh**."
+            
+            st.session_state.chat_history.append({"role": "assistant", "message": ans})
+            st.rerun()
