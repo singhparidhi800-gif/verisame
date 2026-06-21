@@ -88,7 +88,7 @@ T = {
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
-    "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply","success":"Apply is completed! Your data has been successfully updated.",
+    "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply Actions","success":"Apply is completed! Your data has been successfully updated.",
     "admin_title":"👑 Sherni Admin Panel 👑","admin_pending":"User Databases & Requests","admin_approve_btn":"Mark Paid - Unlock Customer Download",
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
@@ -173,7 +173,7 @@ input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] inpu
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 Ask me anything about our workflows, specific tools, safety, troubleshooting errors, or data science utilities!"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Ultra Advanced AI Studio. 💎 I can help you fix syntax bugs, configure datasets, explain ML models, or talk about system properties!"}]
 
 # Initialize tracking variable for tracking cell modifications
 if "changed_cells" not in st.session_state:
@@ -199,15 +199,15 @@ def apply_cell_styling(df_to_style):
         df_colors = pd.DataFrame('', index=x.index, columns=x.columns)
         for row, col in st.session_state.changed_cells:
             if row in df_colors.index and col in df_colors.columns:
-                df_colors.at[row, col] = 'background-color: #bbf7d0; color: #047857; font-weight: bold;' # Beautiful Soft Green
+                df_colors.at[row, col] = 'background-color: #bbf7d0; color: #047857; font-weight: bold; border: 1.5px solid #10b981;' # Beautiful High-Vis Soft Green Glow
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
-# AI CHATBOT STUDIO WITH EXPANDED KNOWLEDGE BASE AND DATA-AWARE CONNECTIONS
+# ADVANCED AI CHATBOT STUDIO WITH DEEPER CONTEXT CONNECTIONS
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
-    target.markdown("### 🤖 VeriSame Live AI Chat Studio")
+    target.markdown("### 🤖 VeriSame Ultra AI Chat Bot Pro")
 
     chat_html = "<div style='max-height: 280px; overflow-y: auto; padding: 12px; background: #ffffff !important; border: 2px solid #9333ea; border-radius: 14px; margin-bottom: 10px;'>"
     for chat in st.session_state.chat_history:
@@ -219,7 +219,7 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown(chat_html, unsafe_allow_html=True)
 
     s_id = "side" if is_sidebar else "main"
-    user_msg = target.text_input("Ask a question...", placeholder="e.g., Who is the founder?", key=f"chat_in_{s_id}")
+    user_msg = target.text_input("Ask advanced questions...", placeholder="e.g., Explain vectorization or check data status", key=f"chat_in_{s_id}")
     submit = target.button("Send Message 🚀", key=f"btn_send_chat_{s_id}")
 
     if submit and user_msg and user_msg.strip():
@@ -231,22 +231,22 @@ def render_ai_chatbot(is_sidebar=False):
         if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
             live_df = st.session_state.df_clean
             if any(x in u for x in ["column", "columns", "what fields", "variables"]):
-                reply = f"📊 **Live Dataset Columns:** Your data currently contains the following columns: `{', '.join(live_df.columns.tolist())}`."
+                reply = f"📊 **Live Dataset Columns:** Current workspace active parameters: `{', '.join(live_df.columns.tolist())}`."
             elif any(x in u for x in ["how many rows", "row count", "total rows", "dataset size", "shape"]):
-                reply = f"🔢 **Live Dataset Dimensions:** Your active pipeline currently has `{len(live_df)}` fully processed rows and `{len(live_df.columns)}` distinct columns."
+                reply = f"🔢 **Live Dataset Dimensions:** Vector matrix is handling `{len(live_df)}` rows across `{len(live_df.columns)}` computational vectors."
             elif any(x in u for x in ["missing", "nulls", "empty boxes", "dirty boxes"]):
-                reply = f"🛠️ **Live Cleanliness Status:** We have already repaired `{st.session_state.get('empty_fixed', 0)}` missing values across your uploaded sheets!"
+                reply = f"🛠️ **Live Cleanliness Status:** We have successfully insulated `{st.session_state.get('empty_fixed', 0)}` faulty vector indices across active nodes!"
 
         if not reply:
             if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
-                if "uplode" in u or "upload" in u: reply = "👋 **All the best, buddy! Go ahead and upload your files to clean them up instantly!**"
-                elif "clean" in u: reply = "👍 **Awesome! Go smash those data errors and make your dataset perfect!**"
-                else: reply = "👋 **Goodbye! Have a productive session ahead!**"
-            elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are most welcome!** Making your data pipeline seamless is exactly what I'm built for."
-            elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Data cleaning can be boring, but our conversations don't have to be!"
-            elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** I'm just hyper-engineered to clear errors at supersonic speeds!"
-            elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]): reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा को एकदम कड़क चमकाओ।"
-            elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **बहुत-बहुत स्वागत है तुम्हारा!** मुझे तुम्हारी मदद करके बेहद ख़ुशी हुई।"
+                if "uplode" in u or "upload" in u: reply = "👋 **All the best! Upload your sheets and run the vector cleaning sequence anytime!**"
+                elif "clean" in u: reply = "👍 **Awesome! Go ahead and process the sheets with premium triggers!**"
+                else: reply = "👋 **Goodbye! Keep automating and engineering grand designs!**"
+            elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **Always glad to engineer solutions!** Let's clear more bottlenecks."
+            elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Adding precision compute speeds with a smile!"
+            elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** Just highly customized execution algorithms at full thrust!"
+            elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]): reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा सेट को सुपर फ़ास्ट चमकाओ।"
+            elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **यू आर वेलकम!** आपके डेटा इंफ्रास्ट्रक्चर को मजबूत करना ही मेरा मिशन है।"
 
         if not reply:
             math_clean = u.replace('x', '*')
@@ -263,24 +263,24 @@ def render_ai_chatbot(is_sidebar=False):
 
         if not reply:
             knowledge_map = {
-                "founder made creator created developer owner built make kaun banaya owner kaun anugya singh app architecture who designed": "👑 **Founder & Creator:** VeriSame was architected, designed, and developed entirely by **Anugya Singh** to eliminate manual data cleaning frustration globally!",
-                "what this app can do what is app work app capability utility function software use details purpose system tool utility": "💎 **VeriSame App Capability:** This app functions as an automated data-cleaning pipeline! It repairs empty boxes, formats dates, filters emails, and converts word numbers into clean integers under 3 seconds!",
-                "hi hello hey hello ai hi ai ola salam greeting system startup start beginning greeting": "👋 **Hello there!** Welcome to VeriSame! How can I speed up your workflows today?",
-                "how are you kaise ho kaise hain how it goes sab badhiya wellness state mood status health": "✨ **I am doing fantastic!** Completely ready to smash data errors under 3 seconds.",
-                "your name naam kya who are you tum kaun ho identify system role profile system bot": "💎 I am **VeriSame Engine AI**, a hyper-customized data assistant!",
-                "how many tools number of tools total tools kitne tool counts listing available features": "🛠️ **Total Tools:** VeriSame features exactly **10 Data-Cleaning Tools** divided into 3 responsive interface tabs!",
-                "is this app free free version tier lifetime free cost paisa lagega trials base subscription": "✨ **Yes, the base tier is Free Forever!** You get 1,000 rows processing, 4 free pipeline tools, and unlimited interface access.",
-                "what is pro version premium cost details charges features upgrades price models subscription plans": "💎 **Pro Plan:** Unlocks absolute unlimited rows, lightning-fast 3-second vector speed, and all **10 premium AI tools**! Available in 1-Month and 6-Month premium segments.",
-                "how to upload file select file spreadsheet csv excel insert data dataset load file injection": "📤 **File Upload Steps:** Go to the 'Upload File' tab, drag and drop your `.csv`, `.xlsx`, or `.json` file directly into the dropbox layer.",
-                "how to download file save file download csv excel export sheet download output save localized": "🎯 **Downloading Data:** Scroll down to 'Export Data' section, choose 'Download as CSV' or 'Download as Excel'. Note: Pro exports require admin clearance payment validation.",
-                "what formats supported extension xlsx xls csv json files allowed file types input extension configuration": "📊 **Supported Extensions:** VeriSame handles `.csv`, `.xlsx`, `.xls`, and `.json` data frameworks smoothly.",
-                "data science workflow pipeline step data processing cycle steps clean engineering model cycle data analysis steps": "⚙️ **Data Science Workflow:** Raw Data ➔ Data Cleaning (using VeriSame!) ➔ Exploratory Data Analysis (EDA) ➔ Feature Engineering ➔ Machine Learning Training ➔ Model Deployment. VeriSame automates the initial 40% of manual cleaning time!",
-                "python script pandas vectorization clean dataframe speed optimize memory runtime engine speed code compile": "🐍 **Python Engine:** This application uses highly optimized vector operations via the `pandas` library instead of iterative loops, ensuring full table computation executes in under 3 seconds.",
-                "app error code crash malfunction troubleshooting debug fix problem fail issue broken application error solution": "🛠️ **Troubleshooting Hub:** Most runtime errors happen due to unmatched data columns, mixed empty structures, or missing libraries. Check file formats first or pass the exact crash trace log here for immediate resolution!",
-                "streamlit deployment error cloud crash environment setup requirements text server down reboot log mismatch": "📦 **Streamlit Error Fix:** Ensure your `requirements.txt` includes `pandas`, `openpyxl`, and `qrcode` to prevent cloud initialization crashes during deployment cycles.",
-                "openpyxl module missing excel download failed format issue library setup crash read error excel dependency": "📊 **Excel Import/Export Fix:** If Excel download button causes a crash, the target system lacks `openpyxl`. Use the 'Download as CSV' option as a safe backup or install openpyxl via pip configuration.",
-                "row index error mismatch rows mismatched calculation dimensions size out of bounds loop structure failed length check": "🔢 **Row Index Fix:** This happens if empty rows are completely wiped out while mapping custom columns. VeriSame protects your structure by converting invalid entries to 'Unknown' or 'None' instead of shifting indexes!",
-                "why did my data upload fail bad format corruption password protected parse error reader crash file block": "🚫 **Upload Failure Fix:** Ensure your file is not password-protected, encrypted, or open in another application like Microsoft Excel during injection. Convert to standard UTF-8 `.csv` for best performance."
+                "founder made creator created developer owner built make kaun banaya owner kaun anugya singh app architecture who designed": "👑 **Founder & Creator:** VeriSame was completely architected, designed, and coded by **Anugya Singh** to streamline manual data preprocessing effortlessly!",
+                "what this app can do what is app work app capability utility function software use details purpose system tool utility": "💎 **VeriSame Ecosystem Capabilities:** It acts as an elite automation processing center! Repairs missing rows, isolates invalid emails, strips broken symbols, and converts textual expressions into pure numbers under 3s!",
+                "hi hello hey hello ai hi ai ola salam greeting system startup start beginning greeting": "👋 **Welcome to VeriSame Core AI!** Processing terminals are green. How can I optimize your workflows today?",
+                "how are you kaise ho kaise hain how it goes sab badhiya wellness state mood status health": "✨ **System Diagnostics Nominal!** Highly synchronized and ready to clean data at supreme speeds.",
+                "your name naam kya who are you tum kaun ho identify system role profile system bot": "💎 I am **VeriSame Cognitive Engine**, an elite automated agent for high-density matrix cleaning!",
+                "how many tools number of tools total tools kitne tool counts listing available features": "🛠️ **Total System Architecture:** VeriSame includes precisely **10 Premium AI Engineering Tools** grouped in a high-efficiency dashboard interface.",
+                "is this app free free version tier lifetime free cost paisa lagega trials base subscription": "✨ **Yes! The foundation layer is Free Forever.** You receive 1,000 rows processing, 4 free runtime tools, and unrestricted interface access.",
+                "what is pro version premium cost details charges features upgrades price models subscription plans": "💎 **Pro Infrastructure Tier:** Removes all row constraints, triggers sub-3-second execution speeds, and unlocks all **10 Advanced AI Tools**. Subscriptions are segmented into 1-Month and 6-Month tiers.",
+                "how to upload file select file spreadsheet csv excel insert data dataset load file injection": "📤 **File Ingestion Sequence:** Toggle the 'Upload File' sub-tab, drop standard `.csv`, `.xlsx`, or `.json` directly into the dynamic drag-and-drop boundary.",
+                "how to download file save file download csv excel export sheet download output save localized": "🎯 **Export Protocols:** Navigate down to the 'Export Data' sector, trigger 'Download as CSV' or 'Download as Excel'. Note: Pro exports deploy as soon as the admin handles clearance authorization.",
+                "what formats supported extension xlsx xls csv json files allowed file types input extension configuration": "📊 **Supported Ingestion Arrays:** The parsing module takes standard `.csv`, `.xlsx`, `.xls`, and `.json` data frameworks seamlessly.",
+                "data science workflow pipeline step data processing cycle steps clean engineering model cycle data analysis steps": "⚙️ **Data Science Pipeline Lifecycle:** Raw File Ingestion ➔ Data Wrangling & Automated Cleansing (via VeriSame) ➔ Exploratory Analytics (EDA) ➔ Feature Design ➔ AI Model Fitting ➔ Target Deployment. VeriSame automates the initial bottleneck phases completely!",
+                "python script pandas vectorization clean dataframe speed optimize memory runtime engine speed code compile": "🐍 **Vector Engine Efficiency:** This environment drops manual row loops, exploiting compiled pandas vector arrays to calculate full sheets concurrently under 3 seconds.",
+                "app error code crash malfunction troubleshooting debug fix problem fail issue broken application error solution": "🛠️ **Troubleshooting Matrix:** Most errors resolve by dropping blank schemas, matching column structures, or confirming dependencies. Submit your logs here for micro-second debugging!",
+                "streamlit deployment error cloud crash environment setup requirements text server down reboot log mismatch": "📦 **Cloud Infrastructure Patch:** Verify your `requirements.txt` lists `pandas`, `openpyxl`, and `qrcode` to block container crashes during automated cloud installation tracks.",
+                "openpyxl module missing excel download failed format issue library setup crash read error excel dependency": "📊 **Excel Stream Driver Patch:** If Excel export triggers an environment crash, the remote container lacks `openpyxl`. Deploy 'Download as CSV' or install the package in the environment file.",
+                "row index error mismatch rows mismatched calculation dimensions size out of bounds loop structure failed length check": "🔢 **Index Guard Protocol:** Shifting rows during dropping stages can break dimensions. VeriSame protects arrays by replacing problematic text with 'Unknown' rather than altering physical lengths!",
+                "why did my data upload fail bad format corruption password protected parse error reader crash file block": "🚫 **Ingestion Diagnostics:** Verify your files aren't encrypted, password-shielded, or open inside another app like Microsoft Excel during loading phases."
             }
             best_score = 0.0
             best_reply = None
@@ -460,7 +460,7 @@ else:
             st.session_state.df_loaded = True
             st.session_state.orig_len = orig_len
             st.session_state.empty_fixed = int(df.isna().sum().sum())
-            st.session_state.changed_cells = set() # Flush any older stylings
+            st.session_state.changed_cells = set() # Flush older styles
         
         try:
             if st.session_state.get('df_clean') is not None:
@@ -499,14 +499,17 @@ else:
                     st.write(f"**{T['tool1']}** ✅ Unlocked")
                     date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                     if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
-                        old_snapshot = st.session_state.df_clean.copy()
-                        for col in date_cols: 
-                            try:
-                                converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
-                                st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
-                            except Exception: pass
-                        track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
+                        if not date_cols:
+                            st.warning("⚠️ No changes detected! Please select columns first.")
+                        else:
+                            old_snapshot = st.session_state.df_clean.copy()
+                            for col in date_cols: 
+                                try:
+                                    converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
+                                    st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
+                                except Exception: pass
+                            track_modifications(old_snapshot, st.session_state.df_clean)
+                            st.success(T['success']); st.rerun()
 
                     # Tool 2: AI Fill Nulls (Pro Only)
                     if is_free:
@@ -517,15 +520,18 @@ else:
                         st.write(f"**{T['tool2']}** ✅ Unlocked")
                         fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
                         if st.button(T['apply_btn'], key="btn_fill", use_container_width=True):
-                            old_snapshot = st.session_state.df_clean.copy()
-                            for col in fill_cols:
-                                sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
-                                if sample.isdigit() or '.' in sample: fill_val = "0"
-                                elif '@' in sample: fill_val = "missing@email.com"
-                                else: fill_val = "Unknown"
-                                st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
-                            track_modifications(old_snapshot, st.session_state.df_clean)
-                            st.success(T['success']); st.rerun()
+                            if not fill_cols:
+                                st.warning("⚠️ No changes detected! Please select target columns.")
+                            else:
+                                old_snapshot = st.session_state.df_clean.copy()
+                                for col in fill_cols:
+                                    sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
+                                    if sample.isdigit() or '.' in sample: fill_val = "0"
+                                    elif '@' in sample: fill_val = "missing@email.com"
+                                    else: fill_val = "Unknown"
+                                    st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
+                                track_modifications(old_snapshot, st.session_state.df_clean)
+                                st.success(T['success']); st.rerun()
 
                 with tab2:
                     # Tool 3: Email Validator (Pro Only)
@@ -537,11 +543,15 @@ else:
                         st.write(f"**{T['tool3']}** ✅ Unlocked")
                         email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
                         if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
-                            old_snapshot = st.session_state.df_clean.copy()
-                            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                            for col in email_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
-                            track_modifications(old_snapshot, st.session_state.df_clean)
-                            st.success(T['success']); st.rerun()
+                            if not email_cols:
+                                st.warning("⚠️ No changes detected! Please select valid email columns.")
+                            else:
+                                old_snapshot = st.session_state.df_clean.copy()
+                                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                                for col in email_cols: 
+                                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
+                                track_modifications(old_snapshot, st.session_state.df_clean)
+                                st.success(T['success']); st.rerun()
 
                     # Tool 4: Phone Formatter (Pro Only)
                     if is_free:
@@ -552,12 +562,15 @@ else:
                         st.write(f"**{T['tool4']}** ✅ Unlocked")
                         phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
                         if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
-                            old_snapshot = st.session_state.df_clean.copy()
-                            for col in phone_cols: 
-                                st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
-                                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
-                            track_modifications(old_snapshot, st.session_state.df_clean)
-                            st.success(T['success']); st.rerun()
+                            if not phone_cols:
+                                st.warning("⚠️ No changes detected! Select cleanable phone vectors.")
+                            else:
+                                old_snapshot = st.session_state.df_clean.copy()
+                                for col in phone_cols: 
+                                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
+                                    st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
+                                track_modifications(old_snapshot, st.session_state.df_clean)
+                                st.success(T['success']); st.rerun()
 
                 with tab3:
                     # Tool 5: Case Converter (Free + Pro)
@@ -565,13 +578,16 @@ else:
                     case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
                     case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
                     if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
-                        old_snapshot = st.session_state.df_clean.copy()
-                        for col in case_cols: 
-                            if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
-                            elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
-                            else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
-                        track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
+                        if not case_cols:
+                            st.warning("⚠️ No changes detected! Please check text-based structures.")
+                        else:
+                            old_snapshot = st.session_state.df_clean.copy()
+                            for col in case_cols: 
+                                if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
+                                elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
+                                else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
+                            track_modifications(old_snapshot, st.session_state.df_clean)
+                            st.success(T['success']); st.rerun()
 
                     # Tool 6: Remove Symbols (Pro Only)
                     if is_free:
@@ -582,10 +598,13 @@ else:
                         st.write(f"**{T['tool6']}** ✅ Unlocked")
                         spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
                         if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
-                            old_snapshot = st.session_state.df_clean.copy()
-                            for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
-                            track_modifications(old_snapshot, st.session_state.df_clean)
-                            st.success(T['success']); st.rerun()
+                            if not spec_cols:
+                                st.warning("⚠️ No changes detected! Select columns to strip characters.")
+                            else:
+                                old_snapshot = st.session_state.df_clean.copy()
+                                for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
+                                track_modifications(old_snapshot, st.session_state.df_clean)
+                                st.success(T['success']); st.rerun()
 
                     # Tool 7: Bulk Rename (Pro Only)
                     if is_free:
@@ -597,24 +616,34 @@ else:
                         st.write(f"**{T['tool7']}** ✅ Unlocked")
                         old = st.selectbox("Old column name", all_cols, key="sel_old")
                         new = st.text_input("New column name", key="inp_new")
-                        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True) and new:
-                            st.session_state.df_clean.rename(columns={old: new}, inplace=True)
-                            st.success(T['success']); st.rerun()
+                        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True):
+                            if not new or new.strip() == "" or old == new:
+                                st.warning("⚠️ No changes detected! Name field missing or identical to old label.")
+                            else:
+                                st.session_state.df_clean.rename(columns={old: new.strip()}, inplace=True)
+                                st.success(T['success']); st.rerun()
 
                     # Tool 8: Remove Duplicates (Free + Pro)
                     st.write(f"**{T['tool8']}** ✅ Unlocked")
                     if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
+                        old_len = len(st.session_state.df_clean)
                         st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
-                        st.success(T['success']); st.rerun()
+                        if len(st.session_state.df_clean) == old_len:
+                            st.warning("⚠️ No changes detected! Your active datasheet contains 0 duplicate records.")
+                        else:
+                            st.success(T['success']); st.rerun()
 
                     # Tool 9: Trim Spaces (Free + Pro)
                     st.write(f"**{T['tool9']}** ✅ Unlocked")
                     trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
                     if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
-                        old_snapshot = st.session_state.df_clean.copy()
-                        for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                        track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
+                        if not trim_cols:
+                            st.warning("⚠️ No changes detected! Highlight target column layers to trim space buffers.")
+                        else:
+                            old_snapshot = st.session_state.df_clean.copy()
+                            for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                            track_modifications(old_snapshot, st.session_state.df_clean)
+                            st.success(T['success']); st.rerun()
 
                     # Tool 10: Spell Check (Pro Only)
                     if is_free:
@@ -625,14 +654,17 @@ else:
                         st.write(f"**{T['tool10']}** ✅ Unlocked")
                         spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
                         if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
-                            old_snapshot = st.session_state.df_clean.copy()
-                            typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
-                            def fix_typos(text):
-                                words = str(text).split()
-                                return " ".join([typo_dict.get(w.lower(), w) for w in words])
-                            for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
-                            track_modifications(old_snapshot, st.session_state.df_clean)
-                            st.success(T['success']); st.rerun()
+                            if not spell_cols:
+                                st.warning("⚠️ No changes detected! Target columns must be selected first.")
+                            else:
+                                old_snapshot = st.session_state.df_clean.copy()
+                                typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
+                                def fix_typos(text):
+                                    words = str(text).split()
+                                    return " ".join([typo_dict.get(w.lower(), w) for w in words])
+                                for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
+                                track_modifications(old_snapshot, st.session_state.df_clean)
+                                st.success(T['success']); st.rerun()
 
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
