@@ -128,12 +128,11 @@ for key in ['df_clean','show_balloon','sample_loaded','df_loaded','orig_len','em
     if key not in st.session_state:
         st.session_state[key] = None if key in ['df_clean','orig_len','empty_fixed'] else False
 
-# ADVANCED SMART HIGHLIGHT TRACKER (ONLY MARKS TRUE STRUCTURAL CHANGES)
+# 🟢 1. CORRECT SMART HIGHLIGHT LOGIC (COMPARES VALUE TO DETECT CHANGES)
 def track_modifications(old_df, new_df):
     try:
         for col in old_df.columns:
             if col in new_df.columns:
-                # Optimized logic to pinpoint exact coordinate modifications
                 for idx in old_df.index:
                     if idx in new_df.index:
                         if str(old_df.at[idx, col]).strip() != str(new_df.at[idx, col]).strip():
@@ -163,35 +162,33 @@ st.sidebar.markdown(
 # BACK BUTTON ADDED
 if st.sidebar.button("⬅️ Back to Home", use_container_width=True):
     st.session_state.df_loaded = False
-    st.session_state.df_clean = None
-    st.session_state.changed_cells = set()
     st.rerun()
 
-# ADVANCED CONTEXT-AWARE AI CHATBOT (LIVE READS DATA VALUES)
-st.sidebar.markdown("### 💬 Advanced AI Assistant")
+# 💬 3. ADVANCED LIVE CHATBOT LOGIC
+st.sidebar.markdown("### 💬 AI Assistant")
 user_msg = st.sidebar.text_input("Ask me anything...", key="chat_input")
 if st.sidebar.button("Send", key="send_chat"):
     if user_msg:
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         
-        # Smart Contextual Responses based on Live Data Status
+        # Reads live data properties to make the assistant context-aware
         if st.session_state.df_loaded and st.session_state.df_clean is not None:
-            df_curr = st.session_state.df_clean
-            cols_found = ", ".join(df_curr.columns.tolist())
-            null_count = df_curr.isna().sum().sum()
+            df_active = st.session_state.df_clean
+            current_cols = ", ".join(df_active.columns.tolist())
+            total_nulls = df_active.isna().sum().sum()
             
-            if any(k in user_msg.lower() for k in ["column", "columns", "field"]):
-                reply = f"Your dataset has these columns: **{cols_found}**."
-            elif any(k in user_msg.lower() for k in ["row", "size", "total", "count"]):
-                reply = f"Currently, there are **{len(df_curr)} total rows** active in the preview grid."
-            elif any(k in user_msg.lower() for k in ["null", "empty", "missing", "blank"]):
-                reply = f"I scanned your sheet and found **{null_count} empty cells**. Try unlocking premium features to auto-fill them!"
+            if any(k in user_msg.lower() for k in ["column", "columns", "fields"]):
+                msg_out = f"Your dataset currently contains these columns: **{current_cols}**."
+            elif any(k in user_msg.lower() for k in ["null", "empty", "blank", "missing"]):
+                msg_out = f"I scanned the spreadsheet and detected **{total_nulls} missing cells** left."
+            elif any(k in user_msg.lower() for k in ["row", "total", "count", "size"]):
+                msg_out = f"The dataset layout has **{len(df_active)} rows** loaded."
             else:
-                reply = f"Analytical Insight: Data has {df_curr.shape[0]} rows and {df_curr.shape[1]} columns. You can convert case, trim spaces, or format date right now!"
+                msg_out = f"Data overview: {df_active.shape[0]} rows and {df_active.shape[1]} columns. You can format dates, cases, or trim text!"
         else:
-            reply = "I'm ready to analyze your dataset! Please load sample data or drop your file first. 🚀"
+            msg_out = f"You asked: {user_msg}. Please load sample data or drop your file first so I can inspect it! 💎"
             
-        st.session_state.chat_history.append({"role": "assistant", "message": reply})
+        st.session_state.chat_history.append({"role": "assistant", "message": msg_out})
         st.rerun()
 
 for chat in st.session_state.chat_history[-3:]:
@@ -279,7 +276,7 @@ if df is not None:
             # 4 UNLOCKED FREE TOOLS ONLY CYCLE - 6 LOCKED
             tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
             with tab1:
-                # Tool 1: Smart Date Converter (FREE UNLOCKED - HIGHLY ROBUST INTERFACE)
+                # 🛠️ 2. SMART DATE CONVERTER UPGRADE (FLEXIBLE MIXED PARSING)
                 st.write(f"**{T['tool1']}** ✅ Unlocked")
                 date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                 if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
@@ -312,7 +309,7 @@ if df is not None:
                 st.button(T['apply_btn'], key="btn_phone_disabled", disabled=True, use_container_width=True)
 
             with tab3:
-                # Tool 5: Case Converter (FREE UNLOCKED - ROBUST STRING TRANSFORMS)
+                # 🛠️ 2. CASE CONVERTER UPGRADE (EFFICIENT MEMORY PIPELINE)
                 st.write(f"**{T['tool5']}** ✅ Unlocked")
                 case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
                 case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
@@ -339,12 +336,10 @@ if df is not None:
                 # Tool 8: Remove Duplicates (FREE UNLOCKED)
                 st.write(f"**{T['tool8']}** ✅ Unlocked")
                 if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-                    old_snapshot = st.session_state.df_clean.copy()
                     st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
-                    track_modifications(old_snapshot, st.session_state.df_clean)
                     st.success(T['success']); st.rerun()
 
-                # Tool 9: Trim Spaces (FREE UNLOCKED - ULTRA REGEX POWERED)
+                # 🛠️ 2. TRIM SPACES UPGRADE (REGEX WHITESPACE COMPRESSION)
                 st.write(f"**{T['tool9']}** ✅ Unlocked")
                 trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
                 if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
