@@ -1,4 +1,4 @@
-import streamlit as st
+Import streamlit as st
 import json, os, io
 import pandas as pd
 import re
@@ -128,15 +128,14 @@ for key in ['df_clean','show_balloon','sample_loaded','df_loaded','orig_len','em
     if key not in st.session_state:
         st.session_state[key] = None if key in ['df_clean','orig_len','empty_fixed'] else False
 
-# 🟢 1. CORRECT SMART HIGHLIGHT LOGIC (COMPARES VALUE TO DETECT CHANGES)
+# HELPER TO AUTOMATICALLY HIGHLIGHT CHANGED CELLS IN GREEN
 def track_modifications(old_df, new_df):
     try:
         for col in old_df.columns:
             if col in new_df.columns:
-                for idx in old_df.index:
-                    if idx in new_df.index:
-                        if str(old_df.at[idx, col]).strip() != str(new_df.at[idx, col]).strip():
-                            st.session_state.changed_cells.add((idx, col))
+                mismatch_indices = old_df[old_df[col].astype(str)!= new_df[col].astype(str)].index
+                for idx in mismatch_indices:
+                    st.session_state.changed_cells.add((idx, col))
     except Exception:
         pass
 
@@ -164,31 +163,13 @@ if st.sidebar.button("⬅️ Back to Home", use_container_width=True):
     st.session_state.df_loaded = False
     st.rerun()
 
-# 💬 3. ADVANCED LIVE CHATBOT LOGIC
+# CHATBOT ADDED
 st.sidebar.markdown("### 💬 AI Assistant")
 user_msg = st.sidebar.text_input("Ask me anything...", key="chat_input")
 if st.sidebar.button("Send", key="send_chat"):
     if user_msg:
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
-        
-        # Reads live data properties to make the assistant context-aware
-        if st.session_state.df_loaded and st.session_state.df_clean is not None:
-            df_active = st.session_state.df_clean
-            current_cols = ", ".join(df_active.columns.tolist())
-            total_nulls = df_active.isna().sum().sum()
-            
-            if any(k in user_msg.lower() for k in ["column", "columns", "fields"]):
-                msg_out = f"Your dataset currently contains these columns: **{current_cols}**."
-            elif any(k in user_msg.lower() for k in ["null", "empty", "blank", "missing"]):
-                msg_out = f"I scanned the spreadsheet and detected **{total_nulls} missing cells** left."
-            elif any(k in user_msg.lower() for k in ["row", "total", "count", "size"]):
-                msg_out = f"The dataset layout has **{len(df_active)} rows** loaded."
-            else:
-                msg_out = f"Data overview: {df_active.shape[0]} rows and {df_active.shape[1]} columns. You can format dates, cases, or trim text!"
-        else:
-            msg_out = f"You asked: {user_msg}. Please load sample data or drop your file first so I can inspect it! 💎"
-            
-        st.session_state.chat_history.append({"role": "assistant", "message": msg_out})
+        st.session_state.chat_history.append({"role": "assistant", "message": f"You asked: {user_msg}. I'm here to help with data cleaning! 💎"})
         st.rerun()
 
 for chat in st.session_state.chat_history[-3:]:
@@ -276,7 +257,7 @@ if df is not None:
             # 4 UNLOCKED FREE TOOLS ONLY CYCLE - 6 LOCKED
             tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
             with tab1:
-                # 🛠️ 2. SMART DATE CONVERTER UPGRADE (FLEXIBLE MIXED PARSING)
+                # Tool 1: Smart Date Converter (FREE UNLOCKED)
                 st.write(f"**{T['tool1']}** ✅ Unlocked")
                 date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                 if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
@@ -309,7 +290,7 @@ if df is not None:
                 st.button(T['apply_btn'], key="btn_phone_disabled", disabled=True, use_container_width=True)
 
             with tab3:
-                # 🛠️ 2. CASE CONVERTER UPGRADE (EFFICIENT MEMORY PIPELINE)
+                # Tool 5: Case Converter (FREE UNLOCKED)
                 st.write(f"**{T['tool5']}** ✅ Unlocked")
                 case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
                 case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
@@ -339,7 +320,7 @@ if df is not None:
                     st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                     st.success(T['success']); st.rerun()
 
-                # 🛠️ 2. TRIM SPACES UPGRADE (REGEX WHITESPACE COMPRESSION)
+                # Tool 9: Trim Spaces (FREE UNLOCKED)
                 st.write(f"**{T['tool9']}** ✅ Unlocked")
                 trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
                 if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
