@@ -1,4 +1,4 @@
-Import streamlit as st
+import streamlit as st
 import json, os, io
 import pandas as pd
 import re
