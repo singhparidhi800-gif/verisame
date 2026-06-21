@@ -48,14 +48,23 @@ def save_db(d):
     except Exception:
         pass
 
-# ROBUST WORD-TO-NUMBER CONVERSION
+# ROBUST WORD-TO-NUMBER CONVERSION (FIXED NUMERIC TYPE BYPASSES)
 def words_to_num(s):
     if pd.isna(s): return s
+    # If already an integer or float type, return as numeric directly
+    if isinstance(s, (int, float)):
+        return s
+    
     s_str = str(s).lower().strip()
+    
+    # Check if text format represents clean integer
     if s_str.isdigit(): 
         return int(s_str)
+        
+    # Check if text format represents clean decimal string
     try:
-        if float(s_str): return float(s_str)
+        if '.' in s_str:
+            return float(s_str)
     except ValueError:
         pass
         
@@ -246,7 +255,7 @@ def render_ai_chatbot(is_sidebar=False):
             elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Adding precision compute speeds with a smile!"
             elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** Just highly customized execution algorithms at full thrust!"
             elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]): reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा सेट को सुपर फ़ास्ट चमकाओ।"
-            elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **यू आर वेलकम!** आपके डेटा इंफ्रास्ट्रक्चर को मजबूत करना ही मेरा मिशन है।"
+            elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **यू आर वेलकम!** आपके डेटा इंफ्रास्ट्रक्चर को मजबूत करना ही मेरा মিশন है।"
 
         if not reply:
             math_clean = u.replace('x', '*')
@@ -320,6 +329,7 @@ if st.session_state.email:
         st.session_state.amt = user.get("amt", 0)
         st.session_state.days = user.get("days", 0)
         
+        # 🌟 FIXED LAYOUT: DIRECT "FREE FOREVER" NOTIFICATION
         if user.get("plan") == "free": 
             st.sidebar.info("Plan: FREE FOREVER ✨")
         else:
@@ -453,7 +463,11 @@ else:
             orig_len = len(df)
             df_clean = st.session_state.df_clean.drop_duplicates()
             for col in df_clean.columns:
-                df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                # ONLY apply string operations if the column is categorical/object type
+                if df_clean[col].dtype == 'object':
+                    df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                
+                # Check for salary/numeric columns securely
                 if any(k in col.lower() for k in ['salary','amount','price','paisa']): 
                     df_clean[col] = df_clean[col].apply(words_to_num)
             st.session_state.df_clean = df_clean
@@ -505,6 +519,7 @@ else:
                             old_snapshot = st.session_state.df_clean.copy()
                             for col in date_cols: 
                                 try:
+                                    # Ensure we process text data without destroying existing float vectors
                                     converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
                                     st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
                                 except Exception: pass
@@ -641,7 +656,9 @@ else:
                             st.warning("⚠️ No changes detected! Highlight target column layers to trim space buffers.")
                         else:
                             old_snapshot = st.session_state.df_clean.copy()
-                            for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+                            for col in trim_cols: 
+                                if st.session_state.df_clean[col].dtype == 'object':
+                                    st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
 
@@ -655,7 +672,7 @@ else:
                         spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
                         if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
                             if not spell_cols:
-                                st.warning("⚠️ No changes detected! Target columns must be selected first.")
+                                a = st.warning("⚠️ No changes detected! Target columns must be selected first.")
                             else:
                                 old_snapshot = st.session_state.df_clean.copy()
                                 typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
