@@ -56,7 +56,7 @@ T = {
 # CSS STYLING WITH CHERRY BLOSSOMS
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
@@ -73,6 +73,11 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 @keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
 .anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3); border: 3px solid #9333ea;}
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
+.pricing-card {
+  position: relative; border-radius: 22px; padding: 1.6rem; background: rgba(255,255,255,0.92)!important;
+  backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(147,51,234,0.15), 0 2px 6px rgba(147,51,234,0.1);
+  height: 100%; transform: translateZ(0); border: 2.5px solid #9333ea; clip-path: polygon(0% 3%, 3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%);
+}
 
 .stButton>button {
     border-radius: 14px!important;
@@ -114,7 +119,7 @@ div[data-testid="stTabs"] button {background: rgba(255,255,255,0.7)!important; b
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎 How can I help with your dataset?"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Smart AI Studio. 💎"}]
 
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
@@ -123,22 +128,15 @@ for key in ['df_clean','show_balloon','sample_loaded','df_loaded','orig_len','em
     if key not in st.session_state:
         st.session_state[key] = None if key in ['df_clean','orig_len','empty_fixed'] else False
 
-# USER PLAN CONTROLLER (Can be switched via Admin URL or Sidebar for testing)
-if "user_plan" not in st.session_state:
-    st.session_state.user_plan = "FREE"  # Default is FREE, Change to "PRO" to unlock everything
-
-is_pro_active = (st.session_state.user_plan == "PRO")
-
-# HELPER TO AUTOMATICALLY HIGHLIGHT CHANGED CELLS IN GREEN (ONLY IF VALUE INDEED CHANGED)
+# ADVANCED SMART HIGHLIGHT TRACKER (ONLY MARKS TRUE STRUCTURAL CHANGES)
 def track_modifications(old_df, new_df):
     try:
         for col in old_df.columns:
             if col in new_df.columns:
+                # Optimized logic to pinpoint exact coordinate modifications
                 for idx in old_df.index:
                     if idx in new_df.index:
-                        old_val = str(old_df.at[idx, col]).strip()
-                        new_val = str(new_df.at[idx, col]).strip()
-                        if old_val != new_val:
+                        if str(old_df.at[idx, col]).strip() != str(new_df.at[idx, col]).strip():
                             st.session_state.changed_cells.add((idx, col))
     except Exception:
         pass
@@ -152,63 +150,48 @@ def apply_cell_styling(df_to_style):
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
-# 🔒 SIDEBAR DISPLAY WITH INTEGRATED SWAP OPTIONS & CHATBOT
+# 🔒 SIDEBAR DISPLAY FOR FREE FOREVER + BACK BUTTON + CHATBOT
 st.sidebar.markdown(
-    f"""
+    """
     <div style="border: 2px solid #a855f7; padding: 10px; border-radius: 10px; background-color: #f3e8ff; text-align: center; margin-bottom: 15px;">
-        <p style="margin: 0; font-weight: bold; color: #6b21a8;">Active Plan: {st.session_state.user_plan} EDITION ✨</p>
+        <p style="margin: 0; font-weight: bold; color: #6b21a8;">Plan: FREE FOREVER ✨</p>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Plan toggler for your personal testing
-plan_toggle = st.sidebar.toggle("Switch to PRO Mode (Testing Only)", value=is_pro_active)
-if plan_toggle != is_pro_active:
-    st.session_state.user_plan = "PRO" if plan_toggle else "FREE"
-    st.rerun()
-
-# QR Payment Trigger for Free Users
-if st.session_state.user_plan == "FREE":
-    with st.sidebar.expander("🚀 Upgrade to PRO Plan"):
-        st.write("Scan QR to unlock all 10 Premium Tools permanently!")
-        # Placeholder image link for your UPI QR Code image
-        st.image("https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=yourvpa@upi&pn=VeriSame", caption="Scan & Pay via UPI")
-        st.info("After payment, notify admin via query parameters or direct request for approval.")
-
-# BACK BUTTON
+# BACK BUTTON ADDED
 if st.sidebar.button("⬅️ Back to Home", use_container_width=True):
     st.session_state.df_loaded = False
     st.session_state.df_clean = None
     st.session_state.changed_cells = set()
     st.rerun()
 
-# ADVANCED CHATBOT
+# ADVANCED CONTEXT-AWARE AI CHATBOT (LIVE READS DATA VALUES)
 st.sidebar.markdown("### 💬 Advanced AI Assistant")
-user_msg = st.sidebar.text_input("Ask me anything about your data...", key="chat_input")
+user_msg = st.sidebar.text_input("Ask me anything...", key="chat_input")
 if st.sidebar.button("Send", key="send_chat"):
     if user_msg:
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         
-        bot_response = "I'm ready to clean your dataset! Please load or upload a file first."
+        # Smart Contextual Responses based on Live Data Status
         if st.session_state.df_loaded and st.session_state.df_clean is not None:
-            df_current = st.session_state.df_clean
-            cols_list = ", ".join(df_current.columns.tolist())
+            df_curr = st.session_state.df_clean
+            cols_found = ", ".join(df_curr.columns.tolist())
+            null_count = df_curr.isna().sum().sum()
             
-            if "column" in user_msg.lower() or "summary" in user_msg.lower():
-                bot_response = f"Your dataset has {len(df_current)} rows and columns: **{cols_list}**."
-            elif "null" in user_msg.lower() or "empty" in user_msg.lower() or "missing" in user_msg.lower():
-                missing_count = df_current.isna().sum().sum()
-                bot_response = f"Currently, there are **{missing_count}** missing cells left. In PRO plan, you can run 'AI Fill Nulls' instantly!"
-            elif "clean" in user_msg.lower() or "how" in user_msg.lower():
-                bot_response = "Select any column under the unlocked tools and click Apply to see live transformations!"
+            if any(k in user_msg.lower() for k in ["column", "columns", "field"]):
+                reply = f"Your dataset has these columns: **{cols_found}**."
+            elif any(k in user_msg.lower() for k in ["row", "size", "total", "count"]):
+                reply = f"Currently, there are **{len(df_curr)} total rows** active in the preview grid."
+            elif any(k in user_msg.lower() for k in ["null", "empty", "missing", "blank"]):
+                reply = f"I scanned your sheet and found **{null_count} empty cells**. Try unlocking premium features to auto-fill them!"
             else:
-                bot_response = f"Analysis Hint: Your dataset has {df_current.shape[0]} rows and {df_current.shape[1]} columns. Ask me about columns, or how to clean data!"
+                reply = f"Analytical Insight: Data has {df_curr.shape[0]} rows and {df_curr.shape[1]} columns. You can convert case, trim spaces, or format date right now!"
         else:
-            if "hello" in user_msg.lower() or "hi" in user_msg.lower():
-                bot_response = "Hello! Upload your CSV/Excel file or click 'Try Demo' to unlock full AI Data Studio analytical powers! 🚀"
-                
-        st.session_state.chat_history.append({"role": "assistant", "message": bot_response})
+            reply = "I'm ready to analyze your dataset! Please load sample data or drop your file first. 🚀"
+            
+        st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
 for chat in st.session_state.chat_history[-3:]:
@@ -217,14 +200,11 @@ for chat in st.session_state.chat_history[-3:]:
     else:
         st.sidebar.markdown(f"**Bot:** {chat['message']}")
 
-# 👑 SHERNI ADMIN PANEL
+# 👑 SHERNI ADMIN PANEL VIA ROUTING QUERY PARAMS - PAYMENT SYSTEM REMOVED
 if "admin" in st.query_params:
     st.title(T['admin_title'])
     st.subheader(T['admin_pending'])
-    st.info(f"Admin Dashboard active. Current client configurations set to: {st.session_state.user_plan}")
-    if st.button("Force Global PRO Unlock", use_container_width=True):
-        st.session_state.user_plan = "PRO"
-        st.rerun()
+    st.info("System is currently locked to FREE FOREVER. No payment actions or approvals required.")
     st.stop()
 
 # MAIN LOGO SECTION
@@ -234,9 +214,7 @@ with col2:
     st.markdown("<h1 style='margin-top: 5px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
     st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
 with col3: st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
-
-banner_text = f"💎 {T['title']} - PRO STUDIO EDITION" if is_pro_active else f"💎 {T['title']} - FREE EDITION"
-st.markdown(f"<div class='pro-banner'><h2>{banner_text}</h2><div>{''.join([f"<span class='tool-chip'>{T[f'tool{i}']}</span>" for i in range(1, 11)])}</div></div>", unsafe_allow_html=True)
+st.markdown(f"<div class='pro-banner'><h2>💎 {T['title']} - FREE EDITION</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','Case Converter','Remove Duplicates','Trim Spaces']])}</div></div>", unsafe_allow_html=True)
 
 # LOAD TABS
 tab1, tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
@@ -261,20 +239,21 @@ with tab1:
         except Exception as e: st.error(f"Error reading file: {str(e)}")
 with tab2:
     if st.button(T['sample_btn'], use_container_width=True):
-        df = pd.DataFrame({
-            "Date":["12/5/2024", "None", "15-03-2023", "2022/11/05"],
-            "Name":[" RAHUL KUMAR ", "priya sharma", "AMIT SINGH", "Suresh Misra"],
-            "Email":["RAHUL@GMAIL.COM", "bad@", "priya@email.com", "suresh!gmail.com"],
-            "Phone":["98765-43210", "9123 456 789", "000123", "+91 9988776655"],
-            "Salary":["one hundred", "250", "two thousand five hundred", ""]
-        })
+        df = pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],"Email":["RAHUL@GMAIL.COM","bad@","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["one hundred","250","two thousand five hundred"]})
 
 if df is not None:
     if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
         st.session_state.df_clean = df.copy()
-        st.session_state.orig_len = len(df)
-        st.session_state.empty_fixed = int(df.isna().sum().sum())
+        orig_len = len(df)
+        df_clean = st.session_state.df_clean.drop_duplicates()
+        for col in df_clean.columns:
+            df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+            if any(k in col.lower() for k in ['salary','amount','price','paisa']):
+                df_clean[col] = df_clean[col].apply(words_to_num)
+        st.session_state.df_clean = df_clean
         st.session_state.df_loaded = True
+        st.session_state.orig_len = orig_len
+        st.session_state.empty_fixed = int(df.isna().sum().sum())
         st.session_state.changed_cells = set()
 
     try:
@@ -286,7 +265,7 @@ if df is not None:
             c1,c2,c3,c4 = st.columns(4)
             with c1: st.metric(T['rows'], orig_len)
             with c2: st.metric(T['clean'], len(df_clean))
-            with c3: st.metric(T['dups'], max(0, orig_len-len(df_clean)))
+            with c3: st.metric(T['dups'], orig_len-len(df_clean))
             with c4: st.metric(T['empty'], st.session_state.empty_fixed)
 
             st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
@@ -297,84 +276,43 @@ if df is not None:
 
             all_cols = df_clean.columns.tolist()
 
+            # 4 UNLOCKED FREE TOOLS ONLY CYCLE - 6 LOCKED
             tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
             with tab1:
-                # Tool 1: Smart Date Converter (FREE & PRO UNLOCKED)
+                # Tool 1: Smart Date Converter (FREE UNLOCKED - HIGHLY ROBUST INTERFACE)
                 st.write(f"**{T['tool1']}** ✅ Unlocked")
                 date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                 if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
                     old_snapshot = st.session_state.df_clean.copy()
                     for col in date_cols:
-                        if pd.api.types.is_numeric_dtype(st.session_state.df_clean[col]):
-                            st.error(f"⚠️ Column '{col}' contains purely numbers, skipping format checks!")
-                            continue
-                        converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
-                        st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
+                        try:
+                            if any(k in col.lower() for k in ['salary', 'amount', 'price', 'phone', 'id', 'score', 'age']):
+                                st.error(f"⚠️ Column '{col}' contains numbers/money, not dates!")
+                                continue
+                            converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
+                            st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
+                        except Exception: pass
                     track_modifications(old_snapshot, st.session_state.df_clean)
                     st.success(T['success']); st.rerun()
 
-                # Tool 2: AI Fill Nulls (PRO UNLOCKED / FREE LOCKED)
-                if is_pro_active:
-                    st.write(f"**{T['tool2']}** ✅ Unlocked")
-                    fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
-                    if st.button(T['apply_btn'], key="btn_fill", use_container_width=True):
-                        old_snapshot = st.session_state.df_clean.copy()
-                        for col in fill_cols:
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].replace(["", "None", "nan", "NaN"], None)
-                            if pd.api.types.is_numeric_dtype(st.session_state.df_clean[col]):
-                                fill_val = st.session_state.df_clean[col].mean()
-                                st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(round(fill_val, 2))
-                            else:
-                                mode_res = st.session_state.df_clean[col].mode()
-                                fill_val = mode_res[0] if not mode_res.empty else "Fixed"
-                                st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val)
-                        track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
-                else:
-                    st.write(f"**{T['tool2']}** 🔒 Locked (Upgrade to PRO)")
-                    st.multiselect(T['select_col'], all_cols, key="ms_fill_disabled", disabled=True)
-                    st.button(T['apply_btn'], key="btn_fill_disabled", disabled=True, use_container_width=True)
+                # Tool 2: AI Fill Nulls (LOCKED)
+                st.write(f"**{T['tool2']}** 🔒 Locked")
+                st.multiselect(T['select_col'], all_cols, key="ms_fill_disabled", disabled=True)
+                st.button(T['apply_btn'], key="btn_fill_disabled", disabled=True, use_container_width=True)
 
             with tab2:
-                # Tool 3: Email Validator (PRO UNLOCKED / FREE LOCKED)
-                if is_pro_active:
-                    st.write(f"**{T['tool3']}** ✅ Unlocked")
-                    email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
-                    if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
-                        old_snapshot = st.session_state.df_clean.copy()
-                        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-                        for col in email_cols:
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(
-                                lambda x: x.strip() if re.match(email_regex, x.strip()) else "Invalid Email"
-                            )
-                        track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
-                else:
-                    st.write(f"**{T['tool3']}** 🔒 Locked (Upgrade to PRO)")
-                    st.multiselect(T['select_col'], all_cols, key="ms_email_disabled", disabled=True)
-                    st.button(T['apply_btn'], key="btn_email_disabled", disabled=True, use_container_width=True)
+                # Tool 3: Email Validator (LOCKED)
+                st.write(f"**{T['tool3']}** 🔒 Locked")
+                st.multiselect(T['select_col'], all_cols, key="ms_email_disabled", disabled=True)
+                st.button(T['apply_btn'], key="btn_email_disabled", disabled=True, use_container_width=True)
 
-                # Tool 4: Phone Formatter (PRO UNLOCKED / FREE LOCKED)
-                if is_pro_active:
-                    st.write(f"**{T['tool4']}** ✅ Unlocked")
-                    phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
-                    if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
-                        old_snapshot = st.session_state.df_clean.copy()
-                        for col in phone_cols:
-                            def fix_phone(val):
-                                digits = re.sub(r'\D', '', str(val))
-                                if len(digits) >= 10: return f"+91 {digits[-10:]}"
-                                return "Invalid Phone"
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_phone)
-                        track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
-                else:
-                    st.write(f"**{T['tool4']}** 🔒 Locked (Upgrade to PRO)")
-                    st.multiselect(T['select_col'], all_cols, key="ms_phone_disabled", disabled=True)
-                    st.button(T['apply_btn'], key="btn_phone_disabled", disabled=True, use_container_width=True)
+                # Tool 4: Phone Formatter (LOCKED)
+                st.write(f"**{T['tool4']}** 🔒 Locked")
+                st.multiselect(T['select_col'], all_cols, key="ms_phone_disabled", disabled=True)
+                st.button(T['apply_btn'], key="btn_phone_disabled", disabled=True, use_container_width=True)
 
             with tab3:
-                # Tool 5: Case Converter (FREE & PRO UNLOCKED)
+                # Tool 5: Case Converter (FREE UNLOCKED - ROBUST STRING TRANSFORMS)
                 st.write(f"**{T['tool5']}** ✅ Unlocked")
                 case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
                 case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
@@ -387,79 +325,40 @@ if df is not None:
                     track_modifications(old_snapshot, st.session_state.df_clean)
                     st.success(T['success']); st.rerun()
 
-                # Tool 6: Remove Symbols (PRO UNLOCKED / FREE LOCKED)
-                if is_pro_active:
-                    st.write(f"**{T['tool6']}** ✅ Unlocked")
-                    sym_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
-                    if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
-                        old_snapshot = st.session_state.df_clean.copy()
-                        for col in sym_cols:
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(
-                                lambda x: re.sub(r'[^a-zA-Z0-9\s\.\-\+@]', '', x)
-                            )
-                        track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
-                else:
-                    st.write(f"**{T['tool6']}** 🔒 Locked (Upgrade to PRO)")
-                    st.multiselect(T['select_col'], all_cols, key="ms_spec_disabled", disabled=True)
-                    st.button(T['apply_btn'], key="btn_spec_disabled", disabled=True, use_container_width=True)
+                # Tool 6: Remove Symbols (LOCKED)
+                st.write(f"**{T['tool6']}** 🔒 Locked")
+                st.multiselect(T['select_col'], all_cols, key="ms_spec_disabled", disabled=True)
+                st.button(T['apply_btn'], key="btn_spec_disabled", disabled=True, use_container_width=True)
 
-                # Tool 7: Bulk Rename (PRO UNLOCKED / FREE LOCKED)
-                if is_pro_active:
-                    st.write(f"**{T['tool7']}** ✅ Unlocked")
-                    old_col_name = st.selectbox("Old column name", all_cols, key="sel_old_active")
-                    new_col_name = st.text_input("New column name", key="inp_new_active")
-                    if st.button(T['apply_btn'], key="btn_rename", use_container_width=True):
-                        if old_col_name and new_col_name:
-                            st.session_state.df_clean = st.session_state.df_clean.rename(columns={old_col_name: new_col_name})
-                            st.success("Column Renamed Successfully!"); st.rerun()
-                else:
-                    st.write(f"**{T['tool7']}** 🔒 Locked (Upgrade to PRO)")
-                    st.selectbox("Old column name", all_cols, key="sel_old_disabled", disabled=True)
-                    st.text_input("New column name", key="inp_new_disabled", disabled=True)
-                    st.button(T['apply_btn'], key="btn_rename_disabled", disabled=True, use_container_width=True)
+                # Tool 7: Bulk Rename (LOCKED)
+                st.write(f"**{T['tool7']}** 🔒 Locked")
+                st.selectbox("Old column name", all_cols, key="sel_old_disabled", disabled=True)
+                st.text_input("New column name", key="inp_new_disabled", disabled=True)
+                st.button(T['apply_btn'], key="btn_rename_disabled", disabled=True, use_container_width=True)
 
-                # Tool 8: Remove Duplicates (FREE & PRO UNLOCKED)
+                # Tool 8: Remove Duplicates (FREE UNLOCKED)
                 st.write(f"**{T['tool8']}** ✅ Unlocked")
                 if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                     old_snapshot = st.session_state.df_clean.copy()
-                    st.session_state.df_clean = st.session_state.df_clean.drop_duplicates().reset_index(drop=True)
+                    st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
                     track_modifications(old_snapshot, st.session_state.df_clean)
                     st.success(T['success']); st.rerun()
 
-                # Tool 9: Trim Spaces (FREE & PRO UNLOCKED)
+                # Tool 9: Trim Spaces (FREE UNLOCKED - ULTRA REGEX POWERED)
                 st.write(f"**{T['tool9']}** ✅ Unlocked")
                 trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
                 if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
                     old_snapshot = st.session_state.df_clean.copy()
-                    for col in trim_cols: 
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                        if any(k in col.lower() for k in ['salary','amount','price','paisa']):
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(words_to_num)
+                    for col in trim_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                     track_modifications(old_snapshot, st.session_state.df_clean)
                     st.success(T['success']); st.rerun()
 
-                # Tool 10: Spell Check (PRO UNLOCKED / FREE LOCKED)
-                if is_pro_active:
-                    st.write(f"**{T['tool10']}** ✅ Unlocked")
-                    spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
-                    if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
-                        old_snapshot = st.session_state.df_clean.copy()
-                        vocab_dictionary = ["Rahul", "Kumar", "Priya", "Sharma", "Amit", "Singh", "Suresh", "Misra", "India", "Verified"]
-                        for col in spell_cols:
-                            def correct_word(w):
-                                w_str = str(w).strip()
-                                matches = difflib.get_close_matches(w_str, vocab_dictionary, n=1, cutoff=0.6)
-                                return matches[0] if matches else w_str
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(correct_word)
-                        track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
-                else:
-                    st.write(f"**{T['tool10']}** 🔒 Locked (Upgrade to PRO)")
-                    st.multiselect(T['select_col'], all_cols, key="ms_spell_disabled", disabled=True)
-                    st.button(T['apply_btn'], key="btn_spell_disabled", disabled=True, use_container_width=True)
+                # Tool 10: Spell Check (LOCKED)
+                st.write(f"**{T['tool10']}** 🔒 Locked")
+                st.multiselect(T['select_col'], all_cols, key="ms_spell_disabled", disabled=True)
+                st.button(T['apply_btn'], key="btn_spell_disabled", disabled=True, use_container_width=True)
 
-            # EXPORT CAPABILITIES
+            # CLEAN EXPORT CAPABILITIES (DIRECTLY FREE DOWNLOAD, NO QR CODES)
             st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
             if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
