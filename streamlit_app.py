@@ -3,7 +3,7 @@ import json, os, io
 import pandas as pd
 import re
 from datetime import datetime, timedelta
-import difflib 
+import difflib
 
 # Safe imports to completely avoid Streamlit Deployment Crashes
 try:
@@ -17,13 +17,13 @@ st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initi
 def words_to_num(s):
     if pd.isna(s): return s
     s_str = str(s).lower().strip()
-    if s_str.isdigit(): 
+    if s_str.isdigit():
         return int(s_str)
     try:
         if float(s_str): return float(s_str)
     except ValueError:
         pass
-        
+
     num_words = {'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,'seventy':70,'eighty':80,'ninety':90,'hundred':100,'thousand':1000,'lakh':100000,'crore':10000000}
     total = 0; current = 0
     words = re.findall(r'\w+', s_str)
@@ -56,7 +56,7 @@ T = {
 # CSS STYLING WITH CHERRY BLOSSOMS
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
@@ -73,22 +73,27 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 @keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
 .anime-container {position: relative; width: 100%; min-height: 280px; border-radius: 25px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3); border: 3px solid #9333ea;}
 .anime-container img {width: 100%; height: 280px; object-fit: cover; object-position: center top; display: block;}
+.pricing-card {
+  position: relative; border-radius: 22px; padding: 1.6rem; background: rgba(255,255,255,0.92)!important;
+  backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(147,51,234,0.15), 0 2px 6px rgba(147,51,234,0.1);
+  height: 100%; transform: translateZ(0); border: 2.5px solid #9333ea; clip-path: polygon(0% 3%, 3% 0%, 97% 0%, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0% 97%);
+}
 
 .stButton>button {
-    border-radius: 14px !important; 
-    font-weight: 700 !important; 
-    background: linear-gradient(90deg, #9333ea, #a855f7) !important; 
-    color: white !important; 
-    border: none !important; 
-    padding: 13px 26px !important; 
-    width: 100% !important; 
-    box-shadow: 0 5px 18px rgba(147,51,234,0.4) !important; 
-    transition: all 0.3s !important; 
-    cursor: pointer !important; 
-    font-size: 1rem !important; 
-    margin-top: 1rem !important;
+    border-radius: 14px!important;
+    font-weight: 700!important;
+    background: linear-gradient(90deg, #9333ea, #a855f7)!important;
+    color: white!important;
+    border: none!important;
+    padding: 13px 26px!important;
+    width: 100%!important;
+    box-shadow: 0 5px 18px rgba(147,51,234,0.4)!important;
+    transition: all 0.3s!important;
+    cursor: pointer!important;
+    font-size: 1rem!important;
+    margin-top: 1rem!important;
 }
-.stButton>button:hover {transform: translateY(-3px) scale(1.02) !important; box-shadow: 0 10px 28px rgba(147,51,234,0.5) !important;}
+.stButton>button:hover {transform: translateY(-3px) scale(1.02)!important; box-shadow: 0 10px 28px rgba(147,51,234,0.5)!important;}
 
 .pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0; border: 2px solid #9333ea; box-shadow: 0 8px 20px rgba(147,51,234,0.3);}
 .pro-banner h2 {color: white!important;}
@@ -128,7 +133,7 @@ def track_modifications(old_df, new_df):
     try:
         for col in old_df.columns:
             if col in new_df.columns:
-                mismatch_indices = old_df[old_df[col].astype(str) != new_df[col].astype(str)].index
+                mismatch_indices = old_df[old_df[col].astype(str)!= new_df[col].astype(str)].index
                 for idx in mismatch_indices:
                     st.session_state.changed_cells.add((idx, col))
     except Exception:
@@ -143,29 +148,41 @@ def apply_cell_styling(df_to_style):
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
-# 🔒 SIDEBAR DISPLAY FOR FREE FOREVER
+# 🔒 SIDEBAR DISPLAY FOR FREE FOREVER + BACK BUTTON + CHATBOT
 st.sidebar.markdown(
     """
-    <div style="border: 2px solid #a855f7; padding: 10px; border-radius: 10px; background-color: #f3e8ff; text-align: center;">
+    <div style="border: 2px solid #a855f7; padding: 10px; border-radius: 10px; background-color: #f3e8ff; text-align: center; margin-bottom: 15px;">
         <p style="margin: 0; font-weight: bold; color: #6b21a8;">Plan: FREE FOREVER ✨</p>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# 👑 SHERNI ADMIN PANEL VIA ROUTING QUERY PARAMS (RE-ACTIVATED PERFECTLY)
+# BACK BUTTON ADDED
+if st.sidebar.button("⬅️ Back to Home", use_container_width=True):
+    st.session_state.df_loaded = False
+    st.rerun()
+
+# CHATBOT ADDED
+st.sidebar.markdown("### 💬 AI Assistant")
+user_msg = st.sidebar.text_input("Ask me anything...", key="chat_input")
+if st.sidebar.button("Send", key="send_chat"):
+    if user_msg:
+        st.session_state.chat_history.append({"role": "user", "message": user_msg})
+        st.session_state.chat_history.append({"role": "assistant", "message": f"You asked: {user_msg}. I'm here to help with data cleaning! 💎"})
+        st.rerun()
+
+for chat in st.session_state.chat_history[-3:]:
+    if chat["role"] == "user":
+        st.sidebar.markdown(f"**You:** {chat['message']}")
+    else:
+        st.sidebar.markdown(f"**Bot:** {chat['message']}")
+
+# 👑 SHERNI ADMIN PANEL VIA ROUTING QUERY PARAMS - PAYMENT SYSTEM REMOVED
 if "admin" in st.query_params:
     st.title(T['admin_title'])
     st.subheader(T['admin_pending'])
-    
-    # Fully functional and visible Admin Dashboard
-    admin_data = pd.DataFrame({
-        T['admin_user']: ["user_sharma@gmail.com", "verisame_client@yahoo.com", "test_user3@hotmail.com"],
-        T['admin_plan']: ["Free Trial Request", "Pending Approval", "Active Free Forever"],
-        T['admin_expiry']: ["2026-07-15", "Awaiting Review", "Lifetime Access"]
-    })
-    st.dataframe(admin_data, use_container_width=True)
-    st.success("Sherni Live Controls Active! Global systems operating on Free Forever configuration.")
+    st.info("System is currently locked to FREE FOREVER. No payment actions or approvals required.")
     st.stop()
 
 # MAIN LOGO SECTION
@@ -183,7 +200,7 @@ df = None
 with tab1:
     file = st.file_uploader(T['upload_text'], type=["csv","xlsx","xls","json"], accept_multiple_files=True)
     if file:
-        try: 
+        try:
             df_list = []
             for f in file:
                 if f.name.endswith((".xlsx", ".xls")):
@@ -209,14 +226,14 @@ if df is not None:
         df_clean = st.session_state.df_clean.drop_duplicates()
         for col in df_clean.columns:
             df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-            if any(k in col.lower() for k in ['salary','amount','price','paisa']): 
+            if any(k in col.lower() for k in ['salary','amount','price','paisa']):
                 df_clean[col] = df_clean[col].apply(words_to_num)
         st.session_state.df_clean = df_clean
         st.session_state.df_loaded = True
         st.session_state.orig_len = orig_len
         st.session_state.empty_fixed = int(df.isna().sum().sum())
         st.session_state.changed_cells = set()
-    
+
     try:
         if st.session_state.get('df_clean') is not None:
             df_clean = st.session_state.df_clean
@@ -231,22 +248,21 @@ if df is not None:
 
             st.markdown(f"<h2>{T['tools_menu']}</h2>", unsafe_allow_html=True)
             st.caption(T['preview'])
-            
+
             styled_df = apply_cell_styling(df_clean.head(10))
             st.dataframe(styled_df, use_container_width=True, height=300)
 
             all_cols = df_clean.columns.tolist()
 
-            # ALL 3 ORIGINAL TABS WITH BOTH UNLOCKED & LOCKED SECTIONS RESTORED
-            tab1_layout, tab2_layout, tab3_layout = st.tabs([T['tab1'], T['tab2'], T['tab3']])
-            
-            with tab1_layout:
+            # 4 UNLOCKED FREE TOOLS ONLY CYCLE - 6 LOCKED
+            tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
+            with tab1:
                 # Tool 1: Smart Date Converter (FREE UNLOCKED)
                 st.write(f"**{T['tool1']}** ✅ Unlocked")
                 date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
                 if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
                     old_snapshot = st.session_state.df_clean.copy()
-                    for col in date_cols: 
+                    for col in date_cols:
                         try:
                             if any(k in col.lower() for k in ['salary', 'amount', 'price', 'phone', 'id', 'score', 'age']):
                                 st.error(f"⚠️ Column '{col}' contains numbers/money, not dates!")
@@ -257,42 +273,42 @@ if df is not None:
                     track_modifications(old_snapshot, st.session_state.df_clean)
                     st.success(T['success']); st.rerun()
 
-                # Tool 2: AI Fill Nulls (LOCKED VERSION RESTORED)
+                # Tool 2: AI Fill Nulls (LOCKED)
                 st.write(f"**{T['tool2']}** 🔒 Locked")
                 st.multiselect(T['select_col'], all_cols, key="ms_fill_disabled", disabled=True)
                 st.button(T['apply_btn'], key="btn_fill_disabled", disabled=True, use_container_width=True)
 
-            with tab2_layout:
-                # Tool 3: Email Validator (LOCKED VERSION RESTORED)
+            with tab2:
+                # Tool 3: Email Validator (LOCKED)
                 st.write(f"**{T['tool3']}** 🔒 Locked")
                 st.multiselect(T['select_col'], all_cols, key="ms_email_disabled", disabled=True)
                 st.button(T['apply_btn'], key="btn_email_disabled", disabled=True, use_container_width=True)
 
-                # Tool 4: Phone Formatter (LOCKED VERSION RESTORED)
+                # Tool 4: Phone Formatter (LOCKED)
                 st.write(f"**{T['tool4']}** 🔒 Locked")
                 st.multiselect(T['select_col'], all_cols, key="ms_phone_disabled", disabled=True)
                 st.button(T['apply_btn'], key="btn_phone_disabled", disabled=True, use_container_width=True)
 
-            with tab3_layout:
+            with tab3:
                 # Tool 5: Case Converter (FREE UNLOCKED)
                 st.write(f"**{T['tool5']}** ✅ Unlocked")
                 case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
                 case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
                 if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
                     old_snapshot = st.session_state.df_clean.copy()
-                    for col in case_cols: 
+                    for col in case_cols:
                         if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
                         elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
                         else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
                     track_modifications(old_snapshot, st.session_state.df_clean)
                     st.success(T['success']); st.rerun()
 
-                # Tool 6: Remove Symbols (LOCKED VERSION RESTORED)
+                # Tool 6: Remove Symbols (LOCKED)
                 st.write(f"**{T['tool6']}** 🔒 Locked")
                 st.multiselect(T['select_col'], all_cols, key="ms_spec_disabled", disabled=True)
                 st.button(T['apply_btn'], key="btn_spec_disabled", disabled=True, use_container_width=True)
 
-                # Tool 7: Bulk Rename (LOCKED VERSION RESTORED)
+                # Tool 7: Bulk Rename (LOCKED)
                 st.write(f"**{T['tool7']}** 🔒 Locked")
                 st.selectbox("Old column name", all_cols, key="sel_old_disabled", disabled=True)
                 st.text_input("New column name", key="inp_new_disabled", disabled=True)
@@ -313,12 +329,12 @@ if df is not None:
                     track_modifications(old_snapshot, st.session_state.df_clean)
                     st.success(T['success']); st.rerun()
 
-                # Tool 10: Spell Check (LOCKED VERSION RESTORED)
+                # Tool 10: Spell Check (LOCKED)
                 st.write(f"**{T['tool10']}** 🔒 Locked")
                 st.multiselect(T['select_col'], all_cols, key="ms_spell_disabled", disabled=True)
                 st.button(T['apply_btn'], key="btn_spell_disabled", disabled=True, use_container_width=True)
 
-            # CLEAN EXPORT CAPABILITIES (DIRECT FREE DOWNLOAD, ABSOLUTELY NO QR/PAYMENT GATES)
+            # CLEAN EXPORT CAPABILITIES (DIRECTLY FREE DOWNLOAD, NO QR CODES)
             st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
             if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
