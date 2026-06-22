@@ -307,7 +307,7 @@ def render_ai_chatbot(is_sidebar=False):
 
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button(T['back_btn'], use_container_width=True):
-        for key in ['plan','email','df_clean','payment_clicked','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
+        for key in ['plan','email','df_clean','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
             st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
         st.session_state.changed_cells = set()
         st.rerun()
@@ -490,15 +490,28 @@ else:
                 st.dataframe(styled_df, use_container_width=True, height=300)
 
                 all_cols = df_clean.columns.tolist()
+                
+                # --- Advanced Smart Column Filters ---
+                text_cols = df_clean.select_dtypes(include=['object']).columns.tolist()
+                date_filtered_cols = [col for col in all_cols if 'date' in col.lower() or 'time' in col.lower()]
+                email_filtered_cols = [col for col in all_cols if 'email' in col.lower() or 'mail' in col.lower()]
+                phone_filtered_cols = [col for col in all_cols if 'phone' in col.lower() or 'mobile' in col.lower() or 'contact' in col.lower()]
+                
+                # Fallback guards so select boxes don't crash empty datasets
+                if not date_filtered_cols: date_filtered_cols = all_cols
+                if not email_filtered_cols: email_filtered_cols = all_cols
+                if not phone_filtered_cols: phone_filtered_cols = all_cols
+                if not text_cols: text_cols = all_cols
+
                 is_pro = st.session_state.plan == "pro"
                 is_free = st.session_state.plan == "free"
                 is_paid = st.session_state.admin_approved
 
                 tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 with tab1:
-                    # Tool 1: Smart Date Converter (With Numeric Salary Column Protection)
+                    # Tool 1: Smart Date Converter
                     st.write(f"**{T['tool1']}** ✅ Unlocked")
-                    date_cols = st.multiselect(T['select_col'], all_cols, key="ms_date")
+                    date_cols = st.multiselect(T['select_col'], date_filtered_cols, key="ms_date")
                     if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
                         if not date_cols:
                             st.warning("⚠️ No changes detected! Please select columns first.")
@@ -506,9 +519,8 @@ else:
                             old_snapshot = st.session_state.df_clean.copy()
                             has_error = False
                             for col in date_cols:
-                                # Validation to stop converting core numerical variables like Salary or Phone
-                                if st.session_state.df_clean[col].dtype in ['int64', 'float64'] or any(k in col.lower() for k in ['salary', 'amount', 'price', 'paisa', 'phone', 'mobile']):
-                                    st.error(f"⚠️ '{col}' ek numeric column (Salary/Phone) hai, ise Date me badla nahi ja sakta!")
+                                if any(k in col.lower() for k in ['salary', 'amount', 'price', 'paisa', 'phone', 'mobile', 'name', 'id']):
+                                    st.error(f"⚠️ '{col}' core field lagta hai, ise Date me badla nahi ja sakta!")
                                     has_error = True
                                     break
                                 try:
@@ -546,11 +558,11 @@ else:
                     # Tool 3: Email Validator
                     if is_free:
                         st.write(f"**{T['tool3']}** 🔒 Locked (Upgrade to Pro)")
-                        st.multiselect(T['select_col'], all_cols, key="ms_email_disabled", disabled=True)
+                        st.multiselect(T['select_col'], email_filtered_cols, key="ms_email_disabled", disabled=True)
                         st.button(T['apply_btn'], key="btn_fill_disabled_tab2", disabled=True, use_container_width=True)
                     else:
                         st.write(f"**{T['tool3']}** ✅ Unlocked")
-                        email_cols = st.multiselect(T['select_col'], all_cols, key="ms_email")
+                        email_cols = st.multiselect(T['select_col'], email_filtered_cols, key="ms_email")
                         if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
                             if not email_cols:
                                 st.warning("⚠️ No changes detected! Please select valid email columns.")
@@ -565,11 +577,11 @@ else:
                     # Tool 4: Phone Formatter
                     if is_free:
                         st.write(f"**{T['tool4']}** 🔒 Locked (Upgrade to Pro)")
-                        st.multiselect(T['select_col'], all_cols, key="ms_phone_disabled", disabled=True)
+                        st.multiselect(T['select_col'], phone_filtered_cols, key="ms_phone_disabled", disabled=True)
                         st.button(T['apply_btn'], key="btn_phone_disabled", disabled=True, use_container_width=True)
                     else:
                         st.write(f"**{T['tool4']}** ✅ Unlocked")
-                        phone_cols = st.multiselect(T['select_col'], all_cols, key="ms_phone")
+                        phone_cols = st.multiselect(T['select_col'], phone_filtered_cols, key="ms_phone")
                         if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
                             if not phone_cols:
                                 st.warning("⚠️ No changes detected! Select cleanable phone vectors.")
@@ -584,7 +596,7 @@ else:
                 with tab3:
                     # Tool 5: Case Converter
                     st.write(f"**{T['tool5']}** ✅ Unlocked")
-                    case_cols = st.multiselect(T['select_col'], all_cols, key="ms_case")
+                    case_cols = st.multiselect(T['select_col'], text_cols, key="ms_case")
                     case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
                     if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
                         if not case_cols:
@@ -601,11 +613,11 @@ else:
                     # Tool 6: Remove Symbols
                     if is_free:
                         st.write(f"**{T['tool6']}** 🔒 Locked (Upgrade to Pro)")
-                        st.multiselect(T['select_col'], all_cols, key="ms_spec_disabled", disabled=True)
+                        st.multiselect(T['select_col'], text_cols, key="ms_spec_disabled", disabled=True)
                         st.button(T['apply_btn'], key="btn_spec_disabled", disabled=True, use_container_width=True)
                     else:
                         st.write(f"**{T['tool6']}** ✅ Unlocked")
-                        spec_cols = st.multiselect(T['select_col'], all_cols, key="ms_spec")
+                        spec_cols = st.multiselect(T['select_col'], text_cols, key="ms_spec")
                         if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
                             if not spec_cols:
                                 st.warning("⚠️ No changes detected! Select columns to strip characters.")
@@ -644,7 +656,7 @@ else:
 
                     # Tool 9: Trim Spaces
                     st.write(f"**{T['tool9']}** ✅ Unlocked")
-                    trim_cols = st.multiselect(T['select_col'], all_cols, key="ms_trim")
+                    trim_cols = st.multiselect(T['select_col'], text_cols, key="ms_trim")
                     if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
                         if not trim_cols:
                             st.warning("⚠️ No changes detected! Highlight target column layers to trim space buffers.")
@@ -659,14 +671,14 @@ else:
                     # Tool 10: Spell Check
                     if is_free:
                         st.write(f"**{T['tool10']}** 🔒 Locked (Upgrade to Pro)")
-                        st.multiselect(T['select_col'], all_cols, key="ms_spell_disabled", disabled=True)
+                        st.multiselect(T['select_col'], text_cols, key="ms_spell_disabled", disabled=True)
                         st.button(T['apply_btn'], key="btn_spell_disabled", disabled=True, use_container_width=True)
                     else:
                         st.write(f"**{T['tool10']}** ✅ Unlocked")
-                        spell_cols = st.multiselect(T['select_col'], all_cols, key="ms_spell")
+                        spell_cols = st.multiselect(T['select_col'], text_cols, key="ms_spell")
                         if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
                             if not spell_cols:
-                                st.warning("⚠️ No changes detected! Target columns must be selected first.")
+                                Mini_st.warning("⚠️ No changes detected! Target columns must be selected first.")
                             else:
                                 old_snapshot = st.session_state.df_clean.copy()
                                 typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
