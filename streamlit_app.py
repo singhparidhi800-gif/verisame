@@ -305,6 +305,7 @@ if "chat_history" not in st.session_state:
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 
+# 🛡️ IMMUTABLE STATE TRACKER TO PREVENT REFRESH BREAKS
 for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
@@ -424,8 +425,9 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
+# 📲 FIXED BACK BUTTON TO CLEAR DATA WORKSPACE SAFELY WITHOUT BREAKING SESSION
 if st.session_state.plan or st.session_state.email_entered:
-    if st.sidebar.button(T['back_btn'], use_container_width=True):
+    if st.sidebar.button("🚪 Logout Workspace / Exit", use_container_width=True):
         for key in ['plan','email','df_clean','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
             st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
         st.session_state.changed_cells = set()
@@ -510,37 +512,44 @@ if st.session_state.plan is None:
     else:
         st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
-        if st.button(T['continue_btn'], key="btn_continue", type="primary", use_container_width=True):
-            if "@" in email_input and "." in email_input:
-                st.session_state.email = email_input
-                st.session_state.email_entered = True
-                data = load_db()
-                
-                selected_days = 180 if st.session_state.amt == 1499 else 30
-                
-                if email_input in data:
-                    if st.session_state.selected_plan == "pro" and data[email_input]["plan"] == "free":
-                        data[email_input]["plan"] = "pro"
-                        data[email_input]["status"] = "PENDING"
-                        data[email_input]["amt"] = st.session_state.amt
-                        data[email_input]["days"] = selected_days
-                        data[email_input]["expiry"] = (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d")
-                        save_db(data)
-                    st.session_state.plan = data[email_input]["plan"]
-                    st.session_state.amt = data[email_input].get("amt", st.session_state.amt)
-                    st.session_state.days = data[email_input].get("days", selected_days)
-                    st.rerun()
-                else:
-                    st.session_state.plan = st.session_state.selected_plan
-                    if st.session_state.selected_plan == "free":
-                        expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                        data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
-                        save_db(data); st.balloons(); st.rerun()
+        
+        c_left, c_right = st.columns(2)
+        with c_left:
+            if st.button(T['continue_btn'], key="btn_continue", type="primary", use_container_width=True):
+                if "@" in email_input and "." in email_input:
+                    st.session_state.email = email_input
+                    st.session_state.email_entered = True
+                    data = load_db()
+                    
+                    selected_days = 180 if st.session_state.amt == 1499 else 30
+                    
+                    if email_input in data:
+                        if st.session_state.selected_plan == "pro" and data[email_input]["plan"] == "free":
+                            data[email_input]["plan"] = "pro"
+                            data[email_input]["status"] = "PENDING"
+                            data[email_input]["amt"] = st.session_state.amt
+                            data[email_input]["days"] = selected_days
+                            data[email_input]["expiry"] = (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d")
+                            save_db(data)
+                        st.session_state.plan = data[email_input]["plan"]
+                        st.session_state.amt = data[email_input].get("amt", st.session_state.amt)
+                        st.session_state.days = data[email_input].get("days", selected_days)
+                        st.rerun()
                     else:
-                        expiry = (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d")
-                        data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":selected_days,"expiry":expiry,"created":str(datetime.now())}
-                        save_db(data); st.rerun()
-            else: st.error("Valid email required")
+                        st.session_state.plan = st.session_state.selected_plan
+                        if st.session_state.selected_plan == "free":
+                            expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                            data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
+                            save_db(data); st.balloons(); st.rerun()
+                        else:
+                            expiry = (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d")
+                            data[email_input] = {"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":selected_days,"expiry":expiry,"created":str(datetime.now())}
+                            save_db(data); st.rerun()
+                else: st.error("Valid email required")
+        with c_right:
+            if st.button("← Go Back to Plans", key="back_to_plans", use_container_width=True):
+                st.session_state.selected_plan = None
+                st.rerun()
         st.stop()
 else:
     tab1,tab2 = st.tabs([T['upload_tab'], T['sample_tab']])
@@ -628,7 +637,8 @@ else:
                     # Tool 1: Smart Date Converter
                     st.write(f"**{T['tool1']}** ✅ Unlocked")
                     date_cols = st.multiselect(T['select_col'], date_filtered_cols, key="ms_date")
-                    if st.button(T['apply_btn'], key="btn_date", use_container_width=True):
+                    col_b1, col_b2 = st.columns(2)
+                    if col_b1.button(T['apply_btn'], key="btn_date", use_container_width=True):
                         if not date_cols:
                             st.warning("⚠️ No changes detected! Please select columns first.")
                         else:
@@ -644,7 +654,10 @@ else:
                             if not has_error:
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
+                    if col_b2.button("✕ Reset / Clear Tool Selection", key="clear_date", use_container_width=True):
+                        st.rerun()
 
+                    st.markdown("---")
                     # Tool 2: AI Fill Nulls
                     if is_free:
                         st.write(f"**{T['tool2']}** 🔒 Locked (Upgrade to Pro)")
@@ -653,7 +666,8 @@ else:
                     else:
                         st.write(f"**{T['tool2']}** ✅ Unlocked")
                         fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
-                        if st.button(T['apply_btn'], key="btn_fill", use_container_width=True):
+                        col_b3, col_b4 = st.columns(2)
+                        if col_b3.button(T['apply_btn'], key="btn_fill", use_container_width=True):
                             if not fill_cols:
                                 st.warning("⚠️ No changes detected! Please select target columns.")
                             else:
@@ -666,6 +680,8 @@ else:
                                     st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
+                        if col_b4.button("✕ Reset / Clear Tool Selection", key="clear_fill", use_container_width=True):
+                            st.rerun()
 
                 with tab2:
                     # Tool 3: Email Validator
@@ -676,7 +692,8 @@ else:
                     else:
                         st.write(f"**{T['tool3']}** ✅ Unlocked")
                         email_cols = st.multiselect(T['select_col'], email_filtered_cols, key="ms_email")
-                        if st.button(T['apply_btn'], key="btn_email", use_container_width=True):
+                        col_b5, col_b6 = st.columns(2)
+                        if col_b5.button(T['apply_btn'], key="btn_email", use_container_width=True):
                             if not email_cols:
                                 st.warning("⚠️ No changes detected! Please select valid email columns.")
                             else:
@@ -686,7 +703,10 @@ else:
                                     st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, x) else "Invalid Email")
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
+                        if col_b6.button("✕ Reset / Clear Tool Selection", key="clear_email", use_container_width=True):
+                            st.rerun()
 
+                    st.markdown("---")
                     # Tool 4: Phone Formatter
                     if is_free:
                         st.write(f"**{T['tool4']}** 🔒 Locked (Upgrade to Pro)")
@@ -695,7 +715,8 @@ else:
                     else:
                         st.write(f"**{T['tool4']}** ✅ Unlocked")
                         phone_cols = st.multiselect(T['select_col'], phone_filtered_cols, key="ms_phone")
-                        if st.button(T['apply_btn'], key="btn_phone", use_container_width=True):
+                        col_b7, col_b8 = st.columns(2)
+                        if col_b7.button(T['apply_btn'], key="btn_phone", use_container_width=True):
                             if not phone_cols:
                                 st.warning("⚠️ No changes detected! Select cleanable phone vectors.")
                             else:
@@ -705,13 +726,16 @@ else:
                                     st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
+                        if col_b8.button("✕ Reset / Clear Tool Selection", key="clear_phone", use_container_width=True):
+                            st.rerun()
 
                 with tab3:
                     # Tool 5: Case Converter
                     st.write(f"**{T['tool5']}** ✅ Unlocked")
                     case_cols = st.multiselect(T['select_col'], text_cols, key="ms_case")
                     case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
-                    if st.button(T['apply_btn'], key="btn_case", use_container_width=True):
+                    col_b9, col_b10 = st.columns(2)
+                    if col_b9.button(T['apply_btn'], key="btn_case", use_container_width=True):
                         if not case_cols:
                             st.warning("⚠️ No changes detected! Please check text-based structures.")
                         else:
@@ -722,7 +746,10 @@ else:
                                 else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
+                    if col_b10.button("✕ Reset / Clear Tool Selection", key="clear_case", use_container_width=True):
+                        st.rerun()
 
+                    st.markdown("---")
                     # Tool 6: Remove Symbols
                     if is_free:
                         st.write(f"**{T['tool6']}** 🔒 Locked (Upgrade to Pro)")
@@ -731,15 +758,19 @@ else:
                     else:
                         st.write(f"**{T['tool6']}** ✅ Unlocked")
                         spec_cols = st.multiselect(T['select_col'], text_cols, key="ms_spec")
-                        if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
+                        col_b11, col_b12 = st.columns(2)
+                        if col_b11.button(T['apply_btn'], key="btn_spec", use_container_width=True):
                             if not spec_cols:
-                                Document = st.warning("⚠️ No changes detected! Select columns to strip characters.")
+                                st.warning("⚠️ No changes detected! Select columns to strip characters.")
                             else:
                                 old_snapshot = st.session_state.df_clean.copy()
                                 for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
+                        if col_b12.button("✕ Reset / Clear Tool Selection", key="clear_spec", use_container_width=True):
+                            st.rerun()
 
+                    st.markdown("---")
                     # Tool 7: Bulk Rename
                     if is_free:
                         st.write(f"**{T['tool7']}** 🔒 Locked (Upgrade to Pro)")
@@ -750,17 +781,22 @@ else:
                         st.write(f"**{T['tool7']}** ✅ Unlocked")
                         old = st.selectbox("Old column name", all_cols, key="sel_old")
                         new = st.text_input("New column name", key="inp_new")
-                        if st.button(T['apply_btn'], key="btn_rename", use_container_width=True):
+                        col_b13, col_b14 = st.columns(2)
+                        if col_b13.button(T['apply_btn'], key="btn_rename", use_container_width=True):
                             if not new or new.strip() == "" or old == new:
                                 st.warning("⚠️ No changes detected! Name field missing or identical to old label.")
                             else:
                                 st.session_state.df_clean.rename(columns={old: new.strip()}, inplace=True)
                                 st.success(T['success']); st.rerun()
+                        if col_b14.button("✕ Reset / Clear Tool Selection", key="clear_rename", use_container_width=True):
+                            st.rerun()
 
+                    st.markdown("---")
                     # Tool 8: Remove Duplicates / Fuzzy Match
                     st.write(f"**{T['tool8']}** ✅ Unlocked")
                     fuzzy_target_col = st.selectbox("Select Target Column for Fuzzy Deduplication", text_cols, key="sb_fuzzy")
-                    if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
+                    col_b15, col_b16 = st.columns(2)
+                    if col_b15.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                         old_len = len(st.session_state.df_clean)
                         st.session_state.df_clean = remove_fuzzy_duplicates(st.session_state.df_clean, fuzzy_target_col)
                         
@@ -768,11 +804,15 @@ else:
                             st.warning("⚠️ No changes detected! Your active datasheet contains 0 duplicate records.")
                         else:
                             st.success(T['success']); st.rerun()
+                    if col_b16.button("✕ Reset / Clear Tool Selection", key="clear_dedup", use_container_width=True):
+                        st.rerun()
 
+                    st.markdown("---")
                     # Tool 9: Trim Spaces
                     st.write(f"**{T['tool9']}** ✅ Unlocked")
                     trim_cols = st.multiselect(T['select_col'], text_cols, key="ms_trim")
-                    if st.button(T['apply_btn'], key="btn_trim", use_container_width=True):
+                    col_b17, col_b18 = st.columns(2)
+                    if col_b17.button(T['apply_btn'], key="btn_trim", use_container_width=True):
                         if not trim_cols:
                             st.warning("⚠️ No changes detected! Highlight target column layers to trim space buffers.")
                         else:
@@ -782,7 +822,10 @@ else:
                                     st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
+                    if col_b18.button("✕ Reset / Clear Tool Selection", key="clear_trim", use_container_width=True):
+                        st.rerun()
 
+                    st.markdown("---")
                     # Tool 10: Spell Check
                     if is_free:
                         st.write(f"**{T['tool10']}** 🔒 Locked (Upgrade to Pro)")
@@ -791,7 +834,8 @@ else:
                     else:
                         st.write(f"**{T['tool10']}** ✅ Unlocked")
                         spell_cols = st.multiselect(T['select_col'], text_cols, key="ms_spell")
-                        if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
+                        col_b19, col_b20 = st.columns(2)
+                        if col_b19.button(T['apply_btn'], key="btn_spell", use_container_width=True):
                             if not spell_cols:
                                 st.warning("⚠️ No changes detected! Target columns must be selected first.")
                             else:
@@ -803,6 +847,8 @@ else:
                                 for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
+                        if col_b20.button("✕ Reset / Clear Tool Selection", key="clear_spell", use_container_width=True):
+                            st.rerun()
 
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
@@ -834,9 +880,17 @@ else:
                             
                         if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
                             data = load_db()
-                            if st.session_state.email in data:
-                                data[st.session_state.email]["status"] = "PENDING"
-                                save_db(data)
+                            if st.session_state.email not in data:
+                                selected_days = st.session_state.days if st.session_state.days else 30
+                                data[st.session_state.email] = {
+                                    "plan": "pro",
+                                    "amt": st.session_state.amt,
+                                    "days": selected_days,
+                                    "expiry": (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d"),
+                                    "created": str(datetime.now())
+                                }
+                            data[st.session_state.email]["status"] = "PENDING"
+                            save_db(data)
                             st.session_state.payment_clicked = True
                             st.success("🚀 Request logged live in Admin Dashboard! Please hold on while Admin approves.")
                             st.rerun()
