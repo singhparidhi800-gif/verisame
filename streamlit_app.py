@@ -80,6 +80,52 @@ def words_to_num(s):
             else: current += val
     return total + current if has_num_word and (total + current > 0) else s
 
+# 🧠 ADVANCED FUZZY DEDUPLICATION ALGORITHM
+def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
+    """Finds names that look similar (like Anugya Sharma vs Anugya Sharrma) and cleans them up."""
+    if dataframe[column_name].dtype != 'object':
+        return dataframe
+    
+    unique_values = dataframe[column_name].dropna().unique()
+    mapping = {}
+    
+    for i, val1 in enumerate(unique_values):
+        if val1 in mapping:
+            continue
+        for val2 in unique_values[i+1:]:
+            s1, s2 = str(val1).strip().lower(), str(val2).strip().lower()
+            ratio = difflib.SequenceMatcher(None, s1, s2).ratio()
+            if ratio >= threshold:
+                mapping[val2] = val1
+                
+    dataframe[column_name] = dataframe[column_name].replace(mapping)
+    return dataframe.drop_duplicates()
+
+# 📅 SYSTEM DATE CONVERTER WITH EXTRA RESILIENCE 
+def intelligent_date_parser(date_str):
+    if pd.isna(date_str) or str(date_str).strip() in ["", "nan", "None"]:
+        return "None"
+    
+    clean_str = str(date_str).strip().replace('/', '-').replace('.', '-')
+    
+    formats = ['%Y-%m-%d', '%d-%m-%Y', '%m-%d-%Y', '%Y/%m/%d', '%d/%m/%Y']
+    for fmt in formats:
+        try:
+            return datetime.strptime(clean_str, fmt).strftime('%Y-%m-%d')
+        except ValueError:
+            continue
+            
+    match = re.search(r'(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})', clean_str)
+    if match:
+        d, m, y = match.group(1), match.group(2), match.group(3)
+        if len(y) == 2: y = "20" + y
+        try:
+            return f"{y}-{m.zfill(2)}-{d.zfill(2)}"
+        except Exception:
+            pass
+            
+    return "None"
+
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
@@ -90,12 +136,12 @@ T = {
     "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green Highlights show where tools worked 🟢)",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
     "paid_msg":"Step 1: Pay ₹299 for 1 Month or ₹1499 for 6 Months via UPI. Step 2: Click I Paid button below. Step 3: Admin will approve. Step 4: Download unlocks",
-    "upi_text":"Scan QR to Pay ₹{amount}","paid_btn":"Customer I Paid ₹{amount}","wait_approval":"⏳ Waiting for Admin Approval... Click I Paid after payment",
+    "upi_text":"Scan QR to Pay ₹{amount}","paid_btn":"Customer I Paid ₹{amount}","wait_approval":"⏳ Waiting for Admin Approval... Click 'I Paid' after payment",
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
-    "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates","tool9":"Trim Spaces","tool10":"Spell Check",
+    "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates / Fuzzy Match","tool9":"Trim Spaces","tool10":"Spell Check",
     "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply Actions","success":"Apply is completed! Your data has been successfully updated.",
-    "admin_title":"👑 Sherni Admin Panel 👑","admin_pending":"User Databases & Requests","admin_approve_btn":"Mark Paid - Unlock Customer Download",
+    "admin_title":"👑 Admin Dashboard Panel 👑","admin_pending":"User Databases & Purchase Requests","admin_approve_btn":"Mark Paid - Unlock Customer Download",
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
@@ -240,15 +286,13 @@ def render_ai_chatbot(is_sidebar=False):
                 reply = f"🛠️ **Live Cleanliness Status:** We have successfully insulated `{st.session_state.get('empty_fixed', 0)}` faulty vector indices across active nodes!"
 
         if not reply:
-            if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you"]):
+            if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you", "alvida", "ja raha", "ja rhi"]):
                 if "uplode" in u or "upload" in u: reply = "👋 **All the best! Upload your sheets and run the vector cleaning sequence anytime!**"
                 elif "clean" in u: reply = "👍 **Awesome! Go ahead and process the sheets with premium triggers!**"
                 else: reply = "👋 **Goodbye! Keep automating and engineering grand designs!**"
-            elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **Always glad to engineer solutions!** Let's clear more bottlenecks."
+            elif any(x in u for x in ["thank you", "thanks", "thx", "shukriya", "dhanyawad", "thanku"]): reply = "💖 **Always glad to engineer solutions!** Let's clear more bottlenecks."
             elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Adding precision compute speeds with a smile!"
             elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** Just highly customized execution algorithms at full thrust!"
-            elif any(x in u for x in ["alvida", "ja raha hu", "ja rhi hu", "bye bhai"]): reply = "👋 **बाय-बाय दोस्त!** जाओ और अपने डेटा सेट को सुपर फ़ास्ट चमकाओ।"
-            elif any(x in u for x in ["shukriya", "dhanyawad", "thanku bhai"]): reply = "💖 **यू आर वेलकम!** आपके डेटा इंफ्रास्ट्रक्चर को मजबूत करना ही मेरा মিশন है।"
 
         if not reply:
             math_clean = u.replace('x', '*')
@@ -397,7 +441,6 @@ if st.session_state.plan is None:
                 st.session_state.email_entered = True
                 data = load_db()
                 
-                # Setup proper plan days count dynamically
                 selected_days = 180 if st.session_state.amt == 1499 else 30
                 
                 if email_input in data:
@@ -491,13 +534,11 @@ else:
 
                 all_cols = df_clean.columns.tolist()
                 
-                # --- Advanced Smart Column Filters ---
                 text_cols = df_clean.select_dtypes(include=['object']).columns.tolist()
                 date_filtered_cols = [col for col in all_cols if 'date' in col.lower() or 'time' in col.lower()]
                 email_filtered_cols = [col for col in all_cols if 'email' in col.lower() or 'mail' in col.lower()]
                 phone_filtered_cols = [col for col in all_cols if 'phone' in col.lower() or 'mobile' in col.lower() or 'contact' in col.lower()]
                 
-                # Fallback guards so select boxes don't crash empty datasets
                 if not date_filtered_cols: date_filtered_cols = all_cols
                 if not email_filtered_cols: email_filtered_cols = all_cols
                 if not phone_filtered_cols: phone_filtered_cols = all_cols
@@ -519,14 +560,11 @@ else:
                             old_snapshot = st.session_state.df_clean.copy()
                             has_error = False
                             for col in date_cols:
-                                if any(k in col.lower() for k in ['salary', 'amount', 'price', 'paisa', 'phone', 'mobile', 'name', 'id']):
-                                    st.error(f"⚠️ '{col}' core field lagta hai, ise Date me badla nahi ja sakta!")
+                                if any(k in col.lower() for k in ['salary', 'amount', 'price', 'paisa', 'phone', 'mobile', 'name', 'id', 'state', 'office']):
+                                    st.error(f"⚠️ '{col}' appears to be a core structural field, it cannot be processed as a Date!")
                                     has_error = True
                                     break
-                                try:
-                                    converted = pd.to_datetime(st.session_state.df_clean[col], errors='coerce', format='mixed', dayfirst=True)
-                                    st.session_state.df_clean[col] = converted.dt.strftime('%Y-%m-%d').fillna("None")
-                                except Exception: pass
+                                st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(intelligent_date_parser)
                             
                             if not has_error:
                                 track_modifications(old_snapshot, st.session_state.df_clean)
@@ -644,11 +682,13 @@ else:
                                 st.session_state.df_clean.rename(columns={old: new.strip()}, inplace=True)
                                 st.success(T['success']); st.rerun()
 
-                    # Tool 8: Remove Duplicates
+                    # Tool 8: Remove Duplicates / Fuzzy Match
                     st.write(f"**{T['tool8']}** ✅ Unlocked")
+                    fuzzy_target_col = st.selectbox("Select Target Column for Fuzzy Deduplication", text_cols, key="sb_fuzzy")
                     if st.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                         old_len = len(st.session_state.df_clean)
-                        st.session_state.df_clean = st.session_state.df_clean.drop_duplicates()
+                        st.session_state.df_clean = remove_fuzzy_duplicates(st.session_state.df_clean, fuzzy_target_col)
+                        
                         if len(st.session_state.df_clean) == old_len:
                             st.warning("⚠️ No changes detected! Your active datasheet contains 0 duplicate records.")
                         else:
@@ -678,7 +718,7 @@ else:
                         spell_cols = st.multiselect(T['select_col'], text_cols, key="ms_spell")
                         if st.button(T['apply_btn'], key="btn_spell", use_container_width=True):
                             if not spell_cols:
-                                Mini_st.warning("⚠️ No changes detected! Target columns must be selected first.")
+                                st.warning("⚠️ No changes detected! Target columns must be selected first.")
                             else:
                                 old_snapshot = st.session_state.df_clean.copy()
                                 typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
@@ -722,7 +762,7 @@ else:
                                 data[st.session_state.email]["status"] = "PENDING"
                                 save_db(data)
                             st.session_state.payment_clicked = True
-                            st.success("🚀 Request logged live in Sherni Admin! Please hold on while Admin approves.")
+                            st.success("🚀 Request logged live in Admin Dashboard! Please hold on while Admin approves.")
                             st.rerun()
                     else:
                         col1, col2 = st.columns(2)
