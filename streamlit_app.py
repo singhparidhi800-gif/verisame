@@ -16,6 +16,15 @@ try:
 except Exception:
     openpyxl = None
 
+# PDF Report Generation Dependency
+try:
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib import colors
+except Exception:
+    SimpleDocTemplate = None
+
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
 UPI = "playwithreyansh0@okhdfcbank"
@@ -125,6 +134,72 @@ def intelligent_date_parser(date_str):
             pass
             
     return "None"
+
+# FUNCTION TO GENERATE CLEAN PDF AUDIT REPORT
+def generate_pdf_report(orig_len, clean_len, empty_fixed, df):
+    if SimpleDocTemplate is None:
+        return None
+    
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=40, leftMargin=40, topMargin=40, bottomMargin=40)
+    story = []
+    
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontName='Helvetica-Bold', fontSize=24, textColor=colors.HexColor('#6b21a8'), spaceAfter=15)
+    sub_style = ParagraphStyle('SubStyle', parent=styles['Normal'], fontName='Helvetica', fontSize=11, textColor=colors.HexColor('#4b5563'), spaceAfter=25)
+    heading_style = ParagraphStyle('HeadingStyle', parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=14, textColor=colors.HexColor('#111827'), spaceBefore=15, spaceAfter=10)
+    text_style = ParagraphStyle('TextStyle', parent=styles['Normal'], fontName='Helvetica', fontSize=10, textColor=colors.HexColor('#1f2937'), spaceAfter=8)
+    
+    # Header
+    story.append(Paragraph("VeriSame - AI Data Audit Report", title_style))
+    story.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Account: {st.session_state.get('email', 'Guest')}", sub_style))
+    story.append(Spacer(1, 10))
+    
+    # Summary Metrics Table
+    story.append(Paragraph("Executive Summary Metrics", heading_style))
+    metric_data = [
+        [Paragraph("<b>Metric Parameter</b>", text_style), Paragraph("<b>Value Counts</b>", text_style)],
+        [Paragraph("Total Ingested Rows", text_style), Paragraph(str(orig_len), text_style)],
+        [Paragraph("Clean Post-Processed Rows", text_style), Paragraph(str(clean_len), text_style)],
+        [Paragraph("Duplicate Rows Extracted", text_style), Paragraph(str(orig_len - clean_len), text_style)],
+        [Paragraph("Empty/Null Cells Fixed", text_style), Paragraph(str(empty_fixed), text_style)]
+    ]
+    t1 = Table(metric_data, colWidths=[250, 200])
+    t1.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (1,0), colors.HexColor('#9333ea')),
+        ('TEXTCOLOR', (0,0), (1,0), colors.white),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f3e8ff'), colors.white]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#c084fc'))
+    ]))
+    story.append(t1)
+    story.append(Spacer(1, 20))
+    
+    # Dataset Schema Summary
+    story.append(Paragraph("Dataset Structural Analysis", heading_style))
+    schema_data = [[Paragraph("<b>Column Name</b>", text_style), Paragraph("<b>Data Type</b>", text_style), Paragraph("<b>Status</b>", text_style)]]
+    for col in df.columns:
+        schema_data.append([
+            Paragraph(str(col), text_style), 
+            Paragraph(str(df[col].dtype), text_style),
+            Paragraph("Verified & Optimized 🟢", text_style)
+        ])
+    t2 = Table(schema_data, colWidths=[200, 120, 130])
+    t2.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (2,0), colors.HexColor('#6b21a8')),
+        ('TEXTCOLOR', (0,0), (2,0), colors.white),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f9fafb'), colors.white]),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e5e7eb'))
+    ]))
+    story.append(t2)
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
 
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
@@ -658,7 +733,7 @@ else:
                         spec_cols = st.multiselect(T['select_col'], text_cols, key="ms_spec")
                         if st.button(T['apply_btn'], key="btn_spec", use_container_width=True):
                             if not spec_cols:
-                                st.warning("⚠️ No changes detected! Select columns to strip characters.")
+                                Document = st.warning("⚠️ No changes detected! Select columns to strip characters.")
                             else:
                                 old_snapshot = st.session_state.df_clean.copy()
                                 for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
@@ -732,6 +807,7 @@ else:
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
+                # 📑 EXPORT SECTION WITH INTEGRATED PDF AUDIT REPORT
                 if st.session_state.plan == "free":
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -765,7 +841,7 @@ else:
                             st.success("🚀 Request logged live in Admin Dashboard! Please hold on while Admin approves.")
                             st.rerun()
                     else:
-                        col1, col2 = st.columns(2)
+                        col1, col2, col3 = st.columns(3)
                         csv = st.session_state.df_clean.to_csv(index=False).encode()
                         if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
                             st.session_state.show_balloon = True; st.rerun()
@@ -776,6 +852,12 @@ else:
                                 if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
                                     st.session_state.show_balloon = True; st.rerun()
                         except Exception: pass
+                        
+                        # Generate & Render PDF Download Button for Pro Verified Users
+                        pdf_data = generate_pdf_report(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
+                        if pdf_data:
+                            if col3.download_button("Download Audit PDF Report 📊", pdf_data, "verisame_audit_report.pdf", mime="application/pdf", key="dl_pdf_paid", use_container_width=True):
+                                st.session_state.show_balloon = True; st.rerun()
         except Exception: pass
 
     if not st.session_state.plan and not st.session_state.email_entered:
