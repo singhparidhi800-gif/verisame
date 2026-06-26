@@ -16,6 +16,12 @@ try:
 except Exception:
     openpyxl = None
 
+# New Safe Import for Gemini AI Engine
+try:
+    import google.generativeai as genai
+except Exception:
+    genai = None
+
 # PDF Report Generation Dependency
 try:
     from reportlab.lib.pagesizes import letter
@@ -30,6 +36,10 @@ st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initi
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
 ADMIN_PASS = st.secrets["ADMIN_PASSWORD"]
+
+# Configure Gemini AI using Streamlit Secrets securely
+if genai is not None and "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
 # 🔒 MAXIMUM SECURITY PERSISTENT DATABASE ENGINE
 if "global_db_backup" not in st.session_state:
@@ -420,7 +430,21 @@ def render_ai_chatbot(is_sidebar=False):
             if best_score >= 0.25 and best_reply: 
                 reply = best_reply
             else: 
-                reply = "🔍 **Query logged in AI memory base.** I am fully trained on pipeline architecture, troubleshooting, cloud deployment fixes, founder info, and data science math calculations. Try asking: *'Who is the founder?'* or *'How to fix a deployment error?'*"
+                # Trigger Live Gemini Generative AI if key is set and local query fails
+                if genai is not None and "GEMINI_API_KEY" in st.secrets:
+                    try:
+                        model = genai.GenerativeModel('gemini-pro')
+                        # Giving data context to the AI for accurate analytics
+                        context_prompt = f"You are VeriSame Core AI Bot created by Anugya Singh. Answer this query professionally. User query: {user_msg}"
+                        if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
+                            context_prompt += f"\nActive dataset info: Columns are {st.session_state.df_clean.columns.tolist()}, Row count is {len(st.session_state.df_clean)}."
+                        
+                        response = model.generate_content(context_prompt)
+                        reply = response.text
+                    except Exception as ai_err:
+                        reply = f"🔍 **AI Processing Error:** Generated key detected but API connection timed out. Status: `{str(ai_err)}`"
+                else:
+                    reply = "🔍 **Query logged in AI memory base.** I am fully trained on pipeline architecture, troubleshooting, cloud deployment fixes, founder info, and data science math calculations. Try asking: *'Who is the founder?'* or *'How to fix a deployment error?'*"
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
@@ -837,7 +861,7 @@ else:
                         col_b19, col_b20 = st.columns(2)
                         if col_b19.button(T['apply_btn'], key="btn_spell", use_container_width=True):
                             if not spell_cols:
-                                st.warning("⚠️ No changes detected! Target columns must be selected first.")
+                                m = st.warning("⚠️ No changes detected! Target columns must be selected first.")
                             else:
                                 old_snapshot = st.session_state.df_clean.copy()
                                 typo_dict = {"teh":"the","recieve":"receive","goverment":"government","managment":"management","colum":"column","datset":"dataset","salery":"salary","amout":"amount","phne":"phone","emil":"email","addres":"address","nam":"name","infomation":"information"}
