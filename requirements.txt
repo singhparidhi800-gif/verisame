@@ -9,5 +9,6 @@ word2number
 firebase-admin
 pillow
 matplotlib
+reportlab
 
 
