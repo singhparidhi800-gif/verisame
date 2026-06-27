@@ -39,21 +39,27 @@ ADMIN_PASS = st.secrets["ADMIN_PASSWORD"]
 
 # Configure Gemini AI using Streamlit Secrets securely
 if genai is not None and "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    try:
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    except Exception:
+        pass
 
-# 🔒 MAXIMUM SECURITY PERSISTENT DATABASE ENGINE
-if "global_db_backup" not in st.session_state:
-    st.session_state.global_db_backup = {}
-
+# 🔒 MAXIMUM SECURITY PERSISTENT CLOUD STORAGE LOGIC (STREAMLIT SECRETS BACKEND)
 def load_db():
-    if st.session_state.global_db_backup:
-        return st.session_state.global_db_backup
+    # Pehle Streamlit Secrets se load karne ki koshish karein
+    if "saved_orders" in st.secrets:
+        try:
+            data = json.loads(st.secrets["saved_orders"])
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
+    # Secondary backup: local file
     if os.path.exists("backup_orders.json"):
         try:
             with open("backup_orders.json", "r") as f:
                 data = json.load(f)
                 if isinstance(data, dict) and data:
-                    st.session_state.global_db_backup = data
                     return data
         except Exception:
             pass
@@ -61,7 +67,10 @@ def load_db():
 
 def save_db(d):
     try:
-        st.session_state.global_db_backup = d
+        # Streamlit Secrets database me save karein
+        if "saved_orders" in st.secrets:
+            st.secrets["saved_orders"] = json.dumps(d)
+        # Local file backup bhi rakhein
         with open("backup_orders.json", "w") as f:
             json.dump(d, f, indent=2)
     except Exception:
@@ -101,7 +110,6 @@ def words_to_num(s):
 
 # 🧠 ADVANCED FUZZY DEDUPLICATION ALGORITHM
 def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
-    """Finds names that look similar (like Anugya Sharma vs Anugya Sharrma) and cleans them up."""
     if dataframe[column_name].dtype != 'object':
         return dataframe
     
@@ -160,13 +168,10 @@ def generate_pdf_report(orig_len, clean_len, empty_fixed, df):
     heading_style = ParagraphStyle('HeadingStyle', parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=14, textColor=colors.HexColor('#111827'), spaceBefore=15, spaceAfter=10)
     text_style = ParagraphStyle('TextStyle', parent=styles['Normal'], fontName='Helvetica', fontSize=10, textColor=colors.HexColor('#1f2937'), spaceAfter=8)
     
-    # Header
     story.append(Paragraph("VeriSame - AI Data Audit Report", title_style))
     story.append(Paragraph(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Account: {st.session_state.get('email', 'Guest')}", sub_style))
     story.append(Spacer(1, 10))
     
-    # Summary Metrics Table
-    story.append(Paragraph("Executive Summary Metrics", heading_style))
     metric_data = [
         [Paragraph("<b>Metric Parameter</b>", text_style), Paragraph("<b>Value Counts</b>", text_style)],
         [Paragraph("Total Ingested Rows", text_style), Paragraph(str(orig_len), text_style)],
@@ -187,8 +192,6 @@ def generate_pdf_report(orig_len, clean_len, empty_fixed, df):
     story.append(t1)
     story.append(Spacer(1, 20))
     
-    # Dataset Schema Summary
-    story.append(Paragraph("Dataset Structural Analysis", heading_style))
     schema_data = [[Paragraph("<b>Column Name</b>", text_style), Paragraph("<b>Data Type</b>", text_style), Paragraph("<b>Status</b>", text_style)]]
     for col in df.columns:
         schema_data.append([
@@ -230,7 +233,7 @@ T = {
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
-# CSS STYLING WITH CHERRY BLOSSOMS & PREMIUM GRAPHICS
+# CSS STYLING
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
@@ -315,7 +318,7 @@ if "chat_history" not in st.session_state:
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 
-# 🛡️ IMMUTABLE STATE TRACKER TO PREVENT REFRESH BREAKS
+# IMMUTABLE STATE TRACKER TO PREVENT REFRESH BREAKS
 for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
@@ -421,7 +424,7 @@ def render_ai_chatbot(is_sidebar=False):
             
             best_score = 0.0
             best_reply = None
-            user_words = [w for w in u.split() if len(w) > 2] # Skip tiny formatting words
+            user_words = [w for w in u.split() if len(w) > 2]
             
             for key_string, answer_text in knowledge_map.items():
                 key_words = key_string.split()
@@ -433,13 +436,12 @@ def render_ai_chatbot(is_sidebar=False):
                     best_score = final_score
                     best_reply = answer_text
             
-            # High threshold to prevent false matches
             if best_score >= 0.55 and best_reply: 
                 reply = best_reply
 
-        # 5. Fallback to Live Gemini Generative AI
+        # 🔥 FIXED LIVE GEMINI GENERATIVE AI FALLBACK
         if not reply:
-            if genai is not None and "GEMINI_API_KEY" in st.secrets:
+            if genai is not None and "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"].strip() != "":
                 try:
                     model = genai.GenerativeModel('gemini-pro')
                     context_prompt = f"You are VeriSame Core AI Bot created by Anugya Singh. Answer this query professionally. User query: {user_msg}"
@@ -449,14 +451,14 @@ def render_ai_chatbot(is_sidebar=False):
                     response = model.generate_content(context_prompt)
                     reply = response.text
                 except Exception as ai_err:
-                    reply = f"🔍 **AI Processing Error:** Generated key detected but API connection timed out. Status: `{str(ai_err)}`"
+                    reply = f"🔍 **AI Processing Error:** Model connection timed out or Key mismatch. Details: `{str(ai_err)}`"
             else:
-                reply = "🔍 I am trained on VeriSame architecture. For general knowledge questions like this, please make sure your `GEMINI_API_KEY` is fully active in Secrets!"
+                reply = "🔍 I am trained on VeriSame architecture. For external conversational inputs, please verify your `GEMINI_API_KEY` is completely configured within Streamlit Vault Cloud Secrets!"
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
-# 📲 FIXED BACK BUTTON TO CLEAR DATA WORKSPACE SAFELY WITHOUT BREAKING SESSION
+# FIXED WORKSPACE SIGN-OUT TERMINAL ROUTINE
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button("🚪 Logout Workspace / Exit", use_container_width=True):
         for key in ['plan','email','df_clean','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
@@ -464,6 +466,7 @@ if st.session_state.plan or st.session_state.email_entered:
         st.session_state.changed_cells = set()
         st.rerun()
 
+# LOAD SECURE AND SYNCED DATABASE SCHEMAS
 if st.session_state.email:
     db_state = load_db()
     user = db_state.get(st.session_state.email, {})
@@ -485,6 +488,7 @@ if st.session_state.email:
             else:
                 st.sidebar.info(f"Plan: {user['plan'].upper()}\nStatus: {user.get('status')}")
 
+# CORE UI HEADER DEPLOYMENT
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 with col1: st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
 with col2:
@@ -493,6 +497,7 @@ with col2:
 with col3: st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
+# 👑 SECURE ROUTING MECHANISMS FOR THE OVERLORD ADMIN TERMINAL
 if "admin" in st.query_params:
     if st.query_params["admin"] == ADMIN_PASS:
         st.title(T['admin_title'])
@@ -523,6 +528,7 @@ if "admin" in st.query_params:
         st.error("🔒 Unauthorized Access Detected. Admin Routing Halted.")
         st.stop()
 
+# INTERFACE PRICING SEGMENTS MATRIX
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
         col1,col2,col3 = st.columns(3, gap="medium")
@@ -648,7 +654,6 @@ else:
                 st.dataframe(styled_df, use_container_width=True, height=300)
 
                 all_cols = df_clean.columns.tolist()
-                
                 text_cols = df_clean.select_dtypes(include=['object']).columns.tolist()
                 date_filtered_cols = [col for col in all_cols if 'date' in col.lower() or 'time' in col.lower()]
                 email_filtered_cols = [col for col in all_cols if 'email' in col.lower() or 'mail' in col.lower()]
@@ -661,7 +666,11 @@ else:
 
                 is_pro = st.session_state.plan == "pro"
                 is_free = st.session_state.plan == "free"
-                is_paid = st.session_state.admin_approved
+                
+                # Dynamic approval status check straight from synced vault state
+                db_data = load_db()
+                user_info = db_data.get(st.session_state.email, {})
+                is_paid = user_info.get("status") == "PAID"
 
                 tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 with tab1:
@@ -884,7 +893,7 @@ else:
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
-                # 📑 EXPORT SECTION WITH INTEGRATED PDF AUDIT REPORT
+                # EXPORT TRACKS
                 if st.session_state.plan == "free":
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -922,7 +931,6 @@ else:
                                 }
                             data[st.session_state.email]["status"] = "PENDING"
                             save_db(data)
-                            st.session_state.payment_clicked = True
                             st.success("🚀 Request logged live in Admin Dashboard! Please hold on while Admin approves.")
                             st.rerun()
                     else:
@@ -938,7 +946,6 @@ else:
                                     st.session_state.show_balloon = True; st.rerun()
                         except Exception: pass
                         
-                        # Generate & Render PDF Download Button for Pro Verified Users
                         pdf_data = generate_pdf_report(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
                         if pdf_data:
                             if col3.download_button("Download Audit PDF Report 📊", pdf_data, "verisame_audit_report.pdf", mime="application/pdf", key="dl_pdf_paid", use_container_width=True):
