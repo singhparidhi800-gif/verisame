@@ -362,6 +362,7 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
+        # 1. Live Data Context Check
         if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
             live_df = st.session_state.df_clean
             if any(x in u for x in ["column", "columns", "what fields", "variables"]):
@@ -371,6 +372,7 @@ def render_ai_chatbot(is_sidebar=False):
             elif any(x in u for x in ["missing", "nulls", "empty boxes", "dirty boxes"]):
                 reply = f"🛠️ **Live Cleanliness Status:** We have successfully insulated `{st.session_state.get('empty_fixed', 0)}` faulty vector indices across active nodes!"
 
+        # 2. Basic Greetings & Conversational Shortcuts
         if not reply:
             if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you", "alvida", "ja raha", "ja rhi"]):
                 if "uplode" in u or "upload" in u: reply = "👋 **All the best! Upload your sheets and run the vector cleaning sequence anytime!**"
@@ -380,6 +382,7 @@ def render_ai_chatbot(is_sidebar=False):
             elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Adding precision compute speeds with a smile!"
             elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** Just highly customized execution algorithms at full thrust!"
 
+        # 3. Simple Math Calculator Engine Shortcut
         if not reply:
             math_clean = u.replace('x', '*')
             match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
@@ -393,6 +396,7 @@ def render_ai_chatbot(is_sidebar=False):
                     reply = f"🔢 **Math Calculator Engine:** \nResult: `{res}`"
                 except Exception: pass
 
+        # 4. Secure Local Knowledge Base (Strict Matching Threshold)
         if not reply:
             knowledge_map = {
                 "founder made creator created developer owner built make kaun banaya owner kaun anugya singh app architecture who designed": "👑 **Founder & Creator:** VeriSame was completely architected, designed, and coded by **Anugya Singh** to streamline manual data preprocessing effortlessly!",
@@ -414,37 +418,40 @@ def render_ai_chatbot(is_sidebar=False):
                 "row index error mismatch rows mismatched calculation dimensions size out of bounds loop structure failed length check": "🔢 **Index Guard Protocol:** Shifting rows during dropping stages can break dimensions. VeriSame protects arrays by replacing problematic text with 'Unknown' rather than altering physical lengths!",
                 "why did my data upload fail bad format corruption password protected parse error reader crash file block": "🚫 **Ingestion Diagnostics:** Verify your files aren't encrypted, password-shielded, or open inside another app like Microsoft Excel during loading phases."
             }
+            
             best_score = 0.0
             best_reply = None
-            user_words = u.split()
+            user_words = [w for w in u.split() if len(w) > 2] # Skip tiny formatting words
+            
             for key_string, answer_text in knowledge_map.items():
                 key_words = key_string.split()
                 matched_words = sum(1 for w in user_words if w in key_words)
-                word_ratio = matched_words / max(1, len(user_words))
+                word_ratio = matched_words / max(1, len(user_words)) if user_words else 0
                 seq_ratio = difflib.SequenceMatcher(None, u, key_string).ratio()
-                final_score = (word_ratio * 0.7) + (seq_ratio * 0.3)
+                final_score = (word_ratio * 0.6) + (seq_ratio * 0.4)
                 if final_score > best_score:
                     best_score = final_score
                     best_reply = answer_text
             
-            if best_score >= 0.25 and best_reply: 
+            # High threshold to prevent false matches
+            if best_score >= 0.55 and best_reply: 
                 reply = best_reply
-            else: 
-                # Trigger Live Gemini Generative AI if key is set and local query fails
-                if genai is not None and "GEMINI_API_KEY" in st.secrets:
-                    try:
-                        model = genai.GenerativeModel('gemini-pro')
-                        # Giving data context to the AI for accurate analytics
-                        context_prompt = f"You are VeriSame Core AI Bot created by Anugya Singh. Answer this query professionally. User query: {user_msg}"
-                        if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
-                            context_prompt += f"\nActive dataset info: Columns are {st.session_state.df_clean.columns.tolist()}, Row count is {len(st.session_state.df_clean)}."
-                        
-                        response = model.generate_content(context_prompt)
-                        reply = response.text
-                    except Exception as ai_err:
-                        reply = f"🔍 **AI Processing Error:** Generated key detected but API connection timed out. Status: `{str(ai_err)}`"
-                else:
-                    reply = "🔍 **Query logged in AI memory base.** I am fully trained on pipeline architecture, troubleshooting, cloud deployment fixes, founder info, and data science math calculations. Try asking: *'Who is the founder?'* or *'How to fix a deployment error?'*"
+
+        # 5. Fallback to Live Gemini Generative AI
+        if not reply:
+            if genai is not None and "GEMINI_API_KEY" in st.secrets:
+                try:
+                    model = genai.GenerativeModel('gemini-pro')
+                    context_prompt = f"You are VeriSame Core AI Bot created by Anugya Singh. Answer this query professionally. User query: {user_msg}"
+                    if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
+                        context_prompt += f"\nActive dataset info: Columns are {st.session_state.df_clean.columns.tolist()}, Row count is {len(st.session_state.df_clean)}."
+                    
+                    response = model.generate_content(context_prompt)
+                    reply = response.text
+                except Exception as ai_err:
+                    reply = f"🔍 **AI Processing Error:** Generated key detected but API connection timed out. Status: `{str(ai_err)}`"
+            else:
+                reply = "🔍 I am trained on VeriSame architecture. For general knowledge questions like this, please make sure your `GEMINI_API_KEY` is fully active in Secrets!"
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
