@@ -44,17 +44,9 @@ if genai is not None and "GEMINI_API_KEY" in st.secrets:
     except Exception:
         pass
 
-# 🔒 MAXIMUM SECURITY PERSISTENT CLOUD STORAGE LOGIC (STREAMLIT SECRETS BACKEND)
+# 🔒 MAXIMUM SECURITY PERSISTENT CLOUD STORAGE LOGIC (FIXED FOR CLOUD)
 def load_db():
-    # Pehle Streamlit Secrets se load karne ki koshish karein
-    if "saved_orders" in st.secrets:
-        try:
-            data = json.loads(st.secrets["saved_orders"])
-            if isinstance(data, dict):
-                return data
-        except Exception:
-            pass
-    # Secondary backup: local file
+    # Step 1: Pehle local backup check karein jisme latest updates save hain
     if os.path.exists("backup_orders.json"):
         try:
             with open("backup_orders.json", "r") as f:
@@ -63,14 +55,20 @@ def load_db():
                     return data
         except Exception:
             pass
+            
+    # Step 2: Agar local nahi hai, tabhi Secrets (Initial State) se load karein
+    if "saved_orders" in st.secrets:
+        try:
+            data = json.loads(st.secrets["saved_orders"])
+            if isinstance(data, dict):
+                return data
+        except Exception:
+            pass
     return {}
 
 def save_db(d):
     try:
-        # Streamlit Secrets database me save karein
-        if "saved_orders" in st.secrets:
-            st.secrets["saved_orders"] = json.dumps(d)
-        # Local file backup bhi rakhein
+        # Streamlit Cloud me Secrets modify nahi ho sakte, isliye sirf local me save karenge
         with open("backup_orders.json", "w") as f:
             json.dump(d, f, indent=2)
     except Exception:
@@ -417,7 +415,7 @@ def render_ai_chatbot(is_sidebar=False):
                 "python script pandas vectorization clean dataframe speed optimize memory runtime engine speed code compile": "🐍 **Vector Engine Efficiency:** This environment drops manual row loops, exploiting compiled pandas vector arrays to calculate full sheets concurrently under 3 seconds.",
                 "app error code crash malfunction troubleshooting debug fix problem fail issue broken application error solution": "🛠️ **Troubleshooting Matrix:** Most errors resolve by dropping blank schemas, matching column structures, or confirming dependencies. Submit your logs here for micro-second debugging!",
                 "streamlit deployment error cloud crash environment setup requirements text server down reboot log mismatch": "📦 **Cloud Infrastructure Patch:** Verify your `requirements.txt` lists `pandas`, `openpyxl`, and `qrcode` to block container crashes during automated cloud installation tracks.",
-                "openpyxl module missing excel download failed format issue library setup crash read error excel dependency": "📊 **Excel Stream Driver Patch:** If Excel export triggers an environment crash, the remote container lacks `openpyxl`. Deploy 'Download as CSV' or install the package in the environment file.",
+                "openpyxl module missing excel download failed format issue library setup crash read error excel dependency": "📊 **Excel Stream Driver Patch:** If Excel export triggers an environment crash, the remote container lack `openpyxl`. Deploy 'Download as CSV' or install the package in the environment file.",
                 "row index error mismatch rows mismatched calculation dimensions size out of bounds loop structure failed length check": "🔢 **Index Guard Protocol:** Shifting rows during dropping stages can break dimensions. VeriSame protects arrays by replacing problematic text with 'Unknown' rather than altering physical lengths!",
                 "why did my data upload fail bad format corruption password protected parse error reader crash file block": "🚫 **Ingestion Diagnostics:** Verify your files aren't encrypted, password-shielded, or open inside another app like Microsoft Excel during loading phases."
             }
@@ -695,6 +693,7 @@ else:
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
                     if col_b2.button("✕ Reset / Clear Tool Selection", key="clear_date", use_container_width=True):
+                        if "ms_date" in st.session_state: del st.session_state["ms_date"]
                         st.rerun()
 
                     st.markdown("---")
@@ -721,6 +720,7 @@ else:
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
                         if col_b4.button("✕ Reset / Clear Tool Selection", key="clear_fill", use_container_width=True):
+                            if "ms_fill" in st.session_state: del st.session_state["ms_fill"]
                             st.rerun()
 
                 with tab2:
@@ -744,6 +744,7 @@ else:
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
                         if col_b6.button("✕ Reset / Clear Tool Selection", key="clear_email", use_container_width=True):
+                            if "ms_email" in st.session_state: del st.session_state["ms_email"]
                             st.rerun()
 
                     st.markdown("---")
@@ -767,6 +768,7 @@ else:
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
                         if col_b8.button("✕ Reset / Clear Tool Selection", key="clear_phone", use_container_width=True):
+                            if "ms_phone" in st.session_state: del st.session_state["ms_phone"]
                             st.rerun()
 
                 with tab3:
@@ -787,6 +789,8 @@ else:
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
                     if col_b10.button("✕ Reset / Clear Tool Selection", key="clear_case", use_container_width=True):
+                        if "ms_case" in st.session_state: del st.session_state["ms_case"]
+                        if "sel_case" in st.session_state: del st.session_state["sel_case"]
                         st.rerun()
 
                     st.markdown("---")
@@ -808,6 +812,7 @@ else:
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
                         if col_b12.button("✕ Reset / Clear Tool Selection", key="clear_spec", use_container_width=True):
+                            if "ms_spec" in st.session_state: del st.session_state["ms_spec"]
                             st.rerun()
 
                     st.markdown("---")
@@ -829,6 +834,8 @@ else:
                                 st.session_state.df_clean.rename(columns={old: new.strip()}, inplace=True)
                                 st.success(T['success']); st.rerun()
                         if col_b14.button("✕ Reset / Clear Tool Selection", key="clear_rename", use_container_width=True):
+                            if "sel_old" in st.session_state: del st.session_state["sel_old"]
+                            if "inp_new" in st.session_state: del st.session_state["inp_new"]
                             st.rerun()
 
                     st.markdown("---")
@@ -845,6 +852,7 @@ else:
                         else:
                             st.success(T['success']); st.rerun()
                     if col_b16.button("✕ Reset / Clear Tool Selection", key="clear_dedup", use_container_width=True):
+                        if "sb_fuzzy" in st.session_state: del st.session_state["sb_fuzzy"]
                         st.rerun()
 
                     st.markdown("---")
@@ -863,6 +871,7 @@ else:
                             track_modifications(old_snapshot, st.session_state.df_clean)
                             st.success(T['success']); st.rerun()
                     if col_b18.button("✕ Reset / Clear Tool Selection", key="clear_trim", use_container_width=True):
+                        if "ms_trim" in st.session_state: del st.session_state["ms_trim"]
                         st.rerun()
 
                     st.markdown("---")
@@ -888,6 +897,7 @@ else:
                                 track_modifications(old_snapshot, st.session_state.df_clean)
                                 st.success(T['success']); st.rerun()
                         if col_b20.button("✕ Reset / Clear Tool Selection", key="clear_spell", use_container_width=True):
+                            if "ms_spell" in st.session_state: del st.session_state["ms_spell"]
                             st.rerun()
 
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
