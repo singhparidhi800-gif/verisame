@@ -10,5 +10,8 @@ firebase-admin
 pillow
 matplotlib
 reportlab
+google-generativeai
+
+
 
 
