@@ -46,7 +46,6 @@ if genai is not None and "GEMINI_API_KEY" in st.secrets:
 
 # 🔒 MAXIMUM SECURITY PERSISTENT CLOUD STORAGE LOGIC (FIXED FOR CLOUD)
 def load_db():
-    # Step 1: Pehle local backup check karein jisme latest updates save hain
     if os.path.exists("backup_orders.json"):
         try:
             with open("backup_orders.json", "r") as f:
@@ -56,7 +55,6 @@ def load_db():
         except Exception:
             pass
             
-    # Step 2: Agar local nahi hai, tabhi Secrets (Initial State) se load karein
     if "saved_orders" in st.secrets:
         try:
             data = json.loads(st.secrets["saved_orders"])
@@ -68,7 +66,6 @@ def load_db():
 
 def save_db(d):
     try:
-        # Streamlit Cloud me Secrets modify nahi ho sakte, isliye sirf local me save karenge
         with open("backup_orders.json", "w") as f:
             json.dump(d, f, indent=2)
     except Exception:
@@ -363,7 +360,6 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
-        # 1. Live Data Context Check
         if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
             live_df = st.session_state.df_clean
             if any(x in u for x in ["column", "columns", "what fields", "variables"]):
@@ -373,7 +369,6 @@ def render_ai_chatbot(is_sidebar=False):
             elif any(x in u for x in ["missing", "nulls", "empty boxes", "dirty boxes"]):
                 reply = f"🛠️ **Live Cleanliness Status:** We have successfully insulated `{st.session_state.get('empty_fixed', 0)}` faulty vector indices across active nodes!"
 
-        # 2. Basic Greetings & Conversational Shortcuts
         if not reply:
             if any(x in u for x in ["bye i am going", "bye going to", "ok bye", "tata", "see you", "alvida", "ja raha", "ja rhi"]):
                 if "uplode" in u or "upload" in u: reply = "👋 **All the best! Upload your sheets and run the vector cleaning sequence anytime!**"
@@ -383,7 +378,6 @@ def render_ai_chatbot(is_sidebar=False):
             elif any(x in u for x in ["haha", "hehe", "funny", "😂", "😉"]): reply = "😜 **Haha!** Adding precision compute speeds with a smile!"
             elif "are you mad" in u or "crazy" in u: reply = "🤪 **Haha, not at all!** Just highly customized execution algorithms at full thrust!"
 
-        # 3. Simple Math Calculator Engine Shortcut
         if not reply:
             math_clean = u.replace('x', '*')
             match = re.search(r'(\d+)\s*([\+\-\*\/])\s*(\d+)', math_clean)
@@ -397,7 +391,6 @@ def render_ai_chatbot(is_sidebar=False):
                     reply = f"🔢 **Math Calculator Engine:** \nResult: `{res}`"
                 except Exception: pass
 
-        # 4. Secure Local Knowledge Base (Strict Matching Threshold)
         if not reply:
             knowledge_map = {
                 "founder made creator created developer owner built make kaun banaya owner kaun anugya singh app architecture who designed": "👑 **Founder & Creator:** VeriSame was completely architected, designed, and coded by **Anugya Singh** to streamline manual data preprocessing effortlessly!",
@@ -437,7 +430,6 @@ def render_ai_chatbot(is_sidebar=False):
             if best_score >= 0.55 and best_reply: 
                 reply = best_reply
 
-        # 🔥 FIXED LIVE GEMINI GENERATIVE AI FALLBACK
         if not reply:
             if genai is not None and "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"].strip() != "":
                 try:
@@ -456,7 +448,6 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
-# FIXED WORKSPACE SIGN-OUT TERMINAL ROUTINE
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button("🚪 Logout Workspace / Exit", use_container_width=True):
         for key in ['plan','email','df_clean','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
@@ -464,7 +455,6 @@ if st.session_state.plan or st.session_state.email_entered:
         st.session_state.changed_cells = set()
         st.rerun()
 
-# LOAD SECURE AND SYNCED DATABASE SCHEMAS
 if st.session_state.email:
     db_state = load_db()
     user = db_state.get(st.session_state.email, {})
@@ -486,7 +476,6 @@ if st.session_state.email:
             else:
                 st.sidebar.info(f"Plan: {user['plan'].upper()}\nStatus: {user.get('status')}")
 
-# CORE UI HEADER DEPLOYMENT
 col1, col2, col3 = st.columns([1.1, 2.2, 1.7])
 with col1: st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
 with col2:
@@ -495,7 +484,6 @@ with col2:
 with col3: st.markdown("""<div class="anime-container"><img src="https://i.postimg.cc/8zdnX54g/IMG-20260609-WA0012.jpg"></div>""", unsafe_allow_html=True)
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# 👑 SECURE ROUTING MECHANISMS FOR THE OVERLORD ADMIN TERMINAL
 if "admin" in st.query_params:
     if st.query_params["admin"] == ADMIN_PASS:
         st.title(T['admin_title'])
@@ -526,7 +514,6 @@ if "admin" in st.query_params:
         st.error("🔒 Unauthorized Access Detected. Admin Routing Halted.")
         st.stop()
 
-# INTERFACE PRICING SEGMENTS MATRIX
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
         col1,col2,col3 = st.columns(3, gap="medium")
@@ -665,14 +652,12 @@ else:
                 is_pro = st.session_state.plan == "pro"
                 is_free = st.session_state.plan == "free"
                 
-                # Dynamic approval status check straight from synced vault state
                 db_data = load_db()
                 user_info = db_data.get(st.session_state.email, {})
                 is_paid = user_info.get("status") == "PAID"
 
                 tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
                 with tab1:
-                    # Tool 1: Smart Date Converter
                     st.write(f"**{T['tool1']}** ✅ Unlocked")
                     date_cols = st.multiselect(T['select_col'], date_filtered_cols, key="ms_date")
                     col_b1, col_b2 = st.columns(2)
@@ -697,7 +682,6 @@ else:
                         st.rerun()
 
                     st.markdown("---")
-                    # Tool 2: AI Fill Nulls
                     if is_free:
                         st.write(f"**{T['tool2']}** 🔒 Locked (Upgrade to Pro)")
                         st.multiselect(T['select_col'], all_cols, key="ms_fill_disabled", disabled=True)
@@ -724,7 +708,6 @@ else:
                             st.rerun()
 
                 with tab2:
-                    # Tool 3: Email Validator
                     if is_free:
                         st.write(f"**{T['tool3']}** 🔒 Locked (Upgrade to Pro)")
                         st.multiselect(T['select_col'], email_filtered_cols, key="ms_email_disabled", disabled=True)
@@ -748,7 +731,6 @@ else:
                             st.rerun()
 
                     st.markdown("---")
-                    # Tool 4: Phone Formatter
                     if is_free:
                         st.write(f"**{T['tool4']}** 🔒 Locked (Upgrade to Pro)")
                         st.multiselect(T['select_col'], phone_filtered_cols, key="ms_phone_disabled", disabled=True)
@@ -772,7 +754,6 @@ else:
                             st.rerun()
 
                 with tab3:
-                    # Tool 5: Case Converter
                     st.write(f"**{T['tool5']}** ✅ Unlocked")
                     case_cols = st.multiselect(T['select_col'], text_cols, key="ms_case")
                     case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
@@ -794,7 +775,6 @@ else:
                         st.rerun()
 
                     st.markdown("---")
-                    # Tool 6: Remove Symbols
                     if is_free:
                         st.write(f"**{T['tool6']}** 🔒 Locked (Upgrade to Pro)")
                         st.multiselect(T['select_col'], text_cols, key="ms_spec_disabled", disabled=True)
@@ -816,7 +796,6 @@ else:
                             st.rerun()
 
                     st.markdown("---")
-                    # Tool 7: Bulk Rename
                     if is_free:
                         st.write(f"**{T['tool7']}** 🔒 Locked (Upgrade to Pro)")
                         st.selectbox("Old column name", all_cols, key="sel_old_disabled", disabled=True)
@@ -839,7 +818,6 @@ else:
                             st.rerun()
 
                     st.markdown("---")
-                    # Tool 8: Remove Duplicates / Fuzzy Match
                     st.write(f"**{T['tool8']}** ✅ Unlocked")
                     fuzzy_target_col = st.selectbox("Select Target Column for Fuzzy Deduplication", text_cols, key="sb_fuzzy")
                     col_b15, col_b16 = st.columns(2)
@@ -856,7 +834,6 @@ else:
                         st.rerun()
 
                     st.markdown("---")
-                    # Tool 9: Trim Spaces
                     st.write(f"**{T['tool9']}** ✅ Unlocked")
                     trim_cols = st.multiselect(T['select_col'], text_cols, key="ms_trim")
                     col_b17, col_b18 = st.columns(2)
@@ -875,7 +852,6 @@ else:
                         st.rerun()
 
                     st.markdown("---")
-                    # Tool 10: Spell Check
                     if is_free:
                         st.write(f"**{T['tool10']}** 🔒 Locked (Upgrade to Pro)")
                         st.multiselect(T['select_col'], text_cols, key="ms_spell_disabled", disabled=True)
@@ -903,7 +879,6 @@ else:
                 st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
                 if st.session_state.show_balloon: st.balloons(); st.session_state.show_balloon = False
 
-                # EXPORT TRACKS
                 if st.session_state.plan == "free":
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
