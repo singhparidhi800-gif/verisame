@@ -35,7 +35,9 @@ st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initi
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
-ADMIN_PASS = st.secrets["ADMIN_PASSWORD"]
+
+# SAFE SECRETS CHECK: Prevents crash if running locally without a secrets file
+ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "admin123")
 
 # Configure Gemini AI using Streamlit Secrets securely
 if genai is not None and "GEMINI_API_KEY" in st.secrets:
@@ -103,14 +105,19 @@ def words_to_num(s):
             else: current += val
     return total + current if has_num_word and (total + current > 0) else s
 
-# 🧠 ADVANCED FUZZY DEDUPLICATION ALGORITHM
+# 🧠 ADVANCED FUZZY DEDUPLICATION ALGORITHM (WITH CRASH SAFEGUARDS)
 def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
     if dataframe[column_name].dtype != 'object':
         return dataframe
     
     unique_values = dataframe[column_name].dropna().unique()
-    mapping = {}
     
+    # Performance Optimization: Large unique elements can drop the execution server
+    if len(unique_values) > 1000:
+        st.warning("Dataset cardinality is extremely high. Scanning top 1000 unique records to prevent engine freeze.")
+        unique_values = unique_values[:1000]
+        
+    mapping = {}
     for i, val1 in enumerate(unique_values):
         if val1 in mapping:
             continue
@@ -313,10 +320,10 @@ if "chat_history" not in st.session_state:
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 
-# IMMUTABLE STATE TRACKER TO PREVENT REFRESH BREAKS
-for key in ['plan','email','df_clean','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
+# IMMUTABLE STATE TRACKER TO PREVENT REFRESH BREAKS (FIXED FOR MULTI-BACKUP)
+for key in ['plan','email','df_clean','df_original','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
     if key not in st.session_state:
-        st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
+        st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed'] else False
 
 def track_modifications(old_df, new_df):
     try:
@@ -450,8 +457,8 @@ def render_ai_chatbot(is_sidebar=False):
 
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button("🚪 Logout Workspace / Exit", use_container_width=True):
-        for key in ['plan','email','df_clean','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed']:
-            st.session_state[key] = None if key in ['plan','email','df_clean','days','selected_plan','orig_len','empty_fixed'] else False
+        for key in ['plan','email','df_clean','df_original','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_uploaded_files']:
+            st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed'] else False
         st.session_state.changed_cells = set()
         st.rerun()
 
@@ -579,6 +586,11 @@ else:
     with tab1:
         file = st.file_uploader(T['upload_text'], type=["csv","xlsx","xls","json"], accept_multiple_files=True)
         if file:
+            current_files = [f.name for f in file]
+            if st.session_state.get("last_uploaded_files") != current_files:
+                st.session_state.df_loaded = False
+                st.session_state.last_uploaded_files = current_files
+                
             try: 
                 df_list = []
                 for f in file:
@@ -596,10 +608,14 @@ else:
             except Exception as e: st.error(f"Error reading file: {str(e)}")
     with tab2:
         if st.button(T['sample_btn'], use_container_width=True):
+            st.session_state.df_loaded = False
+            if "last_uploaded_files" in st.session_state:
+                del st.session_state["last_uploaded_files"]
             df = pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],"Email":["RAHUL@GMAIL.COM","bad@","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["one hundred","250","two thousand five hundred"]})
 
     if df is not None:
         if 'df_loaded' not in st.session_state or not st.session_state.df_loaded:
+            st.session_state.df_original = df.copy()  # Capture pristine backup row structure
             st.session_state.df_clean = df.copy()
             orig_len = len(df)
             df_clean = st.session_state.df_clean.drop_duplicates()
@@ -621,6 +637,15 @@ else:
                 orig_len = st.session_state.orig_len
 
                 st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+                
+                # Master Reset Button Implementation
+                if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
+                    if st.session_state.df_original is not None:
+                        st.session_state.df_clean = st.session_state.df_original.copy()
+                        st.session_state.changed_cells = set()
+                        st.toast("Workspace restored successfully! 🎯")
+                        st.rerun()
+
                 c1,c2,c3,c4 = st.columns(4)
                 with c1: st.metric(T['rows'], orig_len)
                 with c2: st.metric(T['clean'], len(df_clean))
@@ -882,14 +907,12 @@ else:
                 if st.session_state.plan == "free":
                     col1, col2 = st.columns(2)
                     csv = st.session_state.df_clean.to_csv(index=False).encode()
-                    if col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True):
-                        st.session_state.show_balloon = True; st.rerun()
+                    col1.download_button(T['download_csv'], csv, "verisame_clean.csv", mime="text/csv", key="dl_csv_free", use_container_width=True)
                     try:
                         if openpyxl is not None:
                             excel = io.BytesIO()
                             st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                            if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True):
-                                        st.session_state.show_balloon = True; st.rerun()
+                            col2.download_button(T['download_excel'], excel.getvalue(), "verisame_clean.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True)
                     except Exception: pass
                     
                 elif st.session_state.plan == "pro":
@@ -921,20 +944,17 @@ else:
                     else:
                         col1, col2, col3 = st.columns(3)
                         csv = st.session_state.df_clean.to_csv(index=False).encode()
-                        if col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True):
-                            st.session_state.show_balloon = True; st.rerun()
+                        col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True)
                         try:
                             if openpyxl is not None:
                                 excel = io.BytesIO()
                                 st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                                if col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True):
-                                    st.session_state.show_balloon = True; st.rerun()
+                                col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True)
                         except Exception: pass
                         
                         pdf_data = generate_pdf_report(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
                         if pdf_data:
-                            if col3.download_button("Download Audit PDF Report 📊", pdf_data, "verisame_audit_report.pdf", mime="application/pdf", key="dl_pdf_paid", use_container_width=True):
-                                st.session_state.show_balloon = True; st.rerun()
+                            col3.download_button("Download Audit PDF Report 📊", pdf_data, "verisame_audit_report.pdf", mime="application/pdf", key="dl_pdf_paid", use_container_width=True)
         except Exception: pass
 
     if not st.session_state.plan and not st.session_state.email_entered:
