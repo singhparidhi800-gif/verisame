@@ -241,15 +241,15 @@ input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] inpu
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Ultra Advanced AI Studio. 💎 How can I help you optimize your dataset pipelines today?"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Studio. 💎 How can I help you optimize your dataset today?"}]
 
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 
 # SETUP CORE REFRESH STATE CAPABILITIES
-for key in ['plan','email','df_clean','df_original','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced']:
+for key in ['plan','email','df_clean','df_original','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg']:
     if key not in st.session_state:
-        st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig'] else False
+        st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg'] else False
 
 def track_modifications(old_df, new_df):
     try:
@@ -278,7 +278,7 @@ def apply_cell_styling(df_to_style):
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
-# LOCAL BOT CONTEXT PROTOCOL (PURE ENGLISH NO-KNOWLEDGE FALLBACK)
+# LOCAL BOT CONTEXT PROTOCOL (PURE ENGLISH KNOWLEDGE BASE)
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -294,7 +294,7 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown(chat_html, unsafe_allow_html=True)
 
     s_id = "side" if is_sidebar else "main"
-    user_msg = target.text_input("Ask advanced questions...", placeholder="Ask system configuration rules...", key=f"chat_in_{s_id}")
+    user_msg = target.text_input("Ask advanced questions...", placeholder="Ask system configurations...", key=f"chat_in_{s_id}")
     submit = target.button("Send Message 🚀", key=f"btn_send_chat_{s_id}")
 
     if submit and user_msg and user_msg.strip():
@@ -305,29 +305,40 @@ def render_ai_chatbot(is_sidebar=False):
         if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
             live_df = st.session_state.df_clean
             if any(x in u for x in ["column", "columns", "what fields"]):
-                reply = f"📊 **Live Dataset Columns:** Current active workspace schema attributes: `{', '.join(live_df.columns.tolist())}`."
+                reply = f"📊 **Live Dataset Columns:** Current active attributes are: `{', '.join(live_df.columns.tolist())}`."
             elif any(x in u for x in ["how many rows", "row count", "dataset size"]):
-                reply = f"🔢 **Live Dataset Dimensions:** Matrix handles `{len(live_df)}` records across `{len(live_df.columns)}` vector attributes."
+                reply = f"🔢 **Live Dataset Dimensions:** System currently handles `{len(live_df)}` rows across `{len(live_df.columns)}` columns."
             elif any(x in u for x in ["missing", "nulls", "empty boxes"]):
-                reply = f"🛠️ **Cleanliness Status:** Insulated `{st.session_state.get('empty_fixed', 0)}` missing field entry nodes."
+                reply = f"🛠️ **Cleanliness Status:** Captured `{st.session_state.get('empty_fixed', 0)}` missing values."
 
         if not reply:
-            if any(x in u for x in ["bye", "tata", "see you", "exit", "ja raha"]): reply = "👋 **Goodbye! Keep engineering cleaner sheets.**"
-            elif any(x in u for x in ["thank you", "thanks", "shukriya"]): reply = "💖 **Always glad to engineer data solutions!**"
-            elif any(x in u for x in ["haha", "hehe", "😂"]): reply = "😜 **Processing metrics with a smile!**"
+            if any(x in u for x in ["bye", "tata", "exit"]): reply = "👋 **Goodbye! Enjoy cleaning your spreadsheets.**"
+            elif any(x in u for x in ["thank you", "thanks"]): reply = "💖 **You are welcome! Let me know if you need more data cleaning.**"
+            elif any(x in u for x in ["haha", "hehe"]): reply = "😜 **Happy data processing!**"
 
         if not reply:
             knowledge_map = {
-                "founder made creator created developer owner built architecture who designed anugya": "👑 **Founder & Creator:** VeriSame was completely architected, designed, and coded by **Anugya Singh** to streamline manual data preprocessing effortlessly!",
-                "what this app can do app work capability functionality features use utility details": "💎 **VeriSame Ecosystem Capabilities:** It functions as an automated data processing hub! Handles matrix repairs, strips dirty symbols, validates parameters, and normalizes textual string properties under 3s!",
-                "hi hello hey greetings greeting system terminal startup check": "👋 **Welcome to VeriSame Core AI!** Terminal arrays are active. How can I optimize your workflows today?",
-                "how are you kaise ho wellness status state diagnostics": "✨ **System Diagnostics Nominal!** High precision arrays functional and ready to clear processing bottlenecks.",
-                "your name naam kya identity profiling profile identify system bot": "💎 I am **VeriSame Core Intelligence Engine**, built exclusively to process high-density matrix architectures!",
-                "how many tools total tools features list count kitne feature feature models": "🛠️ **Total System Architecture:** VeriSame includes precisely **10 Premium AI Engineering Tools** grouped in a high-efficiency interface dashboard.",
-                "is this app free free version tier lifetime cost price structure allocation paisa": "✨ **Yes! The foundational infrastructure layer is Free Forever.** You receive 1,000 rows processing, 4 free runtime tools, and unrestricted interface dashboard access.",
-                "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Infrastructure Tier:** Removes all row constraints, triggers sub-3-second execution speeds, and unlocks all **10 Advanced AI Tools**. Subscriptions are segmented into 1-Month and 6-Month tiers.",
-                "how to upload file spreadsheet csv excel insert validation drag ingestion injection": "📤 **File Ingestion Sequence:** Toggle the 'Upload File' sub-tab, drop standard `.csv`, `.xlsx`, or `.json` directly into the dynamic drag-and-drop boundary.",
-                "how to download file save file download csv excel export output storage extraction localized": "🎯 **Export Protocols:** Navigate down to the 'Export Data' sector, trigger 'Download as CSV' or 'Download as Excel'. Note: Pro exports deploy as soon as the admin handles clearance authorization."
+                "founder made creator created developer owner built architecture who designed anugya anugya singh": "👑 **Founder & Creator:** VeriSame was fully architected, designed, and coded by **Anugya Singh** to make preprocessing data completely effortless!",
+                "what this app can do app work capability functionality features use utility details purpose": "💎 **VeriSame Ecosystem Capabilities:** This platform is an automated dataset cleaning and optimization hub! It fixes formats, converts layout text, handles missing parameters, and builds clean sheets seamlessly in under 3 seconds.",
+                "hi hello hey greetings greeting system": "👋 **Welcome to VeriSame AI Chat!** Everything is up and running. How can I assist you with your vectors today?",
+                "how are you wellness status state diagnostics": "✨ **System Diagnostics Nominal!** High precision arrays are ready to optimize your data workflow.",
+                "your name naam identity profiling profile identify system bot": "💎 I am the **VeriSame Core Intelligence Bot**, built exclusively to process high-density matrix configurations.",
+                "how many tools total tools features list count kitne feature feature models number wise": """🛠️ **Total System Architecture:** VeriSame includes exactly **10 Engineering Tools** listed below:
+1. **Smart Date Converter** - Restructures mismatched dates to clean YYYY-MM-DD.
+2. **AI Fill Nulls** - Fills blank spaces with domain-intelligent default variables.
+3. **Email Validator** - Cleans string formats and checks against common email rules.
+4. **Phone Formatter** - Removes structural noise and leaves clean 10-digit formats.
+5. **Case Converter** - Converts textual properties into Upper, Lower, or Title templates.
+6. **Remove Symbols** - Strips unwanted special characters while preserving currency keys.
+7. **Bulk Rename** - Renames matrix spreadsheet column headers instantly.
+8. **Remove Duplicates / Fuzzy Match** - Removes completely repetitive entries and merges close fuzzy text matches.
+9. **Trim Spaces** - Trims inner and outer trailing whitespaces.
+10. **Spell Check** - Automatically fixes frequent typing mistakes across selected targets.""",
+                "is this app free free version tier cost price": "✨ **Yes! The foundational layer is Free Forever.** It provides 1,000 rows processing capacity and standard tools access.",
+                "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Infrastructure Tier:** Removes all file constraints and unlocks all 10 Premium Tools for ₹299 (1 Month) or ₹1499 (6 Months).",
+                "bug error mistake crash glitch wrong stuck broken problem fix issue error code fault fail": "🛠️ **Bug & Error Protocols:** If you run into any bug or application glitch, simply press the global button **'Reset Active Dataset to Original Raw State'** to clear the processing cache. For persistent engineering failures, report details to the founder, **Anugya Singh**.",
+                "how to upload file spreadsheet csv excel insert": "📤 **File Ingestion:** Toggle the 'Upload File' tab and drop standard `.csv`, `.xlsx`, or `.json` formats inside the boundaries.",
+                "how to download file save file download csv excel export": "🎯 **Export Protocols:** Navigate down to the 'Export Data' terminal box and select 'Download as CSV' or 'Download as Excel' to save your work."
             }
             
             best_score = 0.0
@@ -344,20 +355,19 @@ def render_ai_chatbot(is_sidebar=False):
                     best_score = final_score
                     best_reply = answer_text
             
-            if best_score >= 0.55 and best_reply: 
+            if best_score >= 0.45 and best_reply: 
                 reply = best_reply
 
-        # 1. REMOVED GEMINI INTERACTION MATRIX COMPLETE. FALLBACK STANDARD SPECIFIED AS REQUESTED.
         if not reply:
-            reply = "I am sorry, but that request is beyond my current knowledge base and system scope."
+            reply = "I understand. I am configured by Anugya Singh to help you with the 10 data cleaning tools. Please ask about the tools or founder details!"
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button("🚪 Logout Workspace / Exit", use_container_width=True):
-        for key in ['plan','email','df_clean','df_original','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced']:
-            st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig'] else False
+        for key in ['plan','email','df_clean','df_original','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg']:
+            st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg'] else False
         st.session_state.changed_cells = set()
         st.rerun()
 
@@ -382,7 +392,6 @@ if st.session_state.email:
             else:
                 st.sidebar.info(f"Plan: {user['plan'].upper()}\nStatus: {user.get('status')}")
 
-# 8. ANIME REMOVED, VERISAME LOGO RESIZED AND EXPANDED GRID ACROSS BLOCK HOUSINGS
 col1, col2 = st.columns([1.5, 3.5])
 with col1: 
     st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
@@ -452,15 +461,20 @@ if st.session_state.plan is None:
                     data = load_db()
                     selected_days = 180 if st.session_state.amt == 1499 else 30
                     
+                    # 🔒 RE-ENGINEERED SWITCHING PARADIGM: OVERWRITE DATABASE SPECIFICATIONS WITH CURRENT SELECTION
                     if email_input in data:
-                        # 9. FREE TIER DURATION REMAINS FREE ALWAYS; PREVENTS AUTO-PRO TIER CLASHES
-                        if st.session_state.selected_plan == "pro" and data[email_input]["plan"] == "free":
-                            data[email_input]["plan"] = "pro"
-                            data[email_input]["status"] = "PENDING"
-                            data[email_input]["amt"] = st.session_state.amt
-                            data[email_input]["days"] = selected_days
-                            data[email_input]["expiry"] = (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d")
-                            save_db(data)
+                        data[email_input]["plan"] = st.session_state.selected_plan
+                        if st.session_state.selected_plan == "free":
+                            data[email_input]["status"] = "PAID"
+                            data[email_input]["amt"] = 0
+                            data[email_input]["expiry"] = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")
+                        else:
+                            if data[email_input].get("status") != "PAID":
+                                data[email_input]["status"] = "PENDING"
+                                data[email_input]["amt"] = st.session_state.amt
+                                data[email_input]["days"] = selected_days
+                                data[email_input]["expiry"] = (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d")
+                        save_db(data)
                         st.session_state.plan = data[email_input]["plan"]
                         st.session_state.amt = data[email_input].get("amt", st.session_state.amt)
                         st.session_state.days = data[email_input].get("days", selected_days)
@@ -561,27 +575,22 @@ else:
             st.toast("Sample data loaded successfully! 🎯")
             st.rerun()
 
-    # MASTERPERSISTENCE LAYER (UI DISAPPEARANCE PATCH REMOVED INLINE REFINERY BLOCKS)
     if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
         st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
-        # 3. RE-ENGINEERED COMPREHENSIVE MASTER RESET MECHANISM
+        # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
             if st.session_state.df_original is not None:
                 st.session_state.df_clean = st.session_state.df_original.copy()
                 st.session_state.changed_cells = set()
-                # Automatically reset specific select widgets values back to structural defaults
                 for k in ["ms_date", "ms_fill", "ms_email", "ms_phone", "ms_case", "ms_spec", "sb_fuzzy", "ms_trim", "ms_spell"]:
-                    if k in st.session_state: del st.session_state[k]
+                    if k in st.session_state: st.session_state[k] = []
                 st.session_state["reset_announced"] = True
+                st.session_state["last_apply_msg"] = None
                 st.rerun()
-
-        if st.session_state.get("reset_announced"):
-            st.markdown("<p style='color: #047857; font-weight: bold; font-size:1.1rem; margin-top:5px;'>Your codes and datasets have been completely reset.</p>", unsafe_allow_html=True)
-            st.session_state["reset_announced"] = False
 
         c1,c2,c3,c4 = st.columns(4)
         with c1: st.metric(T['rows'], orig_len)
@@ -594,6 +603,18 @@ else:
         
         styled_df = apply_cell_styling(df_clean.head(10))
         st.dataframe(styled_df, use_container_width=True, height=280)
+
+        # 🎯 EXPLICIT STATUS NOTIFICATION FEED (UNDER LIVE PREVIEW)
+        if st.session_state.get("reset_announced"):
+            st.success("🔄 Success: Your original raw dataset states have been completely reset and applied!")
+            st.session_state["reset_announced"] = False
+
+        if st.session_state.get("last_apply_msg"):
+            msg_text = st.session_state["last_apply_msg"]
+            if "No changes were required" in msg_text or "not needed" in msg_text:
+                st.info(f"ℹ️ {msg_text}")
+            else:
+                st.success(msg_text)
 
         all_cols = df_clean.columns.tolist()
         text_cols = df_clean.select_dtypes(include=['object']).columns.tolist()
@@ -613,6 +634,94 @@ else:
         user_info = db_data.get(st.session_state.email, {})
         is_paid = user_info.get("status") == "PAID"
 
+        # 🚀 RE-ENGINEERED MULTI-TOOL PROCESSING HUB (APPLY EVERYTHING AT ONCE)
+        st.markdown("<div style='background: #faf5ff; padding:15px; border-radius:14px; border:2px dashed #a855f7; margin-bottom:15px;'>", unsafe_allow_html=True)
+        st.markdown("### ⚡ Global Simultaneous Multi-Tool Hub")
+        st.write("Configure column targets inside different option tabs below, then trigger this button to execute all tools together in a single operation phase.")
+        
+        if st.button("🚀 Execute All Configured AI Tools Simultaneously", key="global_apply_btn", type="primary", use_container_width=True):
+            old_snapshot = st.session_state.df_clean.copy()
+            tools_run = []
+            
+            # 1. Date
+            if st.session_state.get("ms_date"):
+                tools_run.append(T['tool1'])
+                for col in st.session_state["ms_date"]:
+                    if col in st.session_state.df_clean.columns:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(intelligent_date_parser)
+            # 2. Nulls
+            if not is_free and st.session_state.get("ms_fill"):
+                tools_run.append(T['tool2'])
+                for col in st.session_state["ms_fill"]:
+                    if col in st.session_state.df_clean.columns:
+                        sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
+                        if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val = 0
+                        elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
+                        else: fill_val = "Unknown"
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
+            # 3. Email
+            if not is_free and st.session_state.get("ms_email"):
+                tools_run.append(T['tool3'])
+                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                for col in st.session_state["ms_email"]:
+                    if col in st.session_state.df_clean.columns:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
+            # 4. Phone
+            if not is_free and st.session_state.get("ms_phone"):
+                tools_run.append(T['tool4'])
+                for col in st.session_state["ms_phone"]:
+                    if col in st.session_state.df_clean.columns:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
+            # 5. Case
+            if st.session_state.get("ms_case"):
+                tools_run.append(T['tool5'])
+                case_opt = st.session_state.get("sel_case", "Uppercase")
+                for col in st.session_state["ms_case"]:
+                    if col in st.session_state.df_clean.columns:
+                        if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
+                        elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
+                        else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
+            # 6. Symbols
+            if not is_free and st.session_state.get("ms_spec"):
+                tools_run.append(T['tool6'])
+                for col in st.session_state["ms_spec"]:
+                    if col in st.session_state.df_clean.columns:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
+            # 8. Fuzzy Duplicates
+            if st.session_state.get("sb_fuzzy"):
+                tools_run.append(T['tool8'])
+                fuzzy_target_col = st.session_state["sb_fuzzy"]
+                if fuzzy_target_col in st.session_state.df_clean.columns:
+                    st.session_state.df_clean = remove_fuzzy_duplicates(st.session_state.df_clean, fuzzy_target_col)
+            # 9. Trim
+            if st.session_state.get("ms_trim"):
+                tools_run.append(T['tool9'])
+                for col in st.session_state["ms_trim"]:
+                    if col in st.session_state.df_clean.columns:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+            # 10. Spell Check
+            if not is_free and st.session_state.get("ms_spell"):
+                tools_run.append(T['tool10'])
+                typo_dict = {"teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount"}
+                def fix_typos(text):
+                    words = str(text).split()
+                    return " ".join([typo_dict.get(w.lower(), w) for w in words])
+                for col in st.session_state["ms_spell"]:
+                    if col in st.session_state.df_clean.columns:
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
+
+            if not tools_run:
+                st.session_state["last_apply_msg"] = "⚠️ No processing targets configured. Please select columns first inside the tabs below."
+            else:
+                track_modifications(old_snapshot, st.session_state.df_clean)
+                if old_snapshot.equals(st.session_state.df_clean):
+                    st.session_state["last_apply_msg"] = "This combination of tools is not needed because your column data is already perfectly clean."
+                else:
+                    st.session_state["last_apply_msg"] = f"🎉 Apply is completed! Successfully executed changes for: {', '.join(tools_run)}."
+            st.rerun()
+        st.markdown("</div>", unsafe_allow_html=True)
+
         tab1,tab2,tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
         with tab1:
             st.write(f"**{T['tool1']}** ✅ Unlocked")
@@ -624,7 +733,11 @@ else:
                     for col in date_cols:
                         st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(intelligent_date_parser)
                     track_modifications(old_snapshot, st.session_state.df_clean)
-                    st.success(T['success']); st.rerun()
+                    if old_snapshot.equals(st.session_state.df_clean):
+                        st.session_state["last_apply_msg"] = "This tool is not needed because your date variables are already completely optimized."
+                    else:
+                        st.session_state["last_apply_msg"] = T['success']
+                    st.rerun()
             if col_b2.button("✕ Reset / Clear Tool Selection", key="clear_date", use_container_width=True):
                 if "ms_date" in st.session_state: del st.session_state["ms_date"]
                 st.rerun()
@@ -635,7 +748,6 @@ else:
                 st.multiselect(T['select_col'], all_cols, key="ms_fill_disabled", disabled=True)
                 st.button(T['apply_btn'], key="btn_fill_disabled", disabled=True, use_container_width=True)
             else:
-                # 7. AI FILL NULLS HIGH COMPUTE CONTEXT-AWARE RULES
                 st.write(f"**{T['tool2']}** ✅ Unlocked")
                 fill_cols = st.multiselect(T['select_col'], all_cols, key="ms_fill")
                 col_b3, col_b4 = st.columns(2)
@@ -644,13 +756,16 @@ else:
                         old_snapshot = st.session_state.df_clean.copy()
                         for col in fill_cols:
                             sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
-                            if any(k in col.lower() for k in ['salary','amount','price','paisa','count','id','phone']): fill_val = 0
+                            if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val = 0
                             elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
-                            elif 'date' in col.lower() or 'time' in col.lower(): fill_val = "2026-07-07"
                             else: fill_val = "Unknown"
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
                         track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
+                        if old_snapshot.equals(st.session_state.df_clean):
+                            st.session_state["last_apply_msg"] = "This tool is not needed because there are zero missing/null data blocks present."
+                        else:
+                            st.session_state["last_apply_msg"] = T['success']
+                        st.rerun()
                 if col_b4.button("✕ Reset / Clear Tool Selection", key="clear_fill", use_container_width=True):
                     if "ms_fill" in st.session_state: del st.session_state["ms_fill"]
                     st.rerun()
@@ -661,7 +776,6 @@ else:
                 st.multiselect(T['select_col'], email_filtered_cols, key="ms_email_disabled", disabled=True)
                 st.button(T['apply_btn'], key="btn_fill_disabled_tab2", disabled=True, use_container_width=True)
             else:
-                # 5. FIXED DISAPPEARING MATRIX ARRAYS VIA SAFE RE-MAPPING
                 st.write(f"**{T['tool3']}** ✅ Unlocked")
                 email_cols = st.multiselect(T['select_col'], email_filtered_cols, key="ms_email")
                 col_b5, col_b6 = st.columns(2)
@@ -672,7 +786,11 @@ else:
                         for col in email_cols: 
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
                         track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
+                        if old_snapshot.equals(st.session_state.df_clean):
+                            st.session_state["last_apply_msg"] = "This tool is not needed because all rows are already legitimate email strings."
+                        else:
+                            st.session_state["last_apply_msg"] = T['success']
+                        st.rerun()
                 if col_b6.button("✕ Reset / Clear Tool Selection", key="clear_email", use_container_width=True):
                     if "ms_email" in st.session_state: del st.session_state["ms_email"]
                     st.rerun()
@@ -693,7 +811,11 @@ else:
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
                         track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
+                        if old_snapshot.equals(st.session_state.df_clean):
+                            st.session_state["last_apply_msg"] = "This tool is not needed because all contact parameters are already fully cleaned."
+                        else:
+                            st.session_state["last_apply_msg"] = T['success']
+                        st.rerun()
                 if col_b8.button("✕ Reset / Clear Tool Selection", key="clear_phone", use_container_width=True):
                     if "ms_phone" in st.session_state: del st.session_state["ms_phone"]
                     st.rerun()
@@ -711,7 +833,11 @@ else:
                         elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
                         else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
                     track_modifications(old_snapshot, st.session_state.df_clean)
-                    st.success(T['success']); st.rerun()
+                    if old_snapshot.equals(st.session_state.df_clean):
+                        st.session_state["last_apply_msg"] = "This tool is not needed because the dataset text case already conforms to your selection."
+                    else:
+                        st.session_state["last_apply_msg"] = T['success']
+                    st.rerun()
             if col_b10.button("✕ Reset / Clear Tool Selection", key="clear_case", use_container_width=True):
                 if "ms_case" in st.session_state: del st.session_state["ms_case"]
                 st.rerun()
@@ -730,7 +856,11 @@ else:
                         old_snapshot = st.session_state.df_clean.copy()
                         for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
                         track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
+                        if old_snapshot.equals(st.session_state.df_clean):
+                            st.session_state["last_apply_msg"] = "This tool is not needed because there are no forbidden symbol arrays present."
+                        else:
+                            st.session_state["last_apply_msg"] = T['success']
+                        st.rerun()
                 if col_b12.button("✕ Reset / Clear Tool Selection", key="clear_spec", use_container_width=True):
                     if "ms_spec" in st.session_state: del st.session_state["ms_spec"]
                     st.rerun()
@@ -749,7 +879,8 @@ else:
                 if col_b13.button(T['apply_btn'], key="btn_rename", use_container_width=True):
                     if new and new.strip() != "" and old != new:
                         st.session_state.df_clean.rename(columns={old: new.strip()}, inplace=True)
-                        st.success(T['success']); st.rerun()
+                        st.session_state["last_apply_msg"] = "🎉 Column renaming successfully applied!"
+                        st.rerun()
                 if col_b14.button("✕ Reset / Clear Tool Selection", key="clear_rename", use_container_width=True):
                     if "sel_old" in st.session_state: del st.session_state["sel_old"]
                     if "inp_new" in st.session_state: del st.session_state["inp_new"]
@@ -761,8 +892,13 @@ else:
             col_b15, col_b16 = st.columns(2)
             if col_b15.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                 if fuzzy_target_col:
+                    old_snapshot = st.session_state.df_clean.copy()
                     st.session_state.df_clean = remove_fuzzy_duplicates(st.session_state.df_clean, fuzzy_target_col)
-                    st.success(T['success']); st.rerun()
+                    if len(old_snapshot) == len(st.session_state.df_clean):
+                        st.session_state["last_apply_msg"] = "This tool is not needed because there are no duplicate matching structures."
+                    else:
+                        st.session_state["last_apply_msg"] = T['success']
+                    st.rerun()
             if col_b16.button("✕ Reset / Clear Tool Selection", key="clear_dedup", use_container_width=True):
                 if "sb_fuzzy" in st.session_state: del st.session_state["sb_fuzzy"]
                 st.rerun()
@@ -778,7 +914,11 @@ else:
                         if st.session_state.df_clean[col].dtype == 'object':
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                     track_modifications(old_snapshot, st.session_state.df_clean)
-                    st.success(T['success']); st.rerun()
+                    if old_snapshot.equals(st.session_state.df_clean):
+                        st.session_state["last_apply_msg"] = "This tool is not needed because there are no leading or trailing whitespace blocks."
+                    else:
+                        st.session_state["last_apply_msg"] = T['success']
+                    st.rerun()
             if col_b18.button("✕ Reset / Clear Tool Selection", key="clear_trim", use_container_width=True):
                 if "ms_trim" in st.session_state: del st.session_state["ms_trim"]
                 st.rerun()
@@ -801,7 +941,11 @@ else:
                             return " ".join([typo_dict.get(w.lower(), w) for w in words])
                         for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
                         track_modifications(old_snapshot, st.session_state.df_clean)
-                        st.success(T['success']); st.rerun()
+                        if old_snapshot.equals(st.session_state.df_clean):
+                            st.session_state["last_apply_msg"] = "This tool is not needed because no common spelling typos were identified."
+                        else:
+                            st.session_state["last_apply_msg"] = T['success']
+                        st.rerun()
                 if col_b20.button("✕ Reset / Clear Tool Selection", key="clear_spell", use_container_width=True):
                     if "ms_spell" in st.session_state: del st.session_state["ms_spell"]
                     st.rerun()
