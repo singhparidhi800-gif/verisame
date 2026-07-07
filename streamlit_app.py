@@ -246,6 +246,12 @@ if "chat_history" not in st.session_state:
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 
+if "file_pool" not in st.session_state:
+    st.session_state.file_pool = {}
+
+if "active_file" not in st.session_state:
+    st.session_state.active_file = None
+
 # SETUP CORE REFRESH STATE CAPABILITIES
 for key in ['plan','email','df_clean','df_original','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg']:
     if key not in st.session_state:
@@ -260,6 +266,17 @@ def track_modifications(old_df, new_df):
                     st.session_state.changed_cells.add((idx, col))
     except Exception:
         pass
+
+# Helper to save active data status back into the pool
+def sync_active_to_pool():
+    if "file_pool" in st.session_state and st.session_state.active_file in st.session_state.file_pool:
+        st.session_state.file_pool[st.session_state.active_file].update({
+            "df_clean": st.session_state.df_clean,
+            "df_original": st.session_state.df_original,
+            "changed_cells": st.session_state.changed_cells,
+            "orig_len": st.session_state.orig_len,
+            "empty_fixed": st.session_state.empty_fixed
+        })
 
 # 🟢 HIGHLIGHT LOGIC BOUNDED STRICTLY TO CURRENTLY ACTIVE SELECTED TOOL INTERFACES
 def apply_cell_styling(df_to_style):
@@ -369,6 +386,8 @@ if st.session_state.plan or st.session_state.email_entered:
         for key in ['plan','email','df_clean','df_original','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg']:
             st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg'] else False
         st.session_state.changed_cells = set()
+        st.session_state.file_pool = {}
+        st.session_state.active_file = None
         st.rerun()
 
 if st.session_state.email:
@@ -384,13 +403,24 @@ if st.session_state.email:
         if user.get("plan") == "free": 
             st.sidebar.info("Plan: FREE FOREVER ✨")
         else:
-            exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d")
-            days_left = (exp_date - datetime.now()).days
-            st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
-            if days_left > 0: 
+            exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
+            days_left = (exp_date - datetime.now().date()).days
+            st.session_state.admin_approved = user.get("status") == "PAID" and days_left >= 0
+            
+            # 🕒 3-DAYS EXPIRY SYSTEM ALERTS (IN ENGLISH) RIGHT NEXT TO THE SIDEBAR DISPLAY STATE
+            if user.get("status") == "PAID" and 0 <= days_left <= 3:
+                st.sidebar.markdown(f"""
+                <div style="background-color: #fee2e2; border: 2px solid #ef4444; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+                    <p style="color: #b91c1c !important; font-weight: bold; margin: 0; font-size:0.9rem;">
+                        ⚠️ Your plan is going to expire in {days_left} days! Please renew soon.
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            if days_left >= 0: 
                 st.sidebar.info(f"Plan: {user['plan'].upper()}\nValid Till: {user['expiry']}\n{days_left} days left")
             else:
-                st.sidebar.info(f"Plan: {user['plan'].upper()}\nStatus: {user.get('status')}")
+                st.sidebar.info(f"Plan: {user['plan'].upper()}\nStatus: EXPIRED 🛑")
 
 col1, col2 = st.columns([1.5, 3.5])
 with col1: 
@@ -420,6 +450,9 @@ if "admin" in st.query_params:
                     if status == "PENDING" and info.get("plan") == "pro":
                         if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
                             data[email]["status"] = "PAID"
+                            # Exact date reset upon actual confirmation
+                            days_to_add = data[email].get("days", 30)
+                            data[email]["expiry"] = (datetime.now() + timedelta(days=days_to_add)).strftime("%Y-%m-%d")
                             save_db(data); st.success(f"✓ {email} unlocked!"); st.balloons(); st.rerun()
                     else: st.button("✓ Already Active", key=f"active_{email}", disabled=True, use_container_width=True)
                 with col3:
@@ -459,9 +492,8 @@ if st.session_state.plan is None:
                     st.session_state.email = email_input
                     st.session_state.email_entered = True
                     data = load_db()
-                    selected_days = 180 if st.session_state.amt == 1499 else 30
+                    selected_days = st.session_state.days if st.session_state.days else 30
                     
-                    # 🔒 RE-ENGINEERED SWITCHING PARADIGM: OVERWRITE DATABASE SPECIFICATIONS WITH CURRENT SELECTION
                     if email_input in data:
                         data[email_input]["plan"] = st.session_state.selected_plan
                         if st.session_state.selected_plan == "free":
@@ -515,9 +547,9 @@ else:
             
             upload_sig = f"{current_files}-{list(sheet_selections.values())}"
             
-            if st.session_state.get("last_upload_sig") != upload_sig:
+            if st.session_state.get("last_upload_sig") != upload_sig or not st.session_state.file_pool:
                 try: 
-                    df_list = []
+                    st.session_state.file_pool = {}
                     for f in file:
                         if f.name.endswith((".xlsx", ".xls")):
                             sheet = sheet_selections.get(f.name, 0)
@@ -526,25 +558,26 @@ else:
                             sub_df = pd.read_csv(f)
                         else:
                             sub_df = pd.read_json(f)
-                        df_list.append(sub_df)
                         
-                    if df_list:
-                        raw_df = pd.concat(df_list, ignore_index=True)
-                        st.session_state.df_original = raw_df.copy()
-                        
-                        df_clean = raw_df.copy().drop_duplicates()
+                        df_orig = sub_df.copy()
+                        df_clean = sub_df.copy().drop_duplicates()
                         for col in df_clean.columns:
                             if df_clean[col].dtype == 'object':
                                 df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                             if any(k in col.lower() for k in ['salary','amount','price','paisa']): 
                                 df_clean[col] = df_clean[col].apply(words_to_num)
-                                
-                        st.session_state.df_clean = df_clean
-                        st.session_state.orig_len = len(raw_df)
-                        st.session_state.empty_fixed = int(raw_df.isna().sum().sum())
-                        st.session_state.changed_cells = set()
-                        st.session_state.df_loaded = True
-                        st.session_state.last_upload_sig = upload_sig
+                        
+                        st.session_state.file_pool[f.name] = {
+                            "df_original": df_orig,
+                            "df_clean": df_clean,
+                            "orig_len": len(df_orig),
+                            "empty_fixed": int(df_orig.isna().sum().sum()),
+                            "changed_cells": set()
+                        }
+                    
+                    st.session_state.last_upload_sig = upload_sig
+                    st.session_state.active_file = current_files[0]
+                    st.session_state.df_loaded = True
                 except Exception as e: 
                     st.error(f"Error reading file: {str(e)}")
                     
@@ -557,29 +590,52 @@ else:
                 "Phone":["98765-43210","9123 456 789","000123"],
                 "Salary":["one hundred","250","two thousand five hundred"]
             })
-            st.session_state.df_original = sample_df.copy()
             
-            df_clean = sample_df.copy().drop_duplicates()
-            for col in df_clean.columns:
-                if df_clean[col].dtype == 'object':
-                    df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
+            st.session_state.file_pool = {
+                "Sample_Dataset.csv": {
+                    "df_original": sample_df.copy(),
+                    "df_clean": sample_df.copy(),
+                    "orig_len": len(sample_df),
+                    "empty_fixed": int(sample_df.isna().sum().sum()),
+                    "changed_cells": set()
+                }
+            }
+            
+            for col in st.session_state.file_pool["Sample_Dataset.csv"]["df_clean"].columns:
+                if st.session_state.file_pool["Sample_Dataset.csv"]["df_clean"][col].dtype == 'object':
+                    st.session_state.file_pool["Sample_Dataset.csv"]["df_clean"][col] = st.session_state.file_pool["Sample_Dataset.csv"]["df_clean"][col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
                 if any(k in col.lower() for k in ['salary','amount','price','paisa']): 
-                    df_clean[col] = df_clean[col].apply(words_to_num)
+                    st.session_state.file_pool["Sample_Dataset.csv"]["df_clean"][col] = st.session_state.file_pool["Sample_Dataset.csv"]["df_clean"][col].apply(words_to_num)
                     
-            st.session_state.df_clean = df_clean
-            st.session_state.orig_len = len(sample_df)
-            st.session_state.empty_fixed = int(sample_df.isna().sum().sum())
-            st.session_state.changed_cells = set()
+            st.session_state.active_file = "Sample_Dataset.csv"
             st.session_state.df_loaded = True
             st.session_state.last_upload_sig = None
             st.toast("Sample data loaded successfully! 🎯")
             st.rerun()
 
-    if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
+    if st.session_state.get('df_loaded') and st.session_state.file_pool:
+        # 📂 INDIVIDUAL POOL SELECTOR ENGINE
+        file_list = list(st.session_state.file_pool.keys())
+        if st.session_state.active_file not in file_list:
+            st.session_state.active_file = file_list[0]
+            
+        if len(file_list) > 1:
+            st.markdown("<div style='background: #f3e8ff; padding: 12px; border-radius: 12px; border: 2px solid #9333ea; margin-bottom: 10px;'>", unsafe_allow_html=True)
+            st.session_state.active_file = st.selectbox("📁 Choose File to Work On:", file_list, index=file_list.index(st.session_state.active_file))
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        # Sync states locally for tools execution flow below
+        current_data = st.session_state.file_pool[st.session_state.active_file]
+        st.session_state.df_clean = current_data["df_clean"]
+        st.session_state.df_original = current_data["df_original"]
+        st.session_state.orig_len = current_data["orig_len"]
+        st.session_state.empty_fixed = current_data["empty_fixed"]
+        st.session_state.changed_cells = current_data["changed_cells"]
+
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>{T['summary_title']} ({st.session_state.active_file})</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
@@ -590,6 +646,7 @@ else:
                     if k in st.session_state: st.session_state[k] = []
                 st.session_state["reset_announced"] = True
                 st.session_state["last_apply_msg"] = None
+                sync_active_to_pool()
                 st.rerun()
 
         c1,c2,c3,c4 = st.columns(4)
@@ -604,7 +661,7 @@ else:
         styled_df = apply_cell_styling(df_clean.head(10))
         st.dataframe(styled_df, use_container_width=True, height=280)
 
-        # 🎯 EXPLICIT STATUS NOTIFICATION FEED (UNDER LIVE PREVIEW)
+        # 🎯 EXPLICIT STATUS NOTIFICATION FEED
         if st.session_state.get("reset_announced"):
             st.success("🔄 Success: Your original raw dataset states have been completely reset and applied!")
             st.session_state["reset_announced"] = False
@@ -719,6 +776,8 @@ else:
                     st.session_state["last_apply_msg"] = "This combination of tools is not needed because your column data is already perfectly clean."
                 else:
                     st.session_state["last_apply_msg"] = f"🎉 Apply is completed! Successfully executed changes for: {', '.join(tools_run)}."
+            
+            sync_active_to_pool()
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -737,6 +796,7 @@ else:
                         st.session_state["last_apply_msg"] = "This tool is not needed because your date variables are already completely optimized."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
+                    sync_active_to_pool()
                     st.rerun()
             if col_b2.button("✕ Reset / Clear Tool Selection", key="clear_date", use_container_width=True):
                 if "ms_date" in st.session_state: del st.session_state["ms_date"]
@@ -765,6 +825,7 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because there are zero missing/null data blocks present."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
+                        sync_active_to_pool()
                         st.rerun()
                 if col_b4.button("✕ Reset / Clear Tool Selection", key="clear_fill", use_container_width=True):
                     if "ms_fill" in st.session_state: del st.session_state["ms_fill"]
@@ -790,6 +851,7 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because all rows are already legitimate email strings."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
+                        sync_active_to_pool()
                         st.rerun()
                 if col_b6.button("✕ Reset / Clear Tool Selection", key="clear_email", use_container_width=True):
                     if "ms_email" in st.session_state: del st.session_state["ms_email"]
@@ -815,6 +877,7 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because all contact parameters are already fully cleaned."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
+                        sync_active_to_pool()
                         st.rerun()
                 if col_b8.button("✕ Reset / Clear Tool Selection", key="clear_phone", use_container_width=True):
                     if "ms_phone" in st.session_state: del st.session_state["ms_phone"]
@@ -837,6 +900,7 @@ else:
                         st.session_state["last_apply_msg"] = "This tool is not needed because the dataset text case already conforms to your selection."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
+                    sync_active_to_pool()
                     st.rerun()
             if col_b10.button("✕ Reset / Clear Tool Selection", key="clear_case", use_container_width=True):
                 if "ms_case" in st.session_state: del st.session_state["ms_case"]
@@ -860,6 +924,7 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because there are no forbidden symbol arrays present."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
+                        sync_active_to_pool()
                         st.rerun()
                 if col_b12.button("✕ Reset / Clear Tool Selection", key="clear_spec", use_container_width=True):
                     if "ms_spec" in st.session_state: del st.session_state["ms_spec"]
@@ -880,6 +945,7 @@ else:
                     if new and new.strip() != "" and old != new:
                         st.session_state.df_clean.rename(columns={old: new.strip()}, inplace=True)
                         st.session_state["last_apply_msg"] = "🎉 Column renaming successfully applied!"
+                        sync_active_to_pool()
                         st.rerun()
                 if col_b14.button("✕ Reset / Clear Tool Selection", key="clear_rename", use_container_width=True):
                     if "sel_old" in st.session_state: del st.session_state["sel_old"]
@@ -898,6 +964,7 @@ else:
                         st.session_state["last_apply_msg"] = "This tool is not needed because there are no duplicate matching structures."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
+                    sync_active_to_pool()
                     st.rerun()
             if col_b16.button("✕ Reset / Clear Tool Selection", key="clear_dedup", use_container_width=True):
                 if "sb_fuzzy" in st.session_state: del st.session_state["sb_fuzzy"]
@@ -918,6 +985,7 @@ else:
                         st.session_state["last_apply_msg"] = "This tool is not needed because there are no leading or trailing whitespace blocks."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
+                    sync_active_to_pool()
                     st.rerun()
             if col_b18.button("✕ Reset / Clear Tool Selection", key="clear_trim", use_container_width=True):
                 if "ms_trim" in st.session_state: del st.session_state["ms_trim"]
@@ -945,6 +1013,7 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because no common spelling typos were identified."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
+                        sync_active_to_pool()
                         st.rerun()
                 if col_b20.button("✕ Reset / Clear Tool Selection", key="clear_spell", use_container_width=True):
                     if "ms_spell" in st.session_state: del st.session_state["ms_spell"]
@@ -986,11 +1055,11 @@ else:
             else:
                 col1, col2, col3 = st.columns(3)
                 csv = st.session_state.df_clean.to_csv(index=False).encode()
-                col1.download_button(T['download_csv'], csv, "verisame_pro.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True)
+                col1.download_button(f"{T['download_csv']} ({st.session_state.active_file})", csv, f"clean_{st.session_state.active_file}.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True)
                 if openpyxl is not None:
                     excel = io.BytesIO()
                     st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
-                    col2.download_button(T['download_excel'], excel.getvalue(), "verisame_pro.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True)
+                    col2.download_button(f"{T['download_excel']} ({st.session_state.active_file})", excel.getvalue(), f"clean_{st.session_state.active_file}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True)
                 
                 pdf_data = generate_pdf_report(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
                 if pdf_data:
