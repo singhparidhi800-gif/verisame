@@ -29,7 +29,9 @@ st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initi
 
 UPI = "playwithreyansh0@okhdfcbank"
 PRO_1M, PRO_6M = 299, 1499
+FREE_ROW_LIMIT = 200
 
+# Secure admin password retrieval from Streamlit secrets
 ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "admin123")
 
 # 🔒 PERSISTENT DATABASE LOGIC
@@ -184,7 +186,7 @@ def generate_pdf_report(orig_len, clean_len, empty_fixed, df):
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
-    "free_feat":["1000 Rows Lifetime","CSV Export","4 Free Tools Built-in","30s Processing","Email Support"],
+    "free_feat":["200 Rows Limit","CSV Export","4 Free Tools Built-in","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
@@ -281,7 +283,7 @@ def apply_cell_styling(df_to_style):
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
-# LOCAL BOT CONTEXT PROTOCOL (PURE ENGLISH KNOWLEDGE BASE)
+# ADVANCED AI CHATBOT KNOWLEDGE BASE ENGINE
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -297,7 +299,7 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown(chat_html, unsafe_allow_html=True)
 
     s_id = "side" if is_sidebar else "main"
-    user_msg = target.text_input("Ask advanced questions...", placeholder="Ask system configurations...", key=f"chat_in_{s_id}")
+    user_msg = target.text_input("Ask advanced questions...", placeholder="Ask about tools, row limits, founder...", key=f"chat_in_{s_id}")
     submit = target.button("Send Message 🚀", key=f"btn_send_chat_{s_id}")
 
     if submit and user_msg and user_msg.strip():
@@ -305,6 +307,7 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
+        # Check live loaded dataset state context
         if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
             live_df = st.session_state.df_clean
             if any(x in u for x in ["column", "columns", "what fields"]):
@@ -315,33 +318,53 @@ def render_ai_chatbot(is_sidebar=False):
                 reply = f"🛠️ **Cleanliness Status:** Captured `{st.session_state.get('empty_fixed', 0)}` missing values."
 
         if not reply:
-            if any(x in u for x in ["bye", "tata", "exit"]): reply = "👋 **Goodbye! Enjoy cleaning your spreadsheets.**"
-            elif any(x in u for x in ["thank you", "thanks"]): reply = "💖 **You are welcome! Let me know if you need more data cleaning.**"
+            if any(x in u for x in ["bye", "tata", "exit"]): reply = "👋 **Goodbye! Enjoy cleaning your spreadsheets with VeriSame.**"
+            elif any(x in u for x in ["thank you", "thanks"]): reply = "💖 **You are welcome! Let me know if you need more data cleaning help.**"
             elif any(x in u for x in ["haha", "hehe"]): reply = "😜 **Happy data processing!**"
 
         if not reply:
             knowledge_map = {
-                "founder made creator created developer owner built architecture who designed anugya anugya singh": "👑 **Founder & Creator:** VeriSame was fully architected, designed, and coded by **Anugya Singh** to make preprocessing data completely effortless!",
-                "what this app can do app work capability functionality features use utility details purpose": "💎 **VeriSame Ecosystem Capabilities:** This platform is an automated dataset cleaning and optimization hub! It fixes formats, converts layout text, handles missing parameters, and builds clean sheets seamlessly in under 3 seconds.",
-                "hi hello hey greetings greeting system": "👋 **Welcome to VeriSame AI Chat!** Everything is up and running. How can I assist you with your vectors today?",
-                "how are you wellness status state diagnostics": "✨ **System Diagnostics Nominal!** High precision arrays are ready to optimize your data workflow.",
-                "your name naam identity profiling profile identify system bot": "💎 I am the **VeriSame Core Intelligence Bot**, built exclusively to process high-density matrix configurations.",
-                "how many tools total tools features list count kitne feature feature models number wise": """🛠️ **Total System Architecture:** VeriSame includes exactly **10 Engineering Tools** listed below:
-1. **Smart Date Converter** - Restructures mismatched dates to clean YYYY-MM-DD.
-2. **AI Fill Nulls** - Fills blank spaces with domain-intelligent default variables.
-3. **Email Validator** - Cleans string formats and checks against common email rules.
-4. **Phone Formatter** - Removes structural noise and leaves clean 10-digit formats.
-5. **Case Converter** - Converts textual properties into Upper, Lower, or Title templates.
-6. **Remove Symbols** - Strips unwanted special characters while preserving currency keys.
-7. **Bulk Rename** - Renames matrix spreadsheet column headers instantly.
-8. **Remove Duplicates / Fuzzy Match** - Removes completely repetitive entries and merges close fuzzy text matches.
-9. **Trim Spaces** - Trims inner and outer trailing whitespaces.
-10. **Spell Check** - Automatically fixes frequent typing mistakes across selected targets.""",
-                "is this app free free version tier cost price": "✨ **Yes! The foundational layer is Free Forever.** It provides 1,000 rows processing capacity and standard tools access.",
-                "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Infrastructure Tier:** Removes all file constraints and unlocks all 10 Premium Tools for ₹299 (1 Month) or ₹1499 (6 Months).",
-                "bug error mistake crash glitch wrong stuck broken problem fix issue error code fault fail": "🛠️ **Bug & Error Protocols:** If you run into any bug or application glitch, simply press the global button **'Reset Active Dataset to Original Raw State'** to clear the processing cache. For persistent engineering failures, report details to the founder, **Anugya Singh**.",
-                "how to upload file spreadsheet csv excel insert": "📤 **File Ingestion:** Toggle the 'Upload File' tab and drop standard `.csv`, `.xlsx`, or `.json` formats inside the boundaries.",
-                "how to download file save file download csv excel export": "🎯 **Export Protocols:** Navigate down to the 'Export Data' terminal box and select 'Download as CSV' or 'Download as Excel' to save your work."
+                # Founder & Identity
+                "founder made creator created developer owner built architecture who designed anugya anugya singh": "👑 **Founder & Creator:** VeriSame was fully architected, designed, and coded by **Anugya Singh** to make preprocessing data effortless!",
+                "your name naam identity profiling profile identify system bot": "💎 I am the **VeriSame Core Intelligence Bot**, built exclusively to guide you through VeriSame's 10 data cleaning tools.",
+                
+                # General App Capabilities & Pricing
+                "what this app can do app work capability functionality features use utility details purpose": "💎 **VeriSame Capabilities:** VeriSame is an automated dataset cleaning platform. It standardizes dates, cleans emails & phones, handles missing values, removes fuzzy duplicates, and formats text in under 3 seconds.",
+                "is this app free free version tier cost price free limit 200 rows": "✨ **Free Plan:** Free Forever with a limit of **200 rows**, CSV export, and 4 core tools (Date Converter, Case Converter, Fuzzy Deduplication, Trim Spaces).",
+                "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Plan:** Unlocks **Unlimited Rows**, all 10 AI Tools, CSV + Excel exports, PDF Audit Reports, and 3s speed for ₹299 (1 Month) or ₹1499 (6 Months).",
+                
+                # File Formats & Reset
+                "format formats csv excel xlsx json file types supported upload": "📤 **Supported Formats:** VeriSame supports `.csv`, `.xlsx`, `.xls`, and `.json` files, including multi-sheet Excel files!",
+                "reset start over undo original raw clear cache": "🔄 **Resetting Data:** Click the **'Reset Active Dataset to Original Raw State'** button above the dataset summary to restore your original raw data at any time.",
+                "pdf report audit report pdf download audit": "📊 **PDF Audit Report:** Available for Pro users upon export, generating a formal breakdown of ingested rows, removed duplicates, and fixed cells.",
+                "bug error mistake crash glitch wrong stuck broken problem fix issue error code fault fail": "🛠️ **Troubleshooting:** Press **'Reset Active Dataset to Original Raw State'** to reset your cache. If problems persist, contact founder **Anugya Singh**.",
+                "how to upload file spreadsheet csv excel insert": "📤 **File Ingestion:** Go to the 'Upload File' tab and drop your CSV, Excel, or JSON file.",
+                "how to download file save file download csv excel export": "🎯 **Export Protocols:** Scroll down to 'Export Data' to download your clean file as CSV, Excel, or a PDF Audit Report.",
+
+                # Overview of All Tools
+                "how many tools total tools features list count kitne feature feature models number wise": """🛠️ **Total System Architecture:** VeriSame includes exactly **10 Engineering Tools**:
+1. **Smart Date Converter** - Formats dates to standard YYYY-MM-DD.
+2. **AI Fill Nulls** - Intelligently fills empty cells.
+3. **Email Validator** - Validates email structures.
+4. **Phone Formatter** - Formats 10-digit phone numbers.
+5. **Case Converter** - UPPERCASE, lowercase, or Title Case.
+6. **Remove Symbols** - Strips invalid characters while preserving currency keys.
+7. **Bulk Rename** - Renames matrix spreadsheet column headers.
+8. **Remove Duplicates / Fuzzy Match** - Merges close text matches.
+9. **Trim Spaces** - Strips duplicate whitespaces.
+10. **Spell Check** - Corrects common typos.""",
+
+                # Individual Tool Deep Dives
+                "tool 1 tool1 smart date date converter parse dates format date": "📅 **Tool 1 - Smart Date Converter:** Converts messy dates (e.g., DD/MM/YYYY, MM-DD-YYYY) into standardized `YYYY-MM-DD` ISO format.",
+                "tool 2 tool2 ai fill nulls missing empty blank fill null values": "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Automatically identifies missing data and fills blanks with intelligent context defaults (e.g., `0` for numeric, `missing@email.com` for email, `Unknown` for text).",
+                "tool 3 tool3 email validator validate email clean email mail check": "✉️ **Tool 3 - Email Validator (Pro):** Checks emails against valid RFC patterns. Converts text to lowercase and replaces invalid formats with `Invalid Email`.",
+                "tool 4 tool4 phone formatter mobile number contact phone clean": "📞 **Tool 4 - Phone Formatter (Pro):** Strips non-numeric characters, brackets, and spaces from contact numbers, extracting a clean 10-digit mobile number.",
+                "tool 5 tool5 case converter uppercase lowercase titlecase text case": "🔤 **Tool 5 - Case Converter:** Converts textual columns into UPPERCASE, lowercase, or Title Case instantly.",
+                "tool 6 tool6 remove symbols special characters clean symbols strip": "🔣 **Tool 6 - Remove Symbols (Pro):** Cleans noisy special characters while preserving standard punctuation and currency keys ($ , ₹).",
+                "tool 7 tool7 bulk rename rename column header title rename columns": "✏️ **Tool 7 - Bulk Rename (Pro):** Allows you to select any existing column header and rename it cleanly.",
+                "tool 8 tool8 remove duplicates fuzzy match similarity dedup deduplication": "🧠 **Tool 8 - Fuzzy Deduplication:** Uses string sequence matching algorithms to find near-identical textual records (e.g., 'John Doe' vs 'John Doe ') and merge duplicates.",
+                "tool 9 tool9 trim spaces trailing leading whitespace space cleanup": "✂️ **Tool 9 - Trim Spaces:** Removes leading, trailing, and double spaces inside text fields.",
+                "tool 10 tool10 spell check spelling typo correction fix typos": "🔠 **Tool 10 - Spell Check (Pro):** Scans selected text columns and automatically fixes common typing errors (e.g., 'salery' → 'Salary', 'teh' → 'The')."
             }
             
             best_score = 0.0
@@ -358,11 +381,11 @@ def render_ai_chatbot(is_sidebar=False):
                     best_score = final_score
                     best_reply = answer_text
             
-            if best_score >= 0.45 and best_reply: 
+            if best_score >= 0.40 and best_reply: 
                 reply = best_reply
 
         if not reply:
-            reply = "I understand. I am configured by Anugya Singh to help you with the 10 data cleaning tools. Please ask about the tools or founder details!"
+            reply = "I am configured by founder **Anugya Singh** to assist you with VeriSame's 10 data cleaning tools! You can ask me about any tool, file formats, or subscription options."
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
@@ -386,7 +409,7 @@ if st.session_state.email:
         st.session_state.days = user.get("days", 0)
         
         if user.get("plan") == "free": 
-            st.sidebar.info("Plan: FREE FOREVER ✨")
+            st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit)")
         else:
             exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
             days_left = (exp_date - datetime.now().date()).days
@@ -407,6 +430,7 @@ with col2:
 
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
+# ADMIN ROUTING PANEL
 if "admin" in st.query_params:
     if st.query_params["admin"] == ADMIN_PASS:
         st.title(T['admin_title'])
@@ -443,7 +467,7 @@ if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
         col1,col2,col3 = st.columns(3, gap="medium")
         with col1:
-            st.markdown(f"""<div class='pricing-card'><h2>{T['free_title']}</h2><h1>FREE</h1><p>Lifetime</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['free_feat']])}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card'><h2>{T['free_title']}</h2><h1>FREE</h1><p>Lifetime (200 Rows Limit)</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['free_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"; st.rerun()
         with col2:
@@ -534,6 +558,11 @@ else:
                         else:
                             sub_df = pd.read_json(f)
                             
+                        # ENFORCE 200 ROW LIMIT FOR FREE TIER
+                        if st.session_state.plan == "free" and len(sub_df) > FREE_ROW_LIMIT:
+                            sub_df = sub_df.head(FREE_ROW_LIMIT)
+                            st.info(f"ℹ️ Free Plan active: Dataset capped to the first {FREE_ROW_LIMIT} rows.")
+
                         df_clean_init = sub_df.copy().drop_duplicates()
                         for col in df_clean_init.columns:
                             if df_clean_init[col].dtype == 'object':
