@@ -243,7 +243,7 @@ input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] inpu
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame's Studio. 💎 How can I help you optimize your dataset today?"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! Welcome to VeriSame AI Studio. 💎 How can I help you clean or optimize your dataset today?"}]
 
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
@@ -283,7 +283,7 @@ def apply_cell_styling(df_to_style):
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
-# ADVANCED AI CHATBOT KNOWLEDGE BASE ENGINE
+# 🧠 ADVANCED ENHANCED AI CHATBOT KNOWLEDGE BASE ENGINE
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -299,7 +299,7 @@ def render_ai_chatbot(is_sidebar=False):
     target.markdown(chat_html, unsafe_allow_html=True)
 
     s_id = "side" if is_sidebar else "main"
-    user_msg = target.text_input("Ask advanced questions...", placeholder="Ask about tools, row limits, founder...", key=f"chat_in_{s_id}")
+    user_msg = target.text_input("Ask advanced questions...", placeholder="Ask about tools, recommend actions, pricing...", key=f"chat_in_{s_id}")
     submit = target.button("Send Message 🚀", key=f"btn_send_chat_{s_id}")
 
     if submit and user_msg and user_msg.strip():
@@ -307,33 +307,89 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
-        # Check live loaded dataset state context
-        if st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
+        # 1️⃣ DIRECT NUMERIC / TOOL LOOKUP MAPPER (Fixes "tool 9" / "tool no. 9" routing)
+        tool_numbers = {
+            1: "📅 **Tool 1 - Smart Date Converter:** Standardizes messy date strings (e.g. `DD/MM/YYYY`, `MM-DD-YYYY`) into standard `YYYY-MM-DD` ISO format.",
+            2: "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Detects missing values and intelligently populates blank cells using contextual defaults (e.g., `0` for numeric, `missing@email.com` for emails).",
+            3: "✉️ **Tool 3 - Email Validator (Pro):** Validates email RFC patterns, formats to lowercase, and marks bad entries as `Invalid Email`.",
+            4: "📞 **Tool 4 - Phone Formatter (Pro):** Removes non-numeric symbols, country codes, and spaces to leave a clean 10-digit mobile number.",
+            5: "🔤 **Tool 5 - Case Converter:** Changes textual columns instantly into UPPERCASE, lowercase, or Title Case.",
+            6: "🔣 **Tool 6 - Remove Symbols (Pro):** Strips weird non-alphanumeric noise while safeguarding currency keys ($ , ₹) and punctuation.",
+            7: "✏️ **Tool 7 - Bulk Rename (Pro):** Renames any matrix spreadsheet column header effortlessly.",
+            8: "🧠 **Tool 8 - Fuzzy Deduplication:** Scans text columns using sequence matching to merge near-identical duplicate records (e.g., 'Anugya ' vs 'Anugya').",
+            9: "✂️ **Tool 9 - Trim Spaces:** Cleans leading, trailing, and double whitespaces inside text cells.",
+            10: "🔠 **Tool 10 - Spell Check (Pro):** Automatically scans text columns and corrects common typing blunders (e.g. 'salery' → 'Salary')."
+        }
+
+        # Match queries like "tool 9", "tool no. 9", "tool #9", "what is tool 9", or just "9"
+        num_match = re.search(r'(?:tool\s*(?:no\.?|num|number|#)?\s*|^#?|\b)(\d{1,2})\b', u)
+        if num_match:
+            t_num = int(num_match.group(1))
+            if t_num in tool_numbers and (f"tool" in u or len(u) <= 3 or "no" in u or "#" in u or "what is" in u):
+                reply = tool_numbers[t_num]
+
+        # 2️⃣ LIVE DATASET SMART RECOMMENDATIONS & CONTEXT
+        if not reply and st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
             live_df = st.session_state.df_clean
-            if any(x in u for x in ["column", "columns", "what fields"]):
-                reply = f"📊 **Live Dataset Columns:** Current active attributes are: `{', '.join(live_df.columns.tolist())}`."
+            
+            # Recommendation engine query
+            if any(x in u for x in ["recommend", "suggest", "what should i run", "which tool to use", "how to clean my file", "what needs cleaning"]):
+                rec_tools = []
+                # Check nulls
+                null_cnt = live_df.isna().sum().sum()
+                if null_cnt > 0:
+                    rec_tools.append("• **Tool 2 (AI Fill Nulls)**: Found missing values in your dataset.")
+                # Check date columns
+                date_cols = [c for c in live_df.columns if 'date' in c.lower() or 'time' in c.lower()]
+                if date_cols:
+                    rec_tools.append(f"• **Tool 1 (Smart Date Converter)**: Detected date column(s): `{', '.join(date_cols)}`.")
+                # Check emails
+                email_cols = [c for c in live_df.columns if 'email' in c.lower() or 'mail' in c.lower()]
+                if email_cols:
+                    rec_tools.append(f"• **Tool 3 (Email Validator)**: Detected email column(s): `{', '.join(email_cols)}`.")
+                # Check whitespace / fuzzy
+                text_cols = live_df.select_dtypes(include=['object']).columns.tolist()
+                if text_cols:
+                    rec_tools.append("• **Tool 9 (Trim Spaces) & Tool 8 (Fuzzy Match)**: Useful for cleaning text columns.")
+
+                if rec_tools:
+                    reply = "💡 **AI Dataset Analysis & Recommendations:**\n\n" + "\n".join(rec_tools) + "\n\n*You can also configure options under the tabs and hit 'Execute All Configured AI Tools Simultaneously'!*"
+                else:
+                    reply = "✨ **Dataset Status:** Your dataset looks very clean! You can run **Tool 5 (Case Converter)** or **Tool 9 (Trim Spaces)** to ensure uniform formatting."
+
+            elif any(x in u for x in ["column", "columns", "what fields"]):
+                reply = f"📊 **Live Dataset Columns:** Active columns are: `{', '.join(live_df.columns.tolist())}`."
             elif any(x in u for x in ["how many rows", "row count", "dataset size"]):
-                reply = f"🔢 **Live Dataset Dimensions:** System currently handles `{len(live_df)}` rows across `{len(live_df.columns)}` columns."
+                reply = f"🔢 **Live Dataset Dimensions:** Currently holding `{len(live_df)}` rows across `{len(live_df.columns)}` columns."
             elif any(x in u for x in ["missing", "nulls", "empty boxes"]):
                 reply = f"🛠️ **Cleanliness Status:** Captured `{st.session_state.get('empty_fixed', 0)}` missing values."
 
+        # 3️⃣ CASUAL DIALOGUE CHECKS
         if not reply:
             if any(x in u for x in ["bye", "tata", "exit"]): reply = "👋 **Goodbye! Enjoy cleaning your spreadsheets with VeriSame.**"
-            elif any(x in u for x in ["thank you", "thanks"]): reply = "💖 **You are welcome! Let me know if you need more data cleaning help.**"
-            elif any(x in u for x in ["haha", "hehe"]): reply = "😜 **Happy data processing!**"
+            elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are very welcome! Let me know if you need more data cleaning help.**"
+            elif any(x in u for x in ["haha", "hehe", "lol"]): reply = "😜 **Happy data processing!**"
+            elif u in ["hi", "hello", "hey", "hola"]: reply = "👋 Hello! Ask me about any tool (e.g., 'Tool 9'), pricing, or ask for recommendations on your uploaded file!"
 
+        # 4️⃣ EXTENDED KNOWLEDGE MAP MATCHING
         if not reply:
             knowledge_map = {
                 # Founder & Identity
                 "founder made creator created developer owner built architecture who designed anugya anugya singh": "👑 **Founder & Creator:** VeriSame was fully architected, designed, and coded by **Anugya Singh** to make preprocessing data effortless!",
                 "your name naam identity profiling profile identify system bot": "💎 I am the **VeriSame Core Intelligence Bot**, built exclusively to guide you through VeriSame's 10 data cleaning tools.",
                 
-                # General App Capabilities & Pricing
+                # Pricing & Differences
                 "what this app can do app work capability functionality features use utility details purpose": "💎 **VeriSame Capabilities:** VeriSame is an automated dataset cleaning platform. It standardizes dates, cleans emails & phones, handles missing values, removes fuzzy duplicates, and formats text in under 3 seconds.",
                 "is this app free free version tier cost price free limit 200 rows": "✨ **Free Plan:** Free Forever with a limit of **200 rows**, CSV export, and 4 core tools (Date Converter, Case Converter, Fuzzy Deduplication, Trim Spaces).",
                 "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Plan:** Unlocks **Unlimited Rows**, all 10 AI Tools, CSV + Excel exports, PDF Audit Reports, and 3s speed for ₹299 (1 Month) or ₹1499 (6 Months).",
-                
-                # File Formats & Reset
+                "free vs pro difference compare why upgrade": "⚡ **Free vs Pro:** Free supports up to 200 rows & 4 basic tools. Pro unlocks **unlimited rows**, all 10 tools (AI Fill Nulls, Email/Phone Validators, Spell Check, Bulk Rename, etc.), Excel export, and PDF Audit Reports!",
+
+                # Payments, Security & Admin SLA
+                "security safe privacy stored data safety leaked": "🔒 **Data Security:** Your datasets are processed securely in memory during your active session and are never sold or exposed to third parties.",
+                "payment admin approval pending delay upi status waiting how long approval time": "⏳ **Admin Approval:** Once you click 'Customer I Paid', our admin panel is instantly notified. Accounts are usually verified within a few minutes. For immediate support, contact founder **Anugya Singh**.",
+
+                # Usage Features & Workflow
+                "multi tool global apply simultaneous trigger all run all execute all": "⚡ **Global Multi-Tool Hub:** Configure your target columns across the tabs, then click **'Execute All Configured AI Tools Simultaneously'** to run everything at once!",
                 "format formats csv excel xlsx json file types supported upload": "📤 **Supported Formats:** VeriSame supports `.csv`, `.xlsx`, `.xls`, and `.json` files, including multi-sheet Excel files!",
                 "reset start over undo original raw clear cache": "🔄 **Resetting Data:** Click the **'Reset Active Dataset to Original Raw State'** button above the dataset summary to restore your original raw data at any time.",
                 "pdf report audit report pdf download audit": "📊 **PDF Audit Report:** Available for Pro users upon export, generating a formal breakdown of ingested rows, removed duplicates, and fixed cells.",
@@ -341,7 +397,7 @@ def render_ai_chatbot(is_sidebar=False):
                 "how to upload file spreadsheet csv excel insert": "📤 **File Ingestion:** Go to the 'Upload File' tab and drop your CSV, Excel, or JSON file.",
                 "how to download file save file download csv excel export": "🎯 **Export Protocols:** Scroll down to 'Export Data' to download your clean file as CSV, Excel, or a PDF Audit Report.",
 
-                # Overview of All Tools
+                # Overview List
                 "how many tools total tools features list count kitne feature feature models number wise": """🛠️ **Total System Architecture:** VeriSame includes exactly **10 Engineering Tools**:
 1. **Smart Date Converter** - Formats dates to standard YYYY-MM-DD.
 2. **AI Fill Nulls** - Intelligently fills empty cells.
@@ -352,19 +408,7 @@ def render_ai_chatbot(is_sidebar=False):
 7. **Bulk Rename** - Renames matrix spreadsheet column headers.
 8. **Remove Duplicates / Fuzzy Match** - Merges close text matches.
 9. **Trim Spaces** - Strips duplicate whitespaces.
-10. **Spell Check** - Corrects common typos.""",
-
-                # Individual Tool Deep Dives
-                "tool 1 tool1 smart date date converter parse dates format date": "📅 **Tool 1 - Smart Date Converter:** Converts messy dates (e.g., DD/MM/YYYY, MM-DD-YYYY) into standardized `YYYY-MM-DD` ISO format.",
-                "tool 2 tool2 ai fill nulls missing empty blank fill null values": "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Automatically identifies missing data and fills blanks with intelligent context defaults (e.g., `0` for numeric, `missing@email.com` for email, `Unknown` for text).",
-                "tool 3 tool3 email validator validate email clean email mail check": "✉️ **Tool 3 - Email Validator (Pro):** Checks emails against valid RFC patterns. Converts text to lowercase and replaces invalid formats with `Invalid Email`.",
-                "tool 4 tool4 phone formatter mobile number contact phone clean": "📞 **Tool 4 - Phone Formatter (Pro):** Strips non-numeric characters, brackets, and spaces from contact numbers, extracting a clean 10-digit mobile number.",
-                "tool 5 tool5 case converter uppercase lowercase titlecase text case": "🔤 **Tool 5 - Case Converter:** Converts textual columns into UPPERCASE, lowercase, or Title Case instantly.",
-                "tool 6 tool6 remove symbols special characters clean symbols strip": "🔣 **Tool 6 - Remove Symbols (Pro):** Cleans noisy special characters while preserving standard punctuation and currency keys ($ , ₹).",
-                "tool 7 tool7 bulk rename rename column header title rename columns": "✏️ **Tool 7 - Bulk Rename (Pro):** Allows you to select any existing column header and rename it cleanly.",
-                "tool 8 tool8 remove duplicates fuzzy match similarity dedup deduplication": "🧠 **Tool 8 - Fuzzy Deduplication:** Uses string sequence matching algorithms to find near-identical textual records (e.g., 'John Doe' vs 'John Doe ') and merge duplicates.",
-                "tool 9 tool9 trim spaces trailing leading whitespace space cleanup": "✂️ **Tool 9 - Trim Spaces:** Removes leading, trailing, and double spaces inside text fields.",
-                "tool 10 tool10 spell check spelling typo correction fix typos": "🔠 **Tool 10 - Spell Check (Pro):** Scans selected text columns and automatically fixes common typing errors (e.g., 'salery' → 'Salary', 'teh' → 'The')."
+10. **Spell Check** - Corrects common typos."""
             }
             
             best_score = 0.0
@@ -381,11 +425,12 @@ def render_ai_chatbot(is_sidebar=False):
                     best_score = final_score
                     best_reply = answer_text
             
-            if best_score >= 0.40 and best_reply: 
+            if best_score >= 0.38 and best_reply: 
                 reply = best_reply
 
+        # 5️⃣ SMART FALLBACK (Gives actionable choices instead of repeating intro)
         if not reply:
-            reply = "I am configured by founder **Anugya Singh** to assist you with VeriSame's 10 data cleaning tools! You can ask me about any tool, file formats, or subscription options."
+            reply = "🤔 I didn't quite get that! Try asking about a specific tool (e.g., *'Tool 9'* or *'Tool 3'*), ask *'Recommend tools for my data'*, or ask about *'Pro Pricing'*."
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
