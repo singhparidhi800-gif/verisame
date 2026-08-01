@@ -212,7 +212,20 @@ html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .block-container {background: rgba(255,255,255,0.96); backdrop-filter: blur(25px) saturate(180%); border-radius: 28px; padding: 2rem; max-width: 1200px; margin: 0 auto; box-shadow: 0 30px 60px rgba(139,92,246,0.25); border: 1.5px solid rgba(255,255,255,0.5);}
 h1,h2,h3,p,span,label,div,li {color: #000!important; font-weight: 600!important;}
 h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2rem!important; background: linear-gradient(90deg, #6b21a8, #9333ea, #c084fc, #a855f7, #6b21a8); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 3s linear infinite;}
-.subtitle {text-align: left; color: #000!important; font-size: 1.1rem!important; font-weight: 600!important; margin-bottom: 1rem!important;}
+.subtitle {text-align: left; color: #4b5563!important; font-size: 1.1rem!important; font-weight: 500!important; margin-top: 6px!important; margin-bottom: 1rem!important;}
+.tagline-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: linear-gradient(135deg, #9333ea, #6b21a8);
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 0.95rem;
+    border-radius: 20px;
+    letter-spacing: 0.4px;
+    box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
+    vertical-align: middle;
+    margin-left: 12px;
+}
 .logo-float {animation: float 3s ease-in-out infinite;}
 @keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
 .pricing-card {
@@ -307,47 +320,75 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
-        # 1️⃣ DIRECT NUMERIC / TOOL LOOKUP MAPPER (Fixes "tool 9" / "tool no. 9" routing)
-        tool_numbers = {
-            1: "📅 **Tool 1 - Smart Date Converter:** Standardizes messy date strings (e.g. `DD/MM/YYYY`, `MM-DD-YYYY`) into standard `YYYY-MM-DD` ISO format.",
-            2: "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Detects missing values and intelligently populates blank cells using contextual defaults (e.g., `0` for numeric, `missing@email.com` for emails).",
-            3: "✉️ **Tool 3 - Email Validator (Pro):** Validates email RFC patterns, formats to lowercase, and marks bad entries as `Invalid Email`.",
-            4: "📞 **Tool 4 - Phone Formatter (Pro):** Removes non-numeric symbols, country codes, and spaces to leave a clean 10-digit mobile number.",
-            5: "🔤 **Tool 5 - Case Converter:** Changes textual columns instantly into UPPERCASE, lowercase, or Title Case.",
-            6: "🔣 **Tool 6 - Remove Symbols (Pro):** Strips weird non-alphanumeric noise while safeguarding currency keys ($ , ₹) and punctuation.",
-            7: "✏️ **Tool 7 - Bulk Rename (Pro):** Renames any matrix spreadsheet column header effortlessly.",
-            8: "🧠 **Tool 8 - Fuzzy Deduplication:** Scans text columns using sequence matching to merge near-identical duplicate records (e.g., 'Anugya ' vs 'Anugya').",
-            9: "✂️ **Tool 9 - Trim Spaces:** Cleans leading, trailing, and double whitespaces inside text cells.",
-            10: "🔠 **Tool 10 - Spell Check (Pro):** Automatically scans text columns and corrects common typing blunders (e.g. 'salery' → 'Salary')."
+        tools_database = {
+            1: {
+                "desc": "📅 **Tool 1 - Smart Date Converter:** Standardizes messy date strings (e.g., `DD/MM/YYYY`, `MM-DD-YYYY`, `YYYY/MM/DD`) into clean standard `YYYY-MM-DD` ISO format.",
+                "keywords": ["smart date", "date converter", "date ai", "tool 1", "tool no 1", "tool #1"]
+            },
+            2: {
+                "desc": "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Detects missing values and intelligently populates blank cells using contextual defaults (e.g., `0` for numeric columns, `missing@email.com` for emails).",
+                "keywords": ["ai fill", "fill nulls", "fill null", "nulls", "empty cells", "missing values", "tool 2", "tool no 2", "tool #2"]
+            },
+            3: {
+                "desc": "✉️ **Tool 3 - Email Validator (Pro):** Validates email RFC patterns, converts text to lowercase, and flags malformed emails as `Invalid Email`.",
+                "keywords": ["email ai", "email validator", "email validation", "email", "emails", "tool 3", "tool no 3", "tool #3"]
+            },
+            4: {
+                "desc": "📞 **Tool 4 - Phone Formatter (Pro):** Removes non-numeric symbols, country codes, and spaces to leave a clean, standardized 10-digit mobile number.",
+                "keywords": ["phone ai", "phone formatter", "phone format", "phone number", "phone", "mobile", "contact ai", "tool 4", "tool no 4", "tool #4"]
+            },
+            5: {
+                "desc": "🔤 **Tool 5 - Case Converter:** Instantly converts textual columns into UPPERCASE, lowercase, or Title Case.",
+                "keywords": ["case converter", "case ai", "case", "uppercase", "lowercase", "title case", "tool 5", "tool no 5", "tool #5"]
+            },
+            6: {
+                "desc": "🔣 **Tool 6 - Remove Symbols (Pro):** Strips non-alphanumeric noise and invalid special characters while safeguarding currency keys ($ , ₹) and standard punctuation.",
+                "keywords": ["remove symbols", "symbol cleaner", "clean symbols", "symbols ai", "symbols", "special characters", "tool 6", "tool no 6", "tool #6"]
+            },
+            7: {
+                "desc": "✏️ **Tool 7 - Bulk Rename (Pro):** Renames any matrix spreadsheet column header effortlessly.",
+                "keywords": ["bulk rename", "rename column", "rename header", "rename", "rename ai", "tool 7", "tool no 7", "tool #7"]
+            },
+            8: {
+                "desc": "🧠 **Tool 8 - Fuzzy Deduplication:** Scans text columns using sequence matching algorithms to merge near-identical duplicate records (e.g., 'Anugya ' vs 'Anugya').",
+                "keywords": ["fuzzy deduplication", "fuzzy match", "fuzzy dedup", "deduplication", "dedup", "duplicates", "fuzzy", "tool 8", "tool no 8", "tool #8"]
+            },
+            9: {
+                "desc": "✂️ **Tool 9 - Trim Spaces:** Cleans leading, trailing, and double whitespaces inside text cells.",
+                "keywords": ["trim spaces", "trim ai", "trim space", "trim", "whitespace", "spaces", "tool 9", "tool no 9", "tool #9"]
+            },
+            10: {
+                "desc": "🔠 **Tool 10 - Spell Check (Pro):** Automatically scans text columns and corrects common typing blunders (e.g., 'salery' → 'Salary').",
+                "keywords": ["spell check", "spell ai", "spelling", "typo", "typos", "spell", "tool 10", "tool no 10", "tool #10"]
+            }
         }
 
-        # Match queries like "tool 9", "tool no. 9", "tool #9", "what is tool 9", or just "9"
-        num_match = re.search(r'(?:tool\s*(?:no\.?|num|number|#)?\s*|^#?|\b)(\d{1,2})\b', u)
-        if num_match:
-            t_num = int(num_match.group(1))
-            if t_num in tool_numbers and (f"tool" in u or len(u) <= 3 or "no" in u or "#" in u or "what is" in u):
-                reply = tool_numbers[t_num]
+        for t_info in tools_database.values():
+            if any(kw in u for kw in t_info["keywords"]):
+                reply = t_info["desc"]
+                break
 
-        # 2️⃣ LIVE DATASET SMART RECOMMENDATIONS & CONTEXT
+        if not reply:
+            num_match = re.search(r'\b(\d{1,2})\b', u)
+            if num_match:
+                t_num = int(num_match.group(1))
+                if t_num in tools_database:
+                    reply = tools_database[t_num]["desc"]
+
         if not reply and st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
             live_df = st.session_state.df_clean
             
-            # Recommendation engine query
             if any(x in u for x in ["recommend", "suggest", "what should i run", "which tool to use", "how to clean my file", "what needs cleaning"]):
                 rec_tools = []
-                # Check nulls
                 null_cnt = live_df.isna().sum().sum()
                 if null_cnt > 0:
                     rec_tools.append("• **Tool 2 (AI Fill Nulls)**: Found missing values in your dataset.")
-                # Check date columns
                 date_cols = [c for c in live_df.columns if 'date' in c.lower() or 'time' in c.lower()]
                 if date_cols:
                     rec_tools.append(f"• **Tool 1 (Smart Date Converter)**: Detected date column(s): `{', '.join(date_cols)}`.")
-                # Check emails
                 email_cols = [c for c in live_df.columns if 'email' in c.lower() or 'mail' in c.lower()]
                 if email_cols:
                     rec_tools.append(f"• **Tool 3 (Email Validator)**: Detected email column(s): `{', '.join(email_cols)}`.")
-                # Check whitespace / fuzzy
                 text_cols = live_df.select_dtypes(include=['object']).columns.tolist()
                 if text_cols:
                     rec_tools.append("• **Tool 9 (Trim Spaces) & Tool 8 (Fuzzy Match)**: Useful for cleaning text columns.")
@@ -364,51 +405,26 @@ def render_ai_chatbot(is_sidebar=False):
             elif any(x in u for x in ["missing", "nulls", "empty boxes"]):
                 reply = f"🛠️ **Cleanliness Status:** Captured `{st.session_state.get('empty_fixed', 0)}` missing values."
 
-        # 3️⃣ CASUAL DIALOGUE CHECKS
         if not reply:
             if any(x in u for x in ["bye", "tata", "exit"]): reply = "👋 **Goodbye! Enjoy cleaning your spreadsheets with VeriSame.**"
             elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are very welcome! Let me know if you need more data cleaning help.**"
             elif any(x in u for x in ["haha", "hehe", "lol"]): reply = "😜 **Happy data processing!**"
-            elif u in ["hi", "hello", "hey", "hola"]: reply = "👋 Hello! Ask me about any tool (e.g., 'Tool 9'), pricing, or ask for recommendations on your uploaded file!"
+            elif u in ["hi", "hello", "hey", "hola"]: reply = "👋 Hello! Ask me about any tool (e.g., 'What is Phone AI?', 'Tool 9'), pricing, or ask for recommendations on your uploaded file!"
 
-        # 4️⃣ EXTENDED KNOWLEDGE MAP MATCHING
         if not reply:
             knowledge_map = {
-                # Founder & Identity
-                "founder made creator created developer owner built architecture who designed anugya anugya singh": "👑 **Founder & Creator:** VeriSame was fully architected, designed, and coded by **Anugya Singh** to make preprocessing data effortless!",
+                "founder made creator created developer owner built architecture who designed": "👑 **Founder & Creator:** VeriSame was fully architected, designed, and coded by **Anugya** to make preprocessing data effortless!",
                 "your name naam identity profiling profile identify system bot": "💎 I am the **VeriSame Core Intelligence Bot**, built exclusively to guide you through VeriSame's 10 data cleaning tools.",
-                
-                # Pricing & Differences
                 "what this app can do app work capability functionality features use utility details purpose": "💎 **VeriSame Capabilities:** VeriSame is an automated dataset cleaning platform. It standardizes dates, cleans emails & phones, handles missing values, removes fuzzy duplicates, and formats text in under 3 seconds.",
                 "is this app free free version tier cost price free limit 200 rows": "✨ **Free Plan:** Free Forever with a limit of **200 rows**, CSV export, and 4 core tools (Date Converter, Case Converter, Fuzzy Deduplication, Trim Spaces).",
                 "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Plan:** Unlocks **Unlimited Rows**, all 10 AI Tools, CSV + Excel exports, PDF Audit Reports, and 3s speed for ₹299 (1 Month) or ₹1499 (6 Months).",
                 "free vs pro difference compare why upgrade": "⚡ **Free vs Pro:** Free supports up to 200 rows & 4 basic tools. Pro unlocks **unlimited rows**, all 10 tools (AI Fill Nulls, Email/Phone Validators, Spell Check, Bulk Rename, etc.), Excel export, and PDF Audit Reports!",
-
-                # Payments, Security & Admin SLA
                 "security safe privacy stored data safety leaked": "🔒 **Data Security:** Your datasets are processed securely in memory during your active session and are never sold or exposed to third parties.",
-                "payment admin approval pending delay upi status waiting how long approval time": "⏳ **Admin Approval:** Once you click 'Customer I Paid', our admin panel is instantly notified. Accounts are usually verified within a few minutes. For immediate support, contact founder **Anugya Singh**.",
-
-                # Usage Features & Workflow
+                "payment admin approval pending delay upi status waiting how long approval time": "⏳ **Admin Approval:** Once you click 'Customer I Paid', our admin panel is instantly notified and approved accounts unlock full functionality.",
                 "multi tool global apply simultaneous trigger all run all execute all": "⚡ **Global Multi-Tool Hub:** Configure your target columns across the tabs, then click **'Execute All Configured AI Tools Simultaneously'** to run everything at once!",
                 "format formats csv excel xlsx json file types supported upload": "📤 **Supported Formats:** VeriSame supports `.csv`, `.xlsx`, `.xls`, and `.json` files, including multi-sheet Excel files!",
                 "reset start over undo original raw clear cache": "🔄 **Resetting Data:** Click the **'Reset Active Dataset to Original Raw State'** button above the dataset summary to restore your original raw data at any time.",
-                "pdf report audit report pdf download audit": "📊 **PDF Audit Report:** Available for Pro users upon export, generating a formal breakdown of ingested rows, removed duplicates, and fixed cells.",
-                "bug error mistake crash glitch wrong stuck broken problem fix issue error code fault fail": "🛠️ **Troubleshooting:** Press **'Reset Active Dataset to Original Raw State'** to reset your cache. If problems persist, contact founder **Anugya Singh**.",
-                "how to upload file spreadsheet csv excel insert": "📤 **File Ingestion:** Go to the 'Upload File' tab and drop your CSV, Excel, or JSON file.",
-                "how to download file save file download csv excel export": "🎯 **Export Protocols:** Scroll down to 'Export Data' to download your clean file as CSV, Excel, or a PDF Audit Report.",
-
-                # Overview List
-                "how many tools total tools features list count kitne feature feature models number wise": """🛠️ **Total System Architecture:** VeriSame includes exactly **10 Engineering Tools**:
-1. **Smart Date Converter** - Formats dates to standard YYYY-MM-DD.
-2. **AI Fill Nulls** - Intelligently fills empty cells.
-3. **Email Validator** - Validates email structures.
-4. **Phone Formatter** - Formats 10-digit phone numbers.
-5. **Case Converter** - UPPERCASE, lowercase, or Title Case.
-6. **Remove Symbols** - Strips invalid characters while preserving currency keys.
-7. **Bulk Rename** - Renames matrix spreadsheet column headers.
-8. **Remove Duplicates / Fuzzy Match** - Merges close text matches.
-9. **Trim Spaces** - Strips duplicate whitespaces.
-10. **Spell Check** - Corrects common typos."""
+                "pdf report audit report pdf download audit": "📊 **PDF Audit Report:** Available for Pro users upon export, generating a formal breakdown of ingested rows, removed duplicates, and fixed cells."
             }
             
             best_score = 0.0
@@ -428,9 +444,8 @@ def render_ai_chatbot(is_sidebar=False):
             if best_score >= 0.38 and best_reply: 
                 reply = best_reply
 
-        # 5️⃣ SMART FALLBACK (Gives actionable choices instead of repeating intro)
         if not reply:
-            reply = "🤔 I didn't quite get that! Try asking about a specific tool (e.g., *'Tool 9'* or *'Tool 3'*), ask *'Recommend tools for my data'*, or ask about *'Pro Pricing'*."
+            reply = "🤔 I didn't quite get that! Try asking about a specific tool (e.g., *'What is Phone AI?'* or *'Tool 9'*), ask *'Recommend tools for my data'*, or ask about *'Pro Pricing'*."
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
@@ -466,16 +481,22 @@ if st.session_state.email:
             else:
                 st.sidebar.info(f"Plan: {user['plan'].upper()}\nStatus: {user.get('status')}")
 
-col1, col2 = st.columns([1.5, 3.5])
+# 🎨 HEADER LAYOUT WITH TAGLINE BESIDE LOGO
+col1, col2 = st.columns([1.2, 3.8])
 with col1: 
-    st.markdown("""<div class="logo-float" style="width: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 280px; object-fit: contain;"></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="logo-float" style="width: 100%; min-height: 240px; display: flex; align-items: center; justify-content: center;"><img src="https://i.postimg.cc/gjWxsmHf/1779366919870.png" style="width: 100%; height: auto; max-height: 240px; object-fit: contain;"></div>""", unsafe_allow_html=True)
 with col2:
-    st.markdown("<h1 style='margin-top: 25px; margin-bottom: 5px;'>VeriSame</h1>", unsafe_allow_html=True)
-    st.markdown(f'<div class="subtitle">{T["subtitle"]}</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="margin-top: 15px;">
+        <h1 style='margin-bottom: 0px; display: inline-block; vertical-align: middle;'>VeriSame</h1>
+        <span class="tagline-badge">Clean logic. Clear result</span>
+        <div class="subtitle">The Fastest Way to Clean Your Data</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
-# ADMIN ROUTING PANEL
+# 👑 ADMIN ROUTING PANEL
 if "admin" in st.query_params:
     if st.query_params["admin"] == ADMIN_PASS:
         st.title(T['admin_title'])
@@ -486,7 +507,7 @@ if "admin" in st.query_params:
                 if "@" not in email: continue
                 amt = info.get('amt', 0)
                 status = info.get('status', 'PENDING')
-                plan_text = f"PRO Monthly ₹299" if amt == 299 else f"PRO 6M ₹1499" if amt == 1499 else "FREE Plan"
+                plan_text = f"PRO Monthly ₹299 (1 Month)" if amt == 299 else f"PRO ₹1499 (6 Months)" if amt == 1499 else "FREE Plan"
                 col1, col2, col3 = st.columns([4, 2, 2])
                 with col1:
                     status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
@@ -495,9 +516,12 @@ if "admin" in st.query_params:
                     if status == "PENDING" and info.get("plan") == "pro":
                         if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
                             data[email]["status"] = "PAID"
-                            days_to_add = data[email].get("days", 30)
-                            data[email]["expiry"] = (datetime.now() + timedelta(days=days_to_add)).strftime("%Y-%m-%d")
-                            save_db(data); st.success(f"✓ {email} unlocked!"); st.balloons(); st.rerun()
+                            # STRICT PLAN DURATION DEFINITION (299 -> 30 days, 1499 -> 180 days)
+                            user_amt = data[email].get("amt", 299)
+                            exact_days = 180 if user_amt == 1499 else 30
+                            data[email]["days"] = exact_days
+                            data[email]["expiry"] = (datetime.now() + timedelta(days=exact_days)).strftime("%Y-%m-%d")
+                            save_db(data); st.success(f"✓ {email} unlocked for {exact_days} days!"); st.balloons(); st.rerun()
                     else: st.button("✓ Already Active", key=f"active_{email}", disabled=True, use_container_width=True)
                 with col3:
                     if st.button(T['delete_btn'], key=f"delete_{email}", use_container_width=True):
@@ -508,6 +532,7 @@ if "admin" in st.query_params:
         st.error("🔒 Unauthorized Access Detected. Admin Routing Halted.")
         st.stop()
 
+# 💰 PRICING SELECTION WORKFLOW
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
         col1,col2,col3 = st.columns(3, gap="medium")
@@ -516,12 +541,12 @@ if st.session_state.plan is None:
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"; st.rerun()
         with col2:
-            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
-            if st.button("Get Pro", key="btn_pro1", type="primary", use_container_width=True):
+            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days (1 Month) - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            if st.button("Get Pro (1 Month)", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_1M; st.session_state.days = 30; st.rerun()
         with col3:
-            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>180 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
-            if st.button("Get Pro+", key="btn_pro6", type="primary", use_container_width=True):
+            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>180 Days (6 Months) - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            if st.button("Get Pro+ (6 Months)", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_6M; st.session_state.days = 180; st.rerun()
         
         render_ai_chatbot(is_sidebar=False)
@@ -536,6 +561,8 @@ if st.session_state.plan is None:
                     st.session_state.email = email_input
                     st.session_state.email_entered = True
                     data = load_db()
+                    
+                    # STRICTLY VERIFY 1 MONTH (30 days) for ₹299 vs 6 MONTHS (180 days) for ₹1499
                     selected_days = 180 if st.session_state.amt == 1499 else 30
                     
                     if email_input in data:
@@ -543,6 +570,7 @@ if st.session_state.plan is None:
                         if st.session_state.selected_plan == "free":
                             data[email_input]["status"] = "PAID"
                             data[email_input]["amt"] = 0
+                            data[email_input]["days"] = 36500
                             data[email_input]["expiry"] = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")
                         else:
                             if data[email_input].get("status") != "PAID":
@@ -559,7 +587,7 @@ if st.session_state.plan is None:
                         st.session_state.plan = st.session_state.selected_plan
                         if st.session_state.selected_plan == "free":
                             expiry = (datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                            data[email_input] = {"plan":"free","status":"PAID","amt":0,"expiry":expiry,"created":str(datetime.now())}
+                            data[email_input] = {"plan":"free","status":"PAID","amt":0,"days":36500,"expiry":expiry,"created":str(datetime.now())}
                             save_db(data); st.balloons(); st.rerun()
                         else:
                             expiry = (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d")
@@ -661,7 +689,6 @@ else:
         st.markdown("### 📁 File Selection Workspace")
         selected_file = st.selectbox("Choose which uploaded file you want to review and clean below:", file_keys, key="active_file_selector")
         
-        # Load picked active file variables dynamically
         st.session_state.df_clean = st.session_state.uploaded_files[selected_file]["clean"]
         st.session_state.df_original = st.session_state.uploaded_files[selected_file]["original"]
         st.session_state.orig_len = st.session_state.uploaded_files[selected_file]["orig_len"]
@@ -699,7 +726,6 @@ else:
         styled_df = apply_cell_styling(df_clean.head(10))
         st.dataframe(styled_df, use_container_width=True, height=280)
 
-        # 🎯 EXPLICIT STATUS NOTIFICATION FEED
         if st.session_state.get("reset_announced"):
             st.success("🔄 Success: Your original raw dataset states have been completely reset and applied!")
             st.session_state["reset_announced"] = False
@@ -729,7 +755,7 @@ else:
         user_info = db_data.get(st.session_state.email, {})
         is_paid = user_info.get("status") == "PAID"
 
-        # 🚀 RE-ENGINEERED MULTI-TOOL PROCESSING HUB (APPLY EVERYTHING AT ONCE)
+        # 🚀 MULTI-TOOL PROCESSING HUB
         st.markdown("<div style='background: #faf5ff; padding:15px; border-radius:14px; border:2px dashed #a855f7; margin-bottom:15px;'>", unsafe_allow_html=True)
         st.markdown("### ⚡ Global Simultaneous Multi-Tool Hub")
         st.write("Configure column targets inside different option tabs below, then trigger this button to execute all tools together in a single operation phase.")
@@ -815,7 +841,6 @@ else:
                 else:
                     st.session_state["last_apply_msg"] = f"🎉 Apply is completed! Successfully executed changes for: {', '.join(tools_run)}."
                 
-                # Save changes back into the correct multi-file state slot
                 st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
                 st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
             st.rerun()
@@ -1089,7 +1114,7 @@ else:
                     
                 if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
                     data = load_db()
-                    selected_days = st.session_state.days if st.session_state.days else (180 if st.session_state.amt == 1499 else 30)
+                    selected_days = 180 if st.session_state.amt == 1499 else 30
                     data[st.session_state.email] = {
                         "plan": "pro",
                         "amt": st.session_state.amt,
