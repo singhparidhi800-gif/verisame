@@ -207,6 +207,7 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
         )
         return completion.choices[0].message.content
     except Exception as e:
+        # Error logged quietly in console/session state for developer without crashing user interface
         st.session_state["groq_last_error"] = str(e)
         return None
 
@@ -730,112 +731,7 @@ else:
     if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
         file_keys = list(st.session_state.uploaded_files.keys())
         st.markdown("### 📁 File Selection Workspace")
-        
-        # BATCH EXECUTION INTEGRATION FEATURE
         selected_file = st.selectbox("Choose which uploaded file you want to review and clean below:", file_keys, key="active_file_selector")
-        
-        # Batch Execution Option: Clean all files simultaneously
-        if len(file_keys) > 1:
-            st.markdown("<div style='background-color: #f3e8ff; padding: 12px; border-radius: 12px; border: 1.5px solid #a855f7; margin-bottom: 12px;'>", unsafe_allow_html=True)
-            st.markdown("#### ⚡ Batch Processing Engine")
-            st.caption("Apply configured actions to all uploaded files at once.")
-            
-            if st.button("🚀 Apply Actions to All Uploaded Files simultaneously", type="primary", key="batch_apply_btn", use_container_width=True):
-                tools_run = []
-                
-                # Iterate over every uploaded file in workspace
-                for fname in file_keys:
-                    target_df = st.session_state.uploaded_files[fname]["clean"]
-                    old_snapshot = target_df.copy()
-                    
-                    # 1. Date
-                    if st.session_state.get("ms_date"):
-                        if T['tool1'] not in tools_run: tools_run.append(T['tool1'])
-                        for col in st.session_state["ms_date"]:
-                            if col in target_df.columns:
-                                target_df[col] = target_df[col].apply(intelligent_date_parser)
-                    # 2. Nulls
-                    if st.session_state.plan != "free" and st.session_state.get("ms_fill"):
-                        if T['tool2'] not in tools_run: tools_run.append(T['tool2'])
-                        for col in st.session_state["ms_fill"]:
-                            if col in target_df.columns:
-                                sample = str(target_df[col].dropna().iloc[0]).lower() if not target_df[col].dropna().empty else ""
-                                if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val = 0
-                                elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
-                                else: fill_val = "Unknown"
-                                target_df[col] = target_df[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
-                    # 3. Email
-                    if st.session_state.plan != "free" and st.session_state.get("ms_email"):
-                        if T['tool3'] not in tools_run: tools_run.append(T['tool3'])
-                        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-                        for col in st.session_state["ms_email"]:
-                            if col in target_df.columns:
-                                target_df[col] = target_df[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
-                    # 4. Phone
-                    if st.session_state.plan != "free" and st.session_state.get("ms_phone"):
-                        if T['tool4'] not in tools_run: tools_run.append(T['tool4'])
-                        for col in st.session_state["ms_phone"]:
-                            if col in target_df.columns:
-                                target_df[col] = target_df[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
-                                target_df[col] = target_df[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
-                    # 5. Case
-                    if st.session_state.get("ms_case"):
-                        if T['tool5'] not in tools_run: tools_run.append(T['tool5'])
-                        case_opt = st.session_state.get("sel_case", "Uppercase")
-                        for col in st.session_state["ms_case"]:
-                            if col in target_df.columns:
-                                if case_opt == "Uppercase": target_df[col] = target_df[col].astype(str).str.upper()
-                                elif case_opt == "Lowercase": target_df[col] = target_df[col].astype(str).str.lower()
-                                else: target_df[col] = target_df[col].astype(str).str.title()
-                    # 6. Symbols
-                    if st.session_state.plan != "free" and st.session_state.get("ms_spec"):
-                        if T['tool6'] not in tools_run: tools_run.append(T['tool6'])
-                        for col in st.session_state["ms_spec"]:
-                            if col in target_df.columns:
-                                target_df[col] = target_df[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
-                    # 8. Fuzzy Duplicates
-                    if st.session_state.get("sb_fuzzy"):
-                        if T['tool8'] not in tools_run: tools_run.append(T['tool8'])
-                        fuzzy_target_col = st.session_state["sb_fuzzy"]
-                        if fuzzy_target_col in target_df.columns:
-                            target_df = remove_fuzzy_duplicates(target_df, fuzzy_target_col)
-                    # 9. Trim
-                    if st.session_state.get("ms_trim"):
-                        if T['tool9'] not in tools_run: tools_run.append(T['tool9'])
-                        for col in st.session_state["ms_trim"]:
-                            if col in target_df.columns:
-                                target_df[col] = target_df[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                    # 10. Spell Check
-                    if st.session_state.plan != "free" and st.session_state.get("ms_spell"):
-                        if T['tool10'] not in tools_run: tools_run.append(T['tool10'])
-                        typo_dict = {"teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount"}
-                        def fix_typos(text):
-                            words = str(text).split()
-                            return " ".join([typo_dict.get(w.lower(), w) for w in words])
-                        for col in st.session_state["ms_spell"]:
-                            if col in target_df.columns:
-                                target_df[col] = target_df[col].apply(fix_typos).astype(str).str.title()
-
-                    # Save cleaned dataframe state for this specific file
-                    st.session_state.uploaded_files[fname]["clean"] = target_df
-                    
-                    # Track changes
-                    try:
-                        for col in old_snapshot.columns:
-                            if col in target_df.columns:
-                                mismatch_indices = old_snapshot[old_snapshot[col].astype(str) != target_df[col].astype(str)].index
-                                for idx in mismatch_indices:
-                                    st.session_state.uploaded_files[fname]["changed_cells"].add((idx, col))
-                    except Exception:
-                        pass
-                
-                if not tools_run:
-                    st.session_state["last_apply_msg"] = "⚠️ No active tools/columns selected to run batch cleaning."
-                else:
-                    st.session_state["last_apply_msg"] = f"🎉 Batch Execution Complete! Successfully applied configured operations ({', '.join(tools_run)}) across all {len(file_keys)} files."
-                
-                st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
         
         st.session_state.df_clean = st.session_state.uploaded_files[selected_file]["clean"]
         st.session_state.df_original = st.session_state.uploaded_files[selected_file]["original"]
@@ -847,7 +743,7 @@ else:
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"heavy>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
