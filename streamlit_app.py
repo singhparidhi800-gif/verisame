@@ -5,6 +5,12 @@ import re
 from datetime import datetime, timedelta
 import difflib 
 
+# Safe imports for Groq API Integration
+try:
+    from groq import Groq
+except Exception:
+    Groq = None
+
 # Safe imports to completely avoid Streamlit Deployment Crashes
 try:
     import qrcode
@@ -183,6 +189,28 @@ def generate_pdf_report(orig_len, clean_len, empty_fixed, df):
     buffer.seek(0)
     return buffer.getvalue()
 
+# GROQ API HELPER FUNCTION (SAFE & ISOLATED)
+def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant."):
+    groq_key = st.secrets.get("GROQ_API_KEY", None)
+    if not groq_key or Groq is None:
+        return None
+    try:
+        client = Groq(api_key=groq_key)
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": prompt_text}
+            ],
+            temperature=0.5,
+            max_tokens=400
+        )
+        return completion.choices[0].message.content
+    except Exception as e:
+        # Error logged quietly in console/session state for developer without crashing user interface
+        st.session_state["groq_last_error"] = str(e)
+        return None
+
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
@@ -296,7 +324,7 @@ def apply_cell_styling(df_to_style):
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
-# 🧠 ADVANCED ENHANCED AI CHATBOT KNOWLEDGE BASE ENGINE
+# 🧠 ADVANCED ENHANCED AI CHATBOT KNOWLEDGE BASE ENGINE (WITH GROQ INTEGRATION)
 def render_ai_chatbot(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
@@ -320,132 +348,143 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "user", "message": user_msg})
         reply = None
 
-        tools_database = {
-            1: {
-                "desc": "📅 **Tool 1 - Smart Date Converter:** Standardizes messy date strings (e.g., `DD/MM/YYYY`, `MM-DD-YYYY`, `YYYY/MM/DD`) into clean standard `YYYY-MM-DD` ISO format.",
-                "keywords": ["smart date", "date converter", "date ai", "tool 1", "tool no 1", "tool #1"]
-            },
-            2: {
-                "desc": "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Detects missing values and intelligently populates blank cells using contextual defaults (e.g., `0` for numeric columns, `missing@email.com` for emails).",
-                "keywords": ["ai fill", "fill nulls", "fill null", "nulls", "empty cells", "missing values", "tool 2", "tool no 2", "tool #2"]
-            },
-            3: {
-                "desc": "✉️ **Tool 3 - Email Validator (Pro):** Validates email RFC patterns, converts text to lowercase, and flags malformed emails as `Invalid Email`.",
-                "keywords": ["email ai", "email validator", "email validation", "email", "emails", "tool 3", "tool no 3", "tool #3"]
-            },
-            4: {
-                "desc": "📞 **Tool 4 - Phone Formatter (Pro):** Removes non-numeric symbols, country codes, and spaces to leave a clean, standardized 10-digit mobile number.",
-                "keywords": ["phone ai", "phone formatter", "phone format", "phone number", "phone", "mobile", "contact ai", "tool 4", "tool no 4", "tool #4"]
-            },
-            5: {
-                "desc": "🔤 **Tool 5 - Case Converter:** Instantly converts textual columns into UPPERCASE, lowercase, or Title Case.",
-                "keywords": ["case converter", "case ai", "case", "uppercase", "lowercase", "title case", "tool 5", "tool no 5", "tool #5"]
-            },
-            6: {
-                "desc": "🔣 **Tool 6 - Remove Symbols (Pro):** Strips non-alphanumeric noise and invalid special characters while safeguarding currency keys ($ , ₹) and standard punctuation.",
-                "keywords": ["remove symbols", "symbol cleaner", "clean symbols", "symbols ai", "symbols", "special characters", "tool 6", "tool no 6", "tool #6"]
-            },
-            7: {
-                "desc": "✏️ **Tool 7 - Bulk Rename (Pro):** Renames any matrix spreadsheet column header effortlessly.",
-                "keywords": ["bulk rename", "rename column", "rename header", "rename", "rename ai", "tool 7", "tool no 7", "tool #7"]
-            },
-            8: {
-                "desc": "🧠 **Tool 8 - Fuzzy Deduplication:** Scans text columns using sequence matching algorithms to merge near-identical duplicate records (e.g., 'Anugya ' vs 'Anugya').",
-                "keywords": ["fuzzy deduplication", "fuzzy match", "fuzzy dedup", "deduplication", "dedup", "duplicates", "fuzzy", "tool 8", "tool no 8", "tool #8"]
-            },
-            9: {
-                "desc": "✂️ **Tool 9 - Trim Spaces:** Cleans leading, trailing, and double whitespaces inside text cells.",
-                "keywords": ["trim spaces", "trim ai", "trim space", "trim", "whitespace", "spaces", "tool 9", "tool no 9", "tool #9"]
-            },
-            10: {
-                "desc": "🔠 **Tool 10 - Spell Check (Pro):** Automatically scans text columns and corrects common typing blunders (e.g., 'salery' → 'Salary').",
-                "keywords": ["spell check", "spell ai", "spelling", "typo", "typos", "spell", "tool 10", "tool no 10", "tool #10"]
+        # ⚡ OPTION 1: TRY GROQ AI FIRST (SAFE FALLBACK IF KEY MISSING OR FAILED)
+        system_prompt = (
+            "You are the official AI assistant for VeriSame, a data cleaning platform built by Anugya. "
+            "Keep answers helpful, clear, and focused on dataset cleaning, data preprocessing, and VeriSame's 10 tools."
+        )
+        groq_reply = query_groq_ai(user_msg, system_instruction=system_prompt)
+        if groq_reply:
+            reply = groq_reply
+
+        # ⚡ OPTION 2: INTERNAL RULE-BASED ENGINE (USED IF GROQ KEY IS NOT PRESENT)
+        if not reply:
+            tools_database = {
+                1: {
+                    "desc": "📅 **Tool 1 - Smart Date Converter:** Standardizes messy date strings (e.g., `DD/MM/YYYY`, `MM-DD-YYYY`, `YYYY/MM/DD`) into clean standard `YYYY-MM-DD` ISO format.",
+                    "keywords": ["smart date", "date converter", "date ai", "tool 1", "tool no 1", "tool #1"]
+                },
+                2: {
+                    "desc": "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Detects missing values and intelligently populates blank cells using contextual defaults (e.g., `0` for numeric columns, `missing@email.com` for emails).",
+                    "keywords": ["ai fill", "fill nulls", "fill null", "nulls", "empty cells", "missing values", "tool 2", "tool no 2", "tool #2"]
+                },
+                3: {
+                    "desc": "✉️ **Tool 3 - Email Validator (Pro):** Validates email RFC patterns, converts text to lowercase, and flags malformed emails as `Invalid Email`.",
+                    "keywords": ["email ai", "email validator", "email validation", "email", "emails", "tool 3", "tool no 3", "tool #3"]
+                },
+                4: {
+                    "desc": "📞 **Tool 4 - Phone Formatter (Pro):** Removes non-numeric symbols, country codes, and spaces to leave a clean, standardized 10-digit mobile number.",
+                    "keywords": ["phone ai", "phone formatter", "phone format", "phone number", "phone", "mobile", "contact ai", "tool 4", "tool no 4", "tool #4"]
+                },
+                5: {
+                    "desc": "🔤 **Tool 5 - Case Converter:** Instantly converts textual columns into UPPERCASE, lowercase, or Title Case.",
+                    "keywords": ["case converter", "case ai", "case", "uppercase", "lowercase", "title case", "tool 5", "tool no 5", "tool #5"]
+                },
+                6: {
+                    "desc": "🔣 **Tool 6 - Remove Symbols (Pro):** Strips non-alphanumeric noise and invalid special characters while safeguarding currency keys ($ , ₹) and standard punctuation.",
+                    "keywords": ["remove symbols", "symbol cleaner", "clean symbols", "symbols ai", "symbols", "special characters", "tool 6", "tool no 6", "tool #6"]
+                },
+                7: {
+                    "desc": "✏️ **Tool 7 - Bulk Rename (Pro):** Renames any matrix spreadsheet column header effortlessly.",
+                    "keywords": ["bulk rename", "rename column", "rename header", "rename", "rename ai", "tool 7", "tool no 7", "tool #7"]
+                },
+                8: {
+                    "desc": "🧠 **Tool 8 - Fuzzy Deduplication:** Scans text columns using sequence matching algorithms to merge near-identical duplicate records (e.g., 'Anugya ' vs 'Anugya').",
+                    "keywords": ["fuzzy deduplication", "fuzzy match", "fuzzy dedup", "deduplication", "dedup", "duplicates", "fuzzy", "tool 8", "tool no 8", "tool #8"]
+                },
+                9: {
+                    "desc": "✂️ **Tool 9 - Trim Spaces:** Cleans leading, trailing, and double whitespaces inside text cells.",
+                    "keywords": ["trim spaces", "trim ai", "trim space", "trim", "whitespace", "spaces", "tool 9", "tool no 9", "tool #9"]
+                },
+                10: {
+                    "desc": "🔠 **Tool 10 - Spell Check (Pro):** Automatically scans text columns and corrects common typing blunders (e.g., 'salery' → 'Salary').",
+                    "keywords": ["spell check", "spell ai", "spelling", "typo", "typos", "spell", "tool 10", "tool no 10", "tool #10"]
+                }
             }
-        }
 
-        for t_info in tools_database.values():
-            if any(kw in u for kw in t_info["keywords"]):
-                reply = t_info["desc"]
-                break
+            for t_info in tools_database.values():
+                if any(kw in u for kw in t_info["keywords"]):
+                    reply = t_info["desc"]
+                    break
 
-        if not reply:
-            num_match = re.search(r'\b(\d{1,2})\b', u)
-            if num_match:
-                t_num = int(num_match.group(1))
-                if t_num in tools_database:
-                    reply = tools_database[t_num]["desc"]
+            if not reply:
+                num_match = re.search(r'\b(\d{1,2})\b', u)
+                if num_match:
+                    t_num = int(num_match.group(1))
+                    if t_num in tools_database:
+                        reply = tools_database[t_num]["desc"]
 
-        if not reply and st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
-            live_df = st.session_state.df_clean
-            
-            if any(x in u for x in ["recommend", "suggest", "what should i run", "which tool to use", "how to clean my file", "what needs cleaning"]):
-                rec_tools = []
-                null_cnt = live_df.isna().sum().sum()
-                if null_cnt > 0:
-                    rec_tools.append("• **Tool 2 (AI Fill Nulls)**: Found missing values in your dataset.")
-                date_cols = [c for c in live_df.columns if 'date' in c.lower() or 'time' in c.lower()]
-                if date_cols:
-                    rec_tools.append(f"• **Tool 1 (Smart Date Converter)**: Detected date column(s): `{', '.join(date_cols)}`.")
-                email_cols = [c for c in live_df.columns if 'email' in c.lower() or 'mail' in c.lower()]
-                if email_cols:
-                    rec_tools.append(f"• **Tool 3 (Email Validator)**: Detected email column(s): `{', '.join(email_cols)}`.")
-                text_cols = live_df.select_dtypes(include=['object']).columns.tolist()
-                if text_cols:
-                    rec_tools.append("• **Tool 9 (Trim Spaces) & Tool 8 (Fuzzy Match)**: Useful for cleaning text columns.")
+            if not reply and st.session_state.get('df_loaded') and st.session_state.get('df_clean') is not None:
+                live_df = st.session_state.df_clean
+                
+                if any(x in u for x in ["recommend", "suggest", "what should i run", "which tool to use", "how to clean my file", "what needs cleaning"]):
+                    rec_tools = []
+                    null_cnt = live_df.isna().sum().sum()
+                    if null_cnt > 0:
+                        rec_tools.append("• **Tool 2 (AI Fill Nulls)**: Found missing values in your dataset.")
+                    date_cols = [c for c in live_df.columns if 'date' in c.lower() or 'time' in c.lower()]
+                    if date_cols:
+                        rec_tools.append(f"• **Tool 1 (Smart Date Converter)**: Detected date column(s): `{', '.join(date_cols)}`.")
+                    email_cols = [c for c in live_df.columns if 'email' in c.lower() or 'mail' in c.lower()]
+                    if email_cols:
+                        rec_tools.append(f"• **Tool 3 (Email Validator)**: Detected email column(s): `{', '.join(email_cols)}`.")
+                    text_cols = live_df.select_dtypes(include=['object']).columns.tolist()
+                    if text_cols:
+                        rec_tools.append("• **Tool 9 (Trim Spaces) & Tool 8 (Fuzzy Match)**: Useful for cleaning text columns.")
 
-                if rec_tools:
-                    reply = "💡 **AI Dataset Analysis & Recommendations:**\n\n" + "\n".join(rec_tools) + "\n\n*You can also configure options under the tabs and hit 'Execute All Configured AI Tools Simultaneously'!*"
-                else:
-                    reply = "✨ **Dataset Status:** Your dataset looks very clean! You can run **Tool 5 (Case Converter)** or **Tool 9 (Trim Spaces)** to ensure uniform formatting."
+                    if rec_tools:
+                        reply = "💡 **AI Dataset Analysis & Recommendations:**\n\n" + "\n".join(rec_tools) + "\n\n*You can also configure options under the tabs and hit 'Execute All Configured AI Tools Simultaneously'!*"
+                    else:
+                        reply = "✨ **Dataset Status:** Your dataset looks very clean! You can run **Tool 5 (Case Converter)** or **Tool 9 (Trim Spaces)** to ensure uniform formatting."
 
-            elif any(x in u for x in ["column", "columns", "what fields"]):
-                reply = f"📊 **Live Dataset Columns:** Active columns are: `{', '.join(live_df.columns.tolist())}`."
-            elif any(x in u for x in ["how many rows", "row count", "dataset size"]):
-                reply = f"🔢 **Live Dataset Dimensions:** Currently holding `{len(live_df)}` rows across `{len(live_df.columns)}` columns."
-            elif any(x in u for x in ["missing", "nulls", "empty boxes"]):
-                reply = f"🛠️ **Cleanliness Status:** Captured `{st.session_state.get('empty_fixed', 0)}` missing values."
+                elif any(x in u for x in ["column", "columns", "what fields"]):
+                    reply = f"📊 **Live Dataset Columns:** Active columns are: `{', '.join(live_df.columns.tolist())}`."
+                elif any(x in u for x in ["how many rows", "row count", "dataset size"]):
+                    reply = f"🔢 **Live Dataset Dimensions:** Currently holding `{len(live_df)}` rows across `{len(live_df.columns)}` columns."
+                elif any(x in u for x in ["missing", "nulls", "empty boxes"]):
+                    reply = f"🛠️ **Cleanliness Status:** Captured `{st.session_state.get('empty_fixed', 0)}` missing values."
 
-        if not reply:
-            if any(x in u for x in ["bye", "tata", "exit"]): reply = "👋 **Goodbye! Enjoy cleaning your spreadsheets with VeriSame.**"
-            elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are very welcome! Let me know if you need more data cleaning help.**"
-            elif any(x in u for x in ["haha", "hehe", "lol"]): reply = "😜 **Happy data processing!**"
-            elif u in ["hi", "hello", "hey", "hola"]: reply = "👋 Hello! Ask me about any tool (e.g., 'What is Phone AI?', 'Tool 9'), pricing, or ask for recommendations on your uploaded file!"
+            if not reply:
+                if any(x in u for x in ["bye", "tata", "exit"]): reply = "👋 **Goodbye! Enjoy cleaning your spreadsheets with VeriSame.**"
+                elif any(x in u for x in ["thank you", "thanks", "thx"]): reply = "💖 **You are very welcome! Let me know if you need more data cleaning help.**"
+                elif any(x in u for x in ["haha", "hehe", "lol"]): reply = "😜 **Happy data processing!**"
+                elif u in ["hi", "hello", "hey", "hola"]: reply = "👋 Hello! Ask me about any tool (e.g., 'What is Phone AI?', 'Tool 9'), pricing, or ask for recommendations on your uploaded file!"
 
-        if not reply:
-            knowledge_map = {
-                "founder made creator created developer owner built architecture who designed": "👑 **Founder & Creator:** VeriSame was fully architected, designed, and coded by **Anugya** to make preprocessing data effortless!",
-                "your name naam identity profiling profile identify system bot": "💎 I am the **VeriSame Core Intelligence Bot**, built exclusively to guide you through VeriSame's 10 data cleaning tools.",
-                "what this app can do app work capability functionality features use utility details purpose": "💎 **VeriSame Capabilities:** VeriSame is an automated dataset cleaning platform. It standardizes dates, cleans emails & phones, handles missing values, removes fuzzy duplicates, and formats text in under 3 seconds.",
-                "is this app free free version tier cost price free limit 200 rows": "✨ **Free Plan:** Free Forever with a limit of **200 rows**, CSV export, and 4 core tools (Date Converter, Case Converter, Fuzzy Deduplication, Trim Spaces).",
-                "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Plan:** Unlocks **Unlimited Rows**, all 10 AI Tools, CSV + Excel exports, PDF Audit Reports, and 3s speed for ₹299 (1 Month) or ₹1499 (6 Months).",
-                "free vs pro difference compare why upgrade": "⚡ **Free vs Pro:** Free supports up to 200 rows & 4 basic tools. Pro unlocks **unlimited rows**, all 10 tools (AI Fill Nulls, Email/Phone Validators, Spell Check, Bulk Rename, etc.), Excel export, and PDF Audit Reports!",
-                "security safe privacy stored data safety leaked": "🔒 **Data Security:** Your datasets are processed securely in memory during your active session and are never sold or exposed to third parties.",
-                "payment admin approval pending delay upi status waiting how long approval time": "⏳ **Admin Approval:** Once you click 'Customer I Paid', our admin panel is instantly notified and approved accounts unlock full functionality.",
-                "multi tool global apply simultaneous trigger all run all execute all": "⚡ **Global Multi-Tool Hub:** Configure your target columns across the tabs, then click **'Execute All Configured AI Tools Simultaneously'** to run everything at once!",
-                "format formats csv excel xlsx json file types supported upload": "📤 **Supported Formats:** VeriSame supports `.csv`, `.xlsx`, `.xls`, and `.json` files, including multi-sheet Excel files!",
-                "reset start over undo original raw clear cache": "🔄 **Resetting Data:** Click the **'Reset Active Dataset to Original Raw State'** button above the dataset summary to restore your original raw data at any time.",
-                "pdf report audit report pdf download audit": "📊 **PDF Audit Report:** Available for Pro users upon export, generating a formal breakdown of ingested rows, removed duplicates, and fixed cells."
-            }
-            
-            best_score = 0.0
-            best_reply = None
-            user_words = [w for w in u.split() if len(w) > 2]
-            
-            for key_string, answer_text in knowledge_map.items():
-                key_words = key_string.split()
-                matched_words = sum(1 for w in user_words if w in key_words)
-                word_ratio = matched_words / max(1, len(user_words)) if user_words else 0
-                seq_ratio = difflib.SequenceMatcher(None, u, key_string).ratio()
-                final_score = (word_ratio * 0.6) + (seq_ratio * 0.4)
-                if final_score > best_score:
-                    best_score = final_score
-                    best_reply = answer_text
-            
-            if best_score >= 0.38 and best_reply: 
-                reply = best_reply
+            if not reply:
+                knowledge_map = {
+                    "founder made creator created developer owner built architecture who designed": "👑 **Founder & Creator:** VeriSame was fully architected, designed, and coded by **Anugya** to make preprocessing data effortless!",
+                    "your name naam identity profiling profile identify system bot": "💎 I am the **VeriSame Core Intelligence Bot**, built exclusively to guide you through VeriSame's 10 data cleaning tools.",
+                    "what this app can do app work capability functionality features use utility details purpose": "💎 **VeriSame Capabilities:** VeriSame is an automated dataset cleaning platform. It standardizes dates, cleans emails & phones, handles missing values, removes fuzzy duplicates, and formats text in under 3 seconds.",
+                    "is this app free free version tier cost price free limit 200 rows": "✨ **Free Plan:** Free Forever with a limit of **200 rows**, CSV export, and 4 core tools (Date Converter, Case Converter, Fuzzy Deduplication, Trim Spaces).",
+                    "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Plan:** Unlocks **Unlimited Rows**, all 10 AI Tools, CSV + Excel exports, PDF Audit Reports, and 3s speed for ₹299 (1 Month) or ₹1499 (6 Months).",
+                    "free vs pro difference compare why upgrade": "⚡ **Free vs Pro:** Free supports up to 200 rows & 4 basic tools. Pro unlocks **unlimited rows**, all 10 tools (AI Fill Nulls, Email/Phone Validators, Spell Check, Bulk Rename, etc.), Excel export, and PDF Audit Reports!",
+                    "security safe privacy stored data safety leaked": "🔒 **Data Security:** Your datasets are processed securely in memory during your active session and are never sold or exposed to third parties.",
+                    "payment admin approval pending delay upi status waiting how long approval time": "⏳ **Admin Approval:** Once you click 'Customer I Paid', our admin panel is instantly notified and approved accounts unlock full functionality.",
+                    "multi tool global apply simultaneous trigger all run all execute all": "⚡ **Global Multi-Tool Hub:** Configure your target columns across the tabs, then click **'Execute All Configured AI Tools Simultaneously'** to run everything at once!",
+                    "format formats csv excel xlsx json file types supported upload": "📤 **Supported Formats:** VeriSame supports `.csv`, `.xlsx`, `.xls`, and `.json` files, including multi-sheet Excel files!",
+                    "reset start over undo original raw clear cache": "🔄 **Resetting Data:** Click the **'Reset Active Dataset to Original Raw State'** button above the dataset summary to restore your original raw data at any time.",
+                    "pdf report audit report pdf download audit": "📊 **PDF Audit Report:** Available for Pro users upon export, generating a formal breakdown of ingested rows, removed duplicates, and fixed cells."
+                }
+                
+                best_score = 0.0
+                best_reply = None
+                user_words = [w for w in u.split() if len(w) > 2]
+                
+                for key_string, answer_text in knowledge_map.items():
+                    key_words = key_string.split()
+                    matched_words = sum(1 for w in user_words if w in key_words)
+                    word_ratio = matched_words / max(1, len(user_words)) if user_words else 0
+                    seq_ratio = difflib.SequenceMatcher(None, u, key_string).ratio()
+                    final_score = (word_ratio * 0.6) + (seq_ratio * 0.4)
+                    if final_score > best_score:
+                        best_score = final_score
+                        best_reply = answer_text
+                
+                if best_score >= 0.38 and best_reply: 
+                    reply = best_reply
 
-        if not reply:
-            reply = "🤔 I didn't quite get that! Try asking about a specific tool (e.g., *'What is Phone AI?'* or *'Tool 9'*), ask *'Recommend tools for my data'*, or ask about *'Pro Pricing'*."
+            if not reply:
+                reply = "🤔 I didn't quite get that! Try asking about a specific tool (e.g., *'What is Phone AI?'* or *'Tool 9'*), ask *'Recommend tools for my data'*, or ask about *'Pro Pricing'*."
 
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
@@ -502,6 +541,11 @@ if "admin" in st.query_params:
         st.title(T['admin_title'])
         data = load_db()
         st.subheader(T['admin_pending'])
+
+        # SECRET INSPECTION CORNER FOR DEVELOPER TO SEE GROQ ERRORS IF ANY OCCURRED
+        if st.session_state.get("groq_last_error"):
+            st.error(f"⚠️ Groq API Internal Error Diagnostic: {st.session_state.get('groq_last_error')}")
+
         if data:
             for email, info in list(data.items()):
                 if "@" not in email: continue
@@ -551,7 +595,7 @@ if st.session_state.plan is None:
         
         render_ai_chatbot(is_sidebar=False)
     else:
-        st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
+        st.markdown(f"2Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
         
         c_left, c_right = st.columns(2)
