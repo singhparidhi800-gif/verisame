@@ -2,7 +2,7 @@ streamlit
 pandas
 openpyxl
 numpy
-qrcode[pil]
+qrcode
 streamlit-javascript
 requests
 word2number
