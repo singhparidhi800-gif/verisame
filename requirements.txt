@@ -2,7 +2,7 @@ streamlit
 pandas
 openpyxl
 numpy
-qrcode
+qrcode[pill]
 streamlit-javascript
 requests
 word2number
@@ -11,7 +11,7 @@ pillow
 matplotlib
 reportlab
 groq
-
+install
 
 
 
