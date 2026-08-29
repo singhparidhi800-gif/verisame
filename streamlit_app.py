@@ -197,7 +197,7 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
     try:
         client = Groq(api_key=groq_key)
         completion = client.chat.completions.create(
-            model="openai/gpt-oss-20b",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": prompt_text}
@@ -207,20 +207,19 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
         )
         return completion.choices[0].message.content
     except Exception as e:
-        # Error logged quietly in console/session state for developer without crashing user interface
         st.session_state["groq_last_error"] = str(e)
         return None
 
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
-    "free_title":"FREE FOREVER","pro1_title":"MONTHLY","pro6_title":"6 MONTHS",
+    "free_title":"FREE FOREVER","pro1_title":"1 MONTH","pro6_title":"6 MONTHS",
     "free_feat":["200 Rows Limit","CSV Export","4 Free Tools Built-in","30s Processing","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
-    "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green Highlights show where active tools worked 🟢)",
+    "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green Highlights show modified data cells 🟢)",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
-    "paid_msg":"Step 1: Pay ₹299 for 1 Month or ₹1499 for 6 Months via UPI. Step 2: Click I Paid button below.",
+    "paid_msg":"Step 1: Pay ₹299 for 1 Month (30 Days) or ₹1499 for 6 Months (180 Days) via UPI. Step 2: Click I Paid button below.",
     "upi_text":"Scan QR to Pay ₹{amount}","paid_btn":"Customer I Paid ₹{amount}","wait_approval":"⏳ Waiting for Admin Approval...",
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
@@ -268,7 +267,7 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
     border: none !important; 
     padding: 13px 26px !important; 
     width: 100% !important; 
-    box-shadow: 0 5px 18 rgba(147,51,234,0.4) !important; 
+    box-shadow: 0 5px 18px rgba(147,51,234,0.4) !important; 
 }
 .pro-banner {background: linear-gradient(135deg, #7e22ce, #a855f7, #d946ef); padding: 1.6rem; border-radius: 22px; color: white!important; text-align: center; margin: 1rem 0;}
 .tool-chip {display: inline-block; background: rgba(255,255,255,0.95); padding: 9px 17px; border-radius: 28px; margin: 4px; border: 2px solid #9333ea; color: #000!important;}
@@ -297,29 +296,25 @@ for key in ['plan','email','df_clean','df_original','show_balloon','payment_clic
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg'] else False
 
+# RELIABLE MODIFICATION TRACKING ACROSS ALL TOOLS
 def track_modifications(old_df, new_df):
     try:
         for col in old_df.columns:
             if col in new_df.columns:
-                mismatch_indices = old_df[old_df[col].astype(str) != new_df[col].astype(str)].index
-                for idx in mismatch_indices:
+                s_old = old_df[col].astype(str).fillna("")
+                s_new = new_df[col].astype(str).fillna("")
+                diff_mask = s_old != s_new
+                for idx in old_df[diff_mask].index:
                     st.session_state.changed_cells.add((idx, col))
     except Exception:
         pass
 
-# 🟢 HIGHLIGHT LOGIC BOUNDED STRICTLY TO CURRENTLY ACTIVE SELECTED TOOL INTERFACES
+# 🟢 PERSISTENT GREEN HIGHLIGHT LOGIC FOR ALL MODIFIED DATA CELLS
 def apply_cell_styling(df_to_style):
-    active_cols = []
-    for k in ["ms_date", "ms_fill", "ms_email", "ms_phone", "ms_case", "ms_spec", "sb_fuzzy", "ms_trim", "ms_spell"]:
-        if k in st.session_state and st.session_state[k]:
-            val = st.session_state[k]
-            if isinstance(val, list): active_cols.extend(val)
-            else: active_cols.append(val)
-            
     def highlight_cells(x):
         df_colors = pd.DataFrame('', index=x.index, columns=x.columns)
         for row, col in st.session_state.changed_cells:
-            if col in active_cols and row in df_colors.index and col in df_colors.columns:
+            if row in df_colors.index and col in df_colors.columns:
                 df_colors.at[row, col] = 'background-color: #bbf7d0; color: #047857; font-weight: bold; border: 1.5px solid #10b981;'
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
@@ -361,19 +356,19 @@ def render_ai_chatbot(is_sidebar=False):
         if not reply:
             tools_database = {
                 1: {
-                    "desc": "📅 **Tool 1 - Smart Date Converter:** Standardizes messy date strings (e.g., `DD/MM/YYYY`, `MM-DD-YYYY`, `YYYY/MM/DD`) into clean standard `YYYY-MM-DD` ISO format.",
+                    "desc": "📅 **Tool 1 - Smart Date Converter:** Standardizes messy date strings into clean standard `YYYY-MM-DD` ISO format.",
                     "keywords": ["smart date", "date converter", "date ai", "tool 1", "tool no 1", "tool #1"]
                 },
                 2: {
-                    "desc": "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Detects missing values and intelligently populates blank cells using contextual defaults (e.g., `0` for numeric columns, `missing@email.com` for emails).",
+                    "desc": "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Detects missing values and intelligently populates blank cells using contextual defaults.",
                     "keywords": ["ai fill", "fill nulls", "fill null", "nulls", "empty cells", "missing values", "tool 2", "tool no 2", "tool #2"]
                 },
                 3: {
-                    "desc": "✉️ **Tool 3 - Email Validator (Pro):** Validates email RFC patterns, converts text to lowercase, and flags malformed emails as `Invalid Email`.",
+                    "desc": "✉️ **Tool 3 - Email Validator (Pro):** Validates email RFC patterns, fixes common domain typos, and flags malformed emails.",
                     "keywords": ["email ai", "email validator", "email validation", "email", "emails", "tool 3", "tool no 3", "tool #3"]
                 },
                 4: {
-                    "desc": "📞 **Tool 4 - Phone Formatter (Pro):** Removes non-numeric symbols, country codes, and spaces to leave a clean, standardized 10-digit mobile number.",
+                    "desc": "📞 **Tool 4 - Phone Formatter (Pro):** Standardizes phone numbers into clean 10-digit mobile numbers.",
                     "keywords": ["phone ai", "phone formatter", "phone format", "phone number", "phone", "mobile", "contact ai", "tool 4", "tool no 4", "tool #4"]
                 },
                 5: {
@@ -381,7 +376,7 @@ def render_ai_chatbot(is_sidebar=False):
                     "keywords": ["case converter", "case ai", "case", "uppercase", "lowercase", "title case", "tool 5", "tool no 5", "tool #5"]
                 },
                 6: {
-                    "desc": "🔣 **Tool 6 - Remove Symbols (Pro):** Strips non-alphanumeric noise and invalid special characters while safeguarding currency keys ($ , ₹) and standard punctuation.",
+                    "desc": "🔣 **Tool 6 - Remove Symbols (Pro):** Strips special characters while safeguarding currency keys ($ , ₹) and punctuation.",
                     "keywords": ["remove symbols", "symbol cleaner", "clean symbols", "symbols ai", "symbols", "special characters", "tool 6", "tool no 6", "tool #6"]
                 },
                 7: {
@@ -389,7 +384,7 @@ def render_ai_chatbot(is_sidebar=False):
                     "keywords": ["bulk rename", "rename column", "rename header", "rename", "rename ai", "tool 7", "tool no 7", "tool #7"]
                 },
                 8: {
-                    "desc": "🧠 **Tool 8 - Fuzzy Deduplication:** Scans text columns using sequence matching algorithms to merge near-identical duplicate records (e.g., 'Anugya ' vs 'Anugya').",
+                    "desc": "🧠 **Tool 8 - Fuzzy Deduplication:** Scans text columns using sequence matching algorithms to merge near-identical records.",
                     "keywords": ["fuzzy deduplication", "fuzzy match", "fuzzy dedup", "deduplication", "dedup", "duplicates", "fuzzy", "tool 8", "tool no 8", "tool #8"]
                 },
                 9: {
@@ -397,7 +392,7 @@ def render_ai_chatbot(is_sidebar=False):
                     "keywords": ["trim spaces", "trim ai", "trim space", "trim", "whitespace", "spaces", "tool 9", "tool no 9", "tool #9"]
                 },
                 10: {
-                    "desc": "🔠 **Tool 10 - Spell Check (Pro):** Automatically scans text columns and corrects common typing blunders (e.g., 'salery' → 'Salary').",
+                    "desc": "🔠 **Tool 10 - Spell Check (Pro):** Automatically scans text columns and corrects common typing blunders.",
                     "keywords": ["spell check", "spell ai", "spelling", "typo", "typos", "spell", "tool 10", "tool no 10", "tool #10"]
                 }
             }
@@ -433,7 +428,7 @@ def render_ai_chatbot(is_sidebar=False):
                         rec_tools.append("• **Tool 9 (Trim Spaces) & Tool 8 (Fuzzy Match)**: Useful for cleaning text columns.")
 
                     if rec_tools:
-                        reply = "💡 **AI Dataset Analysis & Recommendations:**\n\n" + "\n".join(rec_tools) + "\n\n*You can also configure options under the tabs and hit 'Execute All Configured AI Tools Simultaneously'!*"
+                        reply = "💡 **AI Dataset Analysis & Recommendations:**\n\n" + "\n".join(rec_tools) + "\n\n*Configure options under the tabs and hit 'Execute All Configured AI Tools Simultaneously'!*"
                     else:
                         reply = "✨ **Dataset Status:** Your dataset looks very clean! You can run **Tool 5 (Case Converter)** or **Tool 9 (Trim Spaces)** to ensure uniform formatting."
 
@@ -456,8 +451,8 @@ def render_ai_chatbot(is_sidebar=False):
                     "your name naam identity profiling profile identify system bot": "💎 I am the **VeriSame Core Intelligence Bot**, built exclusively to guide you through VeriSame's 10 data cleaning tools.",
                     "what this app can do app work capability functionality features use utility details purpose": "💎 **VeriSame Capabilities:** VeriSame is an automated dataset cleaning platform. It standardizes dates, cleans emails & phones, handles missing values, removes fuzzy duplicates, and formats text in under 3 seconds.",
                     "is this app free free version tier cost price free limit 200 rows": "✨ **Free Plan:** Free Forever with a limit of **200 rows**, CSV export, and 4 core tools (Date Converter, Case Converter, Fuzzy Deduplication, Trim Spaces).",
-                    "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Plan:** Unlocks **Unlimited Rows**, all 10 AI Tools, CSV + Excel exports, PDF Audit Reports, and 3s speed for ₹299 (1 Month) or ₹1499 (6 Months).",
-                    "free vs pro difference compare why upgrade": "⚡ **Free vs Pro:** Free supports up to 200 rows & 4 basic tools. Pro unlocks **unlimited rows**, all 10 tools (AI Fill Nulls, Email/Phone Validators, Spell Check, Bulk Rename, etc.), Excel export, and PDF Audit Reports!",
+                    "what is pro version premium cost subscription upgrades charges models tier level": "💎 **Pro Plan:** Unlocks **Unlimited Rows**, all 10 AI Tools, CSV + Excel exports, PDF Audit Reports, and 3s speed for ₹299 (1 Month / 30 Days) or ₹1499 (6 Months / 180 Days).",
+                    "free vs pro difference compare why upgrade": "⚡ **Free vs Pro:** Free supports up to 200 rows & 4 basic tools. Pro unlocks **unlimited rows**, all 10 tools, Excel export, and PDF Audit Reports!",
                     "security safe privacy stored data safety leaked": "🔒 **Data Security:** Your datasets are processed securely in memory during your active session and are never sold or exposed to third parties.",
                     "payment admin approval pending delay upi status waiting how long approval time": "⏳ **Admin Approval:** Once you click 'Customer I Paid', our admin panel is instantly notified and approved accounts unlock full functionality.",
                     "multi tool global apply simultaneous trigger all run all execute all": "⚡ **Global Multi-Tool Hub:** Configure your target columns across the tabs, then click **'Execute All Configured AI Tools Simultaneously'** to run everything at once!",
@@ -542,7 +537,6 @@ if "admin" in st.query_params:
         data = load_db()
         st.subheader(T['admin_pending'])
 
-        # SECRET INSPECTION CORNER FOR DEVELOPER TO SEE GROQ ERRORS IF ANY OCCURRED
         if st.session_state.get("groq_last_error"):
             st.error(f"⚠️ Groq API Internal Error Diagnostic: {st.session_state.get('groq_last_error')}")
 
@@ -551,7 +545,7 @@ if "admin" in st.query_params:
                 if "@" not in email: continue
                 amt = info.get('amt', 0)
                 status = info.get('status', 'PENDING')
-                plan_text = f"PRO Monthly ₹299 (1 Month)" if amt == 299 else f"PRO ₹1499 (6 Months)" if amt == 1499 else "FREE Plan"
+                plan_text = f"PRO Monthly ₹299 (1 Month / 30 Days)" if amt == 299 else f"PRO ₹1499 (6 Months / 180 Days)" if amt == 1499 else "FREE Plan"
                 col1, col2, col3 = st.columns([4, 2, 2])
                 with col1:
                     status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
@@ -585,17 +579,17 @@ if st.session_state.plan is None:
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"; st.rerun()
         with col2:
-            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>30 Days (1 Month) - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
-            if st.button("Get Pro (1 Month)", key="btn_pro1", type="primary", use_container_width=True):
+            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>1 Month (30 Days) - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            if st.button("Get Pro (1 Month / 30 Days)", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_1M; st.session_state.days = 30; st.rerun()
         with col3:
-            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>180 Days (6 Months) - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
-            if st.button("Get Pro+ (6 Months)", key="btn_pro6", type="primary", use_container_width=True):
+            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>6 Months (180 Days) - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            if st.button("Get Pro+ (6 Months / 180 Days)", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_6M; st.session_state.days = 180; st.rerun()
         
         render_ai_chatbot(is_sidebar=False)
     else:
-        st.markdown(f"2Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
         
         c_left, c_right = st.columns(2)
@@ -703,7 +697,7 @@ else:
             sample_df = pd.DataFrame({
                 "Date":["12/5/2024","","15-03-2023"],
                 "Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],
-                "Email":["RAHUL@GMAIL.COM","bad@","priya@email.com"],
+                "Email":["RAHUL@GMAIL.COM","bad@gmai.com","priya@email.com"],
                 "Phone":["98765-43210","9123 456 789","000123"],
                 "Salary":["one hundred","250","two thousand five hundred"]
             })
@@ -743,7 +737,7 @@ else:
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f"heavy>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
@@ -754,8 +748,8 @@ else:
                     if k in st.session_state: st.session_state[k] = []
                 st.session_state["reset_announced"] = True
                 st.session_state["last_apply_msg"] = None
-                st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = set()
+                st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                st.session_state.uploaded_files[selected_file]["changed_cells"] = set()
                 st.rerun()
 
         c1,c2,c3,c4 = st.columns(4)
@@ -830,7 +824,9 @@ else:
                 pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                 for col in st.session_state["ms_email"]:
                     if col in st.session_state.df_clean.columns:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip()
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com")
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
             # 4. Phone
             if not is_free and st.session_state.get("ms_phone"):
                 tools_run.append(T['tool4'])
@@ -885,8 +881,8 @@ else:
                 else:
                     st.session_state["last_apply_msg"] = f"🎉 Apply is completed! Successfully executed changes for: {', '.join(tools_run)}."
                 
-                st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -905,8 +901,8 @@ else:
                         st.session_state["last_apply_msg"] = "This tool is not needed because your date variables are already completely optimized."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
-                    st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                    st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                    st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                    st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                     st.rerun()
             if col_b2.button("✕ Reset / Clear Tool Selection", key="clear_date", use_container_width=True):
                 if "ms_date" in st.session_state: del st.session_state["ms_date"]
@@ -935,8 +931,8 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because there are zero missing/null data blocks present."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                        st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b4.button("✕ Reset / Clear Tool Selection", key="clear_fill", use_container_width=True):
                     if "ms_fill" in st.session_state: del st.session_state["ms_fill"]
@@ -956,14 +952,16 @@ else:
                         old_snapshot = st.session_state.df_clean.copy()
                         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
                         for col in email_cols: 
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip().apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip()
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com")
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
                         track_modifications(old_snapshot, st.session_state.df_clean)
                         if old_snapshot.equals(st.session_state.df_clean):
                             st.session_state["last_apply_msg"] = "This tool is not needed because all rows are already legitimate email strings."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                        st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b6.button("✕ Reset / Clear Tool Selection", key="clear_email", use_container_width=True):
                     if "ms_email" in st.session_state: del st.session_state["ms_email"]
@@ -989,8 +987,8 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because all contact parameters are already fully cleaned."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                        st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b8.button("✕ Reset / Clear Tool Selection", key="clear_phone", use_container_width=True):
                     if "ms_phone" in st.session_state: del st.session_state["ms_phone"]
@@ -1013,8 +1011,8 @@ else:
                         st.session_state["last_apply_msg"] = "This tool is not needed because the dataset text case already conforms to your selection."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
-                    st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                    st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                    st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                    st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                     st.rerun()
             if col_b10.button("✕ Reset / Clear Tool Selection", key="clear_case", use_container_width=True):
                 if "ms_case" in st.session_state: del st.session_state["ms_case"]
@@ -1038,8 +1036,8 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because there are no forbidden symbol arrays present."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                        st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b12.button("✕ Reset / Clear Tool Selection", key="clear_spec", use_container_width=True):
                     if "ms_spec" in st.session_state: del st.session_state["ms_spec"]
@@ -1060,7 +1058,7 @@ else:
                     if new and new.strip() != "" and old != new:
                         st.session_state.df_clean.rename(columns={old: new.strip()}, inplace=True)
                         st.session_state["last_apply_msg"] = "🎉 Column renaming successfully applied!"
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
+                        st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                         st.rerun()
                 if col_b14.button("✕ Reset / Clear Tool Selection", key="clear_rename", use_container_width=True):
                     if "sel_old" in st.session_state: del st.session_state["sel_old"]
@@ -1079,7 +1077,7 @@ else:
                         st.session_state["last_apply_msg"] = "This tool is not needed because there are no duplicate matching structures."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
-                    st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
+                    st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                     st.rerun()
             if col_b16.button("✕ Reset / Clear Tool Selection", key="clear_dedup", use_container_width=True):
                 if "sb_fuzzy" in st.session_state: del st.session_state["sb_fuzzy"]
@@ -1100,8 +1098,8 @@ else:
                         st.session_state["last_apply_msg"] = "This tool is not needed because there are no leading or trailing whitespace blocks."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
-                    st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                    st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                    st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                    st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                     st.rerun()
             if col_b18.button("✕ Reset / Clear Tool Selection", key="clear_trim", use_container_width=True):
                 if "ms_trim" in st.session_state: del st.session_state["ms_trim"]
@@ -1129,8 +1127,8 @@ else:
                             st.session_state["last_apply_msg"] = "This tool is not needed because no common spelling typos were identified."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = st.session_state.changed_cells
+                        st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b20.button("✕ Reset / Clear Tool Selection", key="clear_spell", use_container_width=True):
                     if "ms_spell" in st.session_state: del st.session_state["ms_spell"]
