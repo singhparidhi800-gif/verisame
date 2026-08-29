@@ -71,8 +71,13 @@ def save_db(d):
 # ⏱️ PROCESSING SPEED ENFORCER (30s for Free, 3s for Pro)
 def enforce_processing_delay():
     delay = 3 if st.session_state.plan == "pro" else 30
-    with st.spinner(f"⏳ Processing dataset through VeriSame AI Engine ({delay}s)..."):
-        time.sleep(delay)
+    progress_text = f"⏳ Processing dataset through VeriSame AI Engine ({delay}s delay active)..."
+    my_bar = st.progress(0, text=progress_text)
+    step = delay / 100.0
+    for percent_complete in range(100):
+        time.sleep(step)
+        my_bar.progress(percent_complete + 1, text=progress_text)
+    my_bar.empty()
 
 # 💰 ADVANCED WORD-TO-NUMBER CONVERSION ENGINE
 def words_to_num(s):
@@ -111,7 +116,7 @@ def words_to_num(s):
 
 # 🧠 FUZZY DEDUPLICATION ALGORITHM
 def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
-    if dataframe[column_name].dtype != 'object':
+    if column_name not in dataframe.columns or dataframe[column_name].dtype != 'object':
         return dataframe
     
     unique_values = dataframe[column_name].dropna().unique()
@@ -135,7 +140,7 @@ def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
 
 # 📅 SYSTEM DATE CONVERTER
 def intelligent_date_parser(date_str):
-    if pd.isna(date_str) or str(date_str).strip() in ["", "nan", "None"]:
+    if pd.isna(date_str) or str(date_str).strip() in ["", "nan", "None", "null"]:
         return "None"
     
     clean_str = str(date_str).strip().replace('/', '-').replace('.', '-')
@@ -156,7 +161,7 @@ def intelligent_date_parser(date_str):
         except Exception:
             pass
             
-    return "None"
+    return str(date_str)
 
 # FUNCTION TO GENERATE CLEAN PDF AUDIT REPORT
 def generate_pdf_report(orig_len, clean_len, empty_fixed, df):
@@ -217,10 +222,31 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
         st.session_state["groq_last_error"] = str(e)
         return None
 
+# RELIABLE QR CODE RENDERING ENGINE
+def display_upi_qr(upi_uri, pay_amount):
+    qr_generated = False
+    if qrcode is not None:
+        try:
+            qr = qrcode.QRCode(version=1, box_size=8, border=2)
+            qr.add_data(upi_uri)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            st.image(buf.getvalue(), width=220, caption=f"Scan to pay ₹{pay_amount}")
+            qr_generated = True
+        except Exception:
+            qr_generated = False
+            
+    if not qr_generated:
+        encoded_link = urllib.parse.quote(upi_uri)
+        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={encoded_link}"
+        st.image(qr_url, width=220, caption=f"Scan to pay ₹{pay_amount}")
+
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"1 MONTH","pro6_title":"6 MONTHS",
-    "free_feat":["200 Rows Limit","CSV Export","4 Free Tools Built-in","30s Processing","Email Support"],
+    "free_feat":["200 Rows Limit","CSV Export","4 Free Tools Built-in","30s Processing Delay","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
@@ -426,13 +452,14 @@ if st.session_state.email:
         st.session_state.amt = user.get("amt", 0)
         
         if user.get("plan") == "free": 
-            st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit)")
+            st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit | 30s Speed)")
         else:
             exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
             days_left = (exp_date - datetime.now().date()).days
             st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
             if days_left > 0: 
-                st.sidebar.info(f"Plan: PRO ({'1 Month' if user.get('amt') == 299 else '6 Months'})\nValid Till: {user['expiry']}\n{days_left} days left")
+                plan_name = "1 Month (30 Days)" if user.get('amt') == PRO_1M else "6 Months (180 Days)"
+                st.sidebar.info(f"Plan: PRO ({plan_name})\nValid Till: {user['expiry']}\n{days_left} days left")
                 if days_left <= 5:
                     st.sidebar.markdown(f"<p style='color: #dc2626 !important; font-weight: 700; background-color: #fee2e2; padding: 10px; border-radius: 12px; border: 1.5px solid #ef4444; margin-top: 10px;'>⚠️ Your PRO plan expires in {days_left} days!</p>", unsafe_allow_html=True)
 
@@ -471,7 +498,7 @@ if "admin" in st.query_params:
                 if "@" not in email: continue
                 amt = info.get('amt', 0)
                 status = info.get('status', 'PENDING')
-                plan_text = f"PRO Monthly ₹299 (1 Month / 30 Days)" if amt == 299 else f"PRO ₹1499 (6 Months / 180 Days)" if amt == 1499 else "FREE Plan"
+                plan_text = f"PRO Monthly ₹299 (1 Month / 30 Days)" if amt == PRO_1M else f"PRO ₹1499 (6 Months / 180 Days)" if amt == PRO_6M else "FREE Plan"
                 col1, col2, col3 = st.columns([4, 2, 2])
                 with col1:
                     status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
@@ -480,8 +507,8 @@ if "admin" in st.query_params:
                     if status == "PENDING" and info.get("plan") == "pro":
                         if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
                             data[email]["status"] = "PAID"
-                            user_amt = data[email].get("amt", 299)
-                            exact_days = 180 if user_amt == 1499 else 30
+                            user_amt = data[email].get("amt", PRO_1M)
+                            exact_days = 180 if user_amt == PRO_6M else 30
                             data[email]["days"] = exact_days
                             data[email]["expiry"] = (datetime.now() + timedelta(days=exact_days)).strftime("%Y-%m-%d")
                             save_db(data)
@@ -532,7 +559,7 @@ if st.session_state.plan is None:
                     st.session_state.email = email_input
                     st.session_state.email_entered = True
                     data = load_db()
-                    selected_days = 180 if st.session_state.amt == 1499 else 30
+                    selected_days = 180 if st.session_state.amt == PRO_6M else 30
                     
                     if email_input in data:
                         data[email_input]["plan"] = st.session_state.selected_plan
@@ -720,7 +747,7 @@ else:
 
         if st.session_state.get("last_apply_msg"):
             msg_text = st.session_state["last_apply_msg"]
-            if "No changes were required" in msg_text or "not needed" in msg_text:
+            if "No changes were required" in msg_text or "not needed" in msg_text or "No processing targets" in msg_text:
                 st.info(f"ℹ️ {msg_text}")
             else:
                 st.success(msg_text)
@@ -768,11 +795,11 @@ else:
                         if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val = 0
                         elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
                         else: fill_val = "Unknown"
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " ", "null"], fill_val)
             # 3. Email
             if not is_free and st.session_state.get("ms_email"):
                 tools_run.append(T['tool3'])
-                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
                 for col in st.session_state["ms_email"]:
                     if col in st.session_state.df_clean.columns:
                         st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip()
@@ -878,7 +905,7 @@ else:
                             if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val = 0
                             elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
                             else: fill_val = "Unknown"
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " "], fill_val)
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " ", "null"], fill_val)
                         track_modifications(old_snapshot, st.session_state.df_clean)
                         if old_snapshot.equals(st.session_state.df_clean):
                             st.session_state["last_apply_msg"] = "This tool is not needed because there are zero missing/null data blocks present."
@@ -904,7 +931,7 @@ else:
                     if email_cols:
                         enforce_processing_delay()
                         old_snapshot = st.session_state.df_clean.copy()
-                        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+                        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
                         for col in email_cols: 
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip()
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com")
@@ -1111,26 +1138,17 @@ else:
             if not is_paid:
                 st.warning(T['wait_approval'])
                 
-                pay_amt = st.session_state.amt if st.session_state.amt else 299
+                pay_amt = st.session_state.amt if st.session_state.amt else PRO_1M
                 upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={pay_amt}&cu=INR"
                 
                 col_qr, col_pay_info = st.columns([1.5, 2.5])
                 with col_qr:
                     st.markdown(f"#### {T['upi_text'].format(amount=pay_amt)}")
-                    if qrcode is not None:
-                        try:
-                            qr = qrcode.make(upi_link)
-                            buf = io.BytesIO()
-                            qr.save(buf, format="PNG")
-                            st.image(buf.getvalue(), width=220, caption=f"Scan to pay ₹{pay_amt}")
-                        except Exception:
-                            qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={urllib.parse.quote(upi_link)}"
-                            st.image(qr_url, width=220, caption=f"Scan to pay ₹{pay_amt}")
-                    else:
-                        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={urllib.parse.quote(upi_link)}"
-                        st.image(qr_url, width=220, caption=f"Scan to pay ₹{pay_amt}")
+                    display_upi_qr(upi_link, pay_amt)
                 
                 with col_pay_info:
+                    plan_desc = "1 Month (30 Days)" if pay_amt == PRO_1M else "6 Months (180 Days)"
+                    st.markdown(f"**Selected Plan:** PRO {plan_desc}")
                     st.markdown(f"**Step 1:** Click the button below to automatically open your UPI app (Google Pay / PhonePe / Paytm) pre-filled with **₹{pay_amt}**:")
                     st.link_button(f"Pay ₹{pay_amt} via UPI App 📱", upi_link, use_container_width=True)
                     st.markdown("---")
@@ -1138,7 +1156,7 @@ else:
                     
                     if st.button(T['paid_btn'].format(amount=pay_amt), key="btn_paid", type="primary", use_container_width=True):
                         data = load_db()
-                        selected_days = 180 if pay_amt == 1499 else 30
+                        selected_days = 180 if pay_amt == PRO_6M else 30
                         data[st.session_state.email] = {
                             "plan": "pro",
                             "amt": pay_amt,
