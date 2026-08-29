@@ -4,6 +4,7 @@ import pandas as pd
 import re
 from datetime import datetime, timedelta
 import difflib 
+import urllib.parse
 
 # Safe imports for Groq API Integration
 try:
@@ -498,6 +499,21 @@ if st.session_state.email:
     st.sidebar.success(f"📧 {st.session_state.email}")
     render_ai_chatbot(is_sidebar=True)
     if user.get("plan"):
+        # AUTOMATIC PLAN EXPIRY CHECK
+        if user.get("plan") == "pro" and user.get("expiry"):
+            exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
+            today = datetime.now().date()
+            if exp_date < today:
+                # Plan expired - revert user to Free tier automatically
+                user["plan"] = "free"
+                user["status"] = "PAID"
+                user["amt"] = 0
+                user["days"] = 36500
+                user["expiry"] = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")
+                db_state[st.session_state.email] = user
+                save_db(db_state)
+                st.sidebar.warning("⚠️ Your PRO plan has expired! Reverted to Free mode.")
+
         st.session_state.plan = user.get("plan")
         st.session_state.amt = user.get("amt", 0)
         st.session_state.days = user.get("days", 0)
@@ -737,7 +753,7 @@ else:
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
@@ -1147,19 +1163,31 @@ else:
         elif st.session_state.plan == "pro":
             if not is_paid:
                 st.warning(T['wait_approval'])
+                
+                # 💸 DYNAMIC UPI QR GENERATOR WITH AUTO-FILLED AMOUNT
+                pay_amt = st.session_state.amt if st.session_state.amt else 299
+                upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={pay_amt}&cu=INR"
+                
                 if qrcode is not None:
-                    upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={st.session_state.amt}&cu=INR"
-                    qr = qrcode.make(upi_link); buf = io.BytesIO(); qr.save(buf, format="PNG")
-                    st.image(buf.getvalue(), width=220)
+                    try:
+                        qr = qrcode.make(upi_link)
+                        buf = io.BytesIO()
+                        qr.save(buf, format="PNG")
+                        st.image(buf.getvalue(), width=220, caption=f"Scan to pay ₹{pay_amt} via Google Pay, Paytm, or PhonePe")
+                    except Exception:
+                        qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={urllib.parse.quote(upi_link)}"
+                        st.image(qr_url, width=220, caption=f"Scan to pay ₹{pay_amt} via Google Pay, Paytm, or PhonePe")
                 else:
-                    st.info(f"Send payment directly to UPI ID: {UPI}")
+                    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={urllib.parse.quote(upi_link)}"
+                    st.image(qr_url, width=220, caption=f"Scan to pay ₹{pay_amt} via Google Pay, Paytm, or PhonePe")
+                    st.info(f"Or send payment manually to UPI ID: {UPI}")
                     
-                if st.button(T['paid_btn'].format(amount=st.session_state.amt), key="btn_paid", type="primary", use_container_width=True):
+                if st.button(T['paid_btn'].format(amount=pay_amt), key="btn_paid", type="primary", use_container_width=True):
                     data = load_db()
-                    selected_days = 180 if st.session_state.amt == 1499 else 30
+                    selected_days = 180 if pay_amt == 1499 else 30
                     data[st.session_state.email] = {
                         "plan": "pro",
-                        "amt": st.session_state.amt,
+                        "amt": pay_amt,
                         "days": selected_days,
                         "expiry": (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d"),
                         "status": "PENDING"
