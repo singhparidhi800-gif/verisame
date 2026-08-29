@@ -1,10 +1,10 @@
-import streamlit as st
 import json, os, io, time
 import pandas as pd
 import re
 from datetime import datetime, timedelta
 import difflib 
 import urllib.parse
+import streamlit as st
 
 # Safe imports for Groq API Integration
 try:
@@ -34,7 +34,8 @@ except Exception:
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-UPI = "playwithreyansh0@okhdfcbank"
+# 🔒 Retrieve UPI ID dynamically from Streamlit Secrets with a fallback
+UPI_ID = st.secrets.get("UPI_ID", st.secrets.get("UPI", "playwithreyansh0@okhdfcbank"))
 PRO_1M, PRO_6M = 299, 1499
 FREE_ROW_LIMIT = 200
 
@@ -222,7 +223,7 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
         st.session_state["groq_last_error"] = str(e)
         return None
 
-# RELIABLE QR CODE RENDERING ENGINE
+# RELIABLE QR CODE RENDERING ENGINE FOR PRO PLANS
 def display_upi_qr(upi_uri, pay_amount):
     qr_generated = False
     if qrcode is not None:
@@ -713,7 +714,7 @@ else:
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f" meal <h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
@@ -1125,6 +1126,7 @@ else:
         # 📥 EXPORT & PAYMENT GATEWAY DASHBOARD
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
         
+        # 🆓 FREE TIER: Direct downloads only (NO payment / QR codes shown)
         if st.session_state.plan == "free":
             col1, col2 = st.columns(2)
             csv = st.session_state.df_clean.to_csv(index=False).encode()
@@ -1134,12 +1136,13 @@ else:
                 st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
                 col2.download_button(T['download_excel'], excel.getvalue(), f"verisame_free_{selected_file}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True)
             
+        # 💎 PRO TIER (₹299 / ₹1499): Payment QR and approval workflow
         elif st.session_state.plan == "pro":
             if not is_paid:
                 st.warning(T['wait_approval'])
                 
                 pay_amt = st.session_state.amt if st.session_state.amt else PRO_1M
-                upi_link = f"upi://pay?pa={UPI}&pn=VeriSame&am={pay_amt}&cu=INR"
+                upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pay_amt}&cu=INR"
                 
                 col_qr, col_pay_info = st.columns([1.5, 2.5])
                 with col_qr:
