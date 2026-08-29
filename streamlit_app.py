@@ -544,11 +544,11 @@ with col2:
     </div>
     """, unsafe_allow_html=True)
 
-st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f"<span class='tool-chip'>{tool}</span>" for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
+st.markdown(f"<div class='pro-banner'><h2>💎 {T['pro_banner']}</h2><div>{''.join([f'<span class=\"tool-chip\">{tool}</span>' for tool in ['Smart Date','AI Fill','Email AI','Phone AI','Case','Clean','Rename','Dedup','Trim','Spell']])}</div></div>", unsafe_allow_html=True)
 
 # 👑 ADMIN ROUTING PANEL
 if "admin" in st.query_params:
-    if st.query_params["admin"] == ADMIN_PASS:
+    if st.query_params.get("admin") == ADMIN_PASS:
         st.title(T['admin_title'])
         data = load_db()
         st.subheader(T['admin_pending'])
@@ -753,7 +753,7 @@ else:
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f"2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
@@ -761,7 +761,8 @@ else:
                 st.session_state.df_clean = st.session_state.df_original.copy()
                 st.session_state.changed_cells = set()
                 for k in ["ms_date", "ms_fill", "ms_email", "ms_phone", "ms_case", "ms_spec", "sb_fuzzy", "ms_trim", "ms_spell"]:
-                    if k in st.session_state: st.session_state[k] = []
+                    if k in st.session_state: 
+                        del st.session_state[k]
                 st.session_state["reset_announced"] = True
                 st.session_state["last_apply_msg"] = None
                 st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
@@ -1207,6 +1208,3 @@ else:
                 pdf_data = generate_pdf_report(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
                 if pdf_data:
                     col3.download_button("Download Audit PDF Report 📊", pdf_data, f"verisame_audit_{selected_file}.pdf", mime="application/pdf", key="dl_pdf_paid", use_container_width=True)
-
-    if not st.session_state.plan and not st.session_state.email_entered:
-        pass
