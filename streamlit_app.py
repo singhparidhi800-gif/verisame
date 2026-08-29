@@ -210,7 +210,7 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
     try:
         client = Groq(api_key=groq_key)
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": prompt_text}
@@ -246,7 +246,7 @@ def display_upi_qr(upi_uri, pay_amount):
 
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
-    "free_title":"FREE FOREVER","pro1_title":"1 MONTH","pro6_title":"6 MONTHS",
+    "free_title":"FREE FOREVER","pro1_title":"1 MONTH (30 DAYS)","pro6_title":"6 MONTHS (180 DAYS)",
     "free_feat":["200 Rows Limit","CSV Export","4 Free Tools Built-in","30s Processing Delay","Email Support"],
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
@@ -254,7 +254,7 @@ T = {
     "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green Highlights show modified data cells 🟢)",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
     "paid_msg":"Step 1: Pay ₹299 for 1 Month (30 Days) or ₹1499 for 6 Months (180 Days) via UPI. Step 2: Click I Paid button below.",
-    "upi_text":"Scan QR or Click Button to Pay ₹{amount}","paid_btn":"Customer I Paid ₹{amount}","wait_approval":"⏳ Waiting for Admin Approval...",
+    "upi_text":"Scan QR or Click Button to Pay ₹{amount}","paid_btn":"I Paid ₹{amount} - Approval ke liye bhejo","wait_approval":"⏳ Waiting for Admin Approval...",
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates / Fuzzy Match","tool9":"Trim Spaces","tool10":"Spell Check",
@@ -266,7 +266,7 @@ T = {
 # CSS STYLING
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght=400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif;}
 .stApp {background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 25%, #c084fc 50%, #a855f7 75%, #9333ea 100%); background-size: 400% 400%; animation: aurora 15s ease infinite; padding-top: 0.3rem;}
 @keyframes aurora {0%{background-position: 0% 50%} 50%{background-position: 100% 50%} 100%{background-position: 0% 50%}}
@@ -459,7 +459,7 @@ if st.session_state.email:
             days_left = (exp_date - datetime.now().date()).days
             st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
             if days_left > 0: 
-                plan_name = "1 Month (30 Days)" if user.get('amt') == PRO_1M else "6 Months (180 Days)"
+                plan_name = "1 Month / 30 Days" if user.get('amt') == PRO_1M else "6 Months / 180 Days"
                 st.sidebar.info(f"Plan: PRO ({plan_name})\nValid Till: {user['expiry']}\n{days_left} days left")
                 if days_left <= 5:
                     st.sidebar.markdown(f"<p style='color: #dc2626 !important; font-weight: 700; background-color: #fee2e2; padding: 10px; border-radius: 12px; border: 1.5px solid #ef4444; margin-top: 10px;'>⚠️ Your PRO plan expires in {days_left} days!</p>", unsafe_allow_html=True)
@@ -540,11 +540,11 @@ if st.session_state.plan is None:
             if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "free"; st.rerun()
         with col2:
-            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>1 Month (30 Days) - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card' style='border: 3px solid #9333ea; box-shadow:0 15px 35px rgba(147,51,234,0.3)'><p>⭐ POPULAR</p><h2>{T['pro1_title']}</h2><h1>₹299</h1><p>1 Month / 30 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Get Pro (1 Month / 30 Days)", key="btn_pro1", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_1M; st.session_state.days = 30; st.rerun()
         with col3:
-            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>6 Months (180 Days) - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
+            st.markdown(f"""<div class='pricing-card'><h2>{T['pro6_title']}</h2><h1>₹1499</h1><p>6 Months / 180 Days - All Tools</p><div>{''.join([f'<p>✓ {f}</p>' for f in T['pro_feat']])}</div></div>""", unsafe_allow_html=True)
             if st.button("Get Pro+ (6 Months / 180 Days)", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan = "pro"; st.session_state.amt = PRO_6M; st.session_state.days = 180; st.rerun()
         
@@ -714,7 +714,7 @@ else:
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f" meal <h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
@@ -1139,37 +1139,39 @@ else:
         # 💎 PRO TIER (₹299 / ₹1499): Payment QR and approval workflow
         elif st.session_state.plan == "pro":
             if not is_paid:
-                st.warning(T['wait_approval'])
+                st.warning("Step 1: Neeche button se pay karo. Step 2: 'I Paid' dabao. Step 3: Admin approve karegi.")
                 
                 pay_amt = st.session_state.amt if st.session_state.amt else PRO_1M
-                upi_link = f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pay_amt}&cu=INR"
+                upi_299 = f"upi://pay?pa={UPI_ID}&pn=Reyansh&am=299&cu=INR&tn=VeriSame299"
+                upi_1499 = f"upi://pay?pa={UPI_ID}&pn=Reyansh&am=1499&cu=INR&tn=VeriSame1499"
                 
-                col_qr, col_pay_info = st.columns([1.5, 2.5])
-                with col_qr:
-                    st.markdown(f"#### {T['upi_text'].format(amount=pay_amt)}")
-                    display_upi_qr(upi_link, pay_amt)
-                
-                with col_pay_info:
-                    plan_desc = "1 Month (30 Days)" if pay_amt == PRO_1M else "6 Months (180 Days)"
-                    st.markdown(f"**Selected Plan:** PRO {plan_desc}")
-                    st.markdown(f"**Step 1:** Click the button below to automatically open your UPI app (Google Pay / PhonePe / Paytm) pre-filled with **₹{pay_amt}**:")
-                    st.link_button(f"Pay ₹{pay_amt} via UPI App 📱", upi_link, use_container_width=True)
-                    st.markdown("---")
-                    st.markdown("**Step 2:** After completing the payment, click the button below to notify Admin:")
-                    
-                    if st.button(T['paid_btn'].format(amount=pay_amt), key="btn_paid", type="primary", use_container_width=True):
-                        data = load_db()
-                        selected_days = 180 if pay_amt == PRO_6M else 30
-                        data[st.session_state.email] = {
-                            "plan": "pro",
-                            "amt": pay_amt,
-                            "days": selected_days,
-                            "expiry": (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d"),
-                            "status": "PENDING"
-                        }
-                        save_db(data)
-                        st.success("🚀 Payment logged in Admin Dashboard! Awaiting admin approval.")
-                        st.rerun()
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.link_button("💸 Pay ₹299", upi_299, use_container_width=True)
+                    st.caption("1 Month / 30 Days")
+                with c2:
+                    st.link_button("💸 Pay ₹1499", upi_1499, use_container_width=True)
+                    st.caption("6 Months / 180 Days")
+
+                display_upi_qr(upi_299 if pay_amt == 299 else upi_1499, pay_amt)
+
+                if st.button(T['paid_btn'].format(amount=pay_amt), key="btn_paid", type="primary", use_container_width=True):
+                    st.session_state.payment_clicked = True
+                    data = load_db()
+                    selected_days = 180 if pay_amt == PRO_6M else 30
+                    data[st.session_state.email] = {
+                        "plan": "pro",
+                        "amt": pay_amt,
+                        "days": selected_days,
+                        "expiry": (datetime.now() + timedelta(days=selected_days)).strftime("%Y-%m-%d"),
+                        "status": "PENDING"
+                    }
+                    save_db(data)
+                    st.info("⏳ Request chali gayi! Admin dashboard se approve karegi toh download khulega")
+                    st.rerun()
+
+                if st.session_state.get("payment_clicked"):
+                    st.info(T['wait_approval'])
             else:
                 col1, col2, col3 = st.columns(3)
                 csv = st.session_state.df_clean.to_csv(index=False).encode()
