@@ -69,7 +69,7 @@ def save_db(d):
     except Exception:
         pass
 
-# ⏱️ PROCESSING SPEED ENFORCER (30s for Free, 3s for Pro)
+# ⏱️ PROCESSING SPEED ENFORCER (30s for Free, 3s for Pro on File Load)
 def enforce_processing_delay():
     delay = 3 if st.session_state.plan == "pro" else 30
     progress_text = f"⏳ Processing dataset through VeriSame AI Engine ({delay}s delay active)..."
@@ -151,7 +151,6 @@ def intelligent_date_parser(date_str):
     
     clean_str = str(date_str).strip().replace('/', '-').replace('.', '-')
     
-    # Fast native Pandas fallback
     try:
         parsed_dt = pd.to_datetime(clean_str, dayfirst=True, errors='coerce')
         if not pd.isna(parsed_dt):
@@ -339,6 +338,22 @@ input[data-testid="stTextInputRootElement"], div[data-testid="stTextInput"] inpu
     color: #991b1b !important;
     font-weight: 700 !important;
 }
+.plan-status-box {
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-weight: 700 !important;
+    margin-bottom: 12px;
+}
+.plan-active {
+    background-color: #dcfce7 !important;
+    border: 2px solid #22c55e !important;
+    color: #15803d !important;
+}
+.plan-inactive {
+    background-color: #fee2e2 !important;
+    border: 2px solid #ef4444 !important;
+    color: #b91c1c !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -356,20 +371,31 @@ for key in ['plan','email','df_clean','df_original','show_balloon','payment_clic
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg'] else False
 
-# RELIABLE MODIFICATION TRACKING ACROSS ALL TOOLS
-def track_modifications(old_df, new_df):
-    try:
-        for col in old_df.columns:
-            if col in new_df.columns:
-                s_old = old_df[col].astype(str).fillna("")
-                s_new = new_df[col].astype(str).fillna("")
-                diff_mask = s_old != s_new
-                for idx in old_df[diff_mask].index:
-                    st.session_state.changed_cells.add((idx, col))
-    except Exception:
-        pass
+# 🟢 PERSISTENT MODIFICATION ENGINE (Compares Original Raw vs Clean Data across all tools)
+def update_changed_cells():
+    if st.session_state.df_original is None or st.session_state.df_clean is None:
+        st.session_state.changed_cells = set()
+        return
+    
+    orig_df = st.session_state.df_original
+    clean_df = st.session_state.df_clean
+    changed = set()
+    
+    min_rows = min(len(orig_df), len(clean_df))
+    common_cols = [c for c in orig_df.columns if c in clean_df.columns]
+    
+    for col in common_cols:
+        orig_vals = orig_df[col].iloc[:min_rows].astype(str).fillna("").values
+        clean_vals = clean_df[col].iloc[:min_rows].astype(str).fillna("").values
+        for idx in range(min_rows):
+            if orig_vals[idx] != clean_vals[idx]:
+                changed.add((idx, col))
+                
+    st.session_state.changed_cells = changed
+    if "active_file_selector" in st.session_state and st.session_state.active_file_selector in st.session_state.uploaded_files:
+        st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = changed
 
-# 🟢 PERSISTENT GREEN HIGHLIGHT LOGIC FOR ALL MODIFIED DATA CELLS
+# 🟢 GREEN HIGHLIGHT STYLING FOR MODIFIED DATA CELLS
 def apply_cell_styling(df_to_style):
     def highlight_cells(x):
         df_colors = pd.DataFrame('', index=x.index, columns=x.columns)
@@ -446,7 +472,7 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
-# 🔐 ACCOUNT & PLAN EXPIRY CHECK
+# 🔐 ACCOUNT & PLAN EXPIRY CHECK WITH STATUS CIRCLE INDICATORS
 if st.session_state.email:
     db_state = load_db()
     user = db_state.get(st.session_state.email, {})
@@ -469,17 +495,25 @@ if st.session_state.email:
         st.session_state.plan = user.get("plan")
         st.session_state.amt = user.get("amt", 0)
         
-        if user.get("plan") == "free": 
-            st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit | 30s Speed)")
-        else:
+        # 🔴 / 🟢 DASHBOARD PLAN STATUS DISPLAY
+        if user.get("plan") == "pro" and user.get("status") == "PAID":
             exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
             days_left = (exp_date - datetime.now().date()).days
-            st.session_state.admin_approved = user.get("status") == "PAID" and days_left > 0
-            if days_left > 0: 
+            st.session_state.admin_approved = days_left > 0
+            if days_left > 0:
                 plan_name = "1 Month / 30 Days" if user.get('amt') == PRO_1M else "6 Months / 180 Days"
+                st.sidebar.markdown("<div class='plan-status-box plan-active'>🟢 Pro Active</div>", unsafe_allow_html=True)
                 st.sidebar.info(f"Plan: PRO ({plan_name})\nValid Till: {user['expiry']}\n{days_left} days left")
                 if days_left <= 5:
                     st.sidebar.markdown(f"<p style='color: #dc2626 !important; font-weight: 700; background-color: #fee2e2; padding: 10px; border-radius: 12px; border: 1.5px solid #ef4444; margin-top: 10px;'>⚠️ Your PRO plan expires in {days_left} days!</p>", unsafe_allow_html=True)
+            else:
+                st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Unactive</div>", unsafe_allow_html=True)
+        else:
+            st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Unactive</div>", unsafe_allow_html=True)
+            if user.get("plan") == "free":
+                st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit | 30s Speed)")
+            else:
+                st.sidebar.warning("Plan: PRO (Pending Approval)")
 
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button("🚪 Logout Workspace / Exit", use_container_width=True):
@@ -648,6 +682,9 @@ else:
             
             if st.session_state.get("last_upload_sig") != upload_sig:
                 try: 
+                    # ⏱️ ENFORCE PROCESSING DELAY ON FILE ARRIVAL
+                    enforce_processing_delay()
+                    
                     st.session_state.uploaded_files = {}
                     for f in file:
                         if f.name.endswith((".xlsx", ".xls")):
@@ -683,6 +720,9 @@ else:
                     
     with tab2:
         if st.button(T['sample_btn'], use_container_width=True):
+            # ⏱️ ENFORCE PROCESSING DELAY ON SAMPLE FILE LOAD
+            enforce_processing_delay()
+            
             sample_df = pd.DataFrame({
                 "Date":["12/5/2024","","15-03-2023"],
                 "Name":[" RAHUL KUMAR ","priya sharma","AMIT SINGH"],
@@ -725,22 +765,27 @@ else:
         st.session_state.df_original = st.session_state.uploaded_files[selected_file]["original"]
         st.session_state.orig_len = len(st.session_state.df_original)
         st.session_state.empty_fixed = st.session_state.uploaded_files[selected_file]["empty_fixed"]
-        st.session_state.changed_cells = st.session_state.uploaded_files[selected_file]["changed_cells"]
+        
+        # Re-evaluate persistent cell modifications
+        update_changed_cells()
         st.session_state.df_loaded = True
 
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f"2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
             if st.session_state.df_original is not None:
                 st.session_state.df_clean = st.session_state.df_original.copy()
                 st.session_state.changed_cells = set()
+                
+                # Clear all tool selection state keys
                 for k in ["ms_date", "ms_fill", "ms_email", "ms_phone", "ms_case", "ms_spec", "sb_fuzzy", "ms_trim", "ms_spell"]:
                     if k in st.session_state: 
-                        del st.session_state[k]
+                        st.session_state[k] = [] if k.startswith("ms_") else ""
+                        
                 st.session_state["reset_announced"] = True
                 st.session_state["last_apply_msg"] = None
                 st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
@@ -794,7 +839,6 @@ else:
         st.write("Configure column targets inside different option tabs below, then trigger this button to execute all tools together in a single operation phase.")
         
         if st.button("🚀 Execute All Configured AI Tools Simultaneously", key="global_apply_btn", type="primary", use_container_width=True):
-            enforce_processing_delay()
             old_snapshot = st.session_state.df_clean.copy()
             tools_run = []
             
@@ -875,14 +919,13 @@ else:
             if not tools_run:
                 st.session_state["last_apply_msg"] = "⚠️ No processing targets configured. Please select columns inside tabs below."
             else:
-                track_modifications(old_snapshot, st.session_state.df_clean)
+                update_changed_cells()
                 if old_snapshot.equals(st.session_state.df_clean):
                     st.session_state["last_apply_msg"] = "This combination of tools is not needed because your column data is already clean."
                 else:
                     st.session_state["last_apply_msg"] = f"🎉 Apply is completed! Successfully executed changes for: {', '.join(tools_run)}."
                 
                 st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -893,20 +936,18 @@ else:
             col_b1, col_b2 = st.columns(2)
             if col_b1.button(T['apply_btn'], key="btn_date", use_container_width=True):
                 if date_cols:
-                    enforce_processing_delay()
                     old_snapshot = st.session_state.df_clean.copy()
                     for col in date_cols:
                         st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(intelligent_date_parser)
-                    track_modifications(old_snapshot, st.session_state.df_clean)
+                    update_changed_cells()
                     if old_snapshot.equals(st.session_state.df_clean):
                         st.session_state["last_apply_msg"] = "This tool is not needed because your date variables are already completely optimized."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
                     st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                    st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                     st.rerun()
             if col_b2.button("✕ Reset / Clear Selection", key="clear_date", use_container_width=True):
-                if "ms_date" in st.session_state: del st.session_state["ms_date"]
+                st.session_state["ms_date"] = []
                 st.rerun()
 
             st.markdown("---")
@@ -920,7 +961,6 @@ else:
                 col_b3, col_b4 = st.columns(2)
                 if col_b3.button(T['apply_btn'], key="btn_fill", use_container_width=True):
                     if fill_cols:
-                        enforce_processing_delay()
                         old_snapshot = st.session_state.df_clean.copy()
                         for col in fill_cols:
                             sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
@@ -928,16 +968,15 @@ else:
                             elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
                             else: fill_val = "Unknown"
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " ", "null"], fill_val)
-                        track_modifications(old_snapshot, st.session_state.df_clean)
+                        update_changed_cells()
                         if old_snapshot.equals(st.session_state.df_clean):
                             st.session_state["last_apply_msg"] = "This tool is not needed because there are zero missing/null data blocks present."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b4.button("✕ Reset / Clear Selection", key="clear_fill", use_container_width=True):
-                    if "ms_fill" in st.session_state: del st.session_state["ms_fill"]
+                    st.session_state["ms_fill"] = []
                     st.rerun()
 
         with tab2:
@@ -951,23 +990,21 @@ else:
                 col_b5, col_b6 = st.columns(2)
                 if col_b5.button(T['apply_btn'], key="btn_email", use_container_width=True):
                     if email_cols:
-                        enforce_processing_delay()
                         old_snapshot = st.session_state.df_clean.copy()
                         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
                         for col in email_cols: 
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip()
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com").str.replace("outlok.com", "outlook.com").str.replace("hotmial.com", "hotmail.com")
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
-                        track_modifications(old_snapshot, st.session_state.df_clean)
+                        update_changed_cells()
                         if old_snapshot.equals(st.session_state.df_clean):
                             st.session_state["last_apply_msg"] = "This tool is not needed because all rows are already valid email strings."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b6.button("✕ Reset / Clear Selection", key="clear_email", use_container_width=True):
-                    if "ms_email" in st.session_state: del st.session_state["ms_email"]
+                    st.session_state["ms_email"] = []
                     st.rerun()
 
             st.markdown("---")
@@ -981,21 +1018,19 @@ else:
                 col_b7, col_b8 = st.columns(2)
                 if col_b7.button(T['apply_btn'], key="btn_phone", use_container_width=True):
                     if phone_cols:
-                        enforce_processing_delay()
                         old_snapshot = st.session_state.df_clean.copy()
                         for col in phone_cols: 
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
-                        track_modifications(old_snapshot, st.session_state.df_clean)
+                        update_changed_cells()
                         if old_snapshot.equals(st.session_state.df_clean):
                             st.session_state["last_apply_msg"] = "This tool is not needed because all contact parameters are fully cleaned."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b8.button("✕ Reset / Clear Selection", key="clear_phone", use_container_width=True):
-                    if "ms_phone" in st.session_state: del st.session_state["ms_phone"]
+                    st.session_state["ms_phone"] = []
                     st.rerun()
 
         with tab3:
@@ -1005,23 +1040,21 @@ else:
             col_b9, col_b10 = st.columns(2)
             if col_b9.button(T['apply_btn'], key="btn_case", use_container_width=True):
                 if case_cols:
-                    enforce_processing_delay()
                     old_snapshot = st.session_state.df_clean.copy()
                     for col in case_cols: 
                         if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
                         elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
                         elif case_opt == "Sentence Case": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.capitalize()
                         else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
-                    track_modifications(old_snapshot, st.session_state.df_clean)
+                    update_changed_cells()
                     if old_snapshot.equals(st.session_state.df_clean):
                         st.session_state["last_apply_msg"] = "This tool is not needed because text case already conforms to your selection."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
                     st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                    st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                     st.rerun()
             if col_b10.button("✕ Reset / Clear Selection", key="clear_case", use_container_width=True):
-                if "ms_case" in st.session_state: del st.session_state["ms_case"]
+                st.session_state["ms_case"] = []
                 st.rerun()
 
             st.markdown("---")
@@ -1035,19 +1068,17 @@ else:
                 col_b11, col_b12 = st.columns(2)
                 if col_b11.button(T['apply_btn'], key="btn_spec", use_container_width=True):
                     if spec_cols:
-                        enforce_processing_delay()
                         old_snapshot = st.session_state.df_clean.copy()
                         for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$€£¥@\-+]', '', x))
-                        track_modifications(old_snapshot, st.session_state.df_clean)
+                        update_changed_cells()
                         if old_snapshot.equals(st.session_state.df_clean):
                             st.session_state["last_apply_msg"] = "This tool is not needed because there are no forbidden symbol arrays present."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b12.button("✕ Reset / Clear Selection", key="clear_spec", use_container_width=True):
-                    if "ms_spec" in st.session_state: del st.session_state["ms_spec"]
+                    st.session_state["ms_spec"] = []
                     st.rerun()
 
             st.markdown("---")
@@ -1063,19 +1094,16 @@ else:
                 col_b13, col_b14 = st.columns(2)
                 if col_b13.button(T['apply_btn'], key="btn_rename", use_container_width=True):
                     if new and new.strip() != "" and old != new:
-                        enforce_processing_delay()
                         st.session_state.df_clean.rename(columns={old: new.strip()}, inplace=True)
                         st.session_state["last_apply_msg"] = "🎉 Column renaming successfully applied!"
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                         st.rerun()
                 if col_b14.button("✕ Reset / Clear Selection", key="clear_rename", use_container_width=True):
-                    if "sel_old" in st.session_state: del st.session_state["sel_old"]
-                    if "inp_new" in st.session_state: del st.session_state["inp_new"]
+                    st.session_state["inp_new"] = ""
                     st.rerun()
                 
                 # Auto Clean Headers option
                 if st.button("✨ Auto-Clean All Headers to Standard Format (snake_case)", key="btn_clean_headers", use_container_width=True):
-                    enforce_processing_delay()
                     new_cols = {c: re.sub(r'[^a-zA-Z0-9_]', '', c.strip().lower().replace(' ', '_')) for c in st.session_state.df_clean.columns}
                     st.session_state.df_clean.rename(columns=new_cols, inplace=True)
                     st.session_state["last_apply_msg"] = "🎉 All column headers standardized to snake_case format!"
@@ -1088,9 +1116,9 @@ else:
             col_b15, col_b16 = st.columns(2)
             if col_b15.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
                 if fuzzy_target_col:
-                    enforce_processing_delay()
                     old_snapshot = st.session_state.df_clean.copy()
                     st.session_state.df_clean = remove_fuzzy_duplicates(st.session_state.df_clean, fuzzy_target_col)
+                    update_changed_cells()
                     if len(old_snapshot) == len(st.session_state.df_clean):
                         st.session_state["last_apply_msg"] = "This tool is not needed because there are no duplicate matching structures."
                     else:
@@ -1098,7 +1126,8 @@ else:
                     st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                     st.rerun()
             if col_b16.button("✕ Reset / Clear Selection", key="clear_dedup", use_container_width=True):
-                if "sb_fuzzy" in st.session_state: del st.session_state["sb_fuzzy"]
+                if text_cols:
+                    st.session_state["sb_fuzzy"] = text_cols[0]
                 st.rerun()
 
             st.markdown("---")
@@ -1107,21 +1136,19 @@ else:
             col_b17, col_b18 = st.columns(2)
             if col_b17.button(T['apply_btn'], key="btn_trim", use_container_width=True):
                 if trim_cols:
-                    enforce_processing_delay()
                     old_snapshot = st.session_state.df_clean.copy()
                     for col in trim_cols: 
                         if st.session_state.df_clean[col].dtype == 'object':
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                    track_modifications(old_snapshot, st.session_state.df_clean)
+                    update_changed_cells()
                     if old_snapshot.equals(st.session_state.df_clean):
                         st.session_state["last_apply_msg"] = "This tool is not needed because there are no leading or trailing whitespaces."
                     else:
                         st.session_state["last_apply_msg"] = T['success']
                     st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                    st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                     st.rerun()
             if col_b18.button("✕ Reset / Clear Selection", key="clear_trim", use_container_width=True):
-                if "ms_trim" in st.session_state: del st.session_state["ms_trim"]
+                st.session_state["ms_trim"] = []
                 st.rerun()
 
             st.markdown("---")
@@ -1135,7 +1162,6 @@ else:
                 col_b19, col_b20 = st.columns(2)
                 if col_b19.button(T['apply_btn'], key="btn_spell", use_container_width=True):
                     if spell_cols:
-                        enforce_processing_delay()
                         old_snapshot = st.session_state.df_clean.copy()
                         typo_dict = {
                             "teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount",
@@ -1145,16 +1171,15 @@ else:
                             words = str(text).split()
                             return " ".join([typo_dict.get(w.lower(), w) for w in words])
                         for col in spell_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
-                        track_modifications(old_snapshot, st.session_state.df_clean)
+                        update_changed_cells()
                         if old_snapshot.equals(st.session_state.df_clean):
                             st.session_state["last_apply_msg"] = "This tool is not needed because no spelling typos were identified."
                         else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                        st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
                         st.rerun()
                 if col_b20.button("✕ Reset / Clear Selection", key="clear_spell", use_container_width=True):
-                    if "ms_spell" in st.session_state: del st.session_state["ms_spell"]
+                    st.session_state["ms_spell"] = []
                     st.rerun()
 
         # 📥 EXPORT & PAYMENT GATEWAY DASHBOARD
