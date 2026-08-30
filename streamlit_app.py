@@ -270,7 +270,7 @@ T = {
     "pro_feat":["Unlimited Rows","CSV + Excel Export","10 Premium AI Tools","3s Speed","Priority Support","No Watermark","Lifetime Updates"],
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
-    "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green Highlights show modified data cells 🟢)",
+    "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green Highlights show modified data cells 🟢 | Red Highlights show fixed problems 🔴)",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
     "paid_msg":"Step 1: Select plan amount below. Step 2: Pay via UPI/QR. Step 3: Click 'I Paid' for Admin approval.",
     "upi_text":"Scan QR or Click Button to Pay ₹{amount}","paid_btn":"I Paid ₹{amount} - Submit for Approval","wait_approval":"⏳ Request submitted! Waiting for Admin approval...",
@@ -366,13 +366,16 @@ if "chat_history" not in st.session_state:
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 
+if "problem_cells" not in st.session_state:
+    st.session_state.problem_cells = set()
+
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = {}
 
 # SETUP CORE REFRESH STATE CAPABILITIES
-for key in ['plan','email','df_clean','df_original','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg']:
+for key in ['plan','email','df_clean','df_original','show_balloon','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg','hub_report']:
     if key not in st.session_state:
-        st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg'] else False
+        st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg','hub_report'] else False
 
 # 🟢 PERSISTENT MODIFICATION ENGINE
 def update_changed_cells():
@@ -398,13 +401,16 @@ def update_changed_cells():
     if "active_file_selector" in st.session_state and st.session_state.active_file_selector in st.session_state.uploaded_files:
         st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = changed
 
-# 🟢 GREEN HIGHLIGHT STYLING FOR MODIFIED DATA CELLS
+# 🟢 GREEN & 🔴 RED HIGHLIGHT STYLING FOR MODIFIED & PROBLEM CELLS
 def apply_cell_styling(df_to_style):
     def highlight_cells(x):
         df_colors = pd.DataFrame('', index=x.index, columns=x.columns)
         for row, col in st.session_state.changed_cells:
             if row in df_colors.index and col in df_colors.columns:
                 df_colors.at[row, col] = 'background-color: #bbf7d0; color: #047857; font-weight: bold; border: 1.5px solid #10b981;'
+        for row, col in st.session_state.problem_cells:
+            if row in df_colors.index and col in df_colors.columns:
+                df_colors.at[row, col] = 'background-color: #fecaca; color: #991b1b; font-weight: bold; border: 1.5px solid #ef4444;'
         return df_colors
     return df_to_style.style.apply(highlight_cells, axis=None)
 
@@ -475,7 +481,7 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
-# 🔐 ACCOUNT & PLAN EXPIRY CHECK WITH DYNAMIC REMAINING DAYS COUNTDOWN
+# 🔐 ACCOUNT & PLAN EXPIRY CHECK WITH STRICT 30/180 DAYS COUNTDOWN
 if st.session_state.email:
     db_state = load_db()
     user = db_state.get(st.session_state.email, {})
@@ -483,11 +489,23 @@ if st.session_state.email:
     render_ai_chatbot(is_sidebar=True)
     
     if user.get("plan"):
-        # EXPIRY TIMELINE VERIFICATION
+        # EXPIRY TIMELINE VERIFICATION & SANITY FIX FOR LEGACY PRO RECORDS
         if user.get("plan") == "pro" and user.get("expiry"):
             try:
                 exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
                 today = datetime.now().date()
+                days_left = (exp_date - today).days
+
+                # 🛠️ AUTO-FIX LEGACY DB RECORDS WHERE PRO HAD 36500 DAYS
+                if days_left > 180:
+                    exact_days = 180 if user.get("amt") == PRO_6M else 30
+                    exp_date = today + timedelta(days=exact_days)
+                    user["expiry"] = exp_date.strftime("%Y-%m-%d")
+                    user["days"] = exact_days
+                    days_left = exact_days
+                    db_state[st.session_state.email] = user
+                    save_db(db_state)
+
                 if exp_date < today:
                     user["plan"] = "free"
                     user["status"] = "EXPIRED"
@@ -534,9 +552,10 @@ if st.session_state.email:
 
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button("🚪 Logout Workspace / Exit", use_container_width=True):
-        for key in ['plan','email','df_clean','df_original','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg']:
-            st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg'] else False
+        for key in ['plan','email','df_clean','df_original','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg','hub_report']:
+            st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg','hub_report'] else False
         st.session_state.changed_cells = set()
+        st.session_state.problem_cells = set()
         st.session_state.uploaded_files = {}
         st.rerun()
 
@@ -812,6 +831,7 @@ else:
             if st.session_state.df_original is not None:
                 st.session_state.df_clean = st.session_state.df_original.copy()
                 st.session_state.changed_cells = set()
+                st.session_state.problem_cells = set()
                 
                 for k in ["ms_date", "ms_fill", "ms_email", "ms_phone", "ms_case", "ms_spec", "sb_fuzzy", "ms_trim", "ms_spell"]:
                     if k in st.session_state: 
@@ -819,6 +839,7 @@ else:
                         
                 st.session_state["reset_announced"] = True
                 st.session_state["last_apply_msg"] = None
+                st.session_state["hub_report"] = None
                 st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                 st.session_state.uploaded_files[selected_file]["changed_cells"] = set()
                 st.rerun()
@@ -864,100 +885,152 @@ else:
         user_info = db_data.get(st.session_state.email, {})
         is_paid = user_info.get("status") == "PAID"
 
-        # 🚀 MULTI-TOOL PROCESSING HUB (FIXED GREEN HIGHLIGHT & COMPREHENSIVE RUNNER)
+        # 🚀 MULTI-TOOL PROCESSING HUB (AUTO-TARGET ALL COLUMNS & HIGH-ACCURACY REPORTING)
         st.markdown("<div style='background: #faf5ff; padding:15px; border-radius:14px; border:2px dashed #a855f7; margin-bottom:15px;'>", unsafe_allow_html=True)
         st.markdown("### ⚡ Global Simultaneous Multi-Tool Hub")
-        st.write("Configure column targets inside different option tabs below, then trigger this button to execute all tools together in a single operation phase.")
+        st.write("Clicking below automatically executes all 10 tools across **every applicable column** in your dataset at once. Cleaned data will show in **Green 🟢** and fixed problems in **Red 🔴**.")
         
-        if st.button("🚀 Execute All Configured AI Tools Simultaneously", key="global_apply_btn", type="primary", use_container_width=True):
-            initial_snapshot = st.session_state.df_clean.copy()
-            tools_run = []
-            
-            # 1. Date
-            if st.session_state.get("ms_date"):
-                tools_run.append(T['tool1'])
-                for col in st.session_state["ms_date"]:
-                    if col in st.session_state.df_clean.columns:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(intelligent_date_parser)
-            # 2. Nulls
-            if not is_free and st.session_state.get("ms_fill"):
-                tools_run.append(T['tool2'])
-                for col in st.session_state["ms_fill"]:
-                    if col in st.session_state.df_clean.columns:
-                        sample = str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
-                        if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val = 0
-                        elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
-                        else: fill_val = "Unknown"
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " ", "null"], fill_val)
-            # 3. Email
-            if not is_free and st.session_state.get("ms_email"):
-                tools_run.append(T['tool3'])
-                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-                for col in st.session_state["ms_email"]:
-                    if col in st.session_state.df_clean.columns:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip()
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com").str.replace("outlok.com", "outlook.com").str.replace("hotmial.com", "hotmail.com")
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
-            # 4. Phone
-            if not is_free and st.session_state.get("ms_phone"):
-                tools_run.append(T['tool4'])
-                for col in st.session_state["ms_phone"]:
-                    if col in st.session_state.df_clean.columns:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x) >= 10 else x)
-            # 5. Case
-            if st.session_state.get("ms_case"):
-                tools_run.append(T['tool5'])
-                case_opt = st.session_state.get("sel_case", "Uppercase")
-                for col in st.session_state["ms_case"]:
-                    if col in st.session_state.df_clean.columns:
-                        if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
-                        elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
-                        elif case_opt == "Sentence Case": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.capitalize()
-                        else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
-            # 6. Symbols
-            if not is_free and st.session_state.get("ms_spec"):
-                tools_run.append(T['tool6'])
-                for col in st.session_state["ms_spec"]:
-                    if col in st.session_state.df_clean.columns:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$€£¥@\-+]', '', x))
-            # 8. Fuzzy Duplicates (Only run if explicitly selected)
-            if st.session_state.get("sb_fuzzy") and st.session_state["sb_fuzzy"] != "-- Select Column --":
-                fuzzy_target_col = st.session_state["sb_fuzzy"]
-                if fuzzy_target_col in st.session_state.df_clean.columns:
-                    tools_run.append(T['tool8'])
-                    st.session_state.df_clean = remove_fuzzy_duplicates(st.session_state.df_clean, fuzzy_target_col)
-            # 9. Trim
-            if st.session_state.get("ms_trim"):
-                tools_run.append(T['tool9'])
-                for col in st.session_state["ms_trim"]:
-                    if col in st.session_state.df_clean.columns:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-            # 10. Spell Check
-            if not is_free and st.session_state.get("ms_spell"):
-                tools_run.append(T['tool10'])
-                typo_dict = {
-                    "teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount",
-                    "custmer":"customer","addres":"address","manger":"manager","dept":"department","org":"organization"
-                }
-                def fix_typos(text):
-                    words = str(text).split()
-                    return " ".join([typo_dict.get(w.lower(), w) for w in words])
-                for col in st.session_state["ms_spell"]:
-                    if col in st.session_state.df_clean.columns:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
+        if st.button("🚀 Execute All 10 AI Tools Simultaneously", key="global_apply_btn", type="primary", use_container_width=True):
+            df_curr = st.session_state.df_clean.copy()
+            st.session_state.problem_cells = set()
+            hub_report = []
 
-            # Update green highlights mapping
+            # Tool 1: Smart Date Converter
+            date_changed = 0
+            for col in df_curr.columns:
+                for r_idx in range(len(df_curr)):
+                    val = df_curr.at[r_idx, col]
+                    parsed = intelligent_date_parser(val)
+                    if str(val) != str(parsed) and parsed != "None":
+                        df_curr.at[r_idx, col] = parsed
+                        date_changed += 1
+                        st.session_state.problem_cells.add((r_idx, col))
+            hub_report.append(f"📅 **Smart Date Converter:** {'Fixed ' + str(date_changed) + ' messy date formats 🔴' if date_changed else 'OK (Already Clean) 🟢'}")
+
+            # Tool 2: AI Fill Nulls
+            null_fixed = 0
+            for col in df_curr.columns:
+                sample = str(df_curr[col].dropna().iloc[0]).lower() if not df_curr[col].dropna().empty else ""
+                if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val = 0
+                elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
+                else: fill_val = "Unknown"
+                
+                for r_idx in range(len(df_curr)):
+                    val = df_curr.at[r_idx, col]
+                    if pd.isna(val) or str(val).strip().lower() in ["nan", "none", "", "null", "n/a"]:
+                        df_curr.at[r_idx, col] = fill_val
+                        null_fixed += 1
+                        st.session_state.problem_cells.add((r_idx, col))
+            hub_report.append(f"🛠️ **AI Fill Nulls:** {'Fixed ' + str(null_fixed) + ' missing values 🔴' if null_fixed else 'OK (Already Clean) 🟢'}")
+
+            # Tool 3: Email Validator
+            email_fixed = 0
+            pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            for col in df_curr.columns:
+                if 'email' in col.lower() or df_curr[col].astype(str).str.contains('@').any():
+                    for r_idx in range(len(df_curr)):
+                        val = str(df_curr.at[r_idx, col]).lower().strip()
+                        cleaned = val.replace("gmai.com", "gmail.com").replace("yaho.com", "yahoo.com").replace("outlok.com", "outlook.com").replace("hotmial.com", "hotmail.com")
+                        valid_val = cleaned if re.match(pattern, cleaned) else "Invalid Email"
+                        if str(df_curr.at[r_idx, col]) != valid_val:
+                            df_curr.at[r_idx, col] = valid_val
+                            email_fixed += 1
+                            st.session_state.problem_cells.add((r_idx, col))
+            hub_report.append(f"✉️ **Email Validator:** {'Fixed ' + str(email_fixed) + ' email errors/typos 🔴' if email_fixed else 'OK (Already Clean) 🟢'}")
+
+            # Tool 4: Phone Formatter
+            phone_fixed = 0
+            for col in df_curr.columns:
+                if any(k in col.lower() for k in ['phone', 'mobile', 'contact']):
+                    for r_idx in range(len(df_curr)):
+                        val = str(df_curr.at[r_idx, col])
+                        digits = "".join(re.findall(r'\d+', val))
+                        formatted = digits[-10:] if len(digits) >= 10 else digits
+                        if val != formatted:
+                            df_curr.at[r_idx, col] = formatted
+                            phone_fixed += 1
+                            st.session_state.problem_cells.add((r_idx, col))
+            hub_report.append(f"📞 **Phone Formatter:** {'Cleaned ' + str(phone_fixed) + ' phone numbers 🔴' if phone_fixed else 'OK (Already Clean) 🟢'}")
+
+            # Tool 5: Case Converter (Title Case)
+            case_fixed = 0
+            for col in df_curr.select_dtypes(include=['object']).columns:
+                for r_idx in range(len(df_curr)):
+                    val = str(df_curr.at[r_idx, col])
+                    titled = val.title()
+                    if val != titled:
+                        df_curr.at[r_idx, col] = titled
+                        case_fixed += 1
+                        st.session_state.changed_cells.add((r_idx, col))
+            hub_report.append(f"🔤 **Case Converter:** {'Standardized ' + str(case_fixed) + ' text cases 🟢' if case_fixed else 'OK (Already Clean) 🟢'}")
+
+            # Tool 6: Remove Symbols
+            symbols_fixed = 0
+            for col in df_curr.select_dtypes(include=['object']).columns:
+                for r_idx in range(len(df_curr)):
+                    val = str(df_curr.at[r_idx, col])
+                    stripped = re.sub(r'[^a-zA-Z0-9\s.,₹$€£¥@\-+]', '', val)
+                    if val != stripped:
+                        df_curr.at[r_idx, col] = stripped
+                        symbols_fixed += 1
+                        st.session_state.problem_cells.add((r_idx, col))
+            hub_report.append(f"🔣 **Remove Symbols:** {'Stripped symbols from ' + str(symbols_fixed) + ' cells 🔴' if symbols_fixed else 'OK (Already Clean) 🟢'}")
+
+            # Tool 7: Header Clean
+            new_cols = {c: re.sub(r'[^a-zA-Z0-9_]', '', c.strip().lower().replace(' ', '_')) for c in df_curr.columns}
+            headers_changed = sum(1 for k, v in new_cols.items() if k != v)
+            df_curr.rename(columns=new_cols, inplace=True)
+            hub_report.append(f"✏️ **Header Clean:** {'Standardized ' + str(headers_changed) + ' headers 🟢' if headers_changed else 'OK (Already Clean) 🟢'}")
+
+            # Tool 8: Fuzzy Deduplication
+            orig_rows_count = len(df_curr)
+            for col in df_curr.select_dtypes(include=['object']).columns:
+                df_curr = remove_fuzzy_duplicates(df_curr, col)
+            dups_merged = orig_rows_count - len(df_curr)
+            hub_report.append(f"🧠 **Fuzzy Deduplication:** {'Merged ' + str(dups_merged) + ' duplicate rows 🔴' if dups_merged else 'OK (Already Clean) 🟢'}")
+
+            # Tool 9: Trim Spaces
+            spaces_fixed = 0
+            for col in df_curr.select_dtypes(include=['object']).columns:
+                for r_idx in range(len(df_curr)):
+                    val = str(df_curr.at[r_idx, col])
+                    trimmed = re.sub(r'\s+', ' ', val.strip())
+                    if val != trimmed:
+                        df_curr.at[r_idx, col] = trimmed
+                        spaces_fixed += 1
+                        st.session_state.changed_cells.add((r_idx, col))
+            hub_report.append(f"✂️ **Trim Spaces:** {'Trimmed excess whitespace in ' + str(spaces_fixed) + ' cells 🟢' if spaces_fixed else 'OK (Already Clean) 🟢'}")
+
+            # Tool 10: Spell Check
+            typo_dict = {
+                "teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount",
+                "custmer":"customer","addres":"address","manger":"manager","dept":"department","org":"organization"
+            }
+            spell_fixed = 0
+            for col in df_curr.select_dtypes(include=['object']).columns:
+                for r_idx in range(len(df_curr)):
+                    val = str(df_curr.at[r_idx, col])
+                    words = val.split()
+                    fixed_words = [typo_dict.get(w.lower(), w) for w in words]
+                    corrected = " ".join(fixed_words)
+                    if val.lower() != corrected.lower():
+                        df_curr.at[r_idx, col] = corrected.title()
+                        spell_fixed += 1
+                        st.session_state.problem_cells.add((r_idx, col))
+            hub_report.append(f"🔠 **Spell Check:** {'Corrected ' + str(spell_fixed) + ' typos 🔴' if spell_fixed else 'OK (Already Clean) 🟢'}")
+
+            st.session_state.df_clean = df_curr
             update_changed_cells()
-
-            if not tools_run:
-                st.session_state["last_apply_msg"] = "⚠️ No targets configured. Please select columns inside the tool tabs below first."
-            else:
-                st.session_state["last_apply_msg"] = f"🎉 Apply is completed! Successfully executed changes for: {', '.join(tools_run)}. Modified cells are highlighted in green 🟢."
-                st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
-                st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
-
+            st.session_state["hub_report"] = hub_report
+            st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
+            st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
             st.rerun()
+
+        if st.session_state.get("hub_report"):
+            st.markdown("#### 📋 Multi-Tool Execution Audit Status:")
+            for report_line in st.session_state["hub_report"]:
+                st.write(report_line)
+
         st.markdown("</div>", unsafe_allow_html=True)
 
         tab1, tab2, tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
