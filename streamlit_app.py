@@ -34,7 +34,7 @@ except Exception:
 
 st.set_page_config(page_title="VeriSame", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
-# 🔒 Retrieve UPI ID dynamically from Streamlit Secrets with a fallback
+# 🔒 Retrieve UPI ID dynamically from Streamlit Secrets with fallback
 UPI_ID = st.secrets.get("UPI_ID", st.secrets.get("UPI", "playwithreyansh0@okhdfcbank"))
 PRO_1M, PRO_6M = 299, 1499
 FREE_ROW_LIMIT = 200
@@ -87,7 +87,6 @@ def words_to_num(s):
         return s
     
     s_str = str(s).lower().strip().replace(',', '')
-    
     if s_str.isdigit(): 
         return int(s_str)
         
@@ -142,7 +141,7 @@ def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
                 mapping[val2] = val1
                 
     dataframe[column_name] = dataframe[column_name].replace(mapping)
-    return dataframe.drop_duplicates()
+    return dataframe.drop_duplicates().reset_index(drop=True)
 
 # 📅 ADVANCED SYSTEM DATE CONVERTER
 def intelligent_date_parser(date_str):
@@ -269,7 +268,7 @@ T = {
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
     "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green Highlights show modified data cells 🟢)",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
-    "paid_msg":"Step 1: Pay using the buttons below. Step 2: Click 'I Paid'. Step 3: Wait for Admin approval.",
+    "paid_msg":"Step 1: Select plan amount below. Step 2: Pay via UPI/QR. Step 3: Click 'I Paid' for Admin approval.",
     "upi_text":"Scan QR or Click Button to Pay ₹{amount}","paid_btn":"I Paid ₹{amount} - Submit for Approval","wait_approval":"⏳ Request submitted! Waiting for Admin approval...",
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
@@ -478,42 +477,50 @@ if st.session_state.email:
     user = db_state.get(st.session_state.email, {})
     st.sidebar.success(f"📧 {st.session_state.email}")
     render_ai_chatbot(is_sidebar=True)
+    
     if user.get("plan"):
+        # EXPIRY TIMELINE VERIFICATION
         if user.get("plan") == "pro" and user.get("expiry"):
             exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
             today = datetime.now().date()
             if exp_date < today:
                 user["plan"] = "free"
-                user["status"] = "PAID"
+                user["status"] = "EXPIRED"
                 user["amt"] = 0
-                user["days"] = 36500
-                user["expiry"] = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")
                 db_state[st.session_state.email] = user
                 save_db(db_state)
-                st.sidebar.warning("⚠️ Your PRO plan has expired! Reverted to Free mode.")
+                st.sidebar.warning("⚠️ Your PRO plan has expired! Access reverted to Free mode.")
 
         st.session_state.plan = user.get("plan")
         st.session_state.amt = user.get("amt", 0)
         
-        # 🔴 / 🟢 DASHBOARD PLAN STATUS DISPLAY
+        # 🔴 / 🟢 DASHBOARD PLAN STATUS DISPLAY (299 & 1499 VISIBILITY)
         if user.get("plan") == "pro" and user.get("status") == "PAID":
             exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
             days_left = (exp_date - datetime.now().date()).days
             st.session_state.admin_approved = days_left > 0
-            if days_left > 0:
-                plan_name = "1 Month / 30 Days" if user.get('amt') == PRO_1M else "6 Months / 180 Days"
+            
+            if days_left >= 0:
+                user_amt = user.get('amt', PRO_1M)
+                plan_label = "PRO ₹299 (1 Month / 30 Days)" if user_amt == PRO_1M else "PRO ₹1499 (6 Months / 180 Days)"
                 st.sidebar.markdown("<div class='plan-status-box plan-active'>🟢 Pro Active</div>", unsafe_allow_html=True)
-                st.sidebar.info(f"Plan: PRO ({plan_name})\nValid Till: {user['expiry']}\n{days_left} days left")
+                st.sidebar.info(f"Plan: {plan_label}\nValid Till: {user['expiry']}\n{days_left} days left")
                 if days_left <= 5:
                     st.sidebar.markdown(f"<p style='color: #dc2626 !important; font-weight: 700; background-color: #fee2e2; padding: 10px; border-radius: 12px; border: 1.5px solid #ef4444; margin-top: 10px;'>⚠️ Your PRO plan expires in {days_left} days!</p>", unsafe_allow_html=True)
             else:
-                st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Unactive</div>", unsafe_allow_html=True)
+                st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Inactive (Expired)</div>", unsafe_allow_html=True)
         else:
-            st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Unactive</div>", unsafe_allow_html=True)
-            if user.get("plan") == "free":
-                st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit | 30s Speed)")
+            if user.get("status") == "PENDING":
+                user_amt = user.get('amt', PRO_1M)
+                chosen_plan = "₹299 (30 Days)" if user_amt == PRO_1M else "₹1499 (180 Days)"
+                st.sidebar.markdown("<div class='plan-status-box plan-inactive'>⏳ Pro Pending Approval</div>", unsafe_allow_html=True)
+                st.sidebar.warning(f"Chosen Plan: PRO {chosen_plan}\nWaiting for Admin Approval")
+            elif user.get("status") == "EXPIRED":
+                st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Inactive (Expired)</div>", unsafe_allow_html=True)
+                st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit)")
             else:
-                st.sidebar.warning("Plan: PRO (Pending Approval)")
+                st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Free Plan</div>", unsafe_allow_html=True)
+                st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit | 30s Speed)")
 
 if st.session_state.plan or st.session_state.email_entered:
     if st.sidebar.button("🚪 Logout Workspace / Exit", use_container_width=True):
@@ -553,12 +560,13 @@ if "admin" in st.query_params:
                 plan_text = f"PRO Monthly ₹299 (1 Month / 30 Days)" if amt == PRO_1M else f"PRO ₹1499 (6 Months / 180 Days)" if amt == PRO_6M else "FREE Plan"
                 col1, col2, col3 = st.columns([4, 2, 2])
                 with col1:
-                    status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL"
+                    status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL" if status == "PENDING" else "🔴 EXPIRED"
                     st.markdown(f"""<div class='pricing-card' style='background: rgba(243, 232, 255, 0.9) !important;'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>Status:</b> {status_color}<br><b>{T['admin_expiry']}:</b> {info.get('expiry','N/A')}</div>""", unsafe_allow_html=True)
                 with col2:
-                    if status == "PENDING" and info.get("plan") == "pro":
+                    if status in ["PENDING", "EXPIRED"] and info.get("plan") == "pro":
                         if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
                             data[email]["status"] = "PAID"
+                            data[email]["plan"] = "pro"
                             user_amt = data[email].get("amt", PRO_1M)
                             exact_days = 180 if user_amt == PRO_6M else 30
                             data[email]["days"] = exact_days
@@ -657,7 +665,7 @@ else:
             if rem_days <= 5 and rem_days >= 0:
                 st.markdown(f"""
                 <div class="expiry-warning">
-                    🚨 <b>ATTENTION:</b> Your PRO plan is going to expire in <b>{rem_days} days</b>! Please contact support or renew to maintain uninterrupted access to 10 AI tools.
+                    🚨 <b>ATTENTION:</b> Your PRO plan is going to expire in <b>{rem_days} days</b>! Renew your subscription to maintain uninterrupted access.
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -700,7 +708,7 @@ else:
                             sub_df = sub_df.iloc[:FREE_ROW_LIMIT].copy()
                             st.warning(f"⚠️ Free Plan Active: Input file capped strictly to the first {FREE_ROW_LIMIT} rows.")
 
-                        df_clean_init = sub_df.copy().drop_duplicates()
+                        df_clean_init = sub_df.copy().drop_duplicates().reset_index(drop=True)
                         for col in df_clean_init.columns:
                             if df_clean_init[col].dtype == 'object':
                                 df_clean_init[col] = df_clean_init[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
@@ -708,7 +716,7 @@ else:
                                 df_clean_init[col] = df_clean_init[col].apply(words_to_num)
                         
                         st.session_state.uploaded_files[f.name] = {
-                            "original": sub_df.copy(),
+                            "original": sub_df.copy().reset_index(drop=True),
                             "clean": df_clean_init,
                             "orig_len": len(sub_df),
                             "empty_fixed": int(sub_df.isna().sum().sum()),
@@ -731,7 +739,7 @@ else:
                 "Salary":["one hundred","250","two thousand five hundred"]
             })
             
-            df_clean = sample_df.copy().drop_duplicates()
+            df_clean = sample_df.copy().drop_duplicates().reset_index(drop=True)
             for col in df_clean.columns:
                 if df_clean[col].dtype == 'object':
                     df_clean[col] = df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
@@ -740,7 +748,7 @@ else:
                     
             st.session_state.uploaded_files = {
                 "sample_data.csv": {
-                    "original": sample_df.copy(),
+                    "original": sample_df.copy().reset_index(drop=True),
                     "clean": df_clean,
                     "orig_len": len(sample_df),
                     "empty_fixed": int(sample_df.isna().sum().sum()),
@@ -1195,24 +1203,28 @@ else:
                 st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
                 col2.download_button(T['download_excel'], excel.getvalue(), f"verisame_free_{selected_file}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True)
             
-        # 💎 PRO TIER (₹299 / ₹1499): Payment QR and approval workflow
+        # 💎 PRO TIER (₹299 / ₹1499): Dynamic Payment QR and approval workflow
         elif st.session_state.plan == "pro":
             if not is_paid:
                 st.warning(T['paid_msg'])
                 
-                pay_amt = st.session_state.amt if st.session_state.amt else PRO_1M
-                upi_299 = f"upi://pay?pa={UPI_ID}&pn=Reyansh&am=299&cu=INR&tn=VeriSame299"
-                upi_1499 = f"upi://pay?pa={UPI_ID}&pn=Reyansh&am=1499&cu=INR&tn=VeriSame1499"
+                # Interactive plan toggle on payment gateway step
+                default_amt_index = 0 if st.session_state.amt == PRO_1M else 1
+                selected_pay_plan = st.radio(
+                    "Choose Payment Duration Tier:",
+                    ["₹299 - 1 Month / 30 Days", "₹1499 - 6 Months / 180 Days"],
+                    index=default_amt_index,
+                    horizontal=True,
+                    key="radio_pay_plan"
+                )
                 
-                c1, c2 = st.columns(2)
-                with c1:
-                    st.link_button("💸 Pay ₹299", upi_299, use_container_width=True)
-                    st.caption("1 Month / 30 Days")
-                with c2:
-                    st.link_button("💸 Pay ₹1499", upi_1499, use_container_width=True)
-                    st.caption("6 Months / 180 Days")
-
-                display_upi_qr(upi_299 if pay_amt == 299 else upi_1499, pay_amt)
+                pay_amt = PRO_1M if "299" in selected_pay_plan else PRO_6M
+                st.session_state.amt = pay_amt
+                
+                upi_pay_link = f"upi://pay?pa={UPI_ID}&pn=Reyansh&am={pay_amt}&cu=INR&tn=VeriSame{pay_amt}"
+                
+                st.link_button(f"💸 Pay ₹{pay_amt} directly via UPI App", upi_pay_link, use_container_width=True)
+                display_upi_qr(upi_pay_link, pay_amt)
 
                 if st.button(T['paid_btn'].format(amount=pay_amt), key="btn_paid", type="primary", use_container_width=True):
                     st.session_state.payment_clicked = True
