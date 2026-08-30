@@ -12,7 +12,7 @@ try:
 except Exception:
     Groq = None
 
-# Safe imports to completely avoid Streamlit Deployment Crashes
+# Safe imports to avoid Streamlit Deployment Crashes
 try:
     import qrcode
 except Exception:
@@ -96,7 +96,12 @@ def words_to_num(s):
     except ValueError:
         pass
         
-    num_words = {'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,'seventy':70,'eighty':80,'ninety':90,'hundred':100,'thousand':1000,'lakh':100000,'crore':10000000}
+    num_words = {
+        'zero':0,'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,
+        'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,
+        'nineteen':19,'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,'seventy':70,'eighty':80,'ninety':90,
+        'hundred':100,'thousand':1000,'lakh':100000,'crore':10000000,'million':1000000,'billion':1000000000
+    }
     total = 0; current = 0
     words = re.findall(r'\w+', s_str)
     if not words: return s
@@ -123,7 +128,7 @@ def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
     unique_values = dataframe[column_name].dropna().unique()
     
     if len(unique_values) > 1000:
-        st.warning("Dataset cardinality is extremely high. Scanning top 1000 unique records to prevent engine freeze.")
+        st.warning("Dataset cardinality is high. Scanning top 1000 unique records to optimize fuzzy processing speed.")
         unique_values = unique_values[:1000]
         
     mapping = {}
@@ -139,14 +144,26 @@ def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
     dataframe[column_name] = dataframe[column_name].replace(mapping)
     return dataframe.drop_duplicates()
 
-# 📅 SYSTEM DATE CONVERTER
+# 📅 ADVANCED SYSTEM DATE CONVERTER
 def intelligent_date_parser(date_str):
-    if pd.isna(date_str) or str(date_str).strip() in ["", "nan", "None", "null"]:
+    if pd.isna(date_str) or str(date_str).strip() in ["", "nan", "None", "null", "N/A"]:
         return "None"
     
     clean_str = str(date_str).strip().replace('/', '-').replace('.', '-')
     
-    formats = ['%Y-%m-%d', '%d-%m-%Y', '%m-%d-%Y', '%Y/%m/%d', '%d/%m/%Y']
+    # Fast native Pandas fallback
+    try:
+        parsed_dt = pd.to_datetime(clean_str, dayfirst=True, errors='coerce')
+        if not pd.isna(parsed_dt):
+            return parsed_dt.strftime('%Y-%m-%d')
+    except Exception:
+        pass
+
+    formats = [
+        '%Y-%m-%d', '%d-%m-%Y', '%m-%d-%Y', 
+        '%d %b %Y', '%d %B %Y', '%b %d, %Y', '%B %d, %Y',
+        '%Y/%m/%d', '%d/%m/%Y'
+    ]
     for fmt in formats:
         try:
             return datetime.strptime(clean_str, fmt).strftime('%Y-%m-%d')
@@ -253,8 +270,8 @@ T = {
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
     "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green Highlights show modified data cells 🟢)",
     "tools_menu":"AI Studio","back_btn":"← Back","download_title":"Export Data",
-    "paid_msg":"Step 1: Pay ₹299 for 1 Month (30 Days) or ₹1499 for 6 Months (180 Days) via UPI. Step 2: Click I Paid button below.",
-    "upi_text":"Scan QR or Click Button to Pay ₹{amount}","paid_btn":"I Paid ₹{amount} - Approval ke liye bhejo","wait_approval":"⏳ Waiting for Admin Approval...",
+    "paid_msg":"Step 1: Pay using the buttons below. Step 2: Click 'I Paid'. Step 3: Wait for Admin approval.",
+    "upi_text":"Scan QR or Click Button to Pay ₹{amount}","paid_btn":"I Paid ₹{amount} - Submit for Approval","wait_approval":"⏳ Request submitted! Waiting for Admin approval...",
     "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
     "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates / Fuzzy Match","tool9":"Trim Spaces","tool10":"Spell Check",
@@ -400,9 +417,9 @@ def render_ai_chatbot(is_sidebar=False):
                 2: {"desc": "🛠️ **Tool 2 - AI Fill Nulls (Pro):** Detects missing values and populates blank cells using contextual defaults.", "keywords": ["ai fill", "fill nulls", "fill null", "nulls", "empty cells", "missing values", "tool 2", "tool no 2", "tool #2"]},
                 3: {"desc": "✉️ **Tool 3 - Email Validator (Pro):** Validates email RFC patterns and fixes common domain typos.", "keywords": ["email ai", "email validator", "email validation", "email", "emails", "tool 3", "tool no 3", "tool #3"]},
                 4: {"desc": "📞 **Tool 4 - Phone Formatter (Pro):** Standardizes phone numbers into clean 10-digit mobile numbers.", "keywords": ["phone ai", "phone formatter", "phone format", "phone number", "phone", "mobile", "contact ai", "tool 4", "tool no 4", "tool #4"]},
-                5: {"desc": "🔤 **Tool 5 - Case Converter:** Converts text columns into UPPERCASE, lowercase, or Title Case.", "keywords": ["case converter", "case ai", "case", "uppercase", "lowercase", "title case", "tool 5", "tool no 5", "tool #5"]},
-                6: {"desc": "🔣 **Tool 6 - Remove Symbols (Pro):** Strips special characters while safeguarding currency keys ($ , ₹) and punctuation.", "keywords": ["remove symbols", "symbol cleaner", "clean symbols", "symbols ai", "symbols", "special characters", "tool 6", "tool no 6", "tool #6"]},
-                7: {"desc": "✏️ **Tool 7 - Bulk Rename (Pro):** Renames any spreadsheet column header effortlessly.", "keywords": ["bulk rename", "rename column", "rename header", "rename", "rename ai", "tool 7", "tool no 7", "tool #7"]},
+                5: {"desc": "🔤 **Tool 5 - Case Converter:** Converts text columns into UPPERCASE, lowercase, Title Case, or Sentence case.", "keywords": ["case converter", "case ai", "case", "uppercase", "lowercase", "title case", "tool 5", "tool no 5", "tool #5"]},
+                6: {"desc": "🔣 **Tool 6 - Remove Symbols (Pro):** Strips special characters while safeguarding currency keys ($ , ₹, €, £, ¥) and punctuation.", "keywords": ["remove symbols", "symbol cleaner", "clean symbols", "symbols ai", "symbols", "special characters", "tool 6", "tool no 6", "tool #6"]},
+                7: {"desc": "✏️ **Tool 7 - Bulk Rename (Pro):** Renames individual columns or automatically cleans headers to snake_case.", "keywords": ["bulk rename", "rename column", "rename header", "rename", "rename ai", "tool 7", "tool no 7", "tool #7"]},
                 8: {"desc": "🧠 **Tool 8 - Fuzzy Deduplication:** Scans text columns using sequence algorithms to merge duplicate records.", "keywords": ["fuzzy deduplication", "fuzzy match", "fuzzy dedup", "deduplication", "dedup", "duplicates", "fuzzy", "tool 8", "tool no 8", "tool #8"]},
                 9: {"desc": "✂️ **Tool 9 - Trim Spaces:** Cleans leading, trailing, and double whitespaces inside text cells.", "keywords": ["trim spaces", "trim ai", "trim space", "trim", "whitespace", "spaces", "tool 9", "tool no 9", "tool #9"]},
                 10: {"desc": "🔠 **Tool 10 - Spell Check (Pro):** Scans text columns and corrects common typing blunders.", "keywords": ["spell check", "spell ai", "spelling", "typo", "typos", "spell", "tool 10", "tool no 10", "tool #10"]}
@@ -804,7 +821,7 @@ else:
                 for col in st.session_state["ms_email"]:
                     if col in st.session_state.df_clean.columns:
                         st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip()
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com")
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com").str.replace("outlok.com", "outlook.com").str.replace("hotmial.com", "hotmail.com")
                         st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
             # 4. Phone
             if not is_free and st.session_state.get("ms_phone"):
@@ -821,13 +838,14 @@ else:
                     if col in st.session_state.df_clean.columns:
                         if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
                         elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
+                        elif case_opt == "Sentence Case": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.capitalize()
                         else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
             # 6. Symbols
             if not is_free and st.session_state.get("ms_spec"):
                 tools_run.append(T['tool6'])
                 for col in st.session_state["ms_spec"]:
                     if col in st.session_state.df_clean.columns:
-                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
+                        st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$€£¥@\-+]', '', x))
             # 8. Fuzzy Duplicates
             if st.session_state.get("sb_fuzzy"):
                 tools_run.append(T['tool8'])
@@ -843,7 +861,10 @@ else:
             # 10. Spell Check
             if not is_free and st.session_state.get("ms_spell"):
                 tools_run.append(T['tool10'])
-                typo_dict = {"teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount"}
+                typo_dict = {
+                    "teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount",
+                    "custmer":"customer","addres":"address","manger":"manager","dept":"department","org":"organization"
+                }
                 def fix_typos(text):
                     words = str(text).split()
                     return " ".join([typo_dict.get(w.lower(), w) for w in words])
@@ -935,7 +956,7 @@ else:
                         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
                         for col in email_cols: 
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower().str.strip()
-                            st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com")
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].str.replace("gmai.com", "gmail.com").str.replace("yaho.com", "yahoo.com").str.replace("outlok.com", "outlook.com").str.replace("hotmial.com", "hotmail.com")
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
                         track_modifications(old_snapshot, st.session_state.df_clean)
                         if old_snapshot.equals(st.session_state.df_clean):
@@ -980,7 +1001,7 @@ else:
         with tab3:
             st.write(f"**{T['tool5']}** ✅ Unlocked")
             case_cols = st.multiselect(T['select_col'], text_cols, key="ms_case")
-            case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case"], key="sel_case")
+            case_opt = st.selectbox(T['select_case'], ["Uppercase", "Lowercase", "Title Case", "Sentence Case"], key="sel_case")
             col_b9, col_b10 = st.columns(2)
             if col_b9.button(T['apply_btn'], key="btn_case", use_container_width=True):
                 if case_cols:
@@ -989,6 +1010,7 @@ else:
                     for col in case_cols: 
                         if case_opt == "Uppercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.upper()
                         elif case_opt == "Lowercase": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.lower()
+                        elif case_opt == "Sentence Case": st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.capitalize()
                         else: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).str.title()
                     track_modifications(old_snapshot, st.session_state.df_clean)
                     if old_snapshot.equals(st.session_state.df_clean):
@@ -1015,7 +1037,7 @@ else:
                     if spec_cols:
                         enforce_processing_delay()
                         old_snapshot = st.session_state.df_clean.copy()
-                        for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$@\-+]', '', x))
+                        for col in spec_cols: st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$€£¥@\-+]', '', x))
                         track_modifications(old_snapshot, st.session_state.df_clean)
                         if old_snapshot.equals(st.session_state.df_clean):
                             st.session_state["last_apply_msg"] = "This tool is not needed because there are no forbidden symbol arrays present."
@@ -1049,6 +1071,15 @@ else:
                 if col_b14.button("✕ Reset / Clear Selection", key="clear_rename", use_container_width=True):
                     if "sel_old" in st.session_state: del st.session_state["sel_old"]
                     if "inp_new" in st.session_state: del st.session_state["inp_new"]
+                    st.rerun()
+                
+                # Auto Clean Headers option
+                if st.button("✨ Auto-Clean All Headers to Standard Format (snake_case)", key="btn_clean_headers", use_container_width=True):
+                    enforce_processing_delay()
+                    new_cols = {c: re.sub(r'[^a-zA-Z0-9_]', '', c.strip().lower().replace(' ', '_')) for c in st.session_state.df_clean.columns}
+                    st.session_state.df_clean.rename(columns=new_cols, inplace=True)
+                    st.session_state["last_apply_msg"] = "🎉 All column headers standardized to snake_case format!"
+                    st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                     st.rerun()
 
             st.markdown("---")
@@ -1106,7 +1137,10 @@ else:
                     if spell_cols:
                         enforce_processing_delay()
                         old_snapshot = st.session_state.df_clean.copy()
-                        typo_dict = {"teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount"}
+                        typo_dict = {
+                            "teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount",
+                            "custmer":"customer","addres":"address","manger":"manager","dept":"department","org":"organization"
+                        }
                         def fix_typos(text):
                             words = str(text).split()
                             return " ".join([typo_dict.get(w.lower(), w) for w in words])
@@ -1139,7 +1173,7 @@ else:
         # 💎 PRO TIER (₹299 / ₹1499): Payment QR and approval workflow
         elif st.session_state.plan == "pro":
             if not is_paid:
-                st.warning("Step 1: Neeche button se pay karo. Step 2: 'I Paid' dabao. Step 3: Admin approve karegi.")
+                st.warning(T['paid_msg'])
                 
                 pay_amt = st.session_state.amt if st.session_state.amt else PRO_1M
                 upi_299 = f"upi://pay?pa={UPI_ID}&pn=Reyansh&am=299&cu=INR&tn=VeriSame299"
@@ -1167,7 +1201,8 @@ else:
                         "status": "PENDING"
                     }
                     save_db(data)
-                    st.info("⏳ Request chali gayi! Admin dashboard se approve karegi toh download khulega")
+                    st.balloons()
+                    st.info(T['wait_approval'])
                     st.rerun()
 
                 if st.session_state.get("payment_clicked"):
