@@ -42,6 +42,10 @@ FREE_ROW_LIMIT = 200
 # Secure admin password retrieval from Streamlit secrets
 ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "admin123")
 
+# 🛠️ SAFE CALLBACK FUNCTION FOR WIDGET RESET BUTTONS (Fixes StreamlitAPIException)
+def clear_widget_state(key_name, default_value=[]):
+    st.session_state[key_name] = default_value
+
 # 🔒 PERSISTENT DATABASE LOGIC
 def load_db():
     if os.path.exists("backup_orders.json"):
@@ -471,7 +475,7 @@ def render_ai_chatbot(is_sidebar=False):
         st.session_state.chat_history.append({"role": "assistant", "message": reply})
         st.rerun()
 
-# 🔐 ACCOUNT & PLAN EXPIRY CHECK WITH STATUS CIRCLE INDICATORS
+# 🔐 ACCOUNT & PLAN EXPIRY CHECK WITH DYNAMIC REMAINING DAYS & GREEN/RED STATUS INDICATORS
 if st.session_state.email:
     db_state = load_db()
     user = db_state.get(st.session_state.email, {})
@@ -494,7 +498,7 @@ if st.session_state.email:
         st.session_state.plan = user.get("plan")
         st.session_state.amt = user.get("amt", 0)
         
-        # 🔴 / 🟢 DASHBOARD PLAN STATUS DISPLAY (299 & 1499 VISIBILITY)
+        # 🟢 PRO ACTIVE & 🔴 PRO INACTIVE SIDEBAR INDICATOR (Dynamic 299 vs 1499 Plan & Decreasing Days)
         if user.get("plan") == "pro" and user.get("status") == "PAID":
             exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
             days_left = (exp_date - datetime.now().date()).days
@@ -502,19 +506,21 @@ if st.session_state.email:
             
             if days_left >= 0:
                 user_amt = user.get('amt', PRO_1M)
-                plan_label = "PRO ₹299 (1 Month / 30 Days)" if user_amt == PRO_1M else "PRO ₹1499 (6 Months / 180 Days)"
+                plan_name = "PRO ₹299 (1 Month / 30 Days)" if user_amt == PRO_1M else "PRO ₹1499 (6 Months / 180 Days)"
                 st.sidebar.markdown("<div class='plan-status-box plan-active'>🟢 Pro Active</div>", unsafe_allow_html=True)
-                st.sidebar.info(f"Plan: {plan_label}\nValid Till: {user['expiry']}\n{days_left} days left")
+                st.sidebar.info(f"Plan: {plan_name}\nValid Till: {user['expiry']}\n{days_left} days left")
+                
+                # 🔴 RED NOTIFICATION BANNER BEFORE 5 DAYS OF EXPIRATION
                 if days_left <= 5:
-                    st.sidebar.markdown(f"<p style='color: #dc2626 !important; font-weight: 700; background-color: #fee2e2; padding: 10px; border-radius: 12px; border: 1.5px solid #ef4444; margin-top: 10px;'>⚠️ Your PRO plan expires in {days_left} days!</p>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<p style='color: #dc2626 !important; font-weight: 700; background-color: #fee2e2; padding: 12px; border-radius: 12px; border: 2px solid #ef4444; margin-top: 10px;'>🚨 Warning: Your PRO plan is going to end in {days_left} days!</p>", unsafe_allow_html=True)
             else:
                 st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Inactive (Expired)</div>", unsafe_allow_html=True)
         else:
             if user.get("status") == "PENDING":
                 user_amt = user.get('amt', PRO_1M)
-                chosen_plan = "₹299 (30 Days)" if user_amt == PRO_1M else "₹1499 (180 Days)"
+                chosen_plan = "PRO ₹299 (30 Days)" if user_amt == PRO_1M else "PRO ₹1499 (180 Days)"
                 st.sidebar.markdown("<div class='plan-status-box plan-inactive'>⏳ Pro Pending Approval</div>", unsafe_allow_html=True)
-                st.sidebar.warning(f"Chosen Plan: PRO {chosen_plan}\nWaiting for Admin Approval")
+                st.sidebar.warning(f"Chosen Plan: {chosen_plan}\nWaiting for Admin Approval")
             elif user.get("status") == "EXPIRED":
                 st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Inactive (Expired)</div>", unsafe_allow_html=True)
                 st.sidebar.info("Plan: FREE FOREVER ✨ (200 Rows Limit)")
@@ -557,7 +563,7 @@ if "admin" in st.query_params:
                 if "@" not in email: continue
                 amt = info.get('amt', 0)
                 status = info.get('status', 'PENDING')
-                plan_text = f"PRO Monthly ₹299 (1 Month / 30 Days)" if amt == PRO_1M else f"PRO ₹1499 (6 Months / 180 Days)" if amt == PRO_6M else "FREE Plan"
+                plan_text = f"PRO ₹299 (1 Month / 30 Days)" if amt == PRO_1M else f"PRO ₹1499 (6 Months / 180 Days)" if amt == PRO_6M else "FREE Plan"
                 col1, col2, col3 = st.columns([4, 2, 2])
                 with col1:
                     status_color = "🟢 PAID UNLOCKED" if status == "PAID" else "⏳ PENDING APPROVAL" if status == "PENDING" else "🔴 EXPIRED"
@@ -655,17 +661,17 @@ if st.session_state.plan is None:
                 st.rerun()
         st.stop()
 else:
-    # 🚨 EXPIRING PLAN ALERT BANNER
+    # 🚨 RED NOTIFICATION ALERT WHEN PLAN IS 5 DAYS OR FEWER FROM EXPIRING
     if st.session_state.email:
         db_state = load_db()
         u_info = db_state.get(st.session_state.email, {})
-        if u_info.get("plan") == "pro" and u_info.get("expiry"):
+        if u_info.get("plan") == "pro" and u_info.get("status") == "PAID" and u_info.get("expiry"):
             e_date = datetime.strptime(u_info["expiry"], "%Y-%m-%d").date()
             rem_days = (e_date - datetime.now().date()).days
             if rem_days <= 5 and rem_days >= 0:
                 st.markdown(f"""
                 <div class="expiry-warning">
-                    🚨 <b>ATTENTION:</b> Your PRO plan is going to expire in <b>{rem_days} days</b>! Renew your subscription to maintain uninterrupted access.
+                    🚨 <b>NOTIFICATION:</b> Your PRO plan is going to end in <b>{rem_days} days</b>! Please renew your plan to maintain uninterrupted access.
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -954,9 +960,8 @@ else:
                         st.session_state["last_apply_msg"] = T['success']
                     st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                     st.rerun()
-            if col_b2.button("✕ Reset / Clear Selection", key="clear_date", use_container_width=True):
-                st.session_state["ms_date"] = []
-                st.rerun()
+            # SAFE CALLBACK RESET BUTTON FIX
+            col_b2.button("✕ Reset / Clear Selection", key="clear_date", on_click=clear_widget_state, args=("ms_date", []), use_container_width=True)
 
             st.markdown("---")
             if is_free:
@@ -983,9 +988,8 @@ else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                         st.rerun()
-                if col_b4.button("✕ Reset / Clear Selection", key="clear_fill", use_container_width=True):
-                    st.session_state["ms_fill"] = []
-                    st.rerun()
+                # SAFE CALLBACK RESET BUTTON FIX
+                col_b4.button("✕ Reset / Clear Selection", key="clear_fill", on_click=clear_widget_state, args=("ms_fill", []), use_container_width=True)
 
         with tab2:
             if is_free:
@@ -1011,9 +1015,8 @@ else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                         st.rerun()
-                if col_b6.button("✕ Reset / Clear Selection", key="clear_email", use_container_width=True):
-                    st.session_state["ms_email"] = []
-                    st.rerun()
+                # SAFE CALLBACK RESET BUTTON FIX
+                col_b6.button("✕ Reset / Clear Selection", key="clear_email", on_click=clear_widget_state, args=("ms_email", []), use_container_width=True)
 
             st.markdown("---")
             if is_free:
@@ -1037,9 +1040,8 @@ else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                         st.rerun()
-                if col_b8.button("✕ Reset / Clear Selection", key="clear_phone", use_container_width=True):
-                    st.session_state["ms_phone"] = []
-                    st.rerun()
+                # SAFE CALLBACK RESET BUTTON FIX
+                col_b8.button("✕ Reset / Clear Selection", key="clear_phone", on_click=clear_widget_state, args=("ms_phone", []), use_container_width=True)
 
         with tab3:
             st.write(f"**{T['tool5']}** ✅ Unlocked")
@@ -1061,9 +1063,8 @@ else:
                         st.session_state["last_apply_msg"] = T['success']
                     st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                     st.rerun()
-            if col_b10.button("✕ Reset / Clear Selection", key="clear_case", use_container_width=True):
-                st.session_state["ms_case"] = []
-                st.rerun()
+            # SAFE CALLBACK RESET BUTTON FIX
+            col_b10.button("✕ Reset / Clear Selection", key="clear_case", on_click=clear_widget_state, args=("ms_case", []), use_container_width=True)
 
             st.markdown("---")
             if is_free:
@@ -1085,9 +1086,8 @@ else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                         st.rerun()
-                if col_b12.button("✕ Reset / Clear Selection", key="clear_spec", use_container_width=True):
-                    st.session_state["ms_spec"] = []
-                    st.rerun()
+                # SAFE CALLBACK RESET BUTTON FIX
+                col_b12.button("✕ Reset / Clear Selection", key="clear_spec", on_click=clear_widget_state, args=("ms_spec", []), use_container_width=True)
 
             st.markdown("---")
             if is_free:
@@ -1106,9 +1106,8 @@ else:
                         st.session_state["last_apply_msg"] = "🎉 Column renaming successfully applied!"
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                         st.rerun()
-                if col_b14.button("✕ Reset / Clear Selection", key="clear_rename", use_container_width=True):
-                    st.session_state["inp_new"] = ""
-                    st.rerun()
+                # SAFE CALLBACK RESET BUTTON FIX
+                col_b14.button("✕ Reset / Clear Selection", key="clear_rename", on_click=clear_widget_state, args=("inp_new", ""), use_container_width=True)
                 
                 # Auto Clean Headers option
                 if st.button("✨ Auto-Clean All Headers to Standard Format (snake_case)", key="btn_clean_headers", use_container_width=True):
@@ -1133,10 +1132,8 @@ else:
                         st.session_state["last_apply_msg"] = T['success']
                     st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                     st.rerun()
-            if col_b16.button("✕ Reset / Clear Selection", key="clear_dedup", use_container_width=True):
-                if text_cols:
-                    st.session_state["sb_fuzzy"] = text_cols[0]
-                st.rerun()
+            # SAFE CALLBACK RESET BUTTON FIX
+            col_b16.button("✕ Reset / Clear Selection", key="clear_dedup", on_click=clear_widget_state, args=("sb_fuzzy", text_cols[0] if text_cols else ""), use_container_width=True)
 
             st.markdown("---")
             st.write(f"**{T['tool9']}** ✅ Unlocked")
@@ -1155,9 +1152,8 @@ else:
                         st.session_state["last_apply_msg"] = T['success']
                     st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                     st.rerun()
-            if col_b18.button("✕ Reset / Clear Selection", key="clear_trim", use_container_width=True):
-                st.session_state["ms_trim"] = []
-                st.rerun()
+            # SAFE CALLBACK RESET BUTTON FIX
+            col_b18.button("✕ Reset / Clear Selection", key="clear_trim", on_click=clear_widget_state, args=("ms_trim", []), use_container_width=True)
 
             st.markdown("---")
             if is_free:
@@ -1186,9 +1182,8 @@ else:
                             st.session_state["last_apply_msg"] = T['success']
                         st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                         st.rerun()
-                if col_b20.button("✕ Reset / Clear Selection", key="clear_spell", use_container_width=True):
-                    st.session_state["ms_spell"] = []
-                    st.rerun()
+                # SAFE CALLBACK RESET BUTTON FIX
+                col_b20.button("✕ Reset / Clear Selection", key="clear_spell", on_click=clear_widget_state, args=("ms_spell", []), use_container_width=True)
 
         # 📥 EXPORT & PAYMENT GATEWAY DASHBOARD
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
