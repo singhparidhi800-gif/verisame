@@ -1,6 +1,7 @@
 import json, os, io, time
 import pandas as pd
 import re
+import datetime
 from datetime import datetime, timedelta
 import difflib 
 import urllib.parse
@@ -43,7 +44,9 @@ FREE_ROW_LIMIT = 200
 ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "admin123")
 
 # 🛠️ SAFE CALLBACK FUNCTION FOR WIDGET RESET BUTTONS
-def clear_widget_state(key_name, default_value=[]):
+def clear_widget_state(key_name, default_value=None):
+    if default_value is None:
+        default_value = []
     st.session_state[key_name] = default_value
 
 # 🔒 PERSISTENT DATABASE LOGIC
@@ -121,14 +124,15 @@ def words_to_num(s):
             has_num_word = True
             current += int(word)
             
-    return total + current if has_num_word and (total + current > 0) else s
+    return (total + current) if has_num_word else s
 
 # 🧠 FUZZY DEDUPLICATION ALGORITHM
 def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
     if column_name not in dataframe.columns or dataframe[column_name].dtype != 'object':
         return dataframe
     
-    unique_values = dataframe[column_name].dropna().unique()
+    df_copy = dataframe.copy()
+    unique_values = df_copy[column_name].dropna().unique()
     
     if len(unique_values) > 1000:
         st.warning("Dataset cardinality is high. Scanning top 1000 unique records to optimize fuzzy processing speed.")
@@ -144,8 +148,8 @@ def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
             if ratio >= threshold:
                 mapping[val2] = val1
                 
-    dataframe[column_name] = dataframe[column_name].replace(mapping)
-    return dataframe.drop_duplicates().reset_index(drop=True)
+    df_copy[column_name] = df_copy[column_name].replace(mapping)
+    return df_copy.drop_duplicates().reset_index(drop=True)
 
 # 📅 ADVANCED SYSTEM DATE CONVERTER
 def intelligent_date_parser(date_str):
@@ -229,7 +233,7 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
     try:
         client = Groq(api_key=groq_key)
         completion = client.chat.completions.create(
-            model="openai/gpt-oss-20b",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": prompt_text}
@@ -522,19 +526,38 @@ if st.session_state.email:
         
         # 🟢 PRO ACTIVE & 🔴 PRO INACTIVE SIDEBAR INDICATOR
         if user.get("plan") == "pro" and user.get("status") == "PAID":
-            exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
-            days_left = (exp_date - datetime.now().date()).days
-            st.session_state.admin_approved = days_left >= 0
-            
-            if days_left >= 0:
-                user_amt = user.get('amt', PRO_1M)
-                plan_name = "PRO ₹299 (30 Days Plan)" if user_amt == PRO_1M else "PRO ₹1499 (180 Days Plan)"
+            try:
+                exp_date = datetime.strptime(user["expiry"], "%Y-%m-%d").date()
+            except Exception:
+                exp_date = datetime.now().date() + timedelta(days=30)
+                
+            st.session_state["user_plan_price"] = user.get("amt", 299)
+            st.session_state["expiry_date"] = exp_date
+
+            # Define plan configurations
+            PLANS = {
+                299: {"label": "PRO ₹299", "total_days": 30},
+                1499: {"label": "PRO ₹1499", "total_days": 180}
+            }
+
+            # Fetch logged-in user's plan price (default to 299 if not set)
+            current_plan_price = st.session_state.get("user_plan_price", 299)
+            plan_meta = PLANS.get(current_plan_price, PLANS[299])
+
+            # Calculate remaining days dynamically from expiry date
+            expiry_date = st.session_state.get("expiry_date", datetime.now().date() + timedelta(days=30))
+            days_remaining = (expiry_date - datetime.now().date()).days
+            st.session_state.admin_approved = days_remaining >= 0
+
+            if days_remaining >= 0:
                 st.sidebar.markdown("<div class='plan-status-box plan-active'>🟢 Pro Active</div>", unsafe_allow_html=True)
-                st.sidebar.info(f"**Plan:** {plan_name}\n\n⏳ **Countdown:** {days_left} Days Remaining\n\n📅 **Valid Until:** {user['expiry']}")
+                st.sidebar.markdown(f"**Plan: {plan_meta['label']} ({plan_meta['total_days']} Days Plan)**")
+                st.sidebar.markdown(f"⏳ **Countdown:** {days_remaining} Days Remaining")
+                st.sidebar.markdown(f"📅 **Valid Until:** {expiry_date.strftime('%Y-%m-%d')}")
                 
                 # 🔴 RED NOTIFICATION BANNER BEFORE 5 DAYS OF EXPIRATION
-                if days_left <= 5:
-                    st.sidebar.markdown(f"<p style='color: #dc2626 !important; font-weight: 700; background-color: #fee2e2; padding: 12px; border-radius: 12px; border: 2px solid #ef4444; margin-top: 10px;'>🚨 Warning: Your PRO plan is going to end in {days_left} days!</p>", unsafe_allow_html=True)
+                if days_remaining <= 5:
+                    st.sidebar.markdown(f"<p style='color: #dc2626 !important; font-weight: 700; background-color: #fee2e2; padding: 12px; border-radius: 12px; border: 2px solid #ef4444; margin-top: 10px;'>🚨 Warning: Your PRO plan is going to end in {days_remaining} days!</p>", unsafe_allow_html=True)
             else:
                 st.sidebar.markdown("<div class='plan-status-box plan-inactive'>🔴 Pro Inactive (Expired)</div>", unsafe_allow_html=True)
         else:
@@ -766,7 +789,8 @@ else:
                             "clean": df_clean_init,
                             "orig_len": len(sub_df),
                             "empty_fixed": int(sub_df.isna().sum().sum()),
-                            "changed_cells": set()
+                            "changed_cells": set(),
+                            "problem_cells": set()
                         }
                     st.session_state.last_upload_sig = upload_sig
                 except Exception as e: 
@@ -797,7 +821,8 @@ else:
                     "clean": df_clean,
                     "orig_len": len(sample_df),
                     "empty_fixed": int(sample_df.isna().sum().sum()),
-                    "changed_cells": set()
+                    "changed_cells": set(),
+                    "problem_cells": set()
                 }
             }
             st.session_state.last_upload_sig = None
@@ -817,6 +842,7 @@ else:
         st.session_state.df_original = st.session_state.uploaded_files[selected_file]["original"]
         st.session_state.orig_len = len(st.session_state.df_original)
         st.session_state.empty_fixed = st.session_state.uploaded_files[selected_file]["empty_fixed"]
+        st.session_state.problem_cells = st.session_state.uploaded_files[selected_file].get("problem_cells", set())
         
         update_changed_cells()
         st.session_state.df_loaded = True
@@ -842,6 +868,7 @@ else:
                 st.session_state["hub_report"] = None
                 st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
                 st.session_state.uploaded_files[selected_file]["changed_cells"] = set()
+                st.session_state.uploaded_files[selected_file]["problem_cells"] = set()
                 st.rerun()
 
         c1,c2,c3,c4 = st.columns(4)
@@ -895,6 +922,13 @@ else:
             st.session_state.problem_cells = set()
             hub_report = []
 
+            # Step 1: Pre-Deduplication (Tool 8) to prevent Index Shifts
+            orig_rows_count = len(df_curr)
+            for col in df_curr.select_dtypes(include=['object']).columns:
+                df_curr = remove_fuzzy_duplicates(df_curr, col)
+            dups_merged = orig_rows_count - len(df_curr)
+            hub_report.append(f"🧠 **Fuzzy Deduplication:** {'Merged ' + str(dups_merged) + ' duplicate rows 🔴' if dups_merged else 'OK (Already Clean) 🟢'}")
+
             # Tool 1: Smart Date Converter
             date_changed = 0
             for col in df_curr.columns:
@@ -915,6 +949,9 @@ else:
                 elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
                 else: fill_val = "Unknown"
                 
+                # Convert column to object dtype to allow flexible fill values
+                df_curr[col] = df_curr[col].astype(object)
+
                 for r_idx in range(len(df_curr)):
                     val = df_curr.at[r_idx, col]
                     if pd.isna(val) or str(val).strip().lower() in ["nan", "none", "", "null", "n/a"]:
@@ -982,13 +1019,6 @@ else:
             df_curr.rename(columns=new_cols, inplace=True)
             hub_report.append(f"✏️ **Header Clean:** {'Standardized ' + str(headers_changed) + ' headers 🟢' if headers_changed else 'OK (Already Clean) 🟢'}")
 
-            # Tool 8: Fuzzy Deduplication
-            orig_rows_count = len(df_curr)
-            for col in df_curr.select_dtypes(include=['object']).columns:
-                df_curr = remove_fuzzy_duplicates(df_curr, col)
-            dups_merged = orig_rows_count - len(df_curr)
-            hub_report.append(f"🧠 **Fuzzy Deduplication:** {'Merged ' + str(dups_merged) + ' duplicate rows 🔴' if dups_merged else 'OK (Already Clean) 🟢'}")
-
             # Tool 9: Trim Spaces
             spaces_fixed = 0
             for col in df_curr.select_dtypes(include=['object']).columns:
@@ -1024,6 +1054,7 @@ else:
             st.session_state["hub_report"] = hub_report
             st.session_state.uploaded_files[selected_file]["clean"] = st.session_state.df_clean
             st.session_state.uploaded_files[selected_file]["changed_cells"] = st.session_state.changed_cells
+            st.session_state.uploaded_files[selected_file]["problem_cells"] = st.session_state.problem_cells
             st.rerun()
 
         if st.session_state.get("hub_report"):
@@ -1069,6 +1100,7 @@ else:
                             if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val = 0
                             elif '@' in sample or 'email' in col.lower(): fill_val = "missing@email.com"
                             else: fill_val = "Unknown"
+                            st.session_state.df_clean[col] = st.session_state.df_clean[col].astype(object)
                             st.session_state.df_clean[col] = st.session_state.df_clean[col].fillna(fill_val).replace(["nan", "None", "", " ", "null"], fill_val)
                         update_changed_cells()
                         if old_snapshot.equals(st.session_state.df_clean):
@@ -1276,6 +1308,7 @@ else:
             if openpyxl is not None:
                 excel = io.BytesIO()
                 st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                excel.seek(0)
                 col2.download_button(T['download_excel'], excel.getvalue(), f"verisame_free_{selected_file}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_free", use_container_width=True)
             
         # 💎 PRO TIER (₹299 / ₹1499): Dynamic Payment QR & Approval Workflow
@@ -1325,6 +1358,7 @@ else:
                 if openpyxl is not None:
                     excel = io.BytesIO()
                     st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl')
+                    excel.seek(0)
                     col2.download_button(T['download_excel'], excel.getvalue(), f"verisame_pro_{selected_file}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True)
                 
                 pdf_data = generate_pdf_report(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
