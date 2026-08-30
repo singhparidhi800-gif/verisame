@@ -210,7 +210,7 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
     try:
         client = Groq(api_key=groq_key)
         completion = client.chat.completions.create(
-            model="openai/gpt-oss-20b",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": prompt_text}
@@ -714,7 +714,7 @@ else:
         df_clean = st.session_state.df_clean
         orig_len = st.session_state.orig_len
 
-        st.markdown(f"<h2>{T['summary_title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"2>{T['summary_title']}</h2>", unsafe_allow_html=True)
         
         # 🔄 MASTER RESET INTERFACE
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
