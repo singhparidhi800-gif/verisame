@@ -233,7 +233,7 @@ def query_groq_ai(prompt_text, system_instruction="You are VeriSame AI assistant
     try:
         client = Groq(api_key=groq_key)
         completion = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=[
                 {"role": "system", "content": system_instruction},
                 {"role": "user", "content": prompt_text}
@@ -381,42 +381,52 @@ for key in ['plan','email','df_clean','df_original','show_balloon','payment_clic
     if key not in st.session_state:
         st.session_state[key] = None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg','hub_report'] else False
 
-# 🟢 PERSISTENT MODIFICATION ENGINE
+# 🟢 STABLE CELL MODIFICATION & PROBLEM TRACKER ENGINE
 def update_changed_cells():
     if st.session_state.df_original is None or st.session_state.df_clean is None:
         st.session_state.changed_cells = set()
         return
-    
-    orig_df = st.session_state.df_original
-    clean_df = st.session_state.df_clean
+
+    orig_df = st.session_state.df_original.reset_index(drop=True)
+    clean_df = st.session_state.df_clean.reset_index(drop=True)
     changed = set()
-    
+
     min_rows = min(len(orig_df), len(clean_df))
     common_cols = [c for c in orig_df.columns if c in clean_df.columns]
-    
+
     for col in common_cols:
-        orig_vals = orig_df[col].iloc[:min_rows].astype(str).fillna("").values
-        clean_vals = clean_df[col].iloc[:min_rows].astype(str).fillna("").values
+        orig_vals = orig_df[col].iloc[:min_rows].fillna("").astype(str).values
+        clean_vals = clean_df[col].iloc[:min_rows].fillna("").astype(str).values
         for idx in range(min_rows):
             if orig_vals[idx] != clean_vals[idx]:
                 changed.add((idx, col))
-                
+
     st.session_state.changed_cells = changed
     if "active_file_selector" in st.session_state and st.session_state.active_file_selector in st.session_state.uploaded_files:
         st.session_state.uploaded_files[st.session_state.active_file_selector]["changed_cells"] = changed
 
+
 # 🟢 GREEN & 🔴 RED HIGHLIGHT STYLING FOR MODIFIED & PROBLEM CELLS
 def apply_cell_styling(df_to_style):
-    def highlight_cells(x):
-        df_colors = pd.DataFrame('', index=x.index, columns=x.columns)
-        for row, col in st.session_state.changed_cells:
+    # Reset index temporarily to guarantee 0..N integer row indexing
+    df_temp = df_to_style.copy().reset_index(drop=True)
+
+    def highlight_cells(data):
+        df_colors = pd.DataFrame('', index=data.index, columns=data.columns)
+        
+        # Apply Green highlights for changed cells
+        for row, col in st.session_state.get("changed_cells", set()):
             if row in df_colors.index and col in df_colors.columns:
                 df_colors.at[row, col] = 'background-color: #bbf7d0; color: #047857; font-weight: bold; border: 1.5px solid #10b981;'
-        for row, col in st.session_state.problem_cells:
+                
+        # Apply Red highlights for detected/fixed problem cells
+        for row, col in st.session_state.get("problem_cells", set()):
             if row in df_colors.index and col in df_colors.columns:
                 df_colors.at[row, col] = 'background-color: #fecaca; color: #991b1b; font-weight: bold; border: 1.5px solid #ef4444;'
+                
         return df_colors
-    return df_to_style.style.apply(highlight_cells, axis=None)
+
+    return df_temp.style.apply(highlight_cells, axis=None)
 
 # 🧠 ADVANCED ENHANCED AI CHATBOT KNOWLEDGE BASE ENGINE
 def render_ai_chatbot(is_sidebar=False):
