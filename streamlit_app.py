@@ -5,7 +5,6 @@ import difflib
 import urllib.parse
 import streamlit as st
 
-# Safe imports
 try:
     from groq import Groq
 except Exception:
@@ -54,7 +53,6 @@ def save_db(d):
     except: pass
 
 def enforce_processing_delay():
-    # FIXED: Free 15 sec, Pro 3 sec as you said
     is_pro = st.session_state.get("plan") == "pro" and st.session_state.get("admin_approved")
     delay = 3 if is_pro else 15
     progress_text = f"⏳ VeriSame AI Cleaning with 10 Tools ({delay}s)..."
@@ -90,8 +88,7 @@ def remove_fuzzy_duplicates(dataframe, column_name, threshold=0.85):
         return dataframe
     df_copy = dataframe.copy()
     unique_values = df_copy[column_name].dropna().unique()
-    if len(unique_values) > 300:
-        unique_values = unique_values[:300]
+    if len(unique_values) > 300: unique_values = unique_values[:300]
     mapping = {}
     for i, val1 in enumerate(unique_values):
         if val1 in mapping: continue
@@ -164,6 +161,36 @@ def clear_widget_state(key_name, default_value=None):
     if default_value is None: default_value=[]
     st.session_state[key_name]=default_value
 
+def render_feedback_front():
+    st.markdown("---")
+    st.markdown("### 💌 Feedback - Direct to Owner")
+    st.caption(f"Your feedback will be sent to {FEEDBACK_EMAIL}")
+    fb_front = st.text_area("Write your feedback here", placeholder="I love VeriSame... or any bug...", key="fb_front")
+    if st.button("Send Feedback to Owner", key="fb_front_btn"):
+        if fb_front.strip():
+            subject = urllib.parse.quote(f"VeriSame Feedback from {st.session_state.get('email','Guest')}")
+            body = urllib.parse.quote(fb_front)
+            mailto = f"mailto:{FEEDBACK_EMAIL}?subject={subject}&body={body}"
+            st.markdown(f"[📧 Click to send via Email App]({mailto})")
+            st.success("Thank you! Click the link above to send.")
+        else:
+            st.warning("Please write feedback first")
+
+def render_feedback_sidebar():
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 💌 Feedback")
+    st.sidebar.caption(f"To: {FEEDBACK_EMAIL}")
+    fb_text = st.sidebar.text_area("Your feedback goes to owner", placeholder="Write feedback...", key="fb_text")
+    if st.sidebar.button("Send Feedback", key="fb_send"):
+        if fb_text.strip():
+            subject = urllib.parse.quote(f"VeriSame Feedback from {st.session_state.get('email','Guest')}")
+            body = urllib.parse.quote(fb_text)
+            mailto = f"mailto:{FEEDBACK_EMAIL}?subject={subject}&body={body}"
+            st.sidebar.markdown(f"[Click to send via Email]({mailto})")
+            st.sidebar.success("Opening your email app...")
+        else:
+            st.sidebar.warning("Write something!")
+
 T = {
     "title":"VeriSame","subtitle":"The Fastest Way to Clean Your Data","pro_banner":"UNLOCK 10 PREMIUM AI TOOLS",
     "free_title":"FREE FOREVER","pro1_title":"1 MONTH (30 DAYS)","pro6_title":"6 MONTHS (180 DAYS)",
@@ -172,17 +199,15 @@ T = {
     "email_label":"Enter your email address","continue_btn":"Verify & Continue","upload_tab":"📤 Upload File","sample_tab":"🎯 Try Demo",
     "upload_text":"Drop CSV, Excel or JSON file here","sample_btn":"Load Sample Data","summary_title":"Data Summary",
     "rows":"Total Rows","clean":"Clean Rows","dups":"Duplicates Removed","empty":"Empty Cells Fixed","preview":"Live Preview (Green 🟢 Modified | Red 🔴 Fixed Problems)",
-    "tools_menu":"AI Studio","download_title":"Export Data","paid_msg":"Step 1: Select plan. Step 2: Pay via UPI/QR. Step 3: Click 'I Paid' for Admin approval.",
+    "tools_menu":"AI Studio - 1 Click Auto Clean","download_title":"Export Data","paid_msg":"Step 1: Select plan. Step 2: Pay via UPI/QR. Step 3: Click 'I Paid' for Admin approval.",
     "paid_btn":"I Paid ₹{amount} - Submit for Approval","wait_approval":"⏳ Request submitted! Waiting for Admin approval... Balloons after approval!",
-    "download_success":"🎉 Download Ready!","tab1":"Date & Nulls","tab2":"Email & Phone","tab3":"Text Tools",
-    "tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
+    "download_success":"🎉 Download Ready!","tool1":"Smart Date Converter","tool2":"AI Fill Nulls","tool3":"Email Validator","tool4":"Phone Formatter","tool5":"Case Converter",
     "tool6":"Remove Symbols","tool7":"Bulk Rename","tool8":"Remove Duplicates / Fuzzy Match","tool9":"Trim Spaces","tool10":"Spell Check",
     "select_col":"Select Columns","select_case":"Choose Case Type","apply_btn":"Apply Actions","success":"Apply is completed! Your data has been successfully updated.",
     "admin_title":"👑 Admin Dashboard Panel 👑","admin_pending":"User Databases & Purchase Requests","admin_approve_btn":"Mark Paid - Unlock Customer Download + Balloons",
     "admin_user":"Customer Email","admin_plan":"Plan","admin_expiry":"Valid Till","delete_btn":"Delete User","download_csv":"Download as CSV","download_excel":"Download as Excel"
 }
 
-# CSS - YOUR ORIGINAL + Feedback corner
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
@@ -204,7 +229,6 @@ h1 {font-weight: 800!important; font-size: 3.2rem!important; margin-bottom: 0.2r
 .plan-status-box {padding: 12px 16px; border-radius: 14px; font-weight: 700 !important; margin-bottom: 12px;}
 .plan-active {background-color: #dcfce7 !important; border: 2px solid #22c55e !important; color: #15803d !important;}
 .plan-inactive {background-color: #fee2e2 !important; border: 2px solid #ef4444 !important; color: #b91c1c !important;}
-.feedback-corner {position: fixed; bottom: 20px; right: 20px; z-index: 9999;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -278,11 +302,14 @@ def render_ai_chatbot(is_sidebar=False):
                 else: reply="💡 Ask about any tool (e.g., 'Tool 1', 'Email Validator'), or ask about 'Pro Pricing'!"
         st.session_state.chat_history.append({"role":"assistant","message":reply}); st.rerun()
 
-# ACCOUNT CHECK
+# ACCOUNT CHECK - SIDEBAR with BACK BUTTON
 if st.session_state.email:
     db_state=load_db(); user=db_state.get(st.session_state.email,{})
     st.sidebar.success(f"📧 {st.session_state.email}")
     render_ai_chatbot(is_sidebar=True)
+    # FEEDBACK AFTER CHATBOT IN SIDEBAR - AS YOU ASKED
+    render_feedback_sidebar()
+    
     if user.get("plan"):
         if user.get("plan")=="pro" and user.get("expiry"):
             try:
@@ -329,21 +356,9 @@ if st.session_state.plan or st.session_state.email_entered:
         for key in ['plan','email','df_clean','df_original','payment_clicked','amt','sample_loaded','email_entered','days','selected_plan','admin_approved','df_loaded','orig_len','empty_fixed','last_upload_sig','reset_announced','last_apply_msg','hub_report','clean_done']:
             st.session_state[key]=None if key in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','last_apply_msg','hub_report'] else False
         st.session_state.changed_cells=set(); st.session_state.problem_cells=set(); st.session_state.uploaded_files={}; st.rerun()
-
-# Feedback corner in sidebar
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 💌 Feedback")
-fb_text = st.sidebar.text_area("Your feedback goes to owner", placeholder="Write feedback...", key="fb_text")
-if st.sidebar.button("Send Feedback", key="fb_send"):
-    if fb_text.strip():
-        # Create mailto link
-        subject = urllib.parse.quote(f"VeriSame Feedback from {st.session_state.get('email','Guest')}")
-        body = urllib.parse.quote(fb_text)
-        mailto = f"mailto:{FEEDBACK_EMAIL}?subject={subject}&body={body}"
-        st.sidebar.markdown(f"[Click to send via Email]({mailto})")
-        st.sidebar.success("Opening your email app...")
-    else:
-        st.sidebar.warning("Write something!")
+    # BACK BUTTON IN SIDEBAR - AS YOU ASKED
+    if st.sidebar.button("← Back to Plans", key="sidebar_back", use_container_width=True):
+        st.session_state.selected_plan=None; st.session_state.plan=None; st.session_state.email_entered=False; st.rerun()
 
 # HEADER
 col1, col2 = st.columns([1.2, 3.8])
@@ -363,18 +378,18 @@ if "admin" in st.query_params:
                 if "@" not in email: continue
                 amt=info.get('amt',0); status=info.get('status','PENDING')
                 plan_text=f"PRO ₹299 (1 Month / 30 Days)" if amt==PRO_1M else f"PRO ₹1499 (6 Months / 180 Days)" if amt==PRO_6M else "FREE Plan"
-                col1,col2,col3=st.columns([4,2,2])
-                with col1:
+                c1,c2,c3=st.columns([4,2,2])
+                with c1:
                     status_color="🟢 PAID UNLOCKED" if status=="PAID" else "⏳ PENDING APPROVAL" if status=="PENDING" else "🔴 EXPIRED"
                     st.markdown(f"""<div class='pricing-card' style='background: rgba(243, 232, 255, 0.9) !important;'><b>{T['admin_user']}:</b> {email}<br><b>{T['admin_plan']}:</b> {plan_text}<br><b>Status:</b> {status_color}<br><b>{T['admin_expiry']}:</b> {info.get('expiry','N/A')}</div>""", unsafe_allow_html=True)
-                with col2:
+                with c2:
                     if status in ["PENDING","EXPIRED"] and info.get("plan")=="pro":
                         if st.button(T['admin_approve_btn'], key=f"verify_{email}", type="primary", use_container_width=True):
                             data[email]["status"]="PAID"; data[email]["plan"]="pro"; user_amt=data[email].get("amt",PRO_1M); exact_days=180 if user_amt==PRO_6M else 30
                             data[email]["amt"]=user_amt; data[email]["days"]=exact_days; data[email]["expiry"]=(datetime.now()+timedelta(days=exact_days)).strftime("%Y-%m-%d")
                             save_db(data); st.success(f"✓ {email} unlocked for {exact_days} days!"); st.balloons(); st.rerun()
                     else: st.button("✓ Active User", key=f"active_{email}", disabled=True, use_container_width=True)
-                with col3:
+                with c3:
                     if st.button(T['delete_btn'], key=f"delete_{email}", use_container_width=True):
                         del data[email]; save_db(data); st.error(f"✓ {email} deleted"); st.rerun()
         else: st.info("No records found in database.")
@@ -399,6 +414,8 @@ if st.session_state.plan is None:
             if st.button("Get Pro+ (6 Months / 180 Days)", key="btn_pro6", type="primary", use_container_width=True):
                 st.session_state.selected_plan="pro"; st.session_state.amt=PRO_6M; st.session_state.days=180; st.rerun()
         render_ai_chatbot(is_sidebar=False)
+        # FEEDBACK AFTER CHATBOT IN FRONT PAGE - AS YOU ASKED
+        render_feedback_front()
     else:
         st.markdown(f"<h2>Enter your email to continue with {st.session_state.selected_plan.upper()}</h2>", unsafe_allow_html=True)
         email_input = st.text_input(T['email_label'], placeholder="your@email.com").lower().strip()
@@ -427,8 +444,11 @@ if st.session_state.plan is None:
                         st.rerun()
                 else: st.error("Valid email required")
         with c_right:
-            if st.button("← Go Back to Plans", key="back_to_plans", use_container_width=True):
+            # BACK BUTTON - AS YOU ASKED
+            if st.button("← Back to Plans", key="back_to_plans", use_container_width=True):
                 st.session_state.selected_plan=None; st.rerun()
+        # ALSO RENDER FEEDBACK HERE AFTER EMAIL PAGE
+        render_feedback_front()
         st.stop()
 else:
     if st.session_state.email:
@@ -485,6 +505,10 @@ else:
     if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
         file_keys=list(st.session_state.uploaded_files.keys())
         st.markdown("### 📁 File Selection Workspace")
+        col_back1, col_back2 = st.columns([1,3])
+        with col_back1:
+            if st.button("← Back", key="back_from_files"):
+                st.session_state.uploaded_files={}; st.session_state.last_upload_sig=None; st.rerun()
         selected_file=st.selectbox("Choose which uploaded file you want to review and clean below:", file_keys, key="active_file_selector")
         if st.session_state.plan=="free":
             st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.uploaded_files[selected_file]["clean"].iloc[:FREE_ROW_LIMIT]
@@ -500,8 +524,6 @@ else:
         if st.button("🔄 Reset Active Dataset to Original Raw State", type="secondary", use_container_width=True):
             if st.session_state.df_original is not None:
                 st.session_state.df_clean=st.session_state.df_original.copy(); st.session_state.changed_cells=set(); st.session_state.problem_cells=set()
-                for k in ["ms_date","ms_fill","ms_email","ms_phone","ms_case","ms_spec","sb_fuzzy","ms_trim","ms_spell"]:
-                    if k in st.session_state: st.session_state[k]=[] if k.startswith("ms_") else "-- Select Column --"
                 st.session_state["reset_announced"]=True; st.session_state["last_apply_msg"]=None; st.session_state["hub_report"]=None; st.session_state["clean_done"]=False
                 st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean
                 st.session_state.uploaded_files[selected_file]["changed_cells"]=set(); st.session_state.uploaded_files[selected_file]["problem_cells"]=set(); st.rerun()
@@ -516,32 +538,20 @@ else:
         st.dataframe(styled_df, use_container_width=True, height=280)
         if st.session_state.get("reset_announced"):
             st.success("🔄 Success: Your original raw dataset states have been completely reset!"); st.session_state["reset_announced"]=False
-        if st.session_state.get("last_apply_msg"):
-            msg_text=st.session_state["last_apply_msg"]
-            if "No targets" in msg_text or "not needed" in msg_text: st.info(f"ℹ️ {msg_text}")
-            else: st.success(msg_text)
-        all_cols=df_clean.columns.tolist(); text_cols=df_clean.select_dtypes(include=['object']).columns.tolist()
-        date_filtered_cols=[col for col in all_cols if 'date' in col.lower() or 'time' in col.lower()]
-        email_filtered_cols=[col for col in all_cols if 'email' in col.lower() or 'mail' in col.lower()]
-        phone_filtered_cols=[col for col in all_cols if 'phone' in col.lower() or 'mobile' in col.lower() or 'contact' in col.lower()]
-        if not date_filtered_cols: date_filtered_cols=all_cols
-        if not email_filtered_cols: email_filtered_cols=all_cols
-        if not phone_filtered_cols: phone_filtered_cols=all_cols
-        if not text_cols: text_cols=all_cols
-        is_pro=st.session_state.plan=="pro"; is_free=st.session_state.plan=="free"
         db_data=load_db(); user_info=db_data.get(st.session_state.email,{}); is_paid=user_info.get("status")=="PAID"
-        # BIG CLEAN BOX - 10 TOOLS AUTO
-        st.markdown("<div style='background: #faf5ff; padding:15px; border-radius:14px; border:2px dashed #a855f7; margin-bottom:15px;'>", unsafe_allow_html=True)
-        st.markdown("### ⚡ Global Simultaneous Multi-Tool Hub - 1 Click = 10 Tools")
-        st.write("Click below - all 10 tools will work automatically in background. Free = 15 sec, Pro = 3 sec. Shows what each tool fixed.")
-        if st.button("🧹 BIG CLEAN - Run All 10 Tools Now", key="global_apply_btn", type="primary", use_container_width=True):
+        
+        # ONLY ONE BIG CLICK AND FIX - HIDING INDIVIDUAL TOOLS AS YOU ASKED
+        st.markdown("<div style='background: #faf5ff; padding:20px; border-radius:18px; border:3px dashed #a855f7; margin-bottom:15px; text-align:center;'>", unsafe_allow_html=True)
+        st.markdown("### 🧹 ONE CLICK = 10 TOOLS CLEAN EVERYTHING")
+        st.write("No need to select columns or tools. Just click below - all 10 tools will auto clean your entire file. Free = 15 sec, Pro = 3 sec.")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        if st.button("🧹 BIG CLEAN - Fix & Clean Everything (1 Click)", key="global_apply_btn", type="primary", use_container_width=True):
             enforce_processing_delay()
             df_curr=st.session_state.df_clean.copy()
             st.session_state.problem_cells=set(); hub_report=[]
-            # Fix dtype issue - convert all to object before filling Unknown
             for col in df_curr.columns:
-                if df_curr[col].dtype != 'object':
-                    df_curr[col]=df_curr[col].astype(object)
+                if df_curr[col].dtype != 'object': df_curr[col]=df_curr[col].astype(object)
             orig_rows_count=len(df_curr)
             for col in df_curr.select_dtypes(include=['object']).columns:
                 df_curr=remove_fuzzy_duplicates(df_curr, col)
@@ -615,174 +625,31 @@ else:
             st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean
             st.session_state.uploaded_files[selected_file]["changed_cells"]=st.session_state.changed_cells
             st.session_state.uploaded_files[selected_file]["problem_cells"]=st.session_state.problem_cells
-            st.success("✅ Data Cleaned! All 10 tools finished!")
+            st.success("✅ Data Cleaned! All 10 tools finished! Your data is cleaned.")
             st.balloons()
             st.rerun()
+            
         if st.session_state.get("hub_report"):
-            st.markdown("#### 📋 What happened - Tool by Tool Report:")
+            st.markdown("#### 📋 What happened - Tool by Tool Report (All 10 Tools):")
             for report_line in st.session_state["hub_report"]: st.write(report_line)
             st.success("🎉 Your data is cleaned! See below for download after payment.")
         st.markdown("</div>", unsafe_allow_html=True)
-        # Also keep individual tools tabs as backup
-        tab1, tab2, tab3 = st.tabs([T['tab1'], T['tab2'], T['tab3']])
-        with tab1:
-            st.write(f"**{T['tool1']}** ✅ Unlocked"); date_cols=st.multiselect(T['select_col'], date_filtered_cols, key="ms_date")
-            col_b1,col_b2=st.columns(2)
-            if col_b1.button(T['apply_btn'], key="btn_date", use_container_width=True):
-                if date_cols:
-                    old_snapshot=st.session_state.df_clean.copy()
-                    for col in date_cols: st.session_state.df_clean[col]=st.session_state.df_clean[col].apply(intelligent_date_parser)
-                    update_changed_cells()
-                    if old_snapshot.equals(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because your date variables are already completely optimized."
-                    else: st.session_state["last_apply_msg"]=T['success']
-                    st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-            col_b2.button("✕ Reset / Clear Selection", key="clear_date", on_click=clear_widget_state, args=("ms_date",[]), use_container_width=True)
-            st.markdown("---")
-            if is_free: st.write(f"**{T['tool2']}** 🔒 Locked (Upgrade to Pro)"); st.multiselect(T['select_col'], all_cols, key="ms_fill_disabled", disabled=True); st.button(T['apply_btn'], key="btn_fill_disabled", disabled=True, use_container_width=True)
-            else:
-                st.write(f"**{T['tool2']}** ✅ Unlocked"); fill_cols=st.multiselect(T['select_col'], all_cols, key="ms_fill")
-                col_b3,col_b4=st.columns(2)
-                if col_b3.button(T['apply_btn'], key="btn_fill", use_container_width=True):
-                    if fill_cols:
-                        old_snapshot=st.session_state.df_clean.copy()
-                        for col in fill_cols:
-                            sample=str(st.session_state.df_clean[col].dropna().iloc[0]).lower() if not st.session_state.df_clean[col].dropna().empty else ""
-                            if any(k in col.lower() for k in ['salary','amount','price','paisa']): fill_val=0
-                            elif '@' in sample or 'email' in col.lower(): fill_val="missing@email.com"
-                            else: fill_val="Unknown"
-                            st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(object)
-                            st.session_state.df_clean[col]=st.session_state.df_clean[col].fillna(fill_val).replace(["nan","None",""," ","null"],fill_val)
-                        update_changed_cells()
-                        if old_snapshot.equals(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because there are zero missing/null data blocks present."
-                        else: st.session_state["last_apply_msg"]=T['success']
-                        st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-                col_b4.button("✕ Reset / Clear Selection", key="clear_fill", on_click=clear_widget_state, args=("ms_fill",[]), use_container_width=True)
-        with tab2:
-            if is_free: st.write(f"**{T['tool3']}** 🔒 Locked (Upgrade to Pro)"); st.multiselect(T['select_col'], email_filtered_cols, key="ms_email_disabled", disabled=True); st.button(T['apply_btn'], key="btn_fill_disabled_tab2", disabled=True, use_container_width=True)
-            else:
-                st.write(f"**{T['tool3']}** ✅ Unlocked"); email_cols=st.multiselect(T['select_col'], email_filtered_cols, key="ms_email")
-                col_b5,col_b6=st.columns(2)
-                if col_b5.button(T['apply_btn'], key="btn_email", use_container_width=True):
-                    if email_cols:
-                        old_snapshot=st.session_state.df_clean.copy(); pattern=r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-                        for col in email_cols:
-                            st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(str).str.lower().str.strip()
-                            st.session_state.df_clean[col]=st.session_state.df_clean[col].str.replace("gmai.com","gmail.com").str.replace("yaho.com","yahoo.com").str.replace("outlok.com","outlook.com").str.replace("hotmial.com","hotmail.com")
-                            st.session_state.df_clean[col]=st.session_state.df_clean[col].apply(lambda x: x if re.match(pattern, str(x)) else "Invalid Email")
-                        update_changed_cells()
-                        if old_snapshot.equals(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because all rows are already valid email strings."
-                        else: st.session_state["last_apply_msg"]=T['success']
-                        st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-                col_b6.button("✕ Reset / Clear Selection", key="clear_email", on_click=clear_widget_state, args=("ms_email",[]), use_container_width=True)
-            st.markdown("---")
-            if is_free: st.write(f"**{T['tool4']}** 🔒 Locked (Upgrade to Pro)"); st.multiselect(T['select_col'], phone_filtered_cols, key="ms_phone_disabled", disabled=True); st.button(T['apply_btn'], key="btn_phone_disabled", disabled=True, use_container_width=True)
-            else:
-                st.write(f"**{T['tool4']}** ✅ Unlocked"); phone_cols=st.multiselect(T['select_col'], phone_filtered_cols, key="ms_phone")
-                col_b7,col_b8=st.columns(2)
-                if col_b7.button(T['apply_btn'], key="btn_phone", use_container_width=True):
-                    if phone_cols:
-                        old_snapshot=st.session_state.df_clean.copy()
-                        for col in phone_cols:
-                            st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(str).apply(lambda x: "".join(re.findall(r'\d+', x)))
-                            st.session_state.df_clean[col]=st.session_state.df_clean[col].apply(lambda x: x[-10:] if len(x)>=10 else x)
-                        update_changed_cells()
-                        if old_snapshot.equals(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because all contact parameters are fully cleaned."
-                        else: st.session_state["last_apply_msg"]=T['success']
-                        st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-                col_b8.button("✕ Reset / Clear Selection", key="clear_phone", on_click=clear_widget_state, args=("ms_phone",[]), use_container_width=True)
-        with tab3:
-            st.write(f"**{T['tool5']}** ✅ Unlocked"); case_cols=st.multiselect(T['select_col'], text_cols, key="ms_case"); case_opt=st.selectbox(T['select_case'], ["Uppercase","Lowercase","Title Case","Sentence Case"], key="sel_case")
-            col_b9,col_b10=st.columns(2)
-            if col_b9.button(T['apply_btn'], key="btn_case", use_container_width=True):
-                if case_cols:
-                    old_snapshot=st.session_state.df_clean.copy()
-                    for col in case_cols:
-                        if case_opt=="Uppercase": st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(str).str.upper()
-                        elif case_opt=="Lowercase": st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(str).str.lower()
-                        elif case_opt=="Sentence Case": st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(str).str.capitalize()
-                        else: st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(str).str.title()
-                    update_changed_cells()
-                    if old_snapshot.equals(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because text case already conforms to your selection."
-                    else: st.session_state["last_apply_msg"]=T['success']
-                    st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-            col_b10.button("✕ Reset / Clear Selection", key="clear_case", on_click=clear_widget_state, args=("ms_case",[]), use_container_width=True)
-            st.markdown("---")
-            if is_free: st.write(f"**{T['tool6']}** 🔒 Locked (Upgrade to Pro)"); st.multiselect(T['select_col'], text_cols, key="ms_spec_disabled", disabled=True); st.button(T['apply_btn'], key="btn_spec_disabled", disabled=True, use_container_width=True)
-            else:
-                st.write(f"**{T['tool6']}** ✅ Unlocked"); spec_cols=st.multiselect(T['select_col'], text_cols, key="ms_spec")
-                col_b11,col_b12=st.columns(2)
-                if col_b11.button(T['apply_btn'], key="btn_spec", use_container_width=True):
-                    if spec_cols:
-                        old_snapshot=st.session_state.df_clean.copy()
-                        for col in spec_cols: st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(str).apply(lambda x: re.sub(r'[^a-zA-Z0-9\s.,₹$€£¥@\-+]', '', x))
-                        update_changed_cells()
-                        if old_snapshot.equals(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because there are no forbidden symbol arrays present."
-                        else: st.session_state["last_apply_msg"]=T['success']
-                        st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-                col_b12.button("✕ Reset / Clear Selection", key="clear_spec", on_click=clear_widget_state, args=("ms_spec",[]), use_container_width=True)
-            st.markdown("---")
-            if is_free: st.write(f"**{T['tool7']}** 🔒 Locked (Upgrade to Pro)"); st.selectbox("Old column name", all_cols, key="sel_old_disabled", disabled=True); st.text_input("New column name", key="inp_new_disabled", disabled=True); st.button(T['apply_btn'], key="btn_rename_disabled", disabled=True, use_container_width=True)
-            else:
-                st.write(f"**{T['tool7']}** ✅ Unlocked"); old=st.selectbox("Old column name", all_cols, key="sel_old"); new=st.text_input("New column name", key="inp_new")
-                col_b13,col_b14=st.columns(2)
-                if col_b13.button(T['apply_btn'], key="btn_rename", use_container_width=True):
-                    if new and new.strip()!="" and old!=new:
-                        st.session_state.df_clean.rename(columns={old:new.strip()}, inplace=True)
-                        st.session_state["last_apply_msg"]="🎉 Column renaming successfully applied!"; st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-                col_b14.button("✕ Reset / Clear Selection", key="clear_rename", on_click=clear_widget_state, args=("inp_new",""), use_container_width=True)
-                if st.button("✨ Auto-Clean All Headers to Standard Format (snake_case)", key="btn_clean_headers", use_container_width=True):
-                    new_cols={c: re.sub(r'[^a-zA-Z0-9_]', '', c.strip().lower().replace(' ', '_')) for c in st.session_state.df_clean.columns}
-                    st.session_state.df_clean.rename(columns=new_cols, inplace=True); st.session_state["last_apply_msg"]="🎉 All column headers standardized to snake_case format!"; st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-            st.markdown("---")
-            st.write(f"**{T['tool8']}** ✅ Unlocked"); fuzzy_options=["-- Select Column --"]+text_cols; fuzzy_target_col=st.selectbox("Select Target Column for Fuzzy Deduplication", fuzzy_options, key="sb_fuzzy")
-            col_b15,col_b16=st.columns(2)
-            if col_b15.button(T['apply_btn'], key="btn_dedup", use_container_width=True):
-                if fuzzy_target_col and fuzzy_target_col!="-- Select Column --":
-                    old_snapshot=st.session_state.df_clean.copy(); st.session_state.df_clean=remove_fuzzy_duplicates(st.session_state.df_clean, fuzzy_target_col); update_changed_cells()
-                    if len(old_snapshot)==len(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because there are no duplicate matching structures."
-                    else: st.session_state["last_apply_msg"]=T['success']
-                    st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-            col_b16.button("✕ Reset / Clear Selection", key="clear_dedup", on_click=clear_widget_state, args=("sb_fuzzy","-- Select Column --"), use_container_width=True)
-            st.markdown("---")
-            st.write(f"**{T['tool9']}** ✅ Unlocked"); trim_cols=st.multiselect(T['select_col'], text_cols, key="ms_trim")
-            col_b17,col_b18=st.columns(2)
-            if col_b17.button(T['apply_btn'], key="btn_trim", use_container_width=True):
-                if trim_cols:
-                    old_snapshot=st.session_state.df_clean.copy()
-                    for col in trim_cols:
-                        if st.session_state.df_clean[col].dtype=='object': st.session_state.df_clean[col]=st.session_state.df_clean[col].astype(str).str.strip().str.replace(r'\s+', ' ', regex=True)
-                    update_changed_cells()
-                    if old_snapshot.equals(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because there are no leading or trailing whitespaces."
-                    else: st.session_state["last_apply_msg"]=T['success']
-                    st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-            col_b18.button("✕ Reset / Clear Selection", key="clear_trim", on_click=clear_widget_state, args=("ms_trim",[]), use_container_width=True)
-            st.markdown("---")
-            if is_free: st.write(f"**{T['tool10']}** 🔒 Locked (Upgrade to Pro)"); st.multiselect(T['select_col'], text_cols, key="ms_spell_disabled", disabled=True); st.button(T['apply_btn'], key="btn_spell_disabled", disabled=True, use_container_width=True)
-            else:
-                st.write(f"**{T['tool10']}** ✅ Unlocked"); spell_cols=st.multiselect(T['select_col'], text_cols, key="ms_spell")
-                col_b19,col_b20=st.columns(2)
-                if col_b19.button(T['apply_btn'], key="btn_spell", use_container_width=True):
-                    if spell_cols:
-                        old_snapshot=st.session_state.df_clean.copy()
-                        typo_dict={"teh":"the","recieve":"receive","goverment":"government","salery":"salary","amout":"amount","custmer":"customer","addres":"address","manger":"manager","dept":"department","org":"organization"}
-                        def fix_typos(text): words=str(text).split(); return " ".join([typo_dict.get(w.lower(), w) for w in words])
-                        for col in spell_cols: st.session_state.df_clean[col]=st.session_state.df_clean[col].apply(fix_typos).astype(str).str.title()
-                        update_changed_cells()
-                        if old_snapshot.equals(st.session_state.df_clean): st.session_state["last_apply_msg"]="This tool is not needed because no spelling typos were identified."
-                        else: st.session_state["last_apply_msg"]=T['success']
-                        st.session_state.uploaded_files[selected_file]["clean"]=st.session_state.df_clean; st.rerun()
-                col_b20.button("✕ Reset / Clear Selection", key="clear_spell", on_click=clear_widget_state, args=("ms_spell",[]), use_container_width=True)
 
         # EXPORT & PAYMENT
         st.markdown(f"<h2>{T['download_title']}</h2>", unsafe_allow_html=True)
         if st.session_state.plan=="free":
-            # Free can download after clean? As per original free download allowed but now we keep paywall after clean_done
             if st.session_state.get("clean_done"):
                 st.info("Free preview: Download limited. Pay ₹299 to unlock unlimited + Excel + PDF")
                 csv=st.session_state.df_clean.to_csv(index=False).encode()
-                if st.button("⬇️ Download as CSV (Free)"): st.download_button(T['download_csv'], csv, f"verisame_free_{selected_file}.csv", mime="text/csv", key="dl_csv_free_btn")
+                col_dl1, col_dl2 = st.columns([1,1])
+                with col_dl1:
+                    if st.download_button(T['download_csv'], csv, f"verisame_free_{selected_file}.csv", mime="text/csv", key="dl_csv_free_btn", use_container_width=True):
+                        st.balloons()
+                with col_dl2:
+                    if st.button("← Back", key="back_after_clean_free"):
+                        st.session_state["clean_done"]=False; st.rerun()
             else:
-                st.warning("Upload file and press BIG CLEAN button first")
+                st.warning("Upload file and press BIG CLEAN button - 1 click = 10 tools")
         elif st.session_state.plan=="pro":
             if not is_paid:
                 st.warning(T['paid_msg'])
@@ -791,22 +658,27 @@ else:
                 pay_amt=PRO_1M if "299" in selected_pay_plan else PRO_6M; st.session_state.amt=pay_amt
                 upi_pay_link=f"upi://pay?pa={UPI_ID}&pn=Reyansh&am={pay_amt}&cu=INR&tn=VeriSame{pay_amt}"
                 st.link_button(f"💸 Pay ₹{pay_amt} directly via UPI App", upi_pay_link, use_container_width=True); display_upi_qr(upi_pay_link, pay_amt)
-                if st.button(T['paid_btn'].format(amount=pay_amt), key="btn_paid", type="primary", use_container_width=True):
-                    st.session_state.payment_clicked=True; data=load_db(); selected_days=180 if pay_amt==PRO_6M else 30
-                    data[st.session_state.email]={"plan":"pro","amt":pay_amt,"days":selected_days,"expiry":(datetime.now()+timedelta(days=selected_days)).strftime("%Y-%m-%d"),"status":"PENDING"}
-                    save_db(data); st.balloons(); st.info(T['wait_approval']); st.rerun()
+                c_pay1, c_pay2 = st.columns(2)
+                with c_pay1:
+                    if st.button(T['paid_btn'].format(amount=pay_amt), key="btn_paid", type="primary", use_container_width=True):
+                        st.session_state.payment_clicked=True; data=load_db(); selected_days=180 if pay_amt==PRO_6M else 30
+                        data[st.session_state.email]={"plan":"pro","amt":pay_amt,"days":selected_days,"expiry":(datetime.now()+timedelta(days=selected_days)).strftime("%Y-%m-%d"),"status":"PENDING"}
+                        save_db(data); st.balloons(); st.info(T['wait_approval']); st.rerun()
+                with c_pay2:
+                    if st.button("← Back to Plans", key="back_from_pay"):
+                        st.session_state.selected_plan=None; st.session_state.plan=None; st.rerun()
                 if st.session_state.get("payment_clicked"): st.info(T['wait_approval'])
             else:
                 st.success("🎉 Download Ready! Pro Active")
                 st.balloons()
                 col1,col2,col3=st.columns(3)
                 csv=st.session_state.df_clean.to_csv(index=False).encode()
-                col1.download_button(T['download_csv'], csv, f"verisame_pro_{selected_file}.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True, on_click=lambda: st.balloons())
+                col1.download_button(T['download_csv'], csv, f"verisame_pro_{selected_file}.csv", mime="text/csv", key="dl_csv_paid", use_container_width=True)
                 if openpyxl is not None:
                     excel=io.BytesIO(); st.session_state.df_clean.to_excel(excel, index=False, engine='openpyxl'); excel.seek(0)
                     col2.download_button(T['download_excel'], excel.getvalue(), f"verisame_pro_{selected_file}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_excel_paid", use_container_width=True)
                 pdf_data=generate_pdf_report(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
                 if pdf_data: col3.download_button("Download Audit PDF Report 📊", pdf_data, f"verisame_audit_{selected_file}.pdf", mime="application/pdf", key="dl_pdf_paid", use_container_width=True)
-                if col1.button: pass
-                # Balloon again on download
-                st.markdown("<script>console.log('download')</script>", unsafe_allow_html=True)
+                # Balloons again logic
+                if col1 or col2 or col3:
+                    st.markdown("Balloon will show on download click 🎈")
