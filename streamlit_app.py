@@ -84,39 +84,36 @@ def tool1_date(df, problem_cells):
     fixed = 0
     try:
         for col in df.columns:
-            try:
-                if 'date' not in col.lower() and 'dob' not in col.lower():
-                    continue
-                for r_idx in range(len(df)):
-                    try:
-                        orig = str(df.at[r_idx, col])
-                        if orig.lower().strip() in ["", "nan", "none", "null", "n/a", "unknown", "nat"]:
-                            continue
-                        if orig.isdigit() and 30000 < int(orig) < 60000:
-                            try:
-                                base = datetime(1899, 12, 30)
-                                parsed = base + timedelta(days=int(orig))
-                                df.at[r_idx, col] = parsed.strftime('%Y-%m-%d')
-                                fixed += 1
-                                problem_cells.add((r_idx, col))
-                                continue
-                            except:
-                                pass
-                        clean = orig.replace('/', '-').replace('.', '-').strip()
+            if 'date' not in col.lower() and 'dob' not in col.lower():
+                continue
+            for r_idx in range(len(df)):
+                try:
+                    orig = str(df.at[r_idx, col])
+                    if orig.lower().strip() in ["", "nan", "none", "null", "n/a", "unknown", "nat"]:
+                        continue
+                    if orig.isdigit() and 30000 < int(orig) < 60000:
                         try:
-                            parsed = pd.to_datetime(clean, dayfirst=True, errors='coerce')
-                            if not pd.isna(parsed):
-                                new_val = parsed.strftime('%Y-%m-%d')
-                                if orig != new_val:
-                                    df.at[r_idx, col] = new_val
-                                    fixed += 1
-                                    problem_cells.add((r_idx, col))
+                            base = datetime(1899, 12, 30)
+                            parsed = base + timedelta(days=int(orig))
+                            df.at[r_idx, col] = parsed.strftime('%Y-%m-%d')
+                            fixed += 1
+                            problem_cells.add((r_idx, col))
+                            continue
                         except:
                             pass
+                    clean = orig.replace('/', '-').replace('.', '-').strip()
+                    try:
+                        parsed = pd.to_datetime(clean, dayfirst=True, errors='coerce')
+                        if not pd.isna(parsed):
+                            new_val = parsed.strftime('%Y-%m-%d')
+                            if orig != new_val:
+                                df.at[r_idx, col] = new_val
+                                fixed += 1
+                                problem_cells.add((r_idx, col))
                     except:
-                        continue
-            except:
-                continue
+                        pass
+                except:
+                    continue
     except:
         pass
     return fixed
@@ -125,22 +122,19 @@ def tool2_fill(df, problem_cells):
     fixed = 0
     try:
         for col in df.columns:
-            try:
-                if df[col].dtype != 'object':
-                    df[col] = df[col].astype(object)
-                cl = col.lower()
-                fill_val = 0 if any(k in cl for k in ['salary','amount','price','cost']) else "missing@email.com" if 'email' in cl else "Unknown"
-                for r_idx in range(len(df)):
-                    try:
-                        val = df.at[r_idx, col]
-                        if pd.isna(val) or str(val).strip().lower() in ["nan","none","","null","n/a","nat"]:
-                            df.at[r_idx, col] = fill_val
-                            fixed += 1
-                            problem_cells.add((r_idx, col))
-                    except:
-                        continue
-            except:
-                continue
+            if df[col].dtype != 'object':
+                df[col] = df[col].astype(object)
+            cl = col.lower()
+            fill_val = 0 if any(k in cl for k in ['salary','amount','price','cost']) else "missing@email.com" if 'email' in cl else "Unknown"
+            for r_idx in range(len(df)):
+                try:
+                    val = df.at[r_idx, col]
+                    if pd.isna(val) or str(val).strip().lower() in ["nan","none","","null","n/a","nat"]:
+                        df.at[r_idx, col] = fill_val
+                        fixed += 1
+                        problem_cells.add((r_idx, col))
+                except:
+                    continue
     except:
         pass
     return fixed
@@ -150,25 +144,22 @@ def tool3_email(df, problem_cells):
     try:
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         for col in df.columns:
-            try:
-                if 'email' not in col.lower():
-                    continue
-                for r_idx in range(len(df)):
-                    try:
-                        orig = str(df.at[r_idx, col]).lower().strip()
-                        if "@" not in orig or orig in ["nan","none",""]:
-                            continue
-                        orig = orig.replace("gmai.com","gmail.com").replace("yaho.com","yahoo.com").replace(" ","")
-                        valid = re.match(pattern, orig)
-                        new_val = orig if valid else "Invalid Email"
-                        if str(df.at[r_idx, col]).lower().strip() != new_val.lower():
-                            df.at[r_idx, col] = new_val
-                            fixed += 1
-                            problem_cells.add((r_idx, col))
-                    except:
-                        continue
-            except:
+            if 'email' not in col.lower():
                 continue
+            for r_idx in range(len(df)):
+                try:
+                    orig = str(df.at[r_idx, col]).lower().strip()
+                    if "@" not in orig or orig in ["nan","none",""]:
+                        continue
+                    orig = orig.replace("gmai.com","gmail.com").replace("yaho.com","yahoo.com").replace(" ","")
+                    valid = re.match(pattern, orig)
+                    new_val = orig if valid else "Invalid Email"
+                    if str(df.at[r_idx, col]).lower().strip() != new_val.lower():
+                        df.at[r_idx, col] = new_val
+                        fixed += 1
+                        problem_cells.add((r_idx, col))
+                except:
+                    continue
     except:
         pass
     return fixed
@@ -177,26 +168,23 @@ def tool4_phone(df, problem_cells):
     fixed = 0
     try:
         for col in df.columns:
-            try:
-                if not any(k in col.lower() for k in ['phone','mobile','contact']):
-                    continue
-                for r_idx in range(len(df)):
-                    try:
-                        orig = str(df.at[r_idx, col])
-                        digits = "".join([c for c in orig if c.isdigit()])
-                        if len(digits) == 0:
-                            continue
-                        new_val = digits[-10:] if len(digits) > 10 else digits
-                        if len(digits) == 12 and digits.startswith('91'):
-                            new_val = digits[-10:]
-                        if orig != new_val:
-                            df.at[r_idx, col] = new_val
-                            fixed += 1
-                            problem_cells.add((r_idx, col))
-                    except:
-                        continue
-            except:
+            if not any(k in col.lower() for k in ['phone','mobile','contact']):
                 continue
+            for r_idx in range(len(df)):
+                try:
+                    orig = str(df.at[r_idx, col])
+                    digits = "".join([c for c in orig if c.isdigit()])
+                    if len(digits) == 0:
+                        continue
+                    new_val = digits[-10:] if len(digits) > 10 else digits
+                    if len(digits) == 12 and digits.startswith('91'):
+                        new_val = digits[-10:]
+                    if orig != new_val:
+                        df.at[r_idx, col] = new_val
+                        fixed += 1
+                        problem_cells.add((r_idx, col))
+                except:
+                    continue
     except:
         pass
     return fixed
@@ -205,23 +193,20 @@ def tool5_case(df, changed_cells):
     fixed = 0
     try:
         for col in df.select_dtypes(include=['object']).columns:
-            try:
-                if not any(k in col.lower() for k in ['name','city','state','company']):
-                    continue
-                for r_idx in range(len(df)):
-                    try:
-                        orig = str(df.at[r_idx, col])
-                        if orig.lower() in ["unknown","missing@email.com","invalid email"]:
-                            continue
-                        new_val = ' '.join([w.capitalize() for w in orig.split()])
-                        if orig != new_val:
-                            df.at[r_idx, col] = new_val
-                            fixed += 1
-                            changed_cells.add((r_idx, col))
-                    except:
-                        continue
-            except:
+            if not any(k in col.lower() for k in ['name','city','state','company']):
                 continue
+            for r_idx in range(len(df)):
+                try:
+                    orig = str(df.at[r_idx, col])
+                    if orig.lower() in ["unknown","missing@email.com","invalid email"]:
+                        continue
+                    new_val = ' '.join([w.capitalize() for w in orig.split()])
+                    if orig != new_val:
+                        df.at[r_idx, col] = new_val
+                        fixed += 1
+                        changed_cells.add((r_idx, col))
+                except:
+                    continue
     except:
         pass
     return fixed
@@ -230,22 +215,19 @@ def tool6_symbols(df, problem_cells):
     fixed = 0
     try:
         for col in df.select_dtypes(include=['object']).columns:
-            try:
-                if any(k in col.lower() for k in ['email','phone']):
-                    continue
-                for r_idx in range(len(df)):
-                    try:
-                        orig = str(df.at[r_idx, col])
-                        cleaned = re.sub(r'[^a-zA-Z0-9\s.,@\-_()&/]', '', orig)
-                        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
-                        if orig != cleaned:
-                            df.at[r_idx, col] = cleaned
-                            fixed += 1
-                            problem_cells.add((r_idx, col))
-                    except:
-                        continue
-            except:
+            if any(k in col.lower() for k in ['email','phone']):
                 continue
+            for r_idx in range(len(df)):
+                try:
+                    orig = str(df.at[r_idx, col])
+                    cleaned = re.sub(r'[^a-zA-Z0-9\s.,@\-_()&/]', '', orig)
+                    cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+                    if orig != cleaned:
+                        df.at[r_idx, col] = cleaned
+                        fixed += 1
+                        problem_cells.add((r_idx, col))
+                except:
+                    continue
     except:
         pass
     return fixed
@@ -255,17 +237,14 @@ def tool7_rename(df):
     try:
         new_cols = {}
         for c in df.columns:
-            try:
-                cleaned = re.sub(r'[^a-zA-Z0-9_ ]', '', str(c).strip())
-                cleaned = re.sub(r'\s+', '_', cleaned.lower()).strip('_')
-                cleaned = re.sub(r'_+', '_', cleaned)
-                if cleaned == "":
-                    cleaned = f"col_{fixed}"
-                new_cols[c] = cleaned
-                if c != cleaned:
-                    fixed += 1
-            except:
-                new_cols[c] = c
+            cleaned = re.sub(r'[^a-zA-Z0-9_ ]', '', str(c).strip())
+            cleaned = re.sub(r'\s+', '_', cleaned.lower()).strip('_')
+            cleaned = re.sub(r'_+', '_', cleaned)
+            if cleaned == "":
+                cleaned = f"col_{fixed}"
+            new_cols[c] = cleaned
+            if c != cleaned:
+                fixed += 1
         df.rename(columns=new_cols, inplace=True)
     except:
         pass
@@ -284,19 +263,16 @@ def tool9_trim(df, changed_cells):
     fixed = 0
     try:
         for col in df.select_dtypes(include=['object']).columns:
-            try:
-                for r_idx in range(len(df)):
-                    try:
-                        orig = str(df.at[r_idx, col])
-                        trimmed = ' '.join(orig.strip().split())
-                        if orig != trimmed:
-                            df.at[r_idx, col] = trimmed
-                            fixed += 1
-                            changed_cells.add((r_idx, col))
-                    except:
-                        continue
-            except:
-                continue
+            for r_idx in range(len(df)):
+                try:
+                    orig = str(df.at[r_idx, col])
+                    trimmed = ' '.join(orig.strip().split())
+                    if orig != trimmed:
+                        df.at[r_idx, col] = trimmed
+                        fixed += 1
+                        changed_cells.add((r_idx, col))
+                except:
+                    continue
     except:
         pass
     return fixed
@@ -306,33 +282,30 @@ def tool10_spell(df, problem_cells):
     try:
         typo_dict = {"teh":"the","recieve":"receive","goverment":"government","salery":"salary","custmer":"customer","addres":"address","manger":"manager"}
         for col in df.select_dtypes(include=['object']).columns:
-            try:
-                if any(k in col.lower() for k in ['email','phone']):
-                    continue
-                for r_idx in range(len(df)):
-                    try:
-                        orig = str(df.at[r_idx, col])
-                        words = orig.split()
-                        new_words = []
-                        changed = False
-                        for w in words:
-                            low = w.lower().strip('.,')
-                            if low in typo_dict:
-                                rep = typo_dict[low]
-                                if w and w[0].isupper():
-                                    rep = rep.capitalize()
-                                new_words.append(rep)
-                                changed = True
-                            else:
-                                new_words.append(w)
-                        if changed:
-                            df.at[r_idx, col] = " ".join(new_words)
-                            fixed += 1
-                            problem_cells.add((r_idx, col))
-                    except:
-                        continue
-            except:
+            if any(k in col.lower() for k in ['email','phone']):
                 continue
+            for r_idx in range(len(df)):
+                try:
+                    orig = str(df.at[r_idx, col])
+                    words = orig.split()
+                    new_words = []
+                    changed = False
+                    for w in words:
+                        low = w.lower().strip('.,')
+                        if low in typo_dict:
+                            rep = typo_dict[low]
+                            if w and w[0].isupper():
+                                rep = rep.capitalize()
+                            new_words.append(rep)
+                            changed = True
+                        else:
+                            new_words.append(w)
+                    if changed:
+                        df.at[r_idx, col] = " ".join(new_words)
+                        fixed += 1
+                        problem_cells.add((r_idx, col))
+                except:
+                    continue
     except:
         pass
     return fixed
@@ -355,22 +328,14 @@ def find_ambiguous(original_df, cleaned_df):
                                 p1 = int(re.sub(r'\D', '', parts[0]))
                                 p2 = int(re.sub(r'\D', '', parts[1]))
                                 if 1 <= p1 <= 12 and 1 <= p2 <= 12 and p1 != p2:
-                                    ambiguous.append({
-                                        "row": r_idx, "col": col, "original": orig, "cleaned": cleaned, "type": "date",
-                                        "question": f"Date '{orig}' - DD/MM or MM/DD?",
-                                        "options": [f"{p1:02d}/{p2:02d} as DD/MM", f"{p2:02d}/{p1:02d} as MM/DD"]
-                                    })
+                                    ambiguous.append({"row": r_idx, "col": col, "original": orig, "cleaned": cleaned, "type": "date","question": f"Date '{orig}' - DD/MM or MM/DD?","options": [f"{p1:02d}/{p2:02d} as DD/MM", f"{p2:02d}/{p1:02d} as MM/DD"]})
                             except:
                                 pass
                     if any(k in cl for k in ['salary','amount','price','cost']) and orig.strip().isdigit():
                         try:
                             val = int(orig.strip())
                             if 1 <= val <= 500 and val != 0:
-                                ambiguous.append({
-                                    "row": r_idx, "col": col, "original": orig, "cleaned": cleaned, "type": "salary",
-                                    "question": f"Salary '{orig}' - ₹{orig} or ₹{orig}000?",
-                                    "options": [f"₹{orig} (keep)", f"₹{orig}000", f"₹{orig}00000"]
-                                })
+                                ambiguous.append({"row": r_idx, "col": col, "original": orig, "cleaned": cleaned, "type": "salary","question": f"Salary '{orig}' - ₹{orig} or ₹{orig}000?","options": [f"₹{orig} (keep)", f"₹{orig}000", f"₹{orig}00000"]})
                         except:
                             pass
                 except:
@@ -402,18 +367,41 @@ def generate_pdf(orig_len, clean_len, empty_fixed, df):
     except:
         return None
 
-def query_groq(prompt_text):
+# ===== GROQ AI - CONNECTED TO openai/gpt-oss-20b - KNOWS EVERYTHING ABOUT APP =====
+def query_groq(user_prompt):
     groq_key = st.secrets.get("GROQ_API_KEY", None) if hasattr(st, 'secrets') else None
     if not groq_key or Groq is None:
-        return None
+        return "Groq API key missing - Add GROQ_API_KEY in Streamlit secrets. Model: openai/gpt-oss-20b"
     try:
         client = Groq(api_key=groq_key)
-        comp = client.chat.completions.create(model="llama-3.1-8b-instant", messages=[{"role":"user","content":prompt_text}], temperature=0.5, max_tokens=300)
-        return comp.choices[0].message.content
-    except:
-        return None
+        system_prompt = """
+You are VeriSame AI - expert assistant for VeriSame app.
+App name: VeriSame - The Fastest Way to Clean Your Data - Clean logic. Clear result
+10 Tools:
+1. Smart Date (Tool 1): Fixes Excel serial dates like 44927, formats like 02/03/2024, 12/5/2024 to YYYY-MM-DD, handles DD/MM vs MM/DD confusion.
+2. AI Fill (Tool 2): Fills empty cells - salary/amount -> 0, email -> missing@email.com, others -> Unknown.
+3. Email AI (Tool 3): Fixes gmai.com to gmail.com, yaho.com to yahoo.com, validates with regex.
+4. Phone AI (Tool 4): Extracts 10 digits, handles +91, removes symbols.
+5. Case AI (Tool 5): Fixes RAHUL KUMAR to Rahul Kumar for name, city, state, company columns.
+6. Symbol Clean (Tool 6): Removes special symbols like #$%! from text except email/phone.
+7. Header Clean (Tool 7): Cleans column headers - First Name! to first_name.
+8. Fuzzy Dedup (Tool 8): Removes duplicate rows.
+9. Trim AI (Tool 9): Removes extra spaces - '  rahul  kumar ' to 'rahul kumar'.
+10. Spell AI (Tool 10): Fixes teh->the, recieve->receive, salery->salary etc.
 
-def display_qr(upi_uri, amt):
+Flow: User uploads CSV/Excel/JSON -> BIG CLEAN (10 tools run with 3s Pro / 15s Free delay) -> If ambiguous like 02/03/2024 or salary 10 found, show confirm box for 100% clean, else auto 100% clean -> Export CSV, Excel, PDF.
+
+Plans: Free - 200 rows, 6 tools, CSV+Excel. Pro 299 - 1 month 30 days, Pro 1499 - 6 months 180 days, unlimited rows, all 10 tools, days decreasing 30->0 and 180->0, red warning at 5 days before end.
+
+You must answer about VeriSame, data cleaning, Excel, CSV, and help user use tools. Be concise, helpful, friendly. If user asks outside VeriSame, still help but bring back to data cleaning.
+
+User query: """ + user_prompt
+        comp = client.chat.completions.create(model="openai/gpt-oss-20b", messages=[{"role":"system","content":system_prompt},{"role":"user","content":user_prompt}], temperature=0.6, max_tokens=500)
+        return comp.choices[0].message.content
+    except Exception as e:
+        return f"AI Error: {str(e)[:200]} - Check Groq key and model openai/gpt-oss-20b"
+
+def display_qr(upi_uri, amt, key_suffix=""):
     try:
         if qrcode is not None:
             qr = qrcode.QRCode(version=1, box_size=8, border=2)
@@ -443,7 +431,8 @@ h1 {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 4.
 .logo-float {animation: float 4s ease-in-out infinite;}
 @keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
 .pricing-card {border-radius: 24px; padding: 1.6rem; background: #ffffff!important; border: 2.5px solid #9333ea; box-shadow: 0 10px 24px rgba(147,51,234,0.1);}
-.stButton>button {border-radius: 16px !important; font-weight: 800 !important; background: linear-gradient(100deg, #7e22ce, #9333ea, #a855f7) !important; color: white !important; border: none !important; padding: 14px 24px !important; width: 100% !important; box-shadow: 0 8px 20px rgba(147,51,234,0.4) !important;}
+.stButton>button {border-radius: 16px !important; font-weight: 800 !important; background: linear-gradient(100deg, #7e22ce, #9333ea, #a855f7) !important; color: white !important; border: none !important; padding: 14px 24px !important; width: 100% !important; box-shadow: 0 8px 20px rgba(147,51,234,0.4) !important; transition: all 0.2s ease !important;}
+.stButton>button:active {transform: scale(0.98) !important;}
 .pro-banner {background: linear-gradient(135deg, #4c1d95, #7e22ce, #9333ea, #d946ef); padding: 2rem; border-radius: 26px; text-align: center; margin: 1.2rem 0; box-shadow: 0 14px 36px rgba(147,51,234,0.3);}
 .pro-banner h2 {color: white!important; font-size: 1.8rem!important; margin: 0!important;}
 .tool-chip {display: inline-block; background: #ffffff !important; padding: 11px 18px; border-radius: 26px; margin: 5px; border: 2.5px solid #9333ea; color: #4c1d95 !important; font-weight: 800 !important; font-size: 0.92rem !important;}
@@ -456,6 +445,7 @@ h1 {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 4.
 .confirm-box {background: #fef3c7 !important; border: 3px solid #f59e0b !important; border-radius: 20px; padding: 20px; margin: 16px 0;}
 .hundred-box {background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important; border: 3px solid #22c55e !important; border-radius: 20px; padding: 20px; margin: 16px 0; text-align: center;}
 .feedback-card {background: #fff; border: 2px solid #e9d5ff; border-radius: 16px; padding: 14px; margin: 10px 0;}
+.qr-box {background: #ffffff !important; border: 2.5px solid #9333ea !important; border-radius: 20px; padding: 16px; text-align: center; margin: 10px 0;}
 @media (max-width: 768px) {
   .block-container {padding: 1rem 1rem !important; border-radius: 20px !important;}
   h1 {font-size: 2.8rem!important;}
@@ -491,16 +481,16 @@ components.html("""
 """, height=0)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! 10 Tools ready - Upload file and click BIG CLEAN!"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! I am VeriSame AI - I know all 10 tools, every function. Ask me anything about cleaning data!"}]
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 if "problem_cells" not in st.session_state:
     st.session_state.problem_cells = set()
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = {}
-for k in ['plan','email','df_clean','df_original','payment_clicked','amt','email_entered','days','selected_plan','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices']:
+for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices']:
     if k not in st.session_state:
-        st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
+        st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
 
 query_email = st.query_params.get("email", None)
 if query_email and not st.session_state.email:
@@ -515,6 +505,8 @@ if query_email and not st.session_state.email:
                     st.session_state.email = query_email
                     st.session_state.email_entered = True
                     st.session_state.plan = user_check.get("plan")
+                    st.session_state.amt = user_check.get("amt",0)
+                    st.session_state.selected_amt = user_check.get("amt",0)
             except:
                 pass
 
@@ -557,40 +549,25 @@ def apply_style(df_to_style):
     except:
         return df_to_style
 
-def render_feedback():
-    st.markdown("---")
-    st.markdown("### 💌 Feedback")
-    fb = st.text_area("Feedback", placeholder="Your feedback...", key="fb_front", height=90, label_visibility="collapsed")
-    if st.button("Send Feedback", key="fb_front_btn", type="primary", use_container_width=True):
-        if fb.strip():
-            if save_feedback(fb.strip(), st.session_state.get('email','Guest')):
-                st.success("Thank you! Sent to owner!")
-                st.balloons()
-            else:
-                st.error("Failed")
-        else:
-            st.warning("Write something")
-
 def render_chat(is_sidebar=False):
     target = st.sidebar if is_sidebar else st
     target.markdown("---")
-    target.markdown("### 🤖 VeriSame AI - 10 Tools")
-    html = "<div style='max-height: 260px; overflow-y: auto; padding: 12px; background: #fff !important; border: 2px solid #9333ea; border-radius: 16px; margin-bottom: 10px;'>"
-    for chat in st.session_state.chat_history[-5:]:
+    target.markdown("### 🤖 VeriSame AI - 10 Tools - Groq Connected")
+    html = "<div style='max-height: 280px; overflow-y: auto; padding: 12px; background: #fff !important; border: 2px solid #9333ea; border-radius: 16px; margin-bottom: 10px;'>"
+    for chat in st.session_state.chat_history[-6:]:
         if chat["role"] == "assistant":
-            html += f"<p style='color: #6b21a8 !important; margin: 5px 0;'><b>AI:</b> {chat['message']}</p>"
+            html += f"<p style='color: #6b21a8 !important; margin: 6px 0; font-size: 0.92rem;'><b>AI:</b> {chat['message']}</p>"
         else:
-            html += f"<p style='color: #000 !important; margin: 5px 0;'><b>You:</b> {chat['message']}</p>"
+            html += f"<p style='color: #000 !important; margin: 6px 0; font-size: 0.92rem;'><b>You:</b> {chat['message']}</p>"
     html += "</div>"
     target.markdown(html, unsafe_allow_html=True)
     s_id = "side" if is_sidebar else "main"
-    um = target.text_input("Ask", placeholder="Ask...", key=f"chat_{s_id}", label_visibility="collapsed")
-    if target.button("Send", key=f"btn_chat_{s_id}", use_container_width=True):
+    um = target.text_input("Ask VeriSame AI", placeholder="Ask about any tool, function...", key=f"chat_input_{s_id}", label_visibility="collapsed")
+    if target.button("Send", key=f"btn_chat_send_{s_id}", use_container_width=True):
         if um and um.strip():
             st.session_state.chat_history.append({"role": "user", "message": um})
-            reply = query_groq(um)
-            if not reply:
-                reply = "10 Tools ready! Upload file and click BIG CLEAN - works for India, USA, all countries!"
+            with st.spinner("VeriSame AI thinking..."):
+                reply = query_groq(um)
             st.session_state.chat_history.append({"role": "assistant", "message": reply})
             st.rerun()
 
@@ -605,10 +582,11 @@ if st.session_state.email:
             today = datetime.now().date()
             days_left = (exp_date - today).days
             st.session_state.days = days_left
+            sel_amt = user.get("amt",0)
+            plan_name = "1 Month (30 Days)" if sel_amt == PRO_1M else "6 Months (180 Days)" if sel_amt == PRO_6M else f"{user.get('days',30)} Days"
             
             if user.get("status") == "PAID":
                 st.session_state.admin_approved = days_left >= 0
-                
                 if days_left < 0:
                     user["plan"] = "free"
                     user["status"] = "EXPIRED"
@@ -616,21 +594,23 @@ if st.session_state.email:
                     db[st.session_state.email] = user
                     save_db(db)
                     st.session_state.plan = "free"
-                    st.sidebar.markdown(f"<div class='plan-warning'>🔴 Your Plan Ended! Pay Again to Continue Pro</div>", unsafe_allow_html=True)
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>❌ Expired - {abs(days_left)} days ago</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-warning'>🔴 Your {plan_name} Plan Ended! Pay Again</div>", unsafe_allow_html=True)
                 elif days_left == 0:
-                    st.sidebar.markdown(f"<div class='plan-warning'>🔴 Your Plan Ends TODAY! Last Day!</div>", unsafe_allow_html=True)
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Pro Active - 0 Days Left - Ends Today!</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-warning'>🔴 Your {plan_name} Plan Ends TODAY!</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Pro Active - {plan_name} - 0 Days Left</div>", unsafe_allow_html=True)
                 elif 1 <= days_left <= 5:
-                    st.sidebar.markdown(f"<div class='plan-warning'>⚠️ Plan ends in {days_left} days!</div>", unsafe_allow_html=True)
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Pro Active - {days_left} Days Left</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-warning'>⚠️ Your {plan_name} ends in {days_left} days!</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Pro Active - {plan_name} - {days_left} Days Left</div>", unsafe_allow_html=True)
                 else:
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Pro Active - {days_left} Days Left</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Pro Active - {plan_name} - {days_left} Days Left</div>", unsafe_allow_html=True)
             else:
-                if user.get("status")=="PENDING":
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>⏳ Pending Approval</div>", unsafe_allow_html=True)
+                # PENDING - Show what they selected with RED
+                if sel_amt == PRO_1M:
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>🔴 You Selected: 1 Month (30 Days) - Payment Pending</div>", unsafe_allow_html=True)
+                elif sel_amt == PRO_6M:
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>🔴 You Selected: 6 Months (180 Days) - Payment Pending</div>", unsafe_allow_html=True)
                 else:
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>Free Plan - 200 Rows</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>⏳ Pending Approval - {plan_name}</div>", unsafe_allow_html=True)
         except:
             st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>Free Plan</div>", unsafe_allow_html=True)
     elif user.get("plan") == "free":
@@ -639,8 +619,8 @@ if st.session_state.email:
     
     render_chat(is_sidebar=True)
     st.sidebar.markdown("---")
-    fb2 = st.sidebar.text_area("Feedback", placeholder="Feedback...", key="fb_side", height=70, label_visibility="collapsed")
-    if st.sidebar.button("Send Feedback", key="fb_side_btn", use_container_width=True):
+    fb2 = st.sidebar.text_area("Feedback", placeholder="Feedback...", key="fb_side_unique", height=70, label_visibility="collapsed")
+    if st.sidebar.button("Send Feedback", key="fb_side_btn_unique", use_container_width=True):
         if fb2.strip() and save_feedback(fb2.strip(), st.session_state.get('email','Guest')):
             st.sidebar.success("Sent!")
     components.html(f"<script>localStorage.setItem('verisame_email', '{st.session_state.email}');</script>", height=0)
@@ -649,8 +629,9 @@ if st.session_state.plan or st.session_state.email_entered:
     st.sidebar.markdown("---")
     b1,b2 = st.sidebar.columns(2)
     with b1:
-        if st.button("← Back", key="back", use_container_width=True):
+        if st.button("← Back", key="nav_back_unique_1", use_container_width=True):
             st.session_state.selected_plan=None
+            st.session_state.selected_amt=None
             st.session_state.plan=None
             st.session_state.email_entered=False
             st.session_state.uploaded_files={}
@@ -659,9 +640,9 @@ if st.session_state.plan or st.session_state.email_entered:
             st.session_state.ambiguous_list=None
             st.rerun()
     with b2:
-        if st.button("Logout", key="logout", use_container_width=True):
-            for k in ['plan','email','df_clean','df_original','payment_clicked','amt','email_entered','days','selected_plan','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices']:
-                st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
+        if st.button("Logout", key="nav_logout_unique_2", use_container_width=True):
+            for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices']:
+                st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
             st.session_state.uploaded_files={}
             st.session_state.changed_cells=set()
             st.session_state.problem_cells=set()
@@ -694,10 +675,11 @@ if "admin" in st.query_params:
                         days_left_admin = 0
                     c1,c2,c3=st.columns([4,2,2])
                     with c1:
-                        st.markdown(f"<div class='pricing-card'><b>{email}</b><br>Plan: {info.get('plan')} Amt: ₹{info.get('amt')} Status: {info.get('status')}<br>Expiry: {info.get('expiry')} | Days Left: {days_left_admin}<br>Created: {info.get('created','')}</div>", unsafe_allow_html=True)
+                        sel = "1M" if info.get("amt")==PRO_1M else "6M" if info.get("amt")==PRO_6M else ""
+                        st.markdown(f"<div class='pricing-card'><b>{email}</b><br>Plan: {info.get('plan')} {sel} Amt: ₹{info.get('amt')} Status: {info.get('status')}<br>Expiry: {info.get('expiry')} | Days: {days_left_admin}<br>Created: {info.get('created','')}</div>", unsafe_allow_html=True)
                     with c2:
                         if info.get("status") in ["PENDING","EXPIRED"] and info.get("plan")=="pro":
-                            if st.button("Approve", key=f"ap_{email}", type="primary", use_container_width=True):
+                            if st.button("Approve", key=f"ap_{email}_{info.get('amt')}", type="primary", use_container_width=True):
                                 data[email]["status"]="PAID"
                                 data[email]["plan"]="pro"
                                 data[email]["expiry"]=(datetime.now()+timedelta(days=180 if data[email].get("amt")==PRO_6M else 30)).strftime("%Y-%m-%d")
@@ -705,7 +687,7 @@ if "admin" in st.query_params:
                                 st.balloons()
                                 st.rerun()
                     with c3:
-                        if st.button("Delete", key=f"del_{email}", use_container_width=True):
+                        if st.button("Delete", key=f"del_{email}_{info.get('amt')}_2", use_container_width=True):
                             del data[email]
                             save_db(data)
                             st.rerun()
@@ -728,28 +710,38 @@ if st.session_state.plan is None:
         col_free, col_pro = st.columns([1, 1.8], gap="medium")
         with col_free:
             st.markdown(f"""<div class='pricing-card' style='height: 100%;'><h2>FREE FOREVER</h2><h1 style='font-size:2.4rem!important;'>FREE</h1><p>200 Rows Limit</p><div><p>✓ 200 Rows</p><p>✓ 6 Tools</p><p>✓ Lifetime Free</p><p>✓ 15s Processing</p><p>✓ Email Support</p></div></div>""", unsafe_allow_html=True)
-            if st.button("Start Free", key="btn_free", type="primary", use_container_width=True):
+            if st.button("Start Free", key="btn_free_start_unique", type="primary", use_container_width=True):
                 st.session_state.selected_plan="free"
+                st.session_state.selected_amt=0
                 st.rerun()
         with col_pro:
             st.markdown(f"""<div class='pricing-card' style='border: 3.5px solid #9333ea; transform: scale(1.02); height: 100%;'><p style='background: #9333ea; color:white!important; padding:6px 14px; border-radius:20px; display:inline-block; font-size:0.9rem; font-weight: 800;'>⭐ POPULAR - BEST VALUE</p><h2>PRO - ₹299 / ₹1499</h2><h1 style='font-size:2.2rem!important;'>₹299 / ₹1499</h1><p>Choose 1 Month or 6 Months</p><div><p>✓ ₹299 for 1 Month (30 Days)</p><p>✓ ₹1499 for 6 Months (180 Days)</p><p>✓ Unlimited Rows</p><p>✓ All 10 Tools</p><p>✓ CSV + Excel + PDF</p><p>✓ 3s Super Fast</p><p>✓ Priority Support</p><p>✓ No Watermark</p></div></div>""", unsafe_allow_html=True)
             c_p1, c_p2 = st.columns(2)
             with c_p1:
-                if st.button("Get Pro ₹299", key="btn_pro1", type="primary", use_container_width=True):
+                if st.button("Get Pro ₹299", key="btn_pro_299_unique", type="primary", use_container_width=True):
                     st.session_state.selected_plan="pro"
+                    st.session_state.selected_amt=PRO_1M
                     st.session_state.amt=PRO_1M
                     st.session_state.days=30
                     st.rerun()
             with c_p2:
-                if st.button("Get Pro ₹1499", key="btn_pro6", type="primary", use_container_width=True):
+                if st.button("Get Pro ₹1499", key="btn_pro_1499_unique", type="primary", use_container_width=True):
                     st.session_state.selected_plan="pro"
+                    st.session_state.selected_amt=PRO_6M
                     st.session_state.amt=PRO_6M
                     st.session_state.days=180
                     st.rerun()
         render_chat(is_sidebar=False)
-        render_feedback()
+        st.markdown("---")
+        st.markdown("### 💌 Feedback")
+        fb = st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_unique", height=90, label_visibility="collapsed")
+        if st.button("Send Feedback", key="fb_front_btn_unique", type="primary", use_container_width=True):
+            if fb.strip() and save_feedback(fb.strip(), st.session_state.get('email','Guest')):
+                st.success("Thank you!")
+                st.balloons()
     else:
-        st.markdown(f"<h2 style='text-align:center;'>Enter email for {st.session_state.selected_plan.upper()} - 10 Tools</h2>", unsafe_allow_html=True)
+        plan_text = "FREE" if st.session_state.selected_plan=="free" else f"PRO - {'1 Month (30 Days)' if st.session_state.selected_amt==PRO_1M else '6 Months (180 Days)'}"
+        st.markdown(f"<h2 style='text-align:center;'>Enter email for {plan_text} - 10 Tools</h2>", unsafe_allow_html=True)
         _, ce2, _ = st.columns([1,2,1])
         with ce2:
             db_all = load_db()
@@ -759,7 +751,7 @@ if st.session_state.plan is None:
                 cols = st.columns(min(len(recent_emails), 3))
                 for idx, r_email in enumerate(recent_emails[:3]):
                     with cols[idx % 3]:
-                        if st.button(f"📧 {r_email[:20]}", key=f"recent_{idx}", use_container_width=True):
+                        if st.button(f"📧 {r_email[:20]}", key=f"recent_email_btn_{idx}_unique", use_container_width=True):
                             st.session_state.email = r_email
                             st.session_state.email_entered = True
                             st.query_params["email"] = r_email
@@ -769,13 +761,15 @@ if st.session_state.plan is None:
                                 try:
                                     exp = datetime.strptime(data[r_email].get("expiry", "2000-01-01"), "%Y-%m-%d").date()
                                     days_left = (exp - datetime.now().date()).days
-                                    if days_left < 0:
+                                    if days_left < 0 and data[r_email].get("plan")=="pro":
                                         st.session_state.plan = "free"
                                         st.warning(f"Plan expired {abs(days_left)} days ago - Please pay again")
                                         st.session_state.selected_plan = "pro"
-                                        st.session_state.amt = PRO_1M
+                                        st.session_state.selected_amt = st.session_state.amt
                                     else:
                                         st.session_state.plan = data[r_email].get("plan", "free")
+                                        st.session_state.amt = data[r_email].get("amt",0)
+                                        st.session_state.selected_amt = data[r_email].get("amt",0)
                                         st.rerun()
                                 except:
                                     st.session_state.plan = data[r_email].get("plan", "free")
@@ -784,10 +778,10 @@ if st.session_state.plan is None:
                                 st.session_state.plan = "free"
                                 st.rerun()
             st.markdown("---")
-            email_input = st.text_input("Enter your email", placeholder="your@email.com", key="email_main").lower().strip()
+            email_input = st.text_input("Enter your email", placeholder="your@email.com", key="email_main_unique").lower().strip()
             b1,b2 = st.columns(2)
             with b1:
-                if st.button("Verify & Continue", key="btn_cont", type="primary", use_container_width=True):
+                if st.button("Verify & Continue", key="btn_verify_continue_unique", type="primary", use_container_width=True):
                     if "@" in email_input and "." in email_input:
                         st.session_state.email=email_input
                         st.session_state.email_entered=True
@@ -799,38 +793,49 @@ if st.session_state.plan is None:
                             data[email_input]={"plan":"free","status":"PAID","amt":0,"days":36500,"expiry":exp,"created":str(datetime.now())}
                             save_db(data)
                             st.session_state.plan="free"
+                            st.session_state.amt=0
+                            st.session_state.selected_amt=0
                             st.balloons()
                             st.rerun()
                         else:
-                            exact=180 if st.session_state.amt==PRO_6M else 30
+                            exact=180 if st.session_state.selected_amt==PRO_6M else 30
                             exp=(datetime.now()+timedelta(days=exact)).strftime("%Y-%m-%d")
                             if email_input in data and data[email_input].get("status")=="PAID":
                                 try:
                                     existing_exp = datetime.strptime(data[email_input].get("expiry", "2000-01-01"), "%Y-%m-%d").date()
                                     days_left = (existing_exp - datetime.now().date()).days
                                     if days_left < 0:
-                                        data[email_input]={"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":exact,"expiry":exp,"created":str(datetime.now())}
+                                        data[email_input]={"plan":"pro","status":"PENDING","amt":st.session_state.selected_amt,"days":exact,"expiry":exp,"created":str(datetime.now())}
                                         save_db(data)
                                         st.session_state.plan="pro"
                                         st.rerun()
                                     else:
                                         st.session_state.plan=data[email_input]["plan"]
+                                        st.session_state.amt=data[email_input].get("amt",0)
+                                        st.session_state.selected_amt=data[email_input].get("amt",0)
                                         st.rerun()
                                 except:
                                     st.session_state.plan=data[email_input]["plan"]
                                     st.rerun()
                             else:
-                                data[email_input]={"plan":"pro","status":"PENDING","amt":st.session_state.amt,"days":exact,"expiry":exp,"created":str(datetime.now())}
+                                data[email_input]={"plan":"pro","status":"PENDING","amt":st.session_state.selected_amt,"days":exact,"expiry":exp,"created":str(datetime.now())}
                                 save_db(data)
                                 st.session_state.plan="pro"
+                                st.session_state.amt=st.session_state.selected_amt
                                 st.rerun()
                     else:
                         st.error("Enter valid email")
             with b2:
-                if st.button("← Back to Plans", key="back_plans", use_container_width=True):
+                if st.button("← Back to Plans", key="btn_back_to_plans_unique", use_container_width=True):
                     st.session_state.selected_plan=None
+                    st.session_state.selected_amt=None
                     st.rerun()
-        render_feedback()
+        st.markdown("---")
+        st.markdown("### 💌 Feedback")
+        fb = st.text_area("Feedback", placeholder="Feedback...", key="fb_front2_unique", height=80, label_visibility="collapsed")
+        if st.button("Send Feedback", key="fb_front_btn2_unique", use_container_width=True):
+            if fb.strip() and save_feedback(fb.strip(), st.session_state.get('email','Guest')):
+                st.success("Sent!")
         st.stop()
 else:
     tab1, tab2 = st.tabs(["Upload File", "Try Demo"])
@@ -843,7 +848,7 @@ else:
                 if f.name.endswith((".xlsx",".xls")):
                     try:
                         ef=pd.ExcelFile(f)
-                        sel=st.selectbox(f"Sheet for {f.name}", ef.sheet_names, key=f"sh_{f.name}")
+                        sel=st.selectbox(f"Sheet for {f.name}", ef.sheet_names, key=f"sh_{f.name}_unique")
                         sheet_sel[f.name]=sel
                     except:
                         pass
@@ -887,7 +892,7 @@ else:
                 except Exception as e:
                     st.error(f"Error: {e}")
     with tab2:
-        if st.button("Load Sample Data", use_container_width=True, type="primary"):
+        if st.button("Load Sample Data", key="btn_load_sample_unique", use_container_width=True, type="primary"):
             sample=pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT"],"Email":["RAHUL@GMAIL.COM","bad@gmai.com","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["one hundred","250","two thousand"]})
             clean=sample.copy()
             for col in clean.columns:
@@ -907,9 +912,9 @@ else:
         st.markdown("### 📁 Your Files")
         s1,s2=st.columns([3,1])
         with s1:
-            sel_file=st.selectbox("Select file:", keys, key="active_sel", label_visibility="collapsed")
+            sel_file=st.selectbox("Select file:", keys, key="active_file_select_unique", label_visibility="collapsed")
         with s2:
-            if st.button("Clear", key="clear_files", use_container_width=True):
+            if st.button("Clear", key="btn_clear_files_unique", use_container_width=True):
                 st.session_state.uploaded_files={}
                 st.session_state.last_upload_sig=None
                 st.session_state.clean_done=False
@@ -932,7 +937,7 @@ else:
             st.markdown("<div class='big-clean-box'>", unsafe_allow_html=True)
             st.markdown(f"### File: {sel_file} - {orig_len} rows")
             st.markdown("</div>", unsafe_allow_html=True)
-            if st.button("🧹 BIG CLEAN - Fix & Clean Everything (1 Click = 10 Tools)", key="big_clean", type="primary", use_container_width=True):
+            if st.button("🧹 BIG CLEAN - Fix & Clean Everything (1 Click = 10 Tools)", key="btn_big_clean_unique", type="primary", use_container_width=True):
                 try:
                     enforce_delay()
                     df_curr=st.session_state.df_clean.copy()
@@ -972,7 +977,7 @@ else:
                     st.balloons()
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Cleaning error: {e} - But file is safe, try again with smaller file")
+                    st.error(f"Cleaning error: {e}")
         else:
             ambiguous = st.session_state.get("ambiguous_list", [])
             is_hundred = st.session_state.get("hundred_done", False) or len(ambiguous) == 0
@@ -1002,10 +1007,10 @@ else:
                     st.markdown(f"<div class='pricing-card' style='margin: 12px 0;'>", unsafe_allow_html=True)
                     st.markdown(f"**Row {item['row']+1}, Column '{item['col']}'** - Original: `{item['original']}` → Cleaned: `{item['cleaned']}`")
                     st.markdown(f"**{item['question']}**")
-                    choice = st.radio(f"Choose:", item['options'], key=f"confirm_{idx}", horizontal=False)
+                    choice = st.radio(f"Choose:", item['options'], key=f"confirm_radio_{idx}_unique", horizontal=False)
                     st.session_state.confirm_choices[idx] = {"item": item, "choice": choice}
                     st.markdown("</div>", unsafe_allow_html=True)
-                if st.button("✅ Make 100% Clean", key="make_100", type="primary", use_container_width=True):
+                if st.button("✅ Make 100% Clean", key="btn_make_100_unique", type="primary", use_container_width=True):
                     try:
                         for c_idx, c_data in st.session_state.confirm_choices.items():
                             item = c_data["item"]
@@ -1040,7 +1045,7 @@ else:
             st.caption("Green Modified | Red Fixed")
             styled=apply_style(df_clean.head(10))
             st.dataframe(styled, use_container_width=True, height=350)
-            if st.button("Reset & Clean Again", type="secondary", use_container_width=True):
+            if st.button("Reset & Clean Again", key="btn_reset_clean_unique", type="secondary", use_container_width=True):
                 st.session_state.df_clean=st.session_state.df_original.copy()
                 for col in st.session_state.df_clean.columns:
                     if st.session_state.df_clean[col].dtype!='object':
@@ -1059,51 +1064,74 @@ else:
             ambiguous = st.session_state.get("ambiguous_list", [])
             is_hundred = st.session_state.get("hundred_done", False) or len(ambiguous) == 0
             percent_text = "100% Clean" if is_hundred else "95% Clean"
-            st.markdown(f"<h2>Export Data - {percent_text}</h2>", unsafe_allow_html=True)
             db=load_db()
             user_info=db.get(st.session_state.email,{})
             is_paid=user_info.get("status")=="PAID"
+            sel_amt_pending = st.session_state.get("selected_amt", user_info.get("amt",0))
+            
             if st.session_state.plan=="free":
-                st.info(f"Free: Download CSV. Pay ₹299 / ₹1499 for Excel + PDF")
+                st.markdown(f"<h2>Export Data - {percent_text}</h2>", unsafe_allow_html=True)
+                st.info(f"Free Plan - {percent_text} - CSV + Excel Included")
                 c1,c2,c3=st.columns(3)
                 with c1:
                     csv=df_clean.to_csv(index=False).encode()
                     safe=sel_file.replace('.xlsx','').replace('.csv','').replace('.json','')[:30]
                     suffix = "100_percent" if is_hundred else "95_percent"
-                    if st.download_button(f"Download CSV - {percent_text}", csv, f"{safe}_{suffix}_cleaned.csv", mime="text/csv", key="dl_csv_free", use_container_width=True, type="primary"):
+                    if st.download_button(f"CSV - {percent_text}", csv, f"{safe}_{suffix}_cleaned.csv", mime="text/csv", key="dl_csv_free_unique", use_container_width=True, type="primary"):
                         st.balloons()
                 with c2:
-                    if st.button("Upgrade ₹299 / ₹1499", key="up_free", use_container_width=True):
+                    if openpyxl is not None:
+                        ex=io.BytesIO()
+                        df_clean.to_excel(ex, index=False, engine='openpyxl')
+                        ex.seek(0)
+                        if st.download_button(f"Excel - {percent_text}", ex.getvalue(), f"{safe}_{suffix}_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_free_unique", use_container_width=True):
+                            st.balloons()
+                with c3:
+                    if st.button("Upgrade", key="btn_upgrade_free_unique", use_container_width=True):
                         st.session_state.selected_plan="pro"
+                        st.session_state.selected_amt=PRO_1M
                         st.session_state.amt=PRO_1M
                         st.session_state.plan=None
                         st.rerun()
-                with c3:
-                    if st.button("Clean Another", key="another_free", use_container_width=True):
-                        st.session_state["clean_done"]=False
-                        st.session_state["hundred_done"]=False
-                        st.session_state.uploaded_files={}
-                        st.rerun()
             elif st.session_state.plan=="pro":
                 if not is_paid:
-                    st.warning(f"Pay to unlock {percent_text} download")
-                    sel=st.radio("Choose Pro Plan:", ["₹299 for 1 Month (30 Days)", "₹1499 for 6 Months (180 Days)"], index=0, horizontal=True, key="pay_radio")
-                    pay_amt=PRO_1M if "299" in sel else PRO_6M
-                    st.session_state.amt=pay_amt
-                    upi=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={pay_amt}&cu=INR&tn=VeriSame{pay_amt}"
-                    q1,q2=st.columns([1,1])
+                    st.markdown(f"<h2>Subscription Required - {percent_text} Ready</h2>", unsafe_allow_html=True)
+                    st.warning(f"Your cleaned file is {percent_text} ready - Complete subscription to download")
+                    st.markdown("<div style='background:white; padding:16px; border-radius:16px; border:2px solid #9333ea; text-align:center; margin:12px 0;'><h3>For subscription, please complete payment via secure UPI</h3><p>Choose your preferred plan below - After payment, admin will approve and you get full access with days counting</p></div>", unsafe_allow_html=True)
+                    
+                    q1,q2=st.columns(2)
                     with q1:
-                        st.link_button(f"Pay ₹{pay_amt} via UPI", upi, use_container_width=True, type="primary")
-                        display_qr(upi, pay_amt)
+                        st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
+                        st.markdown("### 1 Month Plan")
+                        st.markdown("**30 Days Validity**")
+                        st.markdown("Unlimited rows, All 10 tools")
+                        upi_299=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_1M}&cu=INR&tn=VeriSame 1Month"
+                        st.link_button(f"Pay ₹{PRO_1M} via UPI", upi_299, use_container_width=True, type="primary", key="pay_299_link_unique")
+                        display_qr(upi_299, PRO_1M, "299")
+                        if st.button(f"I Paid ₹{PRO_1M} - Submit", key="btn_paid_299_unique", type="primary", use_container_width=True):
+                            data=load_db()
+                            data[st.session_state.email]={"plan":"pro","amt":PRO_1M,"days":30,"expiry":(datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d"),"status":"PENDING"}
+                            save_db(data)
+                            st.success("Request sent for 1 Month! Admin will approve soon")
+                            st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
                     with q2:
-                        st.markdown(f"<div style='background:white; padding:14px; border-radius:14px; border:2px solid #9333ea;'><p>1. Pay<br>2. Click I Paid<br>3. Download {percent_text}</p></div>", unsafe_allow_html=True)
-                    if st.button(f"I Paid ₹{pay_amt} - Submit", key="paid_btn", type="primary", use_container_width=True):
-                        data=load_db()
-                        data[st.session_state.email]={"plan":"pro","amt":pay_amt,"days":30 if pay_amt==PRO_1M else 180,"expiry":(datetime.now()+timedelta(days=30 if pay_amt==PRO_1M else 180)).strftime("%Y-%m-%d"),"status":"PENDING"}
-                        save_db(data)
-                        st.success("Request sent! Admin will approve")
-                        st.rerun()
+                        st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
+                        st.markdown("### 6 Months Plan")
+                        st.markdown("**180 Days Validity - Best Value**")
+                        st.markdown("Unlimited rows, All 10 tools")
+                        upi_1499=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_6M}&cu=INR&tn=VeriSame 6Months"
+                        st.link_button(f"Pay ₹{PRO_6M} via UPI", upi_1499, use_container_width=True, type="primary", key="pay_1499_link_unique")
+                        display_qr(upi_1499, PRO_6M, "1499")
+                        if st.button(f"I Paid ₹{PRO_6M} - Submit", key="btn_paid_1499_unique", type="primary", use_container_width=True):
+                            data=load_db()
+                            data[st.session_state.email]={"plan":"pro","amt":PRO_6M,"days":180,"expiry":(datetime.now()+timedelta(days=180)).strftime("%Y-%m-%d"),"status":"PENDING"}
+                            save_db(data)
+                            st.success("Request sent for 6 Months! Admin will approve soon")
+                            st.rerun()
+                        st.markdown("</div>", unsafe_allow_html=True)
                 else:
+                    st.markdown(f"<h2>Export Data - {percent_text}</h2>", unsafe_allow_html=True)
                     st.success(f"Download Ready! Pro Active - {percent_text}")
                     st.balloons()
                     c1,c2,c3=st.columns(3)
@@ -1111,17 +1139,17 @@ else:
                     suffix = "100_percent" if is_hundred else "95_percent"
                     csv=df_clean.to_csv(index=False).encode()
                     with c1:
-                        if st.download_button(f"CSV - {percent_text}", csv, f"{safe}_{suffix}_cleaned.csv", mime="text/csv", key="dl_csv", use_container_width=True, type="primary"):
+                        if st.download_button(f"CSV - {percent_text}", csv, f"{safe}_{suffix}_cleaned.csv", mime="text/csv", key="dl_csv_pro_unique", use_container_width=True, type="primary"):
                             st.balloons()
                     with c2:
                         if openpyxl is not None:
                             ex=io.BytesIO()
                             df_clean.to_excel(ex, index=False, engine='openpyxl')
                             ex.seek(0)
-                            if st.download_button(f"Excel - {percent_text}", ex.getvalue(), f"{safe}_{suffix}_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx", use_container_width=True):
+                            if st.download_button(f"Excel - {percent_text}", ex.getvalue(), f"{safe}_{suffix}_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_pro_unique", use_container_width=True):
                                 st.balloons()
                     with c3:
                         pdf=generate_pdf(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
                         if pdf:
-                            if st.download_button(f"PDF - {percent_text}", pdf, f"{safe}_{suffix}_audit.pdf", mime="application/pdf", key="dl_pdf", use_container_width=True):
+                            if st.download_button(f"PDF - {percent_text}", pdf, f"{safe}_{suffix}_audit.pdf", mime="application/pdf", key="dl_pdf_pro_unique", use_container_width=True):
                                 st.balloons()
