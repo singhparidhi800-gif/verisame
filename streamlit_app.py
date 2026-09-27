@@ -32,6 +32,7 @@ STARTER_PRICE, PRO_1M, PRO_6M = 49, 299, 1499
 FREE_LIMIT, STARTER_LIMIT = 200, 2000
 ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "admin123") if hasattr(st, 'secrets') else "admin123"
 FEEDBACK_FILE = "feedback_db.json"
+FREE_CLICKS_FILE = "free_clicks.json"
 
 def load_db():
     if os.path.exists("backup_orders.json"):
@@ -70,17 +71,38 @@ def save_feedback(text, email):
     except:
         return False
 
+def load_free_clicks():
+    if os.path.exists(FREE_CLICKS_FILE):
+        try:
+            with open(FREE_CLICKS_FILE, "r") as f:
+                return json.load(f)
+        except:
+            return {"count": 0, "clicks": []}
+    return {"count": 0, "clicks": []}
+
+def save_free_clicks():
+    try:
+        data = load_free_clicks()
+        data["count"] = data.get("count", 0) + 1
+        data["clicks"].append({"time": str(datetime.now()), "id": hashlib.md5(str(time.time()).encode()).hexdigest()[:6]})
+        data["clicks"] = data["clicks"][-100:]
+        with open(FREE_CLICKS_FILE, "w") as f:
+            json.dump(data, f, indent=2)
+    except:
+        pass
+
 def enforce_delay():
     is_pro = st.session_state.get("plan") in ["starter","pro"] and st.session_state.get("admin_approved")
-    # Free 15s, Starter/Pro 3s - all 10 tools fast
     delay = 3 if is_pro else 15
+    if st.session_state.get("plan") == "free":
+        delay = 3
     bar = st.progress(0, text=f"VeriSame - Cleaning with 10 Tools ({delay}s)...")
     for i in range(100):
         time.sleep(delay/100.0)
         bar.progress(i+1)
     bar.empty()
 
-# ===== 10 TOOLS - ALL INCLUDED IN FREE NOW =====
+# ===== 10 TOOLS =====
 def tool1_date(df, problem_cells):
     fixed = 0
     try:
@@ -382,7 +404,7 @@ def query_groq(user_prompt):
         return "Groq API key missing - Add GROQ_API_KEY in secrets. Model: openai/gpt-oss-20b"
     try:
         client = Groq(api_key=groq_key)
-        system_prompt = """You are VeriSame AI - expert for VeriSame app. 10 Tools: Smart Date fixes 44927, AI Fill fills empty, Email AI fixes gmai.com, Phone AI 10 digits, Case AI Rahul Kumar, Symbol Clean, Header Clean, Dedup, Trim AI, Spell AI. Plans: Free 200 rows lifetime free, Starter 49 one-time 2000 rows credit never expires, Pro 299 1 month 30 days, Pro 1499 6 months 180 days unlimited. All plans have all 10 tools. Be helpful concise."""
+        system_prompt = """You are VeriSame AI - expert for VeriSame. 10 Tools: Smart Date, AI Fill, Email AI, Phone AI, Case AI, Symbol Clean, Header Clean, Dedup, Trim AI, Spell AI. Plans: Free 200 rows no email, Starter 49 2000 rows credit never expires, Pro 299 30 days, Pro 1499 180 days unlimited."""
         comp = client.chat.completions.create(model="openai/gpt-oss-20b", messages=[{"role":"system","content":system_prompt},{"role":"user","content":user_prompt}], temperature=0.6, max_tokens=500)
         return comp.choices[0].message.content
     except Exception as e:
@@ -454,7 +476,7 @@ h1 {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 4.
 components.html("<script>localStorage.getItem('verisame_email');</script>", height=0)
 
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! I am VeriSame AI - All 10 tools included in every plan now!"}]
+    st.session_state.chat_history = [{"role": "assistant", "message": "Hello! I am VeriSame AI - All 10 tools in every plan!"}]
 if "changed_cells" not in st.session_state:
     st.session_state.changed_cells = set()
 if "problem_cells" not in st.session_state:
@@ -474,7 +496,7 @@ if query_email and not st.session_state.email and not st.session_state.selected_
             user_check = db_check[query_email]
             try:
                 exp = datetime.strptime(user_check.get("expiry", "2000-01-01"), "%Y-%m-%d").date()
-                if exp >= datetime.now().date() or user_check.get("plan") in ["free","starter"]:
+                if exp >= datetime.now().date() or user_check.get("plan") in ["starter"]:
                     st.session_state.email = query_email
                     st.session_state.email_entered = True
                     st.session_state.plan = user_check.get("plan")
@@ -535,15 +557,15 @@ def render_chat(is_sidebar=False):
     html += "</div>"
     target.markdown(html, unsafe_allow_html=True)
     s_id = "side" if is_sidebar else "main"
-    um = target.text_input("Ask", placeholder="Ask about tools...", key=f"chat_{s_id}_3plan", label_visibility="collapsed")
-    if target.button("Send", key=f"btn_chat_{s_id}_3plan", use_container_width=True):
+    um = target.text_input("Ask", placeholder="Ask about tools...", key=f"chat_{s_id}_4col", label_visibility="collapsed")
+    if target.button("Send", key=f"btn_chat_{s_id}_4col", use_container_width=True):
         if um and um.strip():
             st.session_state.chat_history.append({"role": "user", "message": um})
             reply = query_groq(um)
             st.session_state.chat_history.append({"role": "assistant", "message": reply})
             st.rerun()
 
-if st.session_state.email:
+if st.session_state.email and st.session_state.plan != "free":
     db = load_db()
     user = db.get(st.session_state.email, {})
     st.sidebar.markdown(f"<div style='background: #f5f3ff; padding: 10px; border-radius: 12px; border: 2px solid #9333ea;'><b>{st.session_state.email}</b></div>", unsafe_allow_html=True)
@@ -558,21 +580,12 @@ if st.session_state.email:
                 plan_name = "Starter - 2000 Rows Credit"
             else:
                 plan_name = "1 Month (30 Days)" if sel_amt == PRO_1M else "6 Months (180 Days)" if sel_amt == PRO_6M else f"{user.get('days',30)} Days"
-            
             if user.get("status") == "PAID":
                 st.session_state.admin_approved = True if user.get("plan")=="starter" else days_left >= 0
                 if user.get("plan") == "starter":
                     st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Starter Active - 2000 Rows - Credit Never Expires</div>", unsafe_allow_html=True)
                 elif days_left < 0:
-                    user["plan"] = "free"
-                    user["status"] = "EXPIRED"
-                    user["amt"] = 0
-                    db[st.session_state.email] = user
-                    save_db(db)
-                    st.session_state.plan = "free"
-                    st.sidebar.markdown(f"<div class='plan-warning'>🔴 Your {plan_name} Plan Ended! Pay Again</div>", unsafe_allow_html=True)
-                elif days_left == 0:
-                    st.sidebar.markdown(f"<div class='plan-warning'>🔴 Your {plan_name} Plan Ends TODAY!</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-warning'>🔴 Your {plan_name} Plan Ended!</div>", unsafe_allow_html=True)
                 elif 1 <= days_left <= 5:
                     st.sidebar.markdown(f"<div class='plan-warning'>⚠️ Your {plan_name} ends in {days_left} days!</div>", unsafe_allow_html=True)
                     st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Pro Active - {plan_name} - {days_left} Days Left</div>", unsafe_allow_html=True)
@@ -580,31 +593,31 @@ if st.session_state.email:
                     st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Pro Active - {plan_name} - {days_left} Days Left</div>", unsafe_allow_html=True)
             else:
                 if user.get("plan") == "starter":
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>🔴 You Selected: Starter ₹49 - 2000 Rows - Payment Pending - Wait for founder approval</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>🔴 Starter ₹49 - Payment Pending - Wait for founder approval</div>", unsafe_allow_html=True)
                 elif sel_amt == PRO_1M:
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>🔴 You Selected: 1 Month (30 Days) - Payment Pending - Wait for founder approval</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>🔴 1 Month ₹299 - Payment Pending - Wait for founder approval</div>", unsafe_allow_html=True)
                 elif sel_amt == PRO_6M:
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>🔴 You Selected: 6 Months (180 Days) - Payment Pending - Wait for founder approval</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>🔴 6 Months ₹1499 - Payment Pending - Wait for founder approval</div>", unsafe_allow_html=True)
                 else:
                     st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>⏳ Pending - {plan_name} - Wait for founder approval</div>", unsafe_allow_html=True)
         except:
-            st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>Free Plan</div>", unsafe_allow_html=True)
-    elif user.get("plan") == "free":
-        st.session_state.plan = "free"
-        st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>Free Plan - 200 Rows - Lifetime Free</div>", unsafe_allow_html=True)
+            st.sidebar.markdown(f"<div class='plan-status-box plan-inactive'>Paid Plan</div>", unsafe_allow_html=True)
     render_chat(is_sidebar=True)
     st.sidebar.markdown("---")
-    fb2 = st.sidebar.text_area("Feedback", placeholder="Feedback...", key="fb_side_3plan", height=70, label_visibility="collapsed")
-    if st.sidebar.button("Send Feedback", key="fb_side_btn_3plan", use_container_width=True):
+    fb2 = st.sidebar.text_area("Feedback", placeholder="Feedback...", key="fb_side_4col", height=70, label_visibility="collapsed")
+    if st.sidebar.button("Send Feedback", key="fb_side_btn_4col", use_container_width=True):
         if fb2.strip() and save_feedback(fb2.strip(), st.session_state.get('email','Guest')):
             st.sidebar.success("Sent!")
     components.html(f"<script>localStorage.setItem('verisame_email', '{st.session_state.email}');</script>", height=0)
+elif st.session_state.plan == "free":
+    st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 Free Plan - 200 Rows - Lifetime Free</div>", unsafe_allow_html=True)
+    render_chat(is_sidebar=True)
 
 if st.session_state.plan or st.session_state.email_entered:
     st.sidebar.markdown("---")
     b1,b2 = st.sidebar.columns(2)
     with b1:
-        if st.button("← Back", key="nav_back_3plan", use_container_width=True):
+        if st.button("← Back", key="nav_back_4col", use_container_width=True):
             st.session_state.selected_plan=None
             st.session_state.selected_amt=None
             st.session_state.plan=None
@@ -616,7 +629,7 @@ if st.session_state.plan or st.session_state.email_entered:
             st.session_state.payment_pending=False
             st.rerun()
     with b2:
-        if st.button("Logout", key="nav_logout_3plan", use_container_width=True):
+        if st.button("Logout", key="nav_logout_4col", use_container_width=True):
             for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending']:
                 st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
             st.session_state.uploaded_files={}
@@ -635,13 +648,58 @@ st.markdown(f"""<div class='pro-banner'><h2>UNLOCK 10 PREMIUM AI TOOLS - All Pla
 
 if "admin" in st.query_params:
     if st.query_params.get("admin")==ADMIN_PASS:
-        st.title("Admin Dashboard - 3 Plans")
+        st.title("🔐 Secret Dashboard - 4 Columns")
         data=load_db()
         fbs=load_feedback()
-        t1,t2=st.tabs([f"Users ({len(data)})", f"Feedbacks ({len(fbs)})"])
-        with t1:
-            if data:
-                for email, info in list(data.items()):
+        free_data=load_free_clicks()
+        
+        # 4 Columns as requested
+        tab1, tab2, tab3, tab4 = st.tabs([f"1. FREE - {free_data.get('count',0)} Clicks", f"2. STARTER ₹49 - {len([k for k,v in data.items() if v.get('amt')==STARTER_PRICE])} Users", f"3. PRO ₹299/₹1499 - {len([k for k,v in data.items() if v.get('amt') in [PRO_1M, PRO_6M]])} Users", f"4. Feedback - {len(fbs)}"])
+        
+        with tab1:
+            st.markdown("### Column 1 - FREE - Just Counting")
+            st.markdown(f"<div class='pricing-card' style='text-align:center;'><h1 style='font-size:3rem!important;'>{free_data.get('count',0)}</h1><p>Total Free Clicks</p></div>", unsafe_allow_html=True)
+            st.markdown("---")
+            st.markdown("#### Recent Free Clicks (Last 100):")
+            if free_data.get("clicks"):
+                for click in reversed(free_data["clicks"][-20:]):
+                    st.markdown(f"<div style='background:#f5f3ff; padding:8px; border-radius:8px; margin:4px 0; border:1px solid #e9d5ff;'>🕒 {click.get('time','')} - ID: {click.get('id','')}</div>", unsafe_allow_html=True)
+            else:
+                st.info("No free clicks yet")
+        
+        with tab2:
+            st.markdown("### Column 2 - STARTER ₹49 - Emails + Approval")
+            starter_users = {k:v for k,v in data.items() if v.get('amt')==STARTER_PRICE}
+            if starter_users:
+                for email, info in list(starter_users.items()):
+                    if "@" not in email:
+                        continue
+                    c1,c2,c3=st.columns([4,2,2])
+                    with c1:
+                        st.markdown(f"<div class='pricing-card'><b>{email}</b><br>Plan: {info.get('plan')} ₹{info.get('amt')} Status: {info.get('status')}<br>Expiry: {info.get('expiry')}<br>Created: {info.get('created','')}</div>", unsafe_allow_html=True)
+                    with c2:
+                        if info.get("status") in ["PENDING","EXPIRED"]:
+                            if st.button("✅ Approve Paid", key=f"ap_starter_{email}_{info.get('amt')}", type="primary", use_container_width=True):
+                                data[email]["status"]="PAID"
+                                data[email]["expiry"]=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                                save_db(data)
+                                st.balloons()
+                                st.rerun()
+                        else:
+                            st.markdown(f"<div class='plan-active' style='padding:8px; border-radius:8px; text-align:center;'>✅ PAID</div>", unsafe_allow_html=True)
+                    with c3:
+                        if st.button("Delete", key=f"del_starter_{email}_{info.get('amt')}", use_container_width=True):
+                            del data[email]
+                            save_db(data)
+                            st.rerun()
+            else:
+                st.info("No Starter ₹49 users yet")
+        
+        with tab3:
+            st.markdown("### Column 3 - PRO ₹299 / ₹1499 - Emails + Approval")
+            pro_users = {k:v for k,v in data.items() if v.get('amt') in [PRO_1M, PRO_6M]}
+            if pro_users:
+                for email, info in list(pro_users.items()):
                     if "@" not in email:
                         continue
                     try:
@@ -651,31 +709,30 @@ if "admin" in st.query_params:
                         days_left_admin = 0
                     c1,c2,c3=st.columns([4,2,2])
                     with c1:
-                        sel = "FREE" if info.get("amt")==0 else "STARTER ₹49" if info.get("amt")==STARTER_PRICE else "1M ₹299" if info.get("amt")==PRO_1M else "6M ₹1499" if info.get("amt")==PRO_6M else str(info.get("amt"))
-                        st.markdown(f"<div class='pricing-card'><b>{email}</b><br>Plan: {info.get('plan')} {sel} Status: {info.get('status')}<br>Expiry: {info.get('expiry')} | Days: {days_left_admin}<br>Created: {info.get('created','')}</div>", unsafe_allow_html=True)
+                        sel = "1M ₹299" if info.get("amt")==PRO_1M else "6M ₹1499"
+                        st.markdown(f"<div class='pricing-card'><b>{email}</b><br>Plan: {info.get('plan')} {sel} Status: {info.get('status')}<br>Expiry: {info.get('expiry')} | Days Left: {days_left_admin}<br>Created: {info.get('created','')}</div>", unsafe_allow_html=True)
                     with c2:
-                        if info.get("status") in ["PENDING","EXPIRED"] and info.get("plan") in ["starter","pro"]:
-                            if st.button("Approve", key=f"ap_{email}_{info.get('amt')}_3plan", type="primary", use_container_width=True):
+                        if info.get("status") in ["PENDING","EXPIRED"]:
+                            if st.button("✅ Approve Paid", key=f"ap_pro_{email}_{info.get('amt')}", type="primary", use_container_width=True):
                                 data[email]["status"]="PAID"
-                                if info.get("amt")==STARTER_PRICE:
-                                    data[email]["expiry"]=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                                elif info.get("amt")==PRO_6M:
-                                    data[email]["expiry"]=(datetime.now()+timedelta(days=180)).strftime("%Y-%m-%d")
-                                else:
-                                    data[email]["expiry"]=(datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d")
+                                data[email]["expiry"]=(datetime.now()+timedelta(days=180 if data[email].get("amt")==PRO_6M else 30)).strftime("%Y-%m-%d")
                                 save_db(data)
                                 st.balloons()
                                 st.rerun()
+                        else:
+                            st.markdown(f"<div class='plan-active' style='padding:8px; border-radius:8px; text-align:center;'>✅ PAID - {days_left_admin} days</div>", unsafe_allow_html=True)
                     with c3:
-                        if st.button("Delete", key=f"del_{email}_{info.get('amt')}_3plan", use_container_width=True):
+                        if st.button("Delete", key=f"del_pro_{email}_{info.get('amt')}", use_container_width=True):
                             del data[email]
                             save_db(data)
                             st.rerun()
             else:
-                st.info("No users")
-        with t2:
+                st.info("No Pro users yet")
+        
+        with tab4:
+            st.markdown("### Column 4 - Feedback")
             if fbs:
-                for fb in reversed(fbs[-30:]):
+                for fb in reversed(fbs[-50:]):
                     st.markdown(f"<div style='background:#fff; border:2px solid #e9d5ff; border-radius:16px; padding:14px; margin:10px 0;'><b>{fb['email']}</b> | {fb['time']}<br>{fb['feedback']}</div>", unsafe_allow_html=True)
             else:
                 st.info("No feedback")
@@ -690,14 +747,19 @@ if st.session_state.plan is None:
         col_free, col_starter, col_pro = st.columns(3, gap="medium")
         with col_free:
             st.markdown(f"""<div class='pricing-card pricing-card-free'><h3>FREE FOREVER</h3><h1 style='font-size:2.2rem!important;'>FREE</h1><p><b>200 Rows Limit</b> (Lifetime Free)</p><div style='margin-top:12px;'><p>✓ All 10 Tools Included</p><p>✓ 3s Super Fast Cleaning</p><p>✓ CSV + Excel + PDF Support</p><p>✓ File Auto-Deleted - 100% Private</p><p>✓ Email Support</p></div></div>""", unsafe_allow_html=True)
-            if st.button("Start Free", key="btn_free_3plan", type="primary", use_container_width=True):
+            if st.button("Start Free", key="btn_free_4col", type="primary", use_container_width=True):
+                save_free_clicks()
                 st.session_state.selected_plan="free"
                 st.session_state.selected_amt=0
                 st.session_state.amt=0
+                st.session_state.plan="free"
+                st.session_state.email="Guest_Free"
+                st.session_state.email_entered=True
+                st.session_state.admin_approved=True
                 st.rerun()
         with col_starter:
             st.markdown(f"""<div class='pricing-card pricing-card-starter'><p style='background: #22c55e; color:white!important; padding:6px 14px; border-radius:20px; display:inline-block; font-size:0.85rem; font-weight: 800;'>✨ BEST FOR TRYING</p><h3>STARTER</h3><h1 style='font-size:2.2rem!important;'>₹49</h1><p><b>One-Time - 2,000 Rows Credit</b></p><div style='margin-top:12px;'><p>✓ All 10 Tools</p><p>✓ Credit Never Expires</p><p>✓ 3s Super Fast</p><p>✓ No Watermark</p><p>✓ CSV + Excel + PDF</p></div></div>""", unsafe_allow_html=True)
-            if st.button("Get Starter ₹49", key="btn_starter_3plan", type="primary", use_container_width=True):
+            if st.button("Start with 49", key="btn_starter_4col", type="primary", use_container_width=True):
                 st.session_state.selected_plan="starter"
                 st.session_state.selected_amt=STARTER_PRICE
                 st.session_state.amt=STARTER_PRICE
@@ -707,14 +769,14 @@ if st.session_state.plan is None:
             st.markdown(f"""<div class='pricing-card pricing-card-pro'><p style='background: #9333ea; color:white!important; padding:6px 14px; border-radius:20px; display:inline-block; font-size:0.85rem; font-weight: 800;'>⭐ POPULAR - BEST VALUE</p><h3>PRO</h3><h1 style='font-size:2rem!important;'>₹299 / ₹1499</h1><p><b>Unlimited Rows</b></p><div style='margin-top:12px;'><p>✓ ₹299 for 1 Month (30 Days)</p><p>✓ ₹1499 for 6 Months (180 Days)</p><p>✓ Unlimited Rows</p><p>✓ All 10 Premium AI Tools</p><p>✓ Priority Support</p><p>✓ No Watermark</p></div></div>""", unsafe_allow_html=True)
             c_p1, c_p2 = st.columns(2)
             with c_p1:
-                if st.button("Get Pro ₹299", key="btn_pro_299_3plan", type="primary", use_container_width=True):
+                if st.button("Start with 299", key="btn_pro_299_4col", type="primary", use_container_width=True):
                     st.session_state.selected_plan="pro"
                     st.session_state.selected_amt=PRO_1M
                     st.session_state.amt=PRO_1M
                     st.session_state.days=30
                     st.rerun()
             with c_p2:
-                if st.button("Get Pro ₹1499", key="btn_pro_1499_3plan", type="primary", use_container_width=True):
+                if st.button("Start with 1499", key="btn_pro_1499_4col", type="primary", use_container_width=True):
                     st.session_state.selected_plan="pro"
                     st.session_state.selected_amt=PRO_6M
                     st.session_state.amt=PRO_6M
@@ -723,16 +785,22 @@ if st.session_state.plan is None:
         render_chat(is_sidebar=False)
         st.markdown("---")
         st.markdown("### 💌 Feedback")
-        fb = st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_3plan", height=90, label_visibility="collapsed")
-        if st.button("Send Feedback", key="fb_front_btn_3plan", type="primary", use_container_width=True):
+        fb = st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_4col", height=90, label_visibility="collapsed")
+        if st.button("Send Feedback", key="fb_front_btn_4col", type="primary", use_container_width=True):
             if fb.strip() and save_feedback(fb.strip(), st.session_state.get('email','Guest')):
                 st.success("Thank you!")
                 st.balloons()
     else:
-        # Show selected plan name
+        # Free plan goes direct - no email needed
         if st.session_state.selected_plan == "free":
-            plan_text = "FREE FOREVER - 200 Rows (Lifetime Free)"
-        elif st.session_state.selected_plan == "starter":
+            st.session_state.plan = "free"
+            st.session_state.email = "Guest_Free"
+            st.session_state.email_entered = True
+            st.session_state.admin_approved = True
+            st.rerun()
+        
+        # Starter and Pro need email
+        if st.session_state.selected_plan == "starter":
             plan_text = f"STARTER - ₹{STARTER_PRICE} One-Time - 2,000 Rows Credit"
         else:
             if st.session_state.selected_amt == PRO_1M:
@@ -743,24 +811,17 @@ if st.session_state.plan is None:
         _, ce2, _ = st.columns([1,2,1])
         with ce2:
             db_all = load_db()
-            recent_emails = list(db_all.keys())[-5:]
+            recent_emails = [k for k,v in db_all.items() if v.get("amt") in [STARTER_PRICE, PRO_1M, PRO_6M]][-5:]
             if recent_emails:
                 st.markdown("**Recent emails:**")
                 cols = st.columns(min(len(recent_emails), 3))
                 for idx, r_email in enumerate(recent_emails[:3]):
                     with cols[idx % 3]:
-                        if st.button(f"📧 {r_email[:20]}", key=f"recent_3plan_{idx}", use_container_width=True):
+                        if st.button(f"📧 {r_email[:20]}", key=f"recent_4col_{idx}", use_container_width=True):
                             st.session_state.email = r_email
                             st.session_state.email_entered = True
                             st.query_params["email"] = r_email
-                            # Respect selected plan now
-                            if st.session_state.selected_plan == "free":
-                                db_all[r_email] = {"plan":"free","status":"PAID","amt":0,"days":36500,"expiry":(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"),"created":str(datetime.now())}
-                                save_db(db_all)
-                                st.session_state.plan = "free"
-                                st.session_state.amt = 0
-                                st.rerun()
-                            elif st.session_state.selected_plan == "starter":
+                            if st.session_state.selected_plan == "starter":
                                 db_all[r_email] = {"plan":"starter","status":"PENDING","amt":STARTER_PRICE,"days":36500,"expiry":(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"),"created":str(datetime.now())}
                                 save_db(db_all)
                                 st.session_state.plan = "starter"
@@ -774,26 +835,17 @@ if st.session_state.plan is None:
                                 st.session_state.amt = st.session_state.selected_amt
                                 st.rerun()
             st.markdown("---")
-            email_input = st.text_input("Enter your email", placeholder="your@email.com", key="email_main_3plan").lower().strip()
+            email_input = st.text_input("Enter your email", placeholder="your@email.com", key="email_main_4col").lower().strip()
             b1,b2 = st.columns(2)
             with b1:
-                if st.button("Verify & Continue", key="btn_verify_3plan", type="primary", use_container_width=True):
+                if st.button("Verify & Continue", key="btn_verify_4col", type="primary", use_container_width=True):
                     if "@" in email_input and "." in email_input:
                         st.session_state.email=email_input
                         st.session_state.email_entered=True
                         st.query_params["email"] = email_input
                         components.html(f"<script>localStorage.setItem('verisame_email', '{email_input}');</script>", height=0)
                         data=load_db()
-                        # FIX: One email can be any plan - depends on selected plan NOW
-                        if st.session_state.selected_plan=="free":
-                            exp=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                            data[email_input]={"plan":"free","status":"PAID","amt":0,"days":36500,"expiry":exp,"created":str(datetime.now())}
-                            save_db(data)
-                            st.session_state.plan="free"
-                            st.session_state.amt=0
-                            st.rerun()
-                        elif st.session_state.selected_plan=="starter":
-                            # Check if already active starter
+                        if st.session_state.selected_plan=="starter":
                             if email_input in data and data[email_input].get("status")=="PAID" and data[email_input].get("plan")=="starter":
                                 st.session_state.plan="starter"
                                 st.session_state.amt=STARTER_PRICE
@@ -826,14 +878,14 @@ if st.session_state.plan is None:
                     else:
                         st.error("Enter valid email")
             with b2:
-                if st.button("← Back to Plans", key="btn_back_plans_3plan", use_container_width=True):
+                if st.button("← Back to Plans", key="btn_back_plans_4col", use_container_width=True):
                     st.session_state.selected_plan=None
                     st.session_state.selected_amt=None
                     st.rerun()
         st.markdown("---")
         st.markdown("### 💌 Feedback")
-        fb = st.text_area("Feedback", placeholder="Feedback...", key="fb_front2_3plan", height=80, label_visibility="collapsed")
-        if st.button("Send Feedback", key="fb_front_btn2_3plan", use_container_width=True):
+        fb = st.text_area("Feedback", placeholder="Feedback...", key="fb_front2_4col", height=80, label_visibility="collapsed")
+        if st.button("Send Feedback", key="fb_front_btn2_4col", use_container_width=True):
             if fb.strip() and save_feedback(fb.strip(), st.session_state.get('email','Guest')):
                 st.success("Sent!")
         st.stop()
@@ -848,7 +900,7 @@ else:
                 if f.name.endswith((".xlsx",".xls")):
                     try:
                         ef=pd.ExcelFile(f)
-                        sel=st.selectbox(f"Sheet for {f.name}", ef.sheet_names, key=f"sh_{f.name}_3plan")
+                        sel=st.selectbox(f"Sheet for {f.name}", ef.sheet_names, key=f"sh_{f.name}_4col")
                         sheet_sel[f.name]=sel
                     except:
                         pass
@@ -893,7 +945,7 @@ else:
                 except Exception as e:
                     st.error(f"Error: {e}")
     with tab2:
-        if st.button("Load Sample Data", key="btn_load_sample_3plan", use_container_width=True, type="primary"):
+        if st.button("Load Sample Data", key="btn_load_sample_4col", use_container_width=True, type="primary"):
             sample=pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT"],"Email":["RAHUL@GMAIL.COM","bad@gmai.com","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["100","250","50000"]})
             clean=sample.copy()
             for col in clean.columns:
@@ -913,9 +965,9 @@ else:
         st.markdown("### 📁 Your Files")
         s1,s2=st.columns([3,1])
         with s1:
-            sel_file=st.selectbox("Select file:", keys, key="active_file_3plan", label_visibility="collapsed")
+            sel_file=st.selectbox("Select file:", keys, key="active_file_4col", label_visibility="collapsed")
         with s2:
-            if st.button("Clear", key="btn_clear_3plan", use_container_width=True):
+            if st.button("Clear", key="btn_clear_4col", use_container_width=True):
                 st.session_state.uploaded_files={}
                 st.session_state.last_upload_sig=None
                 st.session_state.clean_done=False
@@ -939,7 +991,7 @@ else:
             st.markdown("<div class='big-clean-box'>", unsafe_allow_html=True)
             st.markdown(f"### File: {sel_file} - {orig_len} rows")
             st.markdown("</div>", unsafe_allow_html=True)
-            if st.button("🧹 BIG CLEAN - Fix & Clean Everything (1 Click = 10 Tools)", key="btn_big_clean_3plan", type="primary", use_container_width=True):
+            if st.button("🧹 BIG CLEAN - Fix & Clean Everything (1 Click = 10 Tools)", key="btn_big_clean_4col", type="primary", use_container_width=True):
                 try:
                     enforce_delay()
                     df_curr=st.session_state.df_clean.copy()
@@ -1009,10 +1061,10 @@ else:
                     st.markdown(f"<div class='pricing-card' style='margin: 12px 0;'>", unsafe_allow_html=True)
                     st.markdown(f"**Row {item['row']+1}, Column '{item['col']}'** - Original: `{item['original']}` → Cleaned: `{item['cleaned']}`")
                     st.markdown(f"**{item['question']}**")
-                    choice = st.radio(f"Choose:", item['options'], key=f"confirm_{idx}_3plan", horizontal=False)
+                    choice = st.radio(f"Choose:", item['options'], key=f"confirm_{idx}_4col", horizontal=False)
                     st.session_state.confirm_choices[idx] = {"item": item, "choice": choice}
                     st.markdown("</div>", unsafe_allow_html=True)
-                if st.button("✅ Make 100% Clean", key="btn_make_100_3plan", type="primary", use_container_width=True):
+                if st.button("✅ Make 100% Clean", key="btn_make_100_4col", type="primary", use_container_width=True):
                     try:
                         for c_idx, c_data in st.session_state.confirm_choices.items():
                             item = c_data["item"]
@@ -1047,7 +1099,7 @@ else:
             st.caption("Green Modified | Red Fixed")
             styled=apply_style(df_clean.head(10))
             st.dataframe(styled, use_container_width=True, height=350)
-            if st.button("Reset & Clean Again", key="btn_reset_3plan", type="secondary", use_container_width=True):
+            if st.button("Reset & Clean Again", key="btn_reset_4col", type="secondary", use_container_width=True):
                 st.session_state.df_clean=st.session_state.df_original.copy()
                 for col in st.session_state.df_clean.columns:
                     if st.session_state.df_clean[col].dtype!='object':
@@ -1067,19 +1119,19 @@ else:
             is_hundred = st.session_state.get("hundred_done", False) or len(ambiguous) == 0
             percent_text = "100% Clean" if is_hundred else "95% Clean"
             db=load_db()
-            user_info=db.get(st.session_state.email,{})
-            is_paid=user_info.get("status")=="PAID"
+            user_info=db.get(st.session_state.email,{}) if st.session_state.email and st.session_state.email != "Guest_Free" else {}
+            is_paid=user_info.get("status")=="PAID" if user_info else True if st.session_state.plan=="free" else False
             
             if st.session_state.plan=="free":
                 st.markdown(f"<h2>Export Data - {percent_text}</h2>", unsafe_allow_html=True)
-                st.info(f"Free Plan - {percent_text} - CSV + Excel + PDF - All 10 Tools Included")
+                st.info(f"Free Plan - {percent_text} - No Email Required - CSV + Excel + PDF")
                 c1,c2,c3=st.columns(3)
                 safe=sel_file.replace('.xlsx','').replace('.csv','').replace('.json','')[:30]
                 suffix = "100_percent" if is_hundred else "95_percent"
                 with c1:
                     csv=df_clean.to_csv(index=False).encode()
                     st.markdown('<div class="red-btn">', unsafe_allow_html=True)
-                    if st.download_button(f"CSV - {percent_text}", csv, f"{safe}_{suffix}_cleaned.csv", mime="text/csv", key="dl_csv_free_3plan", use_container_width=True, type="primary"):
+                    if st.download_button(f"CSV - {percent_text}", csv, f"{safe}_{suffix}_cleaned.csv", mime="text/csv", key="dl_csv_free_4col", use_container_width=True, type="primary"):
                         st.balloons()
                     st.markdown('</div>', unsafe_allow_html=True)
                 with c2:
@@ -1088,37 +1140,29 @@ else:
                         df_clean.to_excel(ex, index=False, engine='openpyxl')
                         ex.seek(0)
                         st.markdown('<div class="white-red-btn">', unsafe_allow_html=True)
-                        if st.download_button(f"Excel - {percent_text}", ex.getvalue(), f"{safe}_{suffix}_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_free_3plan", use_container_width=True):
+                        if st.download_button(f"Excel - {percent_text}", ex.getvalue(), f"{safe}_{suffix}_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_free_4col", use_container_width=True):
                             st.balloons()
                         st.markdown('</div>', unsafe_allow_html=True)
                 with c3:
                     pdf=generate_pdf(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
                     if pdf:
-                        if st.download_button(f"PDF - {percent_text}", pdf, f"{safe}_{suffix}_audit.pdf", mime="application/pdf", key="dl_pdf_free_3plan", use_container_width=True):
+                        if st.download_button(f"PDF - {percent_text}", pdf, f"{safe}_{suffix}_audit.pdf", mime="application/pdf", key="dl_pdf_free_4col", use_container_width=True):
                             st.balloons()
                 st.markdown("---")
                 c_u1,c_u2=st.columns(2)
                 with c_u1:
-                    if st.button("Upgrade to Starter ₹49", key="btn_upgrade_starter_3plan", type="primary", use_container_width=True):
+                    if st.button("Upgrade to Starter - Start with 49", key="btn_upgrade_starter_4col", type="primary", use_container_width=True):
                         st.session_state.selected_plan="starter"
                         st.session_state.selected_amt=STARTER_PRICE
-                        data=load_db()
-                        if st.session_state.email:
-                            data[st.session_state.email]={"plan":"starter","amt":STARTER_PRICE,"days":36500,"expiry":(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
-                            save_db(data)
-                        st.session_state.plan="starter"
-                        st.session_state.payment_pending=True
+                        st.session_state.plan=None
+                        st.session_state.email_entered=False
                         st.rerun()
                 with c_u2:
-                    if st.button("Upgrade to Pro ₹299 / ₹1499", key="btn_upgrade_pro_3plan", type="primary", use_container_width=True):
+                    if st.button("Upgrade to Pro - Start with 299 / 1499", key="btn_upgrade_pro_4col", type="primary", use_container_width=True):
                         st.session_state.selected_plan="pro"
                         st.session_state.selected_amt=PRO_1M
-                        data=load_db()
-                        if st.session_state.email:
-                            data[st.session_state.email]={"plan":"pro","amt":PRO_1M,"days":30,"expiry":(datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
-                            save_db(data)
-                        st.session_state.plan="pro"
-                        st.session_state.payment_pending=True
+                        st.session_state.plan=None
+                        st.session_state.email_entered=False
                         st.rerun()
             elif st.session_state.plan in ["starter","pro"]:
                 if not is_paid or st.session_state.get("payment_pending"):
@@ -1133,19 +1177,19 @@ else:
                         plan_name = f"₹{sel_amt}"
                     
                     if st.session_state.get("payment_pending"):
-                        st.markdown(f"<div class='wait-box'><h2>⏳ Wait for founder approval</h2><p>You selected <b>{plan_name}</b></p><p>Payment received - Founder will approve within few hours - Then your plan becomes green</p></div>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='wait-box'><h2>⏳ Wait for founder approval</h2><p>You selected <b>{plan_name}</b></p><p>Payment received - Founder will approve within few hours</p></div>", unsafe_allow_html=True)
                     else:
                         st.markdown(f"<h2>Subscription Required - {percent_text} Ready</h2>", unsafe_allow_html=True)
-                        st.warning(f"Your cleaned file is {percent_text} ready - Complete subscription to download")
+                        st.warning(f"Your cleaned file is {percent_text} ready - Complete payment")
                     
                     if sel_amt == STARTER_PRICE:
                         st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
                         st.markdown("### Starter Plan - ₹49 One-Time - 2,000 Rows Credit")
-                        st.markdown("Credit Never Expires - All 10 Tools - No Watermark")
+                        st.markdown("Credit Never Expires - All 10 Tools")
                         upi_49=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={STARTER_PRICE}&cu=INR&tn=VeriSame Starter"
-                        st.link_button(f"Pay ₹{STARTER_PRICE} via UPI", upi_49, use_container_width=True, type="primary", key="pay_49_3plan")
+                        st.link_button(f"Pay ₹{STARTER_PRICE} via UPI", upi_49, use_container_width=True, type="primary", key="pay_49_4col")
                         display_qr(upi_49, STARTER_PRICE)
-                        if st.button(f"I Paid ₹{STARTER_PRICE}", key="btn_paid_49_3plan", type="primary", use_container_width=True):
+                        if st.button(f"I Paid ₹{STARTER_PRICE}", key="btn_paid_49_4col", type="primary", use_container_width=True):
                             data=load_db()
                             data[st.session_state.email]={"plan":"starter","amt":STARTER_PRICE,"days":36500,"expiry":(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"),"status":"PENDING"}
                             save_db(data)
@@ -1158,11 +1202,11 @@ else:
                         q1,q2=st.columns(2)
                         with q1:
                             st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
-                            st.markdown("### 1 Month Plan - 30 Days - ₹299")
+                            st.markdown("### 1 Month - Start with 299")
                             upi_299=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_1M}&cu=INR&tn=VeriSame 1Month"
-                            st.link_button(f"Pay ₹{PRO_1M} via UPI", upi_299, use_container_width=True, type="primary", key="pay_299_3plan")
+                            st.link_button(f"Pay ₹{PRO_1M} via UPI", upi_299, use_container_width=True, type="primary", key="pay_299_4col")
                             display_qr(upi_299, PRO_1M)
-                            if st.button(f"I Paid ₹{PRO_1M}", key="btn_paid_299_3plan", type="primary", use_container_width=True):
+                            if st.button(f"I Paid ₹{PRO_1M}", key="btn_paid_299_4col", type="primary", use_container_width=True):
                                 data=load_db()
                                 data[st.session_state.email]={"plan":"pro","amt":PRO_1M,"days":30,"expiry":(datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d"),"status":"PENDING"}
                                 save_db(data)
@@ -1173,11 +1217,11 @@ else:
                             st.markdown("</div>", unsafe_allow_html=True)
                         with q2:
                             st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
-                            st.markdown("### 6 Months Plan - 180 Days - ₹1499")
+                            st.markdown("### 6 Months - Start with 1499")
                             upi_1499=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_6M}&cu=INR&tn=VeriSame 6Months"
-                            st.link_button(f"Pay ₹{PRO_6M} via UPI", upi_1499, use_container_width=True, type="primary", key="pay_1499_3plan")
+                            st.link_button(f"Pay ₹{PRO_6M} via UPI", upi_1499, use_container_width=True, type="primary", key="pay_1499_4col")
                             display_qr(upi_1499, PRO_6M)
-                            if st.button(f"I Paid ₹{PRO_6M}", key="btn_paid_1499_3plan", type="primary", use_container_width=True):
+                            if st.button(f"I Paid ₹{PRO_6M}", key="btn_paid_1499_4col", type="primary", use_container_width=True):
                                 data=load_db()
                                 data[st.session_state.email]={"plan":"pro","amt":PRO_6M,"days":180,"expiry":(datetime.now()+timedelta(days=180)).strftime("%Y-%m-%d"),"status":"PENDING"}
                                 save_db(data)
@@ -1196,7 +1240,7 @@ else:
                     csv=df_clean.to_csv(index=False).encode()
                     with c1:
                         st.markdown('<div class="red-btn">', unsafe_allow_html=True)
-                        if st.download_button(f"CSV - {percent_text}", csv, f"{safe}_{suffix}_cleaned.csv", mime="text/csv", key="dl_csv_paid_3plan", use_container_width=True, type="primary"):
+                        if st.download_button(f"CSV - {percent_text}", csv, f"{safe}_{suffix}_cleaned.csv", mime="text/csv", key="dl_csv_paid_4col", use_container_width=True, type="primary"):
                             st.balloons()
                         st.markdown('</div>', unsafe_allow_html=True)
                     with c2:
@@ -1205,11 +1249,11 @@ else:
                             df_clean.to_excel(ex, index=False, engine='openpyxl')
                             ex.seek(0)
                             st.markdown('<div class="white-red-btn">', unsafe_allow_html=True)
-                            if st.download_button(f"Excel - {percent_text}", ex.getvalue(), f"{safe}_{suffix}_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_paid_3plan", use_container_width=True):
+                            if st.download_button(f"Excel - {percent_text}", ex.getvalue(), f"{safe}_{suffix}_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_paid_4col", use_container_width=True):
                                 st.balloons()
                             st.markdown('</div>', unsafe_allow_html=True)
                     with c3:
                         pdf=generate_pdf(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean)
                         if pdf:
-                            if st.download_button(f"PDF - {percent_text}", pdf, f"{safe}_{suffix}_audit.pdf", mime="application/pdf", key="dl_pdf_paid_3plan", use_container_width=True):
+                            if st.download_button(f"PDF - {percent_text}", pdf, f"{safe}_{suffix}_audit.pdf", mime="application/pdf", key="dl_pdf_paid_4col", use_container_width=True):
                                 st.balloons()
