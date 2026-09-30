@@ -1,0 +1,64 @@
+name: Keep VeriSame Awake 24x7 - Always On
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Har 5 minute pe app ko jagayega
+  workflow_dispatch:  # Manual bhi chala sakte ho
+
+jobs:
+  keep-awake:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Playwright (Real Browser)
+        run: |
+          pip install playwright
+          playwright install chromium --with-deps
+
+      - name: Visit VeriSame Like Real User - Keeps App Awake
+        run: |
+          python -c "
+          from playwright.sync_api import sync_playwright
+          import time
+          print('Starting to wake up VeriSame...')
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              page = browser.new_page()
+              try:
+                  # IMPORTANT: Yahan apna app ka link dalo
+                  app_url = 'https://verisame.streamlit.app'
+                  print(f'Visiting {app_url}...')
+                  page.goto(app_url, timeout=90000, wait_until='domcontentloaded')
+                  # 45 second ruko taaki Streamlit ko lage real user hai
+                  time.sleep(45)
+                  print('✅ VeriSame is AWAKE! App will stay up 24x7')
+                  # Screenshot le lo proof ke liye (optional)
+                  page.screenshot(path='awake_proof.png')
+              except Exception as e:
+                  print(f'⚠️ Error but still trying: {e}')
+                  # Backup: simple HTTP ping bhi karo
+                  import requests
+                  try:
+                      requests.get('https://verisame.streamlit.app/_stcore/health', timeout=30)
+                      print('Backup health ping sent')
+                  except:
+                      pass
+              finally:
+                  browser.close()
+          "
+      
+      - name: Upload proof (optional)
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: awake-proof
+          path: awake_proof.png
+          if-no-files-found: ignore
