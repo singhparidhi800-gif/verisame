@@ -70,7 +70,7 @@ def load_db():
                                         info["expiry"] = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
                                     info["auto_approved"] = True
                                     changed = True
-                            except:
+                            except Exception as e:
                                 pass
                     if changed:
                         save_db(data)
@@ -514,9 +514,9 @@ if "problem_cells" not in st.session_state:
     st.session_state.problem_cells = set()
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = {}
-for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending','payment_time']:
+for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending']:
     if k not in st.session_state:
-        st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices','payment_time'] else False
+        st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
 
 query_email = st.query_params.get("email", None)
 if query_email and not st.session_state.email and not st.session_state.selected_plan:
@@ -664,12 +664,11 @@ if st.session_state.plan or st.session_state.email_entered:
             st.session_state.hundred_done=False
             st.session_state.ambiguous_list=None
             st.session_state.payment_pending=False
-            st.session_state.payment_time=None
             st.rerun()
     with b2:
         if st.button("Logout", key="nav_logout_restore", use_container_width=True):
-            for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending','payment_time']:
-                st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices','payment_time'] else False
+            for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending']:
+                st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
             st.session_state.uploaded_files={}
             st.session_state.changed_cells=set()
             st.session_state.problem_cells=set()
@@ -682,7 +681,7 @@ with col1:
 with col2:
     st.markdown("""<div style="margin-top: 50px;"><h1>VeriSame</h1><span class="tagline-badge">Clean logic. Clear result</span><div class="subtitle">The Fastest Way to Clean Your Data</div></div>""", unsafe_allow_html=True)
 
-st.markdown(f"""<div class='pro-banner'><h2>UNLOCK 10 PREMIUM AI TOOLS - All Plans Include All 10 Tools</h2><div style='margin-top:12px;'>{''.join([f'<span class=\"tool-chip\">{t}</span>' for t in ['Smart Date','AI Fill','Email AI','Phone AI','Case AI','Symbol Clean','Header Clean','Fuzzy Dedup','Trim AI','Spell AI']])}</div></div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class='pro-banner'><h2>UNLOCK 10 PREMIUM AI TOOLS - All Plans Include All 10 Tools</h2><div style='margin-top:12px;'>{''.join([f'<span class="tool-chip">{t}</span>' for t in ['Smart Date','AI Fill','Email AI','Phone AI','Case AI','Symbol Clean','Header Clean','Fuzzy Dedup','Trim AI','Spell AI']])}</div></div>""", unsafe_allow_html=True)
 
 if "admin" in st.query_params:
     if st.query_params.get("admin")==ADMIN_PASS:
@@ -1023,43 +1022,28 @@ else:
                     sel_amt = user_info.get("amt", st.session_state.get("selected_amt", 0))
                     clean_msg = "100% successfully" if is_hundred else "95% - Confirm for 100%"
                     
-                    # CHECK PENDING - HIDDEN BACKGROUND LOGIC
+                    # CHECK PENDING - FIXED WITHOUT JS RELOAD TO KEEP FILE SAFE
                     pending_info = db.get(st.session_state.email, {})
                     created_str = pending_info.get("created", "")
                     is_pending = pending_info.get("status") == "PENDING" and created_str != ""
                     
                     if is_pending:
                         try:
-                            if "." in created_str:
-                                created_str_clean = created_str.split(".")[0]
-                            else:
-                                created_str_clean = created_str
-                            created_time = datetime.strptime(created_str_clean, "%Y-%m-%d %H:%M:%S")
+                            created_time = datetime.strptime(created_str.split(".")[0], "%Y-%m-%d %H:%M:%S")
                             elapsed = (datetime.now() - created_time).total_seconds()
-                            
                             if elapsed >= 60:
-                                st.success("🎉 Payment verified! Download ready!")
                                 st.balloons()
-                                time.sleep(0.5)
                                 st.rerun()
                             else:
-                                # HIDDEN - No countdown visible to user, just spinner
                                 st.markdown("""
                                 <div style='background: #f5f3ff; border: 2px solid #9333ea; border-radius: 16px; padding: 16px; text-align: center; margin: 16px 0;'>
                                     <p style='margin:0; color: #6b21a8; font-weight: 700;'>✅ Payment received! Your download is being prepared...</p>
-                                    <p style='margin:4px 0 0 0; color: #6b7280; font-size: 0.9rem;'>Please wait, file is safe!</p>
+                                    <p style='margin:4px 0 0 0; color: #6b7280; font-size: 0.9rem;'>Please wait, file is safe! Auto unlock in background.</p>
                                 </div>
                                 """, unsafe_allow_html=True)
-                                with st.spinner("Preparing your download..."):
-                                    # Hidden auto-refresh every 4 sec in background - checks for approval
-                                    components.html("""
-                                    <script>
-                                        setTimeout(function(){
-                                            window.parent.location.reload();
-                                        }, 4000);
-                                    </script>
-                                    """, height=0)
-                                st.stop()
+                                with st.spinner(""):
+                                    time.sleep(4)
+                                    st.rerun()
                         except:
                             pass
                     
