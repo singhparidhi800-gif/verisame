@@ -34,14 +34,12 @@ FREE_LIMIT, STARTER_LIMIT = 200, 2000
 ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "admin123") if hasattr(st, 'secrets') else "admin123"
 FEEDBACK_FILE = "feedback_db.json"
 FREE_CLICKS_FILE = "free_clicks.json"
-# NTFY - FREE notification, same topic you subscribed in app
 NTFY_TOPIC = st.secrets.get("NTFY_TOPIC", "verisame-anugya-97949-payments") if hasattr(st, 'secrets') else "verisame-anugya-97949-payments"
 
 def send_notification(email, amt, plan_name):
-    """Send free push to your ntfy app - no Premium needed"""
     try:
         url = f"https://ntfy.sh/{NTFY_TOPIC}"
-        msg = f"💰 New Payment!\nEmail: {email}\nPlan: {plan_name} - Rs{amt}\nTime: {datetime.now().strftime('%I:%M %p, %d %b')}\nAuto-approve in 3 min"
+        msg = f"💰 New Payment!\nEmail: {email}\nPlan: {plan_name} - Rs{amt}\nTime: {datetime.now().strftime('%I:%M %p, %d %b')}"
         requests.post(url, data=msg.encode('utf-8'), headers={"Title": f"VeriSame Rs{amt} Paid!", "Priority": "high", "Tags": "moneybag,heavy_dollar_sign"}, timeout=8)
         return True
     except:
@@ -53,18 +51,16 @@ def load_db():
             with open("backup_orders.json", "r") as f:
                 data = json.load(f)
                 if isinstance(data, dict):
-                    # 3 MIN AUTO-APPROVE - fast
                     changed = False
                     for email, info in data.items():
                         if info.get("status") == "PENDING":
                             try:
                                 created_str = info.get("created", "")
-                                # handle both formats with and without microseconds
                                 if "." in created_str:
                                     created_str = created_str.split(".")[0]
                                 created_time = datetime.strptime(created_str, "%Y-%m-%d %H:%M:%S")
-                                diff_minutes = (datetime.now() - created_time).total_seconds() / 60
-                                if diff_minutes > 3:  # 3 min only
+                                diff_seconds = (datetime.now() - created_time).total_seconds()
+                                if diff_seconds > 60:
                                     info["status"] = "PAID"
                                     if info.get("amt") == STARTER_PRICE:
                                         info["expiry"] = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")
@@ -74,7 +70,7 @@ def load_db():
                                         info["expiry"] = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
                                     info["auto_approved"] = True
                                     changed = True
-                            except Exception as e:
+                            except:
                                 pass
                     if changed:
                         save_db(data)
@@ -137,7 +133,6 @@ def enforce_delay():
         bar.progress(i+1)
     bar.empty()
 
-# ===== 10 TOOLS =====
 def tool1_date(df, problem_cells):
     fixed = 0
     try:
@@ -519,9 +514,9 @@ if "problem_cells" not in st.session_state:
     st.session_state.problem_cells = set()
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = {}
-for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending']:
+for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending','payment_time']:
     if k not in st.session_state:
-        st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
+        st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices','payment_time'] else False
 
 query_email = st.query_params.get("email", None)
 if query_email and not st.session_state.email and not st.session_state.selected_plan:
@@ -630,13 +625,13 @@ if st.session_state.email and st.session_state.plan != "free":
                         st.sidebar.markdown(f"<div class='plan-status-box plan-active'>🟢 {name} - {days_left} Days Left</div>", unsafe_allow_html=True)
             else:
                 if sel_amt == STARTER_PRICE:
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Starter ₹49 - Selected - Auto 3 min</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Starter ₹49 - Selected</div>", unsafe_allow_html=True)
                 elif sel_amt == PRO_1M:
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Pro ₹299 - 30 Days - Selected - Auto 3 min</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Pro ₹299 - 30 Days - Selected</div>", unsafe_allow_html=True)
                 elif sel_amt == PRO_6M:
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Pro ₹1499 - 180 Days - Selected - Auto 3 min</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Pro ₹1499 - 180 Days - Selected</div>", unsafe_allow_html=True)
                 else:
-                    st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Selected - Auto 3 min</div>", unsafe_allow_html=True)
+                    st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Selected</div>", unsafe_allow_html=True)
         except:
             st.sidebar.markdown(f"<div class='plan-status-box plan-selected'>🟡 Selected Plan</div>", unsafe_allow_html=True)
     render_chat(is_sidebar=True)
@@ -669,11 +664,12 @@ if st.session_state.plan or st.session_state.email_entered:
             st.session_state.hundred_done=False
             st.session_state.ambiguous_list=None
             st.session_state.payment_pending=False
+            st.session_state.payment_time=None
             st.rerun()
     with b2:
         if st.button("Logout", key="nav_logout_restore", use_container_width=True):
-            for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending']:
-                st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
+            for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','admin_approved','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','payment_pending','payment_time']:
+                st.session_state[k] = None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices','payment_time'] else False
             st.session_state.uploaded_files={}
             st.session_state.changed_cells=set()
             st.session_state.problem_cells=set()
@@ -690,12 +686,8 @@ st.markdown(f"""<div class='pro-banner'><h2>UNLOCK 10 PREMIUM AI TOOLS - All Pla
 
 if "admin" in st.query_params:
     if st.query_params.get("admin")==ADMIN_PASS:
-        st.title("🔐 Secret Dashboard - 3 MIN AUTO + FREE NTFY")
-        st.success(f"✅ 3 min auto-approve ON + Notification topic: {NTFY_TOPIC} + UptimeRobot 1 Up")
-        st.markdown(f"""
-        **Your ntfy setup:** You subscribed to `{NTFY_TOPIC}` in app
-        **Test:** Do a fake payment - you'll get push in 2 sec
-        """)
+        st.title("🔐 Secret Dashboard - 1 MIN AUTO")
+        st.success(f"✅ 1 min auto-approve ON | Topic: {NTFY_TOPIC}")
         data=load_db()
         fbs=load_feedback()
         free_data=load_free_clicks()
@@ -913,7 +905,7 @@ else:
                 except Exception as e:
                     st.error(f"Error: {e}")
     with tab2:
-        if st.button("Load Sample Data", key="btn_load_sample_restore", use_container_width=True, type="primary"):
+        if st.button("Load Sample Data", key="btn_load_sample_restore", type="primary", use_container_width=True):
             sample=pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT"],"Email":["RAHUL@GMAIL.COM","bad@gmai.com","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["100","250","50000"]})
             clean=sample.copy()
             st.session_state.uploaded_files={"sample_data.csv":{"original":sample.copy().reset_index(drop=True),"clean":clean,"orig_len":len(sample),"empty_fixed":int(sample.isna().sum().sum()),"changed_cells":set(),"problem_cells":set()}}
@@ -1031,57 +1023,93 @@ else:
                     sel_amt = user_info.get("amt", st.session_state.get("selected_amt", 0))
                     clean_msg = "100% successfully" if is_hundred else "95% - Confirm for 100%"
                     
-                    if sel_amt == STARTER_PRICE:
-                        st.markdown(f"<div class='upgrade-msg'><h3>✅ Your file is cleaned {clean_msg} — Upgrade to ₹49 to download full file</h3><p>⏰ Auto in 3 min + Phone notification</p></div>", unsafe_allow_html=True)
-                        st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
-                        st.markdown("### Starter - ₹49 One-Time - Auto 3 min")
-                        upi_49=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={STARTER_PRICE}&cu=INR&tn=VeriSame Starter"
-                        st.link_button(f"Pay ₹{STARTER_PRICE} via UPI", upi_49, use_container_width=True, type="primary", key="pay_49_restore")
-                        display_qr(upi_49, STARTER_PRICE)
-                        if st.button(f"I Paid ₹{STARTER_PRICE}", key="btn_paid_49_restore", type="primary", use_container_width=True):
-                            data=load_db()
-                            data[st.session_state.email]={"plan":"starter","amt":STARTER_PRICE,"days":36500,"expiry":(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
-                            save_db(data)
-                            send_notification(st.session_state.email, STARTER_PRICE, "Starter ₹49")
-                            st.success("✅ Submitted! Phone pe notification aaya hoga + Auto 3 min me download unlock!")
-                            st.balloons()
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
-                    elif sel_amt == PRO_1M:
-                        st.markdown(f"<div class='upgrade-msg'><h3>✅ Your file is cleaned {clean_msg} — Upgrade to ₹299 to download full file</h3><p>⏰ Auto 3 min + Phone notification</p></div>", unsafe_allow_html=True)
-                        st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
-                        st.markdown("### Pro - ₹299 - 30 Days - Auto 3 min")
-                        upi_299=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_1M}&cu=INR&tn=VeriSame 1Month"
-                        st.link_button(f"Pay ₹{PRO_1M} via UPI", upi_299, use_container_width=True, type="primary", key="pay_299_restore")
-                        display_qr(upi_299, PRO_1M)
-                        if st.button(f"I Paid ₹{PRO_1M}", key="btn_paid_299_restore", type="primary", use_container_width=True):
-                            data=load_db()
-                            data[st.session_state.email]={"plan":"pro","amt":PRO_1M,"days":30,"expiry":(datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
-                            save_db(data)
-                            send_notification(st.session_state.email, PRO_1M, "Pro ₹299")
-                            st.success("✅ Submitted! Notification sent + Auto 3 min!")
-                            st.balloons()
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
-                    elif sel_amt == PRO_6M:
-                        st.markdown(f"<div class='upgrade-msg'><h3>✅ Your file is cleaned {clean_msg} — Upgrade to ₹1499 to download full file</h3><p>⏰ Auto 3 min + Phone notification</p></div>", unsafe_allow_html=True)
-                        st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
-                        st.markdown("### Pro - ₹1499 - 180 Days (6 Months) - Best Value")
-                        upi_1499=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_6M}&cu=INR&tn=VeriSame 6Months"
-                        st.link_button(f"Pay ₹{PRO_6M} via UPI", upi_1499, use_container_width=True, type="primary", key="pay_1499_restore")
-                        display_qr(upi_1499, PRO_6M)
-                        if st.button(f"I Paid ₹{PRO_6M}", key="btn_paid_1499_restore", type="primary", use_container_width=True):
-                            data=load_db()
-                            data[st.session_state.email]={"plan":"pro","amt":PRO_6M,"days":180,"expiry":(datetime.now()+timedelta(days=180)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
-                            save_db(data)
-                            send_notification(st.session_state.email, PRO_6M, "Pro ₹1499 180 Days")
-                            st.success("✅ Submitted! Notification sent + Auto 3 min!")
-                            st.balloons()
-                            st.rerun()
-                        st.markdown("</div>", unsafe_allow_html=True)
+                    # CHECK PENDING - HIDDEN BACKGROUND LOGIC
+                    pending_info = db.get(st.session_state.email, {})
+                    created_str = pending_info.get("created", "")
+                    is_pending = pending_info.get("status") == "PENDING" and created_str != ""
+                    
+                    if is_pending:
+                        try:
+                            if "." in created_str:
+                                created_str_clean = created_str.split(".")[0]
+                            else:
+                                created_str_clean = created_str
+                            created_time = datetime.strptime(created_str_clean, "%Y-%m-%d %H:%M:%S")
+                            elapsed = (datetime.now() - created_time).total_seconds()
+                            
+                            if elapsed >= 60:
+                                st.success("🎉 Payment verified! Download ready!")
+                                st.balloons()
+                                time.sleep(0.5)
+                                st.rerun()
+                            else:
+                                # HIDDEN - No countdown visible to user, just spinner
+                                st.markdown("""
+                                <div style='background: #f5f3ff; border: 2px solid #9333ea; border-radius: 16px; padding: 16px; text-align: center; margin: 16px 0;'>
+                                    <p style='margin:0; color: #6b21a8; font-weight: 700;'>✅ Payment received! Your download is being prepared...</p>
+                                    <p style='margin:4px 0 0 0; color: #6b7280; font-size: 0.9rem;'>Please wait, file is safe!</p>
+                                </div>
+                                """, unsafe_allow_html=True)
+                                with st.spinner("Preparing your download..."):
+                                    # Hidden auto-refresh every 4 sec in background - checks for approval
+                                    components.html("""
+                                    <script>
+                                        setTimeout(function(){
+                                            window.parent.location.reload();
+                                        }, 4000);
+                                    </script>
+                                    """, height=0)
+                                st.stop()
+                        except:
+                            pass
+                    
+                    if not is_pending:
+                        if sel_amt == STARTER_PRICE:
+                            st.markdown(f"<div class='upgrade-msg'><h3>✅ Your file is cleaned {clean_msg} — Upgrade to ₹49 to download full file</h3></div>", unsafe_allow_html=True)
+                            st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
+                            st.markdown("### Starter - ₹49 One-Time")
+                            upi_49=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={STARTER_PRICE}&cu=INR&tn=VeriSame Starter"
+                            st.link_button(f"Pay ₹{STARTER_PRICE} via UPI", upi_49, use_container_width=True, type="primary", key="pay_49_restore")
+                            display_qr(upi_49, STARTER_PRICE)
+                            if st.button(f"I Paid ₹{STARTER_PRICE}", key="btn_paid_49_restore", type="primary", use_container_width=True):
+                                data=load_db()
+                                data[st.session_state.email]={"plan":"starter","amt":STARTER_PRICE,"days":36500,"expiry":(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
+                                save_db(data)
+                                send_notification(st.session_state.email, STARTER_PRICE, "Starter ₹49")
+                                st.rerun()
+                            st.markdown("</div>", unsafe_allow_html=True)
+                        elif sel_amt == PRO_1M:
+                            st.markdown(f"<div class='upgrade-msg'><h3>✅ Your file is cleaned {clean_msg} — Upgrade to ₹299 to download full file</h3></div>", unsafe_allow_html=True)
+                            st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
+                            st.markdown("### Pro - ₹299 - 30 Days")
+                            upi_299=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_1M}&cu=INR&tn=VeriSame 1Month"
+                            st.link_button(f"Pay ₹{PRO_1M} via UPI", upi_299, use_container_width=True, type="primary", key="pay_299_restore")
+                            display_qr(upi_299, PRO_1M)
+                            if st.button(f"I Paid ₹{PRO_1M}", key="btn_paid_299_restore", type="primary", use_container_width=True):
+                                data=load_db()
+                                data[st.session_state.email]={"plan":"pro","amt":PRO_1M,"days":30,"expiry":(datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
+                                save_db(data)
+                                send_notification(st.session_state.email, PRO_1M, "Pro ₹299")
+                                st.rerun()
+                            st.markdown("</div>", unsafe_allow_html=True)
+                        elif sel_amt == PRO_6M:
+                            st.markdown(f"<div class='upgrade-msg'><h3>✅ Your file is cleaned {clean_msg} — Upgrade to ₹1499 to download full file</h3></div>", unsafe_allow_html=True)
+                            st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
+                            st.markdown("### Pro - ₹1499 - 180 Days (6 Months) - Best Value")
+                            upi_1499=f"upi://pay?pa={UPI_ID}&pn=VeriSame&am={PRO_6M}&cu=INR&tn=VeriSame 6Months"
+                            st.link_button(f"Pay ₹{PRO_6M} via UPI", upi_1499, use_container_width=True, type="primary", key="pay_1499_restore")
+                            display_qr(upi_1499, PRO_6M)
+                            if st.button(f"I Paid ₹{PRO_6M}", key="btn_paid_1499_restore", type="primary", use_container_width=True):
+                                data=load_db()
+                                data[st.session_state.email]={"plan":"pro","amt":PRO_6M,"days":180,"expiry":(datetime.now()+timedelta(days=180)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
+                                save_db(data)
+                                send_notification(st.session_state.email, PRO_6M, "Pro ₹1499 180 Days")
+                                st.rerun()
+                            st.markdown("</div>", unsafe_allow_html=True)
                 else:
                     st.markdown(f"<h2>Export Data - {percent_text}</h2>", unsafe_allow_html=True)
-                    st.success(f"Download Ready! {percent_text}")
+                    st.success(f"🎉 Download Ready! {percent_text}")
+                    st.balloons()
                     c1,c2,c3=st.columns(3)
                     safe=sel_file[:30]
                     suffix = "100_percent" if is_hundred else "95_percent"
