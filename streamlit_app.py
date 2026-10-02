@@ -35,8 +35,10 @@ ADMIN_PASS = st.secrets.get("ADMIN_PASSWORD", "admin123") if hasattr(st, 'secret
 FEEDBACK_FILE = "feedback_db.json"
 FREE_CLICKS_FILE = "free_clicks.json"
 NTFY_TOPIC = st.secrets.get("NTFY_TOPIC", "verisame-anugya-97949-payments") if hasattr(st, 'secrets') else "verisame-anugya-97949-payments"
+PAYMENT_WAIT_SECONDS = 60
 
 def send_notification(email, amt, plan_name):
+    """KEPT - ntfy phone notification"""
     try:
         url = f"https://ntfy.sh/{NTFY_TOPIC}"
         msg = f"💰 New Payment!\nEmail: {email}\nPlan: {plan_name} - Rs{amt}\nTime: {datetime.now().strftime('%I:%M %p, %d %b')}"
@@ -60,7 +62,7 @@ def load_db():
                                     created_str = created_str.split(".")[0]
                                 created_time = datetime.strptime(created_str, "%Y-%m-%d %H:%M:%S")
                                 diff_seconds = (datetime.now() - created_time).total_seconds()
-                                if diff_seconds > 60:
+                                if diff_seconds > PAYMENT_WAIT_SECONDS:  # 1 MIN AUTO - CHANGED FROM 3 MIN
                                     info["status"] = "PAID"
                                     if info.get("amt") == STARTER_PRICE:
                                         info["expiry"] = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")
@@ -70,7 +72,7 @@ def load_db():
                                         info["expiry"] = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
                                     info["auto_approved"] = True
                                     changed = True
-                            except Exception as e:
+                            except:
                                 pass
                     if changed:
                         save_db(data)
@@ -455,6 +457,32 @@ def display_qr(upi_uri, amt):
         pass
     st.image(f"https://api.qrserver.com/v1/create-qr-code/?size=230x230&data={urllib.parse.quote(upi_uri)}", width=230, caption=f"Pay ₹{amt}")
 
+def show_payment_waiting(created_time_str):
+    try:
+        if "." in created_time_str:
+            created_time_str = created_time_str.split(".")[0]
+        created_time = datetime.strptime(created_time_str, "%Y-%m-%d %H:%M:%S")
+        elapsed = (datetime.now() - created_time).total_seconds()
+        remaining = max(0, PAYMENT_WAIT_SECONDS - elapsed)
+        if elapsed >= PAYMENT_WAIT_SECONDS:
+            return True
+        else:
+            st.markdown(f"""
+            <div style='background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2.5px solid #3b82f6; border-radius: 20px; padding: 24px; text-align: center; margin: 16px 0;'>
+                <h3 style='color: #1e40af !important; margin: 0;'>⏳ Payment Received Successfully</h3>
+                <p style='color: #1e3a8a !important; font-size: 1.1rem; margin-top: 12px; font-weight: 600;'>
+                Thank you for your payment.<br>Your file is being prepared securely.<br>Please wait, your download will be ready shortly.
+                </p>
+                <p style='color: #6b7280 !important; font-size: 0.95rem; margin-top: 8px;'>Estimated time: {int(remaining)} seconds remaining</p>
+            </div>
+            """, unsafe_allow_html=True)
+            progress_val = min(1.0, elapsed / PAYMENT_WAIT_SECONDS)
+            st.progress(progress_val, text=f"Preparing your file... {int(progress_val*100)}%")
+            return False
+    except:
+        st.info("Thank you for your payment. Please wait while your file is being prepared. Your secure download will be available shortly.")
+        return False
+
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&family=Outfit:wght@800;900&display=swap');
@@ -681,12 +709,12 @@ with col1:
 with col2:
     st.markdown("""<div style="margin-top: 50px;"><h1>VeriSame</h1><span class="tagline-badge">Clean logic. Clear result</span><div class="subtitle">The Fastest Way to Clean Your Data</div></div>""", unsafe_allow_html=True)
 
-st.markdown(f"""<div class='pro-banner'><h2>UNLOCK 10 PREMIUM AI TOOLS - All Plans Include All 10 Tools</h2><div style='margin-top:12px;'>{''.join([f'<span class="tool-chip">{t}</span>' for t in ['Smart Date','AI Fill','Email AI','Phone AI','Case AI','Symbol Clean','Header Clean','Fuzzy Dedup','Trim AI','Spell AI']])}</div></div>""", unsafe_allow_html=True)
+st.markdown(f"""<div class='pro-banner'><h2>UNLOCK 10 PREMIUM AI TOOLS - All Plans Include All 10 Tools</h2><div style='margin-top:12px;'>{''.join([f'<span class=\"tool-chip\">{t}</span>' for t in ['Smart Date','AI Fill','Email AI','Phone AI','Case AI','Symbol Clean','Header Clean','Fuzzy Dedup','Trim AI','Spell AI']])}</div></div>""", unsafe_allow_html=True)
 
 if "admin" in st.query_params:
     if st.query_params.get("admin")==ADMIN_PASS:
-        st.title("🔐 Secret Dashboard - 1 MIN AUTO")
-        st.success(f"✅ 1 min auto-approve ON | Topic: {NTFY_TOPIC}")
+        st.title("🔐 Secret Dashboard")
+        st.success(f"✅ Auto-approve active | Topic: {NTFY_TOPIC} | Instant approve gives immediate download")
         data=load_db()
         fbs=load_feedback()
         free_data=load_free_clicks()
@@ -711,6 +739,7 @@ if "admin" in st.query_params:
                                 data[email]["status"]="PAID"
                                 data[email]["expiry"]=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
                                 save_db(data)
+                                st.success(f"Approved {email} - instant download now!")
                                 st.rerun()
                     with c3:
                         if st.button("Delete", key=f"del_s_{email}_restore", use_container_width=True):
@@ -737,6 +766,7 @@ if "admin" in st.query_params:
                                 data[email]["status"]="PAID"
                                 data[email]["expiry"]=(datetime.now()+timedelta(days=180 if data[email].get("amt")==PRO_6M else 30)).strftime("%Y-%m-%d")
                                 save_db(data)
+                                st.success(f"Approved {email} - instant download now!")
                                 st.rerun()
                     with c3:
                         if st.button("Delete", key=f"del_p_{email}_restore", use_container_width=True):
@@ -806,7 +836,6 @@ if st.session_state.plan is None:
             st.session_state.email_entered = True
             st.session_state.admin_approved = True
             st.rerun()
-        
         if st.session_state.selected_plan == "starter":
             plan_text = f"STARTER - ₹{STARTER_PRICE} One-Time - 2,000 Rows Credit"
         else:
@@ -824,9 +853,22 @@ if st.session_state.plan is None:
                     if "@" in email_input and "." in email_input:
                         st.session_state.email=email_input
                         st.session_state.email_entered=True
-                        st.session_state.plan="starter" if st.session_state.selected_plan=="starter" else "pro"
-                        st.session_state.amt=st.session_state.selected_amt
-                        st.rerun()
+                        data=load_db()
+                        if st.session_state.selected_plan=="starter":
+                            exp=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                            data[email_input]={"plan":"starter","status":"PENDING","amt":STARTER_PRICE,"days":36500,"expiry":exp,"created":str(datetime.now())}
+                            save_db(data)
+                            st.session_state.plan="starter"
+                            st.session_state.amt=STARTER_PRICE
+                            st.rerun()
+                        else:
+                            exact=180 if st.session_state.selected_amt==PRO_6M else 30
+                            exp=(datetime.now()+timedelta(days=exact)).strftime("%Y-%m-%d")
+                            data[email_input]={"plan":"pro","status":"PENDING","amt":st.session_state.selected_amt,"days":exact,"expiry":exp,"created":str(datetime.now())}
+                            save_db(data)
+                            st.session_state.plan="pro"
+                            st.session_state.amt=st.session_state.selected_amt
+                            st.rerun()
                     else:
                         st.error("Enter valid email")
             with b2:
@@ -891,7 +933,7 @@ else:
                 except Exception as e:
                     st.error(f"Error: {e}")
     with tab2:
-        if st.button("Load Sample Data", key="btn_load_sample_restore", type="primary", use_container_width=True):
+        if st.button("Load Sample Data", key="btn_load_sample_restore", use_container_width=True, type="primary"):
             sample=pd.DataFrame({"Date":["12/5/2024","","15-03-2023"],"Name":[" RAHUL KUMAR ","priya sharma","AMIT"],"Email":["RAHUL@GMAIL.COM","bad@gmai.com","priya@email.com"],"Phone":["98765-43210","9123 456 789","000123"],"Salary":["100","250","50000"]})
             clean=sample.copy()
             st.session_state.uploaded_files={"sample_data.csv":{"original":sample.copy().reset_index(drop=True),"clean":clean,"orig_len":len(sample),"empty_fixed":int(sample.isna().sum().sum()),"changed_cells":set(),"problem_cells":set()}}
@@ -970,10 +1012,8 @@ else:
                 st.metric("Duplicates", max(0, orig_len-len(df_clean)))
             with c4:
                 st.metric("Empty Fixed", st.session_state.empty_fixed)
-            
             if is_hundred:
                 st.markdown("<div class='hundred-box'><h3>🎉 100% Clean Achieved!</h3></div>", unsafe_allow_html=True)
-
             st.markdown(f"<h3>Cleaned Preview - 10 Rows - {percent_text}</h3>", unsafe_allow_html=True)
             styled=apply_style(df_clean.head(10))
             st.dataframe(styled, use_container_width=True, height=350)
@@ -1007,35 +1047,58 @@ else:
             elif st.session_state.plan in ["starter","pro"]:
                 if not is_paid:
                     sel_amt = user_info.get("amt", st.session_state.get("selected_amt", 0))
-                    if sel_amt == 0:
-                        sel_amt = STARTER_PRICE if st.session_state.plan=="starter" else st.session_state.amt
                     clean_msg = "100% successfully" if is_hundred else "95% - Confirm for 100%"
-                    
-                    pending_info = db.get(st.session_state.email, {})
-                    created_str = pending_info.get("created", "")
-                    is_pending = pending_info.get("status") == "PENDING" and created_str != ""
-                    
-                    if is_pending:
-                        try:
-                            created_time = datetime.strptime(created_str.split(".")[0], "%Y-%m-%d %H:%M:%S")
-                            elapsed = (datetime.now() - created_time).total_seconds()
-                            if elapsed >= 60:
-                                st.balloons()
-                                st.rerun()
-                            else:
-                                st.markdown("""
-                                <div style='background: #f5f3ff; border: 2px solid #9333ea; border-radius: 16px; padding: 16px; text-align: center; margin: 16px 0;'>
-                                    <p style='margin:0; color: #6b21a8; font-weight: 700;'>✅ Payment received! Preparing your download...</p>
-                                    <p style='margin:4px 0 0 0; color: #6b7280; font-size: 0.9rem;'>Please wait, file is safe! Auto unlock in background.</p>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                with st.spinner(""):
-                                    time.sleep(4)
+                    created_str = user_info.get("created", "")
+                    # Check if pending - show 1 min waiting
+                    if user_info.get("status") == "PENDING" and created_str:
+                        is_ready = show_payment_waiting(created_str)
+                        if is_ready:
+                            fresh_db = load_db()
+                            if st.session_state.email in fresh_db and fresh_db[st.session_state.email].get("status") == "PENDING":
+                                try:
+                                    c_str = fresh_db[st.session_state.email].get("created","")
+                                    if "." in c_str:
+                                        c_str = c_str.split(".")[0]
+                                    c_time = datetime.strptime(c_str, "%Y-%m-%d %H:%M:%S")
+                                    if (datetime.now() - c_time).total_seconds() >= PAYMENT_WAIT_SECONDS:
+                                        fresh_db[st.session_state.email]["status"] = "PAID"
+                                        if fresh_db[st.session_state.email].get("amt") == STARTER_PRICE:
+                                            fresh_db[st.session_state.email]["expiry"] = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")
+                                        elif fresh_db[st.session_state.email].get("amt") == PRO_6M:
+                                            fresh_db[st.session_state.email]["expiry"] = (datetime.now() + timedelta(days=180)).strftime("%Y-%m-%d")
+                                        else:
+                                            fresh_db[st.session_state.email]["expiry"] = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+                                        fresh_db[st.session_state.email]["auto_approved"] = True
+                                        save_db(fresh_db)
+                                        st.success("✅ Verification complete! Your download is now ready.")
+                                        time.sleep(1)
+                                        st.rerun()
+                                except:
+                                    pass
+                            try:
+                                ct = datetime.strptime(created_str.split(".")[0], "%Y-%m-%d %H:%M:%S")
+                                elapsed = (datetime.now() - ct).total_seconds()
+                                remaining = PAYMENT_WAIT_SECONDS - elapsed
+                                if remaining > 0:
+                                    with st.empty():
+                                        for i in range(int(remaining), 0, -1):
+                                            time.sleep(1)
+                                    fresh_db2 = load_db()
+                                    if st.session_state.email in fresh_db2:
+                                        fresh_db2[st.session_state.email]["status"] = "PAID"
+                                        if fresh_db2[st.session_state.email].get("amt") == STARTER_PRICE:
+                                            fresh_db2[st.session_state.email]["expiry"] = (datetime.now() + timedelta(days=36500)).strftime("%Y-%m-%d")
+                                        elif fresh_db2[st.session_state.email].get("amt") == PRO_6M:
+                                            fresh_db2[st.session_state.email]["expiry"] = (datetime.now() + timedelta(days=180)).strftime("%Y-%m-%d")
+                                        else:
+                                            fresh_db2[st.session_state.email]["expiry"] = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+                                        save_db(fresh_db2)
                                     st.rerun()
-                        except:
-                            pass
-                    
-                    if not is_pending:
+                            except:
+                                pass
+                            if st.button("🔄 Check Download Status", key="check_status", use_container_width=True):
+                                st.rerun()
+                    else:
                         if sel_amt == STARTER_PRICE:
                             st.markdown(f"<div class='upgrade-msg'><h3>✅ Your file is cleaned {clean_msg} — Upgrade to ₹49 to download full file</h3></div>", unsafe_allow_html=True)
                             st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
@@ -1048,6 +1111,8 @@ else:
                                 data[st.session_state.email]={"plan":"starter","amt":STARTER_PRICE,"days":36500,"expiry":(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
                                 save_db(data)
                                 send_notification(st.session_state.email, STARTER_PRICE, "Starter ₹49")
+                                st.success("Payment confirmation received. Please wait while your file is being prepared securely.")
+                                time.sleep(1)
                                 st.rerun()
                             st.markdown("</div>", unsafe_allow_html=True)
                         elif sel_amt == PRO_1M:
@@ -1062,6 +1127,8 @@ else:
                                 data[st.session_state.email]={"plan":"pro","amt":PRO_1M,"days":30,"expiry":(datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
                                 save_db(data)
                                 send_notification(st.session_state.email, PRO_1M, "Pro ₹299")
+                                st.success("Payment confirmation received. Please wait while your file is being prepared securely.")
+                                time.sleep(1)
                                 st.rerun()
                             st.markdown("</div>", unsafe_allow_html=True)
                         elif sel_amt == PRO_6M:
@@ -1076,12 +1143,13 @@ else:
                                 data[st.session_state.email]={"plan":"pro","amt":PRO_6M,"days":180,"expiry":(datetime.now()+timedelta(days=180)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
                                 save_db(data)
                                 send_notification(st.session_state.email, PRO_6M, "Pro ₹1499 180 Days")
+                                st.success("Payment confirmation received. Please wait while your file is being prepared securely.")
+                                time.sleep(1)
                                 st.rerun()
                             st.markdown("</div>", unsafe_allow_html=True)
                 else:
                     st.markdown(f"<h2>Export Data - {percent_text}</h2>", unsafe_allow_html=True)
-                    st.success(f"🎉 Download Ready! {percent_text}")
-                    st.balloons()
+                    st.success(f"✅ Your file is ready! {percent_text} - Download available")
                     c1,c2,c3=st.columns(3)
                     safe=sel_file[:30]
                     suffix = "100_percent" if is_hundred else "95_percent"
