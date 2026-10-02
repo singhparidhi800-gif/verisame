@@ -824,22 +824,9 @@ if st.session_state.plan is None:
                     if "@" in email_input and "." in email_input:
                         st.session_state.email=email_input
                         st.session_state.email_entered=True
-                        data=load_db()
-                        if st.session_state.selected_plan=="starter":
-                            exp=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
-                            data[email_input]={"plan":"starter","status":"PENDING","amt":STARTER_PRICE,"days":36500,"expiry":exp,"created":str(datetime.now())}
-                            save_db(data)
-                            st.session_state.plan="starter"
-                            st.session_state.amt=STARTER_PRICE
-                            st.rerun()
-                        else:
-                            exact=180 if st.session_state.selected_amt==PRO_6M else 30
-                            exp=(datetime.now()+timedelta(days=exact)).strftime("%Y-%m-%d")
-                            data[email_input]={"plan":"pro","status":"PENDING","amt":st.session_state.selected_amt,"days":exact,"expiry":exp,"created":str(datetime.now())}
-                            save_db(data)
-                            st.session_state.plan="pro"
-                            st.session_state.amt=st.session_state.selected_amt
-                            st.rerun()
+                        st.session_state.plan="starter" if st.session_state.selected_plan=="starter" else "pro"
+                        st.session_state.amt=st.session_state.selected_amt
+                        st.rerun()
                     else:
                         st.error("Enter valid email")
             with b2:
@@ -1020,9 +1007,10 @@ else:
             elif st.session_state.plan in ["starter","pro"]:
                 if not is_paid:
                     sel_amt = user_info.get("amt", st.session_state.get("selected_amt", 0))
+                    if sel_amt == 0:
+                        sel_amt = STARTER_PRICE if st.session_state.plan=="starter" else st.session_state.amt
                     clean_msg = "100% successfully" if is_hundred else "95% - Confirm for 100%"
                     
-                    # CHECK PENDING - FIXED WITHOUT JS RELOAD TO KEEP FILE SAFE
                     pending_info = db.get(st.session_state.email, {})
                     created_str = pending_info.get("created", "")
                     is_pending = pending_info.get("status") == "PENDING" and created_str != ""
@@ -1037,7 +1025,7 @@ else:
                             else:
                                 st.markdown("""
                                 <div style='background: #f5f3ff; border: 2px solid #9333ea; border-radius: 16px; padding: 16px; text-align: center; margin: 16px 0;'>
-                                    <p style='margin:0; color: #6b21a8; font-weight: 700;'>✅ Payment received! Your download is being prepared...</p>
+                                    <p style='margin:0; color: #6b21a8; font-weight: 700;'>✅ Payment received! Preparing your download...</p>
                                     <p style='margin:4px 0 0 0; color: #6b7280; font-size: 0.9rem;'>Please wait, file is safe! Auto unlock in background.</p>
                                 </div>
                                 """, unsafe_allow_html=True)
