@@ -36,33 +36,7 @@ def send_notification(email, amt, plan_name):
     try:
         requests.post(f"https://ntfy.sh/{NTFY_TOPIC}", data=f"Payment: {email} - {plan_name} Rs{amt}".encode('utf-8'), headers={"Title": f"VeriSame Rs{amt}"}, timeout=8)
     except: pass
-
-def get_supabase():
-    try:
-        url = st.secrets.get("SUPABASE_URL", None) if hasattr(st, 'secrets') else None
-        key = st.secrets.get("SUPABASE_KEY", None) if hasattr(st, 'secrets') else None
-        if url and key:
-            from supabase import create_client
-            return create_client(url, key)
-    except:
-        pass
-    return None
-
 def load_db():
-    # Try Supabase first - PRO COMPANY LEVEL - never delete
-    sb = get_supabase()
-    if sb:
-        try:
-            res = sb.table("orders").select("*").execute()
-            d = {}
-            for row in res.data:
-                email = row.get("email")
-                if email:
-                    d[email] = row
-            return d
-        except Exception as e:
-            pass
-    # Fallback to local json
     if os.path.exists("backup_orders.json"):
         try:
             with open("backup_orders.json","r") as f:
@@ -70,59 +44,16 @@ def load_db():
                 if isinstance(d,dict): return d
         except: pass
     return {}
-
 def save_db(d):
-    sb = get_supabase()
-    if sb:
-        try:
-            for email, info in d.items():
-                if "@" not in email:
-                    continue
-                data = {
-                    "email": email,
-                    "plan": info.get("plan"),
-                    "status": info.get("status"),
-                    "amt": int(info.get("amt",0)) if str(info.get("amt","0")).isdigit() else 0,
-                    "expiry": info.get("expiry",""),
-                    "created": info.get("created",""),
-                    "used": int(info.get("used",0)),
-                    "days": int(info.get("days",0)) if info.get("days") else 0
-                }
-                sb.table("orders").upsert(data, on_conflict="email").execute()
-            return
-        except Exception as e:
-            pass
     try:
         with open("backup_orders.json","w") as f: json.dump(d,f,indent=2)
     except: pass
-
 def load_feedback():
-    sb = get_supabase()
-    if sb:
-        try:
-            res = sb.table("feedbacks").select("*").order("time", desc=True).limit(100).execute()
-            return res.data
-        except:
-            pass
     if os.path.exists(FEEDBACK_FILE):
         try: return json.load(open(FEEDBACK_FILE,"r"))
         except: return []
     return []
-
 def save_feedback(text,email):
-    sb = get_supabase()
-    if sb:
-        try:
-            data = {
-                "id": hashlib.md5(f"{email}{text}{time.time()}".encode()).hexdigest()[:8],
-                "email": email,
-                "feedback": text,
-                "time": str(datetime.now())
-            }
-            sb.table("feedbacks").insert(data).execute()
-            return True
-        except:
-            pass
     try:
         fb=load_feedback(); fb.append({"email":email,"feedback":text,"time":str(datetime.now()),"id":hashlib.md5(f"{email}{text}{time.time()}".encode()).hexdigest()[:8]})
         with open(FEEDBACK_FILE,"w") as f: json.dump(fb,f,indent=2)
