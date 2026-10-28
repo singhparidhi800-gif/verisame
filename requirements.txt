@@ -11,6 +11,7 @@ pillow
 matplotlib
 reportlab
 groq
+supabase
 
 
 
