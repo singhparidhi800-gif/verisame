@@ -149,6 +149,24 @@ def tool5_case(df, cc):
                 if orig!=nv and len(nv)>1: df.at[r,col]=nv; f+=1; cc.add((r,col))
             except: continue
     return f
+
+# Footer pages
+_qp = st.query_params.get("page", "")
+if _qp in ["privacy","terms","contact"]:
+    if _qp=="privacy":
+        st.title("Privacy Policy")
+        st.write("Your files never leave browser. Only email stored.")
+    elif _qp=="terms":
+        st.title("Terms")
+        st.write("Free 200, Starter Rs49 one file, Pro 30/180 days.")
+    else:
+        st.title("Contact - Founder Anugya")
+        st.write("Refund: Starter no refund, Pro 7 days if unused.")
+    if st.button("Back to Home"):
+        st.query_params.clear()
+        st.rerun()
+    st.stop()
+
 def tool6_symbols(df, pc):
     f=0
     for col in df.select_dtypes(include=['object']).columns:
@@ -297,26 +315,6 @@ p, div, span, label, h1, h2, h3, h4, h5 {font-weight: 800!important;}
 </style>
 """, unsafe_allow_html=True)
 
-
-_qp = st.query_params.get("page", "")
-if _qp in ["privacy", "terms", "contact"]:
-    if _qp == "privacy":
-        st.title("Privacy Policy - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;"><h3>Privacy Policy</h3><p>Your files never leave your browser. Only email and payment status stored.</p></div>', unsafe_allow_html=True)
-    elif _qp == "terms":
-        st.title("Terms - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;"><h3>Terms</h3><p>Free 200 rows, Starter Rs49 one file, Pro 30/180 days.</p></div>', unsafe_allow_html=True)
-    else:
-        st.title("Contact - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;"><h3>Contact - Founder Anugya</h3><p>Refund: Starter no refund, Pro 7 days if unused.</p></div>', unsafe_allow_html=True)
-    if st.button("Back to Home"):
-        st.query_params.clear()
-        st.rerun()
-    st.stop()
-
-
-
-
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "message": "Hello Welcome to the VeriSame what would you like to know?"}]
 if "changed_cells" not in st.session_state: st.session_state.changed_cells=set()
@@ -354,6 +352,7 @@ def apply_style(df_to_style):
     except: return df_to_style
 
 def render_chat(is_sidebar=False):
+st.markdown("""<div style="background:linear-gradient(135deg,#1f2937 0%,#111827 100%);color:#e5e7eb;padding:30px 20px;border-radius:18px;margin-top:40px;text-align:center;"><h3 style="color:#fff;font-weight:900;">VeriSame - Clean logic. Clear result.</h3><p>Made by Anugya</p><p><a href="?page=privacy" style="color:#9ca3af;margin:0 10px;">Privacy</a><a href="?page=terms" style="color:#9ca3af;margin:0 10px;">Terms</a><a href="?page=contact" style="color:#9ca3af;margin:0 10px;">Contact</a></p><p style="font-size:0.8rem;margin-top:10px;">© 2025 VeriSame | 100% Private</p></div>""", unsafe_allow_html=True)
     target=st.sidebar if is_sidebar else st
     target.markdown("---")
     target.markdown("### VeriSame AI")
@@ -502,17 +501,6 @@ if st.session_state.plan is None:
             with c_p2:
                 if st.button("Rs1499 - 180 Days", key="btn_pro_1499_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
         render_chat(is_sidebar=False)
-
-if is_first_page:
-    st.markdown('''
-    <div style="background:linear-gradient(135deg,#1f2937 0%,#111827 100%); color:#e5e7eb; padding:30px 20px; border-radius:18px; margin-top:40px; text-align:center;">
-    <h3 style="color:#fff; font-weight:900;">VeriSame - Clean logic. Clear result.</h3>
-    <p>Made by Anugya</p>
-    <p><a href="?page=privacy" style="color:#9ca3af; margin:0 10px;">Privacy</a><a href="?page=terms" style="color:#9ca3af; margin:0 10px;">Terms</a><a href="?page=contact" style="color:#9ca3af; margin:0 10px;">Contact</a></p>
-    <p style="font-size:0.8rem; margin-top:10px;">© 2025 VeriSame | 100% Private</p>
-    </div>
-    ''', unsafe_allow_html=True)
-
         st.markdown("---")
         st.markdown("<h2 style='font-weight: 900; font-size: 1.7rem; color: #000;'>Feedback - We Value Your Feedback</h2>", unsafe_allow_html=True)
         fb_front=st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_fv2", height=90, label_visibility="collapsed")
