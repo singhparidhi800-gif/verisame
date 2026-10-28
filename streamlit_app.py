@@ -21,7 +21,7 @@ try:
 except:
     SimpleDocTemplate = None
 
-st.set_page_config(page_title="VeriSame - Clean 10x Faster | 10 Advanced Data Cleaning Tools", page_icon="https://i.postimg.cc/gjWxsmHf/1779366919870.png", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="VeriSame - Clean 10x Faster", page_icon="https://i.postimg.cc/gjWxsmHf/1779366919870.png", layout="wide", initial_sidebar_state="collapsed")
 
 UPI_ID = st.secrets.get("UPI_ID", st.secrets.get("UPI", "playwithreyansh0@okhdfcbank")) if hasattr(st, 'secrets') else "playwithreyansh0@okhdfcbank"
 STARTER_PRICE, PRO_1M, PRO_6M = 49, 299, 1499
@@ -297,6 +297,26 @@ p, div, span, label, h1, h2, h3, h4, h5 {font-weight: 800!important;}
 </style>
 """, unsafe_allow_html=True)
 
+
+_qp = st.query_params.get("page", "")
+if _qp in ["privacy", "terms", "contact"]:
+    if _qp == "privacy":
+        st.title("Privacy Policy - VeriSame")
+        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;"><h3>Privacy Policy</h3><p>Your files never leave your browser. Only email and payment status stored.</p></div>', unsafe_allow_html=True)
+    elif _qp == "terms":
+        st.title("Terms - VeriSame")
+        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;"><h3>Terms</h3><p>Free 200 rows, Starter Rs49 one file, Pro 30/180 days.</p></div>', unsafe_allow_html=True)
+    else:
+        st.title("Contact - VeriSame")
+        st.markdown('<div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;"><h3>Contact - Founder Anugya</h3><p>Refund: Starter no refund, Pro 7 days if unused.</p></div>', unsafe_allow_html=True)
+    if st.button("Back to Home"):
+        st.query_params.clear()
+        st.rerun()
+    st.stop()
+
+
+
+
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "message": "Hello Welcome to the VeriSame what would you like to know?"}]
 if "changed_cells" not in st.session_state: st.session_state.changed_cells=set()
@@ -482,6 +502,17 @@ if st.session_state.plan is None:
             with c_p2:
                 if st.button("Rs1499 - 180 Days", key="btn_pro_1499_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
         render_chat(is_sidebar=False)
+
+if is_first_page:
+    st.markdown('''
+    <div style="background:linear-gradient(135deg,#1f2937 0%,#111827 100%); color:#e5e7eb; padding:30px 20px; border-radius:18px; margin-top:40px; text-align:center;">
+    <h3 style="color:#fff; font-weight:900;">VeriSame - Clean logic. Clear result.</h3>
+    <p>Made by Anugya</p>
+    <p><a href="?page=privacy" style="color:#9ca3af; margin:0 10px;">Privacy</a><a href="?page=terms" style="color:#9ca3af; margin:0 10px;">Terms</a><a href="?page=contact" style="color:#9ca3af; margin:0 10px;">Contact</a></p>
+    <p style="font-size:0.8rem; margin-top:10px;">© 2025 VeriSame | 100% Private</p>
+    </div>
+    ''', unsafe_allow_html=True)
+
         st.markdown("---")
         st.markdown("<h2 style='font-weight: 900; font-size: 1.7rem; color: #000;'>Feedback - We Value Your Feedback</h2>", unsafe_allow_html=True)
         fb_front=st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_fv2", height=90, label_visibility="collapsed")
@@ -734,86 +765,3 @@ else:
                                 if st.session_state.plan=="starter":
                                     db_u=load_db()
                                     if st.session_state.email in db_u: db_u[st.session_state.email]["used"]=db_u[st.session_state.email].get("used",0)+1; save_db(db_u)
-
-
-# FOOTER - PRO COMPANY STYLE
-st.markdown('''
-<style>
-.footer-pro {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    color: #e5e7eb !important;
-    padding: 40px 30px;
-    border-radius: 20px;
-    margin-top: 60px;
-    text-align: center;
-}
-.footer-pro h3 {color: #fff !important; font-weight: 900 !important; font-size: 1.4rem !important;}
-.footer-pro p, .footer-pro a {color: #9ca3af !important; font-weight: 600 !important; font-size: 1.0rem !important; text-decoration: none !important;}
-.footer-pro a:hover {color: #a855f7 !important;}
-.footer-links {display: flex; justify-content: center; gap: 30px; margin: 20px 0; flex-wrap: wrap;}
-</style>
-<div class="footer-pro">
-    <h3>VeriSame - Clean logic. Clear result.</h3>
-    <p>Made by Anugya | The Fastest Way to Clean Your Data</p>
-    <div class="footer-links">
-        <a href="?page=privacy">Privacy Policy</a>
-        <a href="?page=terms">Terms & Conditions</a>
-        <a href="?page=contact">Contact & Refund</a>
-    </div>
-    <p style="margin-top:20px; font-size:0.9rem !important;">© 2025 VeriSame. All rights reserved. 100% Private - Your files never leave your browser.</p>
-    <p style="margin-top:8px; font-size:0.85rem !important;">Free: 200 rows | Starter Rs49 one-time per file 2000 rows | Pro Rs299 30 days / Rs1499 180 days Unlimited</p>
-</div>
-''', unsafe_allow_html=True)
-
-# Handle footer pages
-query_page = st.query_params.get("page", "")
-if query_page == "privacy":
-    st.title("Privacy Policy - VeriSame")
-    st.markdown('''
-    <div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:30px; font-weight:600; color:#000; line-height:1.8; font-size:1.1rem;">
-    <h3>Privacy Policy</h3>
-    <p><b>1. Your Data is 100% Private:</b> Your files never leave your browser. We do not store your CSV/Excel data on our servers.</p>
-    <p><b>2. What we store:</b> Only your email and payment status (PAID/PENDING) for plan validation.</p>
-    <p><b>3. No Third Party Sharing:</b> We never share your email or data with anyone.</p>
-    <p><b>4. Cookies:</b> We use only Streamlit's essential cookies for app function.</p>
-    <p><b>Contact:</b> For any privacy concern, contact founder Anugya.</p>
-    </div>
-    ''', unsafe_allow_html=True)
-    if st.button("Back to Home"):
-        st.query_params.clear()
-        st.rerun()
-    st.stop()
-elif query_page == "terms":
-    st.title("Terms & Conditions - VeriSame")
-    st.markdown('''
-    <div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:30px; font-weight:600; color:#000; line-height:1.8; font-size:1.1rem;">
-    <h3>Terms & Conditions</h3>
-    <p><b>1. Plans:</b> Free - 200 rows lifetime. Starter Rs49 - One time per file 2000 rows. Pro Rs299 - 30 days unlimited, Rs1499 - 180 days unlimited.</p>
-    <p><b>2. Starter Expiry:</b> Starter plan is valid for one file upload only. After download, you need to pay again for next file.</p>
-    <p><b>3. Pro Validity:</b> Pro plans are email-based. Login with same email within validity to continue without paying again.</p>
-    <p><b>4. No Guarantee:</b> Cleaning uses 10 advanced tools but 100% accuracy depends on data quality.</p>
-    <p><b>5. Support:</b> AI support included in all plans.</p>
-    </div>
-    ''', unsafe_allow_html=True)
-    if st.button("Back to Home"):
-        st.query_params.clear()
-        st.rerun()
-    st.stop()
-elif query_page == "contact":
-    st.title("Contact & Refund Policy - VeriSame")
-    st.markdown('''
-    <div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:30px; font-weight:600; color:#000; line-height:1.8; font-size:1.1rem;">
-    <h3>Contact Us</h3>
-    <p><b>Founder:</b> Anugya</p>
-    <p><b>Email:</b> Support via app feedback form</p>
-    <p><b>Refund Policy:</b></p>
-    <p>- Starter Rs49: No refund as it is one-time per file service.</p>
-    <p>- Pro Rs299/Rs1499: 7-day refund if not used (no file cleaned). After first file cleaned, no refund.</p>
-    <p>- For refund, contact with payment screenshot and email within 7 days.</p>
-    <p><b>Response Time:</b> Within 24 hours.</p>
-    </div>
-    ''', unsafe_allow_html=True)
-    if st.button("Back to Home"):
-        st.query_params.clear()
-        st.rerun()
-    st.stop()
