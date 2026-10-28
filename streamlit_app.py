@@ -268,57 +268,60 @@ def query_groq(user_prompt):
 
 # Beautiful Light 3D UI - Advanced
 st.markdown("""
-<style>
+
+
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800;900&family=Outfit:wght@800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif; font-weight: 800 !important;}
 .stApp {
     background: 
-        radial-gradient(circle at 10% 10%, #e0f2fe 0%, transparent 40%),
-        radial-gradient(circle at 90% 15%, #fae8ff 0%, transparent 35%),
+        radial-gradient(circle at 10% 10%, #dbeafe 0%, transparent 40%),
+        radial-gradient(circle at 90% 15%, #fce7f3 0%, transparent 35%),
         radial-gradient(circle at 50% 85%, #dcfce7 0%, transparent 45%),
-        linear-gradient(135deg, #f8fafc 0%, #f1f5f9 20%, #faf5ff 40%, #f0fdfa 70%, #fffbeb 100%);
+        radial-gradient(circle at 20% 80%, #fef3c7 0%, transparent 30%),
+        linear-gradient(135deg, #f8fafc 0%, #eff6ff 20%, #faf5ff 40%, #f0fdf4 70%, #fffbeb 100%);
     background-attachment: fixed;
 }
 .block-container {
-    background: rgba(255,255,255,0.88);
-    backdrop-filter: blur(18px) saturate(180%);
-    border-radius: 32px;
-    padding: 2.2rem;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 34px;
+    padding: 2.4rem;
     max-width: 1380px;
-    margin: 1rem auto;
-    box-shadow: 0 28px 90px rgba(124,58,237,0.12), 0 8px 32px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
-    border: 1.5px solid rgba(255,255,255,0.7);
+    margin: 1.2rem auto;
+    box-shadow: 0 32px 100px rgba(124,58,237,0.14), 0 10px 36px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
+    border: 1.8px solid rgba(255,255,255,0.75);
+    transform: perspective(1200px) rotateX(1deg);
 }
-.welcome-black {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 3.9rem!important; background: linear-gradient(135deg, #0f172a 0%, #4c1d95 50%, #7e22ce 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; filter: drop-shadow(0 4px 20px rgba(124,58,237,0.12));}
-.subtitle {color: #334155!important; text-align:center; margin-top: 12px!important; font-size: 1.35rem!important; font-weight: 800!important;}
-.tagline-badge {display: inline-block; padding: 13px 30px; background: linear-gradient(135deg, #c084fc, #a78bfa, #7dd3fc, #6ee7b7); color: #1e1b4b !important; font-weight: 900 !important; border-radius: 24px; font-size: 1.2rem!important; box-shadow: 0 10px 28px rgba(167,139,250,0.3); animation: float 5s ease-in-out infinite;}
-.logo-container {width: 100%; display: flex; justify-content: center; padding: 8px 0;}
-.logo-container img {width: 100%; max-width: 460px; max-height: 460px; object-fit: contain; filter: drop-shadow(0 20px 40px rgba(124,58,237,0.18));}
-.logo-float {animation: float 5s ease-in-out infinite;}
-@keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-12px);}}
-.pricing-card {border-radius: 28px; padding: 2.2rem; background: linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 100%)!important; backdrop-filter: blur(14px); border: 1.5px solid rgba(255,255,255,0.8); min-height: 440px; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(15,23,42,0.08), 0 8px 24px rgba(15,23,42,0.04), inset 0 1px 0 rgba(255,255,255,1); transition: all 0.5s cubic-bezier(0.23,1,0.32,1);}
-.pricing-card:hover {transform: translateY(-10px) scale(1.02); box-shadow: 0 32px 80px rgba(15,23,42,0.14), 0 16px 40px rgba(124,58,237,0.1);}
-.pricing-card h3 {font-size: 1.5rem!important; font-weight: 900!important; color: #0f172a!important;}
-.pricing-card h1 {font-size: 3.6rem!important; font-weight: 900!important; color: #0f172a!important;}
-.pricing-card p {font-size: 1.12rem!important; font-weight: 700!important; color: #334155!important; margin: 7px 0!important;}
-.pricing-card-free {border-top: 4px solid #a5b4fc !important;}
-.pricing-card-starter {border-top: 4px solid #4ade80 !important;}
-.pricing-card-pro {border-top: 4px solid #a78bfa !important; transform: scale(1.02);}
-.stButton>button {border-radius: 18px !important; font-weight: 900 !important; background: linear-gradient(135deg, #7c3aed, #a78bfa) !important; color: white !important; border: none !important; width: 100% !important; padding: 18px 26px !important; font-size: 1.2rem!important; box-shadow: 0 12px 28px rgba(124,58,237,0.28) !important; transition: all 0.3s ease !important;}
-.stButton>button:hover {transform: translateY(-3px) scale(1.02) !important; box-shadow: 0 18px 40px rgba(124,58,237,0.35) !important;}
-.pro-banner {background: linear-gradient(135deg, #4c1d95, #7e22ce, #a855f7); padding: 2rem; border-radius: 26px; text-align: center; margin: 1.2rem 0; box-shadow: 0 20px 60px rgba(124,58,237,0.22);}
-.pro-banner h2 {color: white!important; font-size: 1.75rem!important; margin: 0!important; font-weight: 900!important;}
-.pro-banner-small {background: linear-gradient(135deg, #4c1d95, #7e22ce); padding: 1.4rem; border-radius: 20px; text-align: center; margin: 0.9rem 0;}
-.pro-banner-small h2 {color: white!important; font-size: 1.35rem!important; margin: 0!important; font-weight: 900!important;}
-.tool-chip {display: inline-block; background: #ffffff !important; padding: 12px 18px; border-radius: 22px; margin: 6px; color: #1e293b !important; font-weight: 900 !important; font-size: 1.02rem !important; border: 1.5px solid rgba(124,58,237,0.15); box-shadow: 0 6px 18px rgba(15,23,42,0.05);}
-.plan-status-box {padding: 16px 20px; border-radius: 16px; font-weight: 900 !important; margin-bottom: 14px; font-size: 1.15rem!important;}
-.plan-active {background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important; border: 1.5px solid #86efac !important; color: #14532d !important;}
-.plan-pending {background: linear-gradient(135deg, #fef9c3 0%, #fde68a 100%) !important; border: 1.5px solid #fcd34d !important; color: #713f12 !important;}
-.hundred-box {background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important; border: 1.5px solid #86efac !important; border-radius: 20px; padding: 22px; margin: 14px 0; text-align: center; font-weight: 900!important; font-size: 1.3rem!important; color: #14532d!important;}
-.qr-box {background: #ffffff !important; border: 2px solid rgba(124,58,237,0.15) !important; border-radius: 28px; padding: 38px; text-align: center; margin: 26px 0; box-shadow: 0 24px 64px rgba(124,58,237,0.12);}
-.upgrade-msg {background: linear-gradient(135deg, #fef9c3 0%, #fde68a 100%) !important; border: 1.5px solid #fcd34d !important; border-radius: 20px; padding: 22px; text-align: center; margin: 14px 0; font-weight: 900!important; font-size: 1.25rem!important; color: #78350f!important;}
-.tool-report-clean {background: #ffffff !important; border: 1.5px solid #86efac !important; border-radius: 16px; padding: 16px 20px; margin: 10px 0; font-size: 1.15rem!important; font-weight: 900!important; color: #14532d!important; display: flex; justify-content: space-between; align-items: center;}
-</style>
+.welcome-black {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 4.1rem!important; background: linear-gradient(135deg, #0f172a 0%, #4338ca 30%, #7c3aed 60%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; letter-spacing: -0.03em; filter: drop-shadow(0 6px 24px rgba(124,58,237,0.15)); animation: glow 4s ease-in-out infinite;}
+@keyframes glow {0%,100%{filter: drop-shadow(0 6px 24px rgba(124,58,237,0.15));} 50%{filter: drop-shadow(0 10px 36px rgba(124,58,237,0.25));}}
+.subtitle {color: #334155!important; text-align:center; margin-top: 14px!important; font-size: 1.4rem!important; font-weight: 800!important;}
+.tagline-badge {display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f0abfc, #a78bfa, #7dd3fc, #6ee7b7, #fde68a); background-size: 300% 300%; animation: gradientShift 5s ease infinite; color: #1e1b4b !important; font-weight: 900 !important; border-radius: 26px; font-size: 1.25rem!important; box-shadow: 0 12px 32px rgba(167,139,250,0.35), inset 0 1px 0 rgba(255,255,255,0.8); border: 2px solid rgba(255,255,255,0.8);}
+@keyframes gradientShift {0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;}}
+.logo-container {width: 100%; display: flex; justify-content: center; padding: 10px 0; perspective: 1200px;}
+.logo-container img {width: 100%; max-width: 480px; max-height: 480px; object-fit: contain; filter: drop-shadow(0 24px 48px rgba(124,58,237,0.2)) drop-shadow(0 10px 20px rgba(0,0,0,0.08)); animation: float3d 6s ease-in-out infinite; transform-style: preserve-3d;}
+@keyframes float3d {0%,100%{transform: translateY(0px) rotateX(2deg) rotateY(-2deg) scale(1);} 50%{transform: translateY(-16px) rotateX(4deg) rotateY(3deg) scale(1.03);}}
+.pricing-card {border-radius: 30px; padding: 2.4rem; background: linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.96) 100%)!important; backdrop-filter: blur(16px); border: 2px solid rgba(255,255,255,0.85); min-height: 460px; display: flex; flex-direction: column; box-shadow: 0 24px 72px rgba(15,23,42,0.09), 0 10px 28px rgba(15,23,42,0.05), inset 0 1px 0 rgba(255,255,255,1), inset 0 -1px 0 rgba(0,0,0,0.02); transition: all 0.6s cubic-bezier(0.23,1,0.32,1); transform-style: preserve-3d; position: relative;}
+.pricing-card::before {content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(124,58,237,0.3), transparent);}
+.pricing-card:hover {transform: translateY(-14px) rotateX(4deg) rotateY(-3deg) scale(1.03); box-shadow: 0 40px 100px rgba(15,23,42,0.16), 0 20px 50px rgba(124,58,237,0.14), inset 0 1px 0 rgba(255,255,255,1);}
+.pricing-card-free {border-top: 5px solid #a5b4fc !important; background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%)!important;}
+.pricing-card-starter {border-top: 5px solid #4ade80 !important; background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%)!important;}
+.pricing-card-pro {border-top: 5px solid #a78bfa !important; background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%)!important; transform: scale(1.04) perspective(1000px) rotateY(-2deg);}
+.pricing-card-pro:hover {transform: translateY(-16px) rotateX(4deg) rotateY(-4deg) scale(1.06);}
+.stButton>button {border-radius: 20px !important; font-weight: 900 !important; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 40%, #a78bfa 100%) !important; color: white !important; border: none !important; width: 100% !important; padding: 20px 28px !important; font-size: 1.25rem!important; box-shadow: 0 14px 32px rgba(124,58,237,0.32), 0 6px 16px rgba(124,58,237,0.2), inset 0 1px 0 rgba(255,255,255,0.3) !important; transform-style: preserve-3d; transition: all 0.4s cubic-bezier(0.23,1,0.32,1) !important;}
+.stButton>button:hover {transform: translateY(-4px) scale(1.03) perspective(1000px) translateZ(20px) !important; box-shadow: 0 22px 48px rgba(124,58,237,0.4), 0 10px 24px rgba(124,58,237,0.25) !important;}
+.pro-banner {background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 20%, #7c3aed 40%, #8b5cf6 60%, #a78bfa 80%, #c4b5fd 100%); padding: 2.2rem; border-radius: 28px; text-align: center; margin: 1.4rem 0; box-shadow: 0 24px 72px rgba(124,58,237,0.26), inset 0 1px 0 rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.2); transform: perspective(1000px) rotateX(2deg);}
+.pro-banner h2 {color: white!important; font-size: 1.85rem!important; margin: 0!important; font-weight: 900!important; text-shadow: 0 3px 16px rgba(0,0,0,0.25);}
+.tool-chip {display: inline-block; background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%) !important; padding: 14px 22px; border-radius: 26px; margin: 8px; color: #1e293b !important; font-weight: 900 !important; font-size: 1.08rem !important; border: 1.8px solid rgba(124,58,237,0.12); box-shadow: 0 8px 22px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,1); transition: all 0.35s ease; transform-style: preserve-3d;}
+.tool-chip:hover {transform: translateY(-4px) scale(1.06) rotateX(5deg); box-shadow: 0 14px 32px rgba(124,58,237,0.14);}
+.qr-box {background: linear-gradient(145deg, #ffffff 0%, #fafaff 100%) !important; border: 2.5px solid rgba(124,58,237,0.12) !important; border-radius: 30px; padding: 42px; text-align: center; margin: 28px 0; box-shadow: 0 28px 72px rgba(124,58,237,0.14), 0 10px 28px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,1); transform: perspective(1000px) rotateX(1deg);}
+.big-pay-button {display: block; width: 100%; padding: 38px 26px; background: linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%); color: white !important; font-weight: 900 !important; font-size: 2.1rem !important; text-align: center; border-radius: 24px; text-decoration: none !important; margin: 26px 0; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 24px 56px rgba(16,185,129,0.32), 0 10px 24px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.4); transform-style: preserve-3d; transition: all 0.5s ease;}
+.big-pay-button:hover {transform: translateY(-6px) scale(1.02) perspective(1000px) translateZ(30px); box-shadow: 0 32px 72px rgba(16,185,129,0.4);}
+.big-pay-button-pro {background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 50%, #c4b5fd 100%) !important;}
+.or-divider {display: flex; align-items: center; justify-content: center; margin: 32px 0; gap: 20px;}
+.or-divider-line {height: 3px; flex: 1; background: linear-gradient(90deg, transparent, #a78bfa, transparent); opacity: 0.7;}
+.or-divider-text {font-size: 2rem!important; font-weight: 900!important; color: #4c1d95!important; background: linear-gradient(145deg, #ffffff, #faf5ff); padding: 12px 28px; border-radius: 16px; border: 2px solid rgba(124,58,237,0.15); box-shadow: 0 8px 20px rgba(124,58,237,0.12); transform: perspective(500px) translateZ(10px);}
+
+
 """, unsafe_allow_html=True)
 
 if "chat_history" not in st.session_state:
@@ -527,8 +530,8 @@ if st.session_state.plan is None:
         if st.session_state.selected_plan=="free": st.session_state.plan="free"; st.session_state.email="Guest_Free"; st.session_state.email_entered=True; st.rerun()
         if st.session_state.selected_plan=="starter": plan_text="STARTER - Rs49 One-Time Per File"
         else:
-            if st.session_state.selected_amt==PRO_1M: plan_text="PRO - 1 Month Rs299"
-            else: plan_text="PRO - 6 Months Rs1499"
+            if st.session_state.selected_amt==PRO_1M: plan_text="PRO - 1 Month (30 Days) Rs299"
+            else: plan_text="PRO - 6 Months (180 Days) Rs1499"
         st.markdown("<h2 style='text-align:center; margin-top:18px; font-weight: 900; font-size: 1.6rem; color: #000;'>Enter email for "+plan_text+"</h2>", unsafe_allow_html=True)
         _,ce2,_=st.columns([1,2,1])
         with ce2:
@@ -727,7 +730,7 @@ else:
                             st.markdown("<p style='font-size: 1.25rem; color: #000; text-align: center; margin-top: 18px; font-weight: 900;'>Pay by scanning with any payment app<br>GPay | PhonePe | Paytm | BHIM | Amazon Pay</p>", unsafe_allow_html=True)
                         st.markdown("<div class='or-divider'><div class='or-divider-line'></div><div class='or-divider-text'>OR</div><div class='or-divider-line'></div></div>", unsafe_allow_html=True)
                         st.markdown("<p style='font-weight: 900; font-size: 1.4rem; text-align: center; color: #000; margin: 20px 0;'>Pay Directly - Click to open payment app</p>", unsafe_allow_html=True)
-                        st.markdown('<a href="'+upi_link+'" class="big-pay-button '+btn_class+'">PAY Rs'+str(amt_to_show)+'<br><span class="big-pay-sub">Direct to Any Payment App - GPay | PhonePe | Paytm | BHIM</span></a>', unsafe_allow_html=True)
+                        st.markdown('<div style="margin: 28px 0;"><a href="'+upi_link+'" class="big-pay-button '+btn_class+'" style="display:block; width:100%; padding:38px 24px; background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 50%, #c4b5fd 100%); color:white; font-weight:900; font-size:2.1rem; text-align:center; border-radius:22px; text-decoration:none; box-shadow: 0 24px 48px rgba(124,58,237,0.35), 0 10px 24px rgba(0,0,0,0.1); transform: perspective(1000px) translateZ(10px); border: 2px solid rgba(255,255,255,0.3);">💳 PAY Rs'+str(amt_to_show)+' - Direct Pay<br><span style="font-size:1.2rem; display:block; margin-top:10px; font-weight:800; opacity:0.95;">👉 Click to Open GPay | PhonePe | Paytm | BHIM | Amazon Pay Directly</span></a></div>', unsafe_allow_html=True)
                         st.markdown("</div>", unsafe_allow_html=True)
                         st.markdown("<div style='margin-top:24px;'>", unsafe_allow_html=True)
                         st.markdown("<p style='text-align:center; font-weight: 900; color: #000; margin-bottom: 12px; font-size: 1.35rem;'>After payment, click below:</p>", unsafe_allow_html=True)
