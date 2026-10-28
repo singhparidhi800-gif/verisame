@@ -21,7 +21,7 @@ try:
 except:
     SimpleDocTemplate = None
 
-st.set_page_config(page_title="VeriSame - 10 Tools", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="VeriSame - Clean 10x Faster | 10 Advanced Data Cleaning Tools", page_icon="https://i.postimg.cc/gjWxsmHf/1779366919870.png", layout="wide", initial_sidebar_state="collapsed")
 
 UPI_ID = st.secrets.get("UPI_ID", st.secrets.get("UPI", "playwithreyansh0@okhdfcbank")) if hasattr(st, 'secrets') else "playwithreyansh0@okhdfcbank"
 STARTER_PRICE, PRO_1M, PRO_6M = 49, 299, 1499
@@ -734,3 +734,86 @@ else:
                                 if st.session_state.plan=="starter":
                                     db_u=load_db()
                                     if st.session_state.email in db_u: db_u[st.session_state.email]["used"]=db_u[st.session_state.email].get("used",0)+1; save_db(db_u)
+
+
+# FOOTER - PRO COMPANY STYLE
+st.markdown('''
+<style>
+.footer-pro {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: #e5e7eb !important;
+    padding: 40px 30px;
+    border-radius: 20px;
+    margin-top: 60px;
+    text-align: center;
+}
+.footer-pro h3 {color: #fff !important; font-weight: 900 !important; font-size: 1.4rem !important;}
+.footer-pro p, .footer-pro a {color: #9ca3af !important; font-weight: 600 !important; font-size: 1.0rem !important; text-decoration: none !important;}
+.footer-pro a:hover {color: #a855f7 !important;}
+.footer-links {display: flex; justify-content: center; gap: 30px; margin: 20px 0; flex-wrap: wrap;}
+</style>
+<div class="footer-pro">
+    <h3>VeriSame - Clean logic. Clear result.</h3>
+    <p>Made by Anugya | The Fastest Way to Clean Your Data</p>
+    <div class="footer-links">
+        <a href="?page=privacy">Privacy Policy</a>
+        <a href="?page=terms">Terms & Conditions</a>
+        <a href="?page=contact">Contact & Refund</a>
+    </div>
+    <p style="margin-top:20px; font-size:0.9rem !important;">© 2025 VeriSame. All rights reserved. 100% Private - Your files never leave your browser.</p>
+    <p style="margin-top:8px; font-size:0.85rem !important;">Free: 200 rows | Starter Rs49 one-time per file 2000 rows | Pro Rs299 30 days / Rs1499 180 days Unlimited</p>
+</div>
+''', unsafe_allow_html=True)
+
+# Handle footer pages
+query_page = st.query_params.get("page", "")
+if query_page == "privacy":
+    st.title("Privacy Policy - VeriSame")
+    st.markdown('''
+    <div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:30px; font-weight:600; color:#000; line-height:1.8; font-size:1.1rem;">
+    <h3>Privacy Policy</h3>
+    <p><b>1. Your Data is 100% Private:</b> Your files never leave your browser. We do not store your CSV/Excel data on our servers.</p>
+    <p><b>2. What we store:</b> Only your email and payment status (PAID/PENDING) for plan validation.</p>
+    <p><b>3. No Third Party Sharing:</b> We never share your email or data with anyone.</p>
+    <p><b>4. Cookies:</b> We use only Streamlit's essential cookies for app function.</p>
+    <p><b>Contact:</b> For any privacy concern, contact founder Anugya.</p>
+    </div>
+    ''', unsafe_allow_html=True)
+    if st.button("Back to Home"):
+        st.query_params.clear()
+        st.rerun()
+    st.stop()
+elif query_page == "terms":
+    st.title("Terms & Conditions - VeriSame")
+    st.markdown('''
+    <div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:30px; font-weight:600; color:#000; line-height:1.8; font-size:1.1rem;">
+    <h3>Terms & Conditions</h3>
+    <p><b>1. Plans:</b> Free - 200 rows lifetime. Starter Rs49 - One time per file 2000 rows. Pro Rs299 - 30 days unlimited, Rs1499 - 180 days unlimited.</p>
+    <p><b>2. Starter Expiry:</b> Starter plan is valid for one file upload only. After download, you need to pay again for next file.</p>
+    <p><b>3. Pro Validity:</b> Pro plans are email-based. Login with same email within validity to continue without paying again.</p>
+    <p><b>4. No Guarantee:</b> Cleaning uses 10 advanced tools but 100% accuracy depends on data quality.</p>
+    <p><b>5. Support:</b> AI support included in all plans.</p>
+    </div>
+    ''', unsafe_allow_html=True)
+    if st.button("Back to Home"):
+        st.query_params.clear()
+        st.rerun()
+    st.stop()
+elif query_page == "contact":
+    st.title("Contact & Refund Policy - VeriSame")
+    st.markdown('''
+    <div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:30px; font-weight:600; color:#000; line-height:1.8; font-size:1.1rem;">
+    <h3>Contact Us</h3>
+    <p><b>Founder:</b> Anugya</p>
+    <p><b>Email:</b> Support via app feedback form</p>
+    <p><b>Refund Policy:</b></p>
+    <p>- Starter Rs49: No refund as it is one-time per file service.</p>
+    <p>- Pro Rs299/Rs1499: 7-day refund if not used (no file cleaned). After first file cleaned, no refund.</p>
+    <p>- For refund, contact with payment screenshot and email within 7 days.</p>
+    <p><b>Response Time:</b> Within 24 hours.</p>
+    </div>
+    ''', unsafe_allow_html=True)
+    if st.button("Back to Home"):
+        st.query_params.clear()
+        st.rerun()
+    st.stop()
