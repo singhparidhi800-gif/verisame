@@ -32,18 +32,17 @@ FREE_CLICKS_FILE = "free_clicks.json"
 NTFY_TOPIC = st.secrets.get("NTFY_TOPIC", "verisame-anugya-97949-payments") if hasattr(st, 'secrets') else "verisame-anugya-97949-payments"
 GROQ_MODEL = "openai/gpt-oss-20b"
 
-# --- Footer Pages Routing ---
 _qp = st.query_params.get("page", "")
 if _qp in ["privacy", "terms", "contact"]:
     if _qp == "privacy":
         st.title("Privacy Policy - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;">Your files never leave your browser. Only email and payment status stored. No third party sharing.</div>', unsafe_allow_html=True)
+        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:600; color:#000;">Your files never leave browser. Only email stored.</div>', unsafe_allow_html=True)
     elif _qp == "terms":
-        st.title("Terms & Conditions - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;">Free 200 rows, Starter Rs49 one file, Pro Rs299 30 days / Rs1499 180 days unlimited. Refund: Starter no refund, Pro 7 days if unused.</div>', unsafe_allow_html=True)
+        st.title("Terms - VeriSame")
+        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:600; color:#000;">Free 200, Starter Rs49 one file, Pro 30/180 days.</div>', unsafe_allow_html=True)
     else:
-        st.title("Contact & Refund - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:28px; font-weight:600; color:#000; line-height:1.8;">Founder: Anugya | Use feedback form in app. Response within 24h.</div>', unsafe_allow_html=True)
+        st.title("Contact - VeriSame")
+        st.markdown('<div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:28px; font-weight:600; color:#000;">Founder Anugya - via feedback form.</div>', unsafe_allow_html=True)
     if st.button("Back to Home"):
         st.query_params.clear()
         st.rerun()
@@ -500,8 +499,6 @@ if st.session_state.plan is None:
             with c_p2:
                 if st.button("Rs1499 - 180 Days", key="btn_pro_1499_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
         render_chat(is_sidebar=False)
-        # Front Page Footer Only
-        st.markdown('''<div style="background:linear-gradient(135deg,#1f2937 0%,#111827 100%);color:#e5e7eb;padding:30px 20px;border-radius:18px;margin-top:40px;text-align:center;"><h3 style="color:#fff;font-weight:900;">VeriSame - Clean logic. Clear result.</h3><p>Made by Anugya | The Fastest Way to Clean Your Data</p><p><a href="?page=privacy" style="color:#9ca3af;margin:0 10px;text-decoration:none;">Privacy Policy</a><a href="?page=terms" style="color:#9ca3af;margin:0 10px;text-decoration:none;">Terms</a><a href="?page=contact" style="color:#9ca3af;margin:0 10px;text-decoration:none;">Contact & Refund</a></p><p style="font-size:0.8rem;margin-top:10px;">© 2025 VeriSame | 100% Private - Files never leave browser</p></div>''', unsafe_allow_html=True)
         st.markdown("---")
         st.markdown("<h2 style='font-weight: 900; font-size: 1.7rem; color: #000;'>Feedback - We Value Your Feedback</h2>", unsafe_allow_html=True)
         fb_front=st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_fv2", height=90, label_visibility="collapsed")
