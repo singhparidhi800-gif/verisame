@@ -21,7 +21,7 @@ try:
 except:
     SimpleDocTemplate = None
 
-st.set_page_config(page_title="VeriSame - Clean 10x Faster | 10 Tools", page_icon="https://i.postimg.cc/gjWxsmHf/1779366919870.png", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="VeriSame - NEW 3D V2", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
 UPI_ID = st.secrets.get("UPI_ID", st.secrets.get("UPI", "playwithreyansh0@okhdfcbank")) if hasattr(st, 'secrets') else "playwithreyansh0@okhdfcbank"
 STARTER_PRICE, PRO_1M, PRO_6M = 49, 299, 1499
@@ -32,18 +32,10 @@ FREE_CLICKS_FILE = "free_clicks.json"
 NTFY_TOPIC = st.secrets.get("NTFY_TOPIC", "verisame-anugya-97949-payments") if hasattr(st, 'secrets') else "verisame-anugya-97949-payments"
 GROQ_MODEL = "openai/gpt-oss-20b"
 
-# --- Footer Pages ---
 _qp = st.query_params.get("page", "")
 if _qp in ["privacy", "terms", "contact"]:
-    if _qp == "privacy":
-        st.title("Privacy Policy - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:700; color:#000; line-height:1.8;">Your files never leave your browser. Only email and payment status stored. No third party sharing. Founder Anugya.</div>', unsafe_allow_html=True)
-    elif _qp == "terms":
-        st.title("Terms & Conditions - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:700; color:#000; line-height:1.8;">Free 200 rows lifetime. Starter Rs49 one file 2000 rows. Pro Rs299 30 days / Rs1499 180 days unlimited. Refund: Starter no refund, Pro 7 days if unused.</div>', unsafe_allow_html=True)
-    else:
-        st.title("Contact & Refund - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:28px; font-weight:700; color:#000; line-height:1.8;">Founder: Anugya | Contact via feedback form in app. Response within 24 hours.</div>', unsafe_allow_html=True)
+    st.title("NEW CODE WORKS - " + _qp)
+    st.write("If you see this, deployment success!")
     if st.button("Back to Home"):
         st.query_params.clear()
         st.rerun()
@@ -484,7 +476,7 @@ if "admin" in st.query_params:
 
 if st.session_state.plan is None:
     if st.session_state.selected_plan is None:
-        st.markdown("<h2 style='text-align:center; color:#000; margin-top:24px; font-weight: 900; font-size: 2.2rem;'>Choose Your Plan</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center; color:#000; margin-top:24px; font-weight: 900; font-size: 2.2rem;'>Choose Your Plan - NEW 3D V2 ✨</h2>", unsafe_allow_html=True)
         col_free, col_starter, col_pro = st.columns(3, gap="medium")
         with col_free:
             st.markdown('<div class="pricing-card pricing-card-free"><h3>FREE FOREVER</h3><h1>FREE</h1><p><b>200 Rows - Lifetime Free</b></p><div style="margin-top:14px; flex-grow:1;"><p>✓ All 10 Advanced Tools</p><p>✓ Super Fast Cleaning</p><p>✓ CSV + Excel + PDF</p><p>✓ 100% Private</p><p>✓ AI Support</p></div></div>', unsafe_allow_html=True)
@@ -504,21 +496,7 @@ if st.session_state.plan is None:
         st.markdown("<h2 style='font-weight: 900; font-size: 1.7rem; color: #000;'>Feedback - We Value Your Feedback</h2>", unsafe_allow_html=True)
         fb_front=st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_fv2", height=90, label_visibility="collapsed")
         if st.button("Send Feedback", key="fb_front_btn_fv2", type="primary", use_container_width=True):
-            if fb_front.strip() and save_feedback(fb_front.strip(), "Guest"): 
-                st.success("Thank you!"); st.balloons()
-            # Footer below feedback - front page only
-            st.markdown("""
-            <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: #e5e7eb; padding: 32px 22px; border-radius: 20px; margin-top: 50px; text-align: center;">
-                <h3 style="color: #fff; font-weight: 900; font-size: 1.4rem;">VeriSame - Clean logic. Clear result.</h3>
-                <p style="color: #9ca3af; font-weight: 700; margin-top: 8px;">Made by Anugya | The Fastest Way to Clean Your Data</p>
-                <p style="margin-top: 14px;">
-                    <a href="?page=privacy" style="color: #a78bfa; margin: 0 12px; text-decoration: none; font-weight: 800;">Privacy Policy</a>
-                    <a href="?page=terms" style="color: #a78bfa; margin: 0 12px; text-decoration: none; font-weight: 800;">Terms</a>
-                    <a href="?page=contact" style="color: #a78bfa; margin: 0 12px; text-decoration: none; font-weight: 800;">Contact & Refund</a>
-                </p>
-                <p style="font-size: 0.85rem; margin-top: 16px; color: #6b7280;">© 2025 VeriSame | 100% Private - Your files never leave your browser | Free 200 | Starter Rs49 per file | Pro Unlimited</p>
-            </div>
-            """, unsafe_allow_html=True)
+            if fb_front.strip() and save_feedback(fb_front.strip(), "Guest"): st.success("Thank you!"); st.balloons()
     else:
         if st.session_state.selected_plan=="free": st.session_state.plan="free"; st.session_state.email="Guest_Free"; st.session_state.email_entered=True; st.rerun()
         if st.session_state.selected_plan=="starter": plan_text="STARTER - Rs49 One-Time Per File"
@@ -766,3 +744,18 @@ else:
                                 if st.session_state.plan=="starter":
                                     db_u=load_db()
                                     if st.session_state.email in db_u: db_u[st.session_state.email]["used"]=db_u[st.session_state.email].get("used",0)+1; save_db(db_u)
+
+
+# Footer test - front page only - below feedback
+try:
+    if is_first_page:
+        st.markdown("""
+        <div style="background:#000;color:#fff;padding:40px;border-radius:20px;margin-top:60px;text-align:center;border:5px solid #ff00ff;">
+            <h1 style="color:#00ff00;">✅ FOOTER TEST - NEW CODE WORKS ✅</h1>
+            <p style="color:#ffff00;font-size:1.4rem;">If you see BLACK BOX, deployment SUCCESS</p>
+            <p><a href="?page=privacy" style="color:#0ff;margin:0 10px;">Privacy</a><a href="?page=terms" style="color:#0ff;margin:0 10px;">Terms</a><a href="?page=contact" style="color:#0ff;margin:0 10px;">Contact</a></p>
+            <p style="color:#f0f;">Beautiful 3D Light UI + Favicon</p>
+        </div>
+        """, unsafe_allow_html=True)
+except:
+    pass
