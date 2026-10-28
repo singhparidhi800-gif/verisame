@@ -23,6 +23,25 @@ except:
 
 st.set_page_config(page_title="VeriSame - Clean 10x Faster", page_icon="https://i.postimg.cc/gjWxsmHf/1779366919870.png", layout="wide", initial_sidebar_state="collapsed")
 
+# Footer pages routing - Privacy, Terms, Contact - Black box only front page
+_qp = st.query_params.get("page", "")
+if _qp in ["privacy", "terms", "contact"]:
+    if _qp == "privacy":
+        st.title("Privacy Policy - VeriSame")
+        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:700; color:#000; font-size:1.1rem;">Your files never leave your browser. Only email and payment status stored. No file content saved. Founder Anugya.</div>', unsafe_allow_html=True)
+    elif _qp == "terms":
+        st.title("Terms & Conditions - VeriSame")
+        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:700; color:#000; font-size:1.1rem;">Free 200 rows lifetime. Starter Rs49 one file 2000 rows. Pro Rs299 (30 Days) / Rs1499 (180 Days) unlimited. Refund: Starter no refund after download, Pro 7 days if unused.</div>', unsafe_allow_html=True)
+    else:
+        st.title("Contact & Refund - VeriSame")
+        st.markdown('<div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:28px; font-weight:700; color:#000; font-size:1.1rem;">Founder Anugya | Contact via feedback form below. We respond within 24 hours. Email stored in secrets.</div>', unsafe_allow_html=True)
+    if st.button("Back to Home"):
+        st.query_params.clear()
+        st.rerun()
+    st.stop()
+
+
+
 UPI_ID = st.secrets.get("UPI_ID", st.secrets.get("UPI", "playwithreyansh0@okhdfcbank")) if hasattr(st, 'secrets') else "playwithreyansh0@okhdfcbank"
 STARTER_PRICE, PRO_1M, PRO_6M = 49, 299, 1499
 FREE_LIMIT, STARTER_LIMIT = 200, 2000
@@ -268,61 +287,61 @@ def query_groq(user_prompt):
 
 # Beautiful Light 3D UI - Advanced
 st.markdown("""
-
-
+<style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800;900&family=Outfit:wght@800;900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif; font-weight: 800 !important;}
 .stApp {
-    background: 
-        radial-gradient(circle at 10% 10%, #dbeafe 0%, transparent 40%),
-        radial-gradient(circle at 90% 15%, #fce7f3 0%, transparent 35%),
-        radial-gradient(circle at 50% 85%, #dcfce7 0%, transparent 45%),
-        radial-gradient(circle at 20% 80%, #fef3c7 0%, transparent 30%),
-        linear-gradient(135deg, #f8fafc 0%, #eff6ff 20%, #faf5ff 40%, #f0fdf4 70%, #fffbeb 100%);
-    background-attachment: fixed;
+    background: linear-gradient(135deg, #f8faff 0%, #f0f7ff 25%, #faf5ff 50%, #f0fdfa 75%, #fffbeb 100%);
 }
 .block-container {
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(20px) saturate(180%);
-    border-radius: 34px;
-    padding: 2.4rem;
-    max-width: 1380px;
-    margin: 1.2rem auto;
-    box-shadow: 0 32px 100px rgba(124,58,237,0.14), 0 10px 36px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.9);
-    border: 1.8px solid rgba(255,255,255,0.75);
-    transform: perspective(1200px) rotateX(1deg);
+    background: rgba(255,255,255,0.95);
+    border-radius: 28px;
+    padding: 2rem;
+    max-width: 1350px;
+    margin: 1rem auto;
+    box-shadow: 0 20px 60px rgba(124,58,237,0.1), 0 8px 24px rgba(0,0,0,0.04);
+    border: 1px solid rgba(255,255,255,0.8);
 }
-.welcome-black {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 4.1rem!important; background: linear-gradient(135deg, #0f172a 0%, #4338ca 30%, #7c3aed 60%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center; letter-spacing: -0.03em; filter: drop-shadow(0 6px 24px rgba(124,58,237,0.15)); animation: glow 4s ease-in-out infinite;}
-@keyframes glow {0%,100%{filter: drop-shadow(0 6px 24px rgba(124,58,237,0.15));} 50%{filter: drop-shadow(0 10px 36px rgba(124,58,237,0.25));}}
-.subtitle {color: #334155!important; text-align:center; margin-top: 14px!important; font-size: 1.4rem!important; font-weight: 800!important;}
-.tagline-badge {display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #f0abfc, #a78bfa, #7dd3fc, #6ee7b7, #fde68a); background-size: 300% 300%; animation: gradientShift 5s ease infinite; color: #1e1b4b !important; font-weight: 900 !important; border-radius: 26px; font-size: 1.25rem!important; box-shadow: 0 12px 32px rgba(167,139,250,0.35), inset 0 1px 0 rgba(255,255,255,0.8); border: 2px solid rgba(255,255,255,0.8);}
-@keyframes gradientShift {0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;}}
-.logo-container {width: 100%; display: flex; justify-content: center; padding: 10px 0; perspective: 1200px;}
-.logo-container img {width: 100%; max-width: 480px; max-height: 480px; object-fit: contain; filter: drop-shadow(0 24px 48px rgba(124,58,237,0.2)) drop-shadow(0 10px 20px rgba(0,0,0,0.08)); animation: float3d 6s ease-in-out infinite; transform-style: preserve-3d;}
-@keyframes float3d {0%,100%{transform: translateY(0px) rotateX(2deg) rotateY(-2deg) scale(1);} 50%{transform: translateY(-16px) rotateX(4deg) rotateY(3deg) scale(1.03);}}
-.pricing-card {border-radius: 30px; padding: 2.4rem; background: linear-gradient(145deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.96) 100%)!important; backdrop-filter: blur(16px); border: 2px solid rgba(255,255,255,0.85); min-height: 460px; display: flex; flex-direction: column; box-shadow: 0 24px 72px rgba(15,23,42,0.09), 0 10px 28px rgba(15,23,42,0.05), inset 0 1px 0 rgba(255,255,255,1), inset 0 -1px 0 rgba(0,0,0,0.02); transition: all 0.6s cubic-bezier(0.23,1,0.32,1); transform-style: preserve-3d; position: relative;}
-.pricing-card::before {content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(124,58,237,0.3), transparent);}
-.pricing-card:hover {transform: translateY(-14px) rotateX(4deg) rotateY(-3deg) scale(1.03); box-shadow: 0 40px 100px rgba(15,23,42,0.16), 0 20px 50px rgba(124,58,237,0.14), inset 0 1px 0 rgba(255,255,255,1);}
-.pricing-card-free {border-top: 5px solid #a5b4fc !important; background: linear-gradient(145deg, #ffffff 0%, #eff6ff 100%)!important;}
-.pricing-card-starter {border-top: 5px solid #4ade80 !important; background: linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%)!important;}
-.pricing-card-pro {border-top: 5px solid #a78bfa !important; background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%)!important; transform: scale(1.04) perspective(1000px) rotateY(-2deg);}
-.pricing-card-pro:hover {transform: translateY(-16px) rotateX(4deg) rotateY(-4deg) scale(1.06);}
-.stButton>button {border-radius: 20px !important; font-weight: 900 !important; background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 40%, #a78bfa 100%) !important; color: white !important; border: none !important; width: 100% !important; padding: 20px 28px !important; font-size: 1.25rem!important; box-shadow: 0 14px 32px rgba(124,58,237,0.32), 0 6px 16px rgba(124,58,237,0.2), inset 0 1px 0 rgba(255,255,255,0.3) !important; transform-style: preserve-3d; transition: all 0.4s cubic-bezier(0.23,1,0.32,1) !important;}
-.stButton>button:hover {transform: translateY(-4px) scale(1.03) perspective(1000px) translateZ(20px) !important; box-shadow: 0 22px 48px rgba(124,58,237,0.4), 0 10px 24px rgba(124,58,237,0.25) !important;}
-.pro-banner {background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 20%, #7c3aed 40%, #8b5cf6 60%, #a78bfa 80%, #c4b5fd 100%); padding: 2.2rem; border-radius: 28px; text-align: center; margin: 1.4rem 0; box-shadow: 0 24px 72px rgba(124,58,237,0.26), inset 0 1px 0 rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.2); transform: perspective(1000px) rotateX(2deg);}
-.pro-banner h2 {color: white!important; font-size: 1.85rem!important; margin: 0!important; font-weight: 900!important; text-shadow: 0 3px 16px rgba(0,0,0,0.25);}
-.tool-chip {display: inline-block; background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%) !important; padding: 14px 22px; border-radius: 26px; margin: 8px; color: #1e293b !important; font-weight: 900 !important; font-size: 1.08rem !important; border: 1.8px solid rgba(124,58,237,0.12); box-shadow: 0 8px 22px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,1); transition: all 0.35s ease; transform-style: preserve-3d;}
-.tool-chip:hover {transform: translateY(-4px) scale(1.06) rotateX(5deg); box-shadow: 0 14px 32px rgba(124,58,237,0.14);}
-.qr-box {background: linear-gradient(145deg, #ffffff 0%, #fafaff 100%) !important; border: 2.5px solid rgba(124,58,237,0.12) !important; border-radius: 30px; padding: 42px; text-align: center; margin: 28px 0; box-shadow: 0 28px 72px rgba(124,58,237,0.14), 0 10px 28px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,1); transform: perspective(1000px) rotateX(1deg);}
-.big-pay-button {display: block; width: 100%; padding: 38px 26px; background: linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%); color: white !important; font-weight: 900 !important; font-size: 2.1rem !important; text-align: center; border-radius: 24px; text-decoration: none !important; margin: 26px 0; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 24px 56px rgba(16,185,129,0.32), 0 10px 24px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.4); transform-style: preserve-3d; transition: all 0.5s ease;}
-.big-pay-button:hover {transform: translateY(-6px) scale(1.02) perspective(1000px) translateZ(30px); box-shadow: 0 32px 72px rgba(16,185,129,0.4);}
-.big-pay-button-pro {background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 50%, #c4b5fd 100%) !important;}
-.or-divider {display: flex; align-items: center; justify-content: center; margin: 32px 0; gap: 20px;}
-.or-divider-line {height: 3px; flex: 1; background: linear-gradient(90deg, transparent, #a78bfa, transparent); opacity: 0.7;}
-.or-divider-text {font-size: 2rem!important; font-weight: 900!important; color: #4c1d95!important; background: linear-gradient(145deg, #ffffff, #faf5ff); padding: 12px 28px; border-radius: 16px; border: 2px solid rgba(124,58,237,0.15); box-shadow: 0 8px 20px rgba(124,58,237,0.12); transform: perspective(500px) translateZ(10px);}
-
-
+.welcome-black {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 3.8rem!important; background: linear-gradient(135deg, #0f172a 0%, #4c1d95 50%, #7e22ce 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center;}
+.subtitle {color: #334155!important; text-align:center; margin-top: 12px!important; font-size: 1.3rem!important; font-weight: 800!important;}
+.tagline-badge {display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #c084fc, #a78bfa, #7dd3fc); color: #1e1b4b !important; font-weight: 900 !important; border-radius: 22px; font-size: 1.15rem!important; box-shadow: 0 8px 24px rgba(167,139,250,0.25);}
+.logo-container {width: 100%; display: flex; justify-content: center; padding: 8px 0;}
+.logo-container img {width: 100%; max-width: 440px; max-height: 440px; object-fit: contain; filter: drop-shadow(0 16px 32px rgba(124,58,237,0.15));}
+.pricing-card {border-radius: 26px; padding: 2rem; background: #ffffff!important; border: 1.5px solid rgba(255,255,255,0.9); min-height: 440px; display: flex; flex-direction: column; box-shadow: 0 16px 48px rgba(15,23,42,0.06), 0 6px 20px rgba(15,23,42,0.03); transition: all 0.4s ease;}
+.pricing-card:hover {transform: translateY(-8px); box-shadow: 0 28px 70px rgba(15,23,42,0.12), 0 12px 32px rgba(124,58,237,0.08);}
+.pricing-card-free {border-top: 4px solid #a5b4fc !important; background: linear-gradient(180deg, #ffffff 0%, #eef2ff 100%)!important;}
+.pricing-card-starter {border-top: 4px solid #4ade80 !important; background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)!important;}
+.pricing-card-pro {border-top: 4px solid #a78bfa !important; background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%)!important; transform: scale(1.02);}
+.stButton>button {border-radius: 16px !important; font-weight: 900 !important; background: linear-gradient(135deg, #7c3aed, #a78bfa) !important; color: white !important; border: none !important; width: 100% !important; padding: 16px 24px !important; font-size: 1.15rem!important; box-shadow: 0 10px 24px rgba(124,58,237,0.25) !important;}
+.stButton>button:hover {transform: translateY(-2px) !important; box-shadow: 0 16px 36px rgba(124,58,237,0.32) !important;}
+.pro-banner {background: linear-gradient(135deg, #4c1d95, #7e22ce, #a855f7); padding: 1.8rem; border-radius: 22px; text-align: center; margin: 1.2rem 0; box-shadow: 0 16px 48px rgba(124,58,237,0.2);}
+.pro-banner h2 {color: white!important; font-size: 1.7rem!important; margin: 0!important; font-weight: 900!important;}
+.pro-banner-small {background: linear-gradient(135deg, #4c1d95, #7e22ce); padding: 1.2rem; border-radius: 18px; text-align: center; margin: 0.8rem 0;}
+.pro-banner-small h2 {color: white!important; font-size: 1.3rem!important; margin: 0!important; font-weight: 900!important;}
+.tool-chip {display: inline-block; background: #ffffff !important; padding: 11px 16px; border-radius: 20px; margin: 5px; color: #1e293b !important; font-weight: 900 !important; font-size: 1rem !important; border: 1px solid rgba(124,58,237,0.12); box-shadow: 0 4px 14px rgba(15,23,42,0.04);}
+.plan-status-box {padding: 14px 18px; border-radius: 14px; font-weight: 900 !important; margin-bottom: 12px; font-size: 1.1rem!important;}
+.plan-active {background: #dcfce7 !important; border: 1.5px solid #86efac !important; color: #14532d !important;}
+.plan-pending {background: #fef9c3 !important; border: 1.5px solid #fcd34d !important; color: #713f12 !important;}
+.hundred-box {background: #dcfce7 !important; border: 1.5px solid #86efac !important; border-radius: 18px; padding: 20px; margin: 12px 0; text-align: center; font-weight: 900!important; font-size: 1.25rem!important; color: #14532d!important;}
+.qr-box {background: #ffffff !important; border: 2px solid rgba(124,58,237,0.12) !important; border-radius: 26px; padding: 36px; text-align: center; margin: 24px 0; box-shadow: 0 20px 56px rgba(124,58,237,0.1);}
+.upgrade-msg {background: #fef9c3 !important; border: 1.5px solid #fcd34d !important; border-radius: 18px; padding: 20px; text-align: center; margin: 12px 0; font-weight: 900!important; font-size: 1.2rem!important; color: #78350f!important;}
+.tool-report-clean {background: #ffffff !important; border: 1.5px solid #86efac !important; border-radius: 14px; padding: 14px 18px; margin: 8px 0; font-size: 1.1rem!important; font-weight: 900!important; color: #14532d!important; display: flex; justify-content: space-between; align-items: center;}
+.big-pay-button {display: block; width: 100%; padding: 28px 20px; background: linear-gradient(135deg, #10b981, #34d399) !important; color: white !important; font-weight: 900 !important; font-size: 1.8rem !important; text-align: center; border-radius: 20px; text-decoration: none !important; margin: 20px 0; box-shadow: 0 16px 40px rgba(16,185,129,0.28) !important;}
+.big-pay-button-pro {background: linear-gradient(135deg, #7c3aed, #a78bfa) !important;}
+.big-pay-sub {font-size: 1rem; display: block; margin-top: 8px; font-weight: 700; opacity: 0.95;}
+.or-divider {display: flex; align-items: center; justify-content: center; margin: 28px 0; gap: 16px;}
+.or-divider-line {height: 2px; flex: 1; background: linear-gradient(90deg, transparent, #a78bfa, transparent);}
+.or-divider-text {font-size: 1.6rem!important; font-weight: 900!important; color: #4c1d95!important; background: #ffffff; padding: 10px 24px; border-radius: 14px; border: 2px solid rgba(124,58,237,0.15); box-shadow: 0 6px 16px rgba(124,58,237,0.1);}
+.verifying-box {background: #fef9c3 !important; border: 2px solid #fcd34d !important; border-radius: 18px; padding: 28px; text-align: center; margin: 20px 0;}
+.verifying-box h3 {font-weight: 900!important; color: #78350f!important; font-size: 1.5rem!important;}
+.thankyou-box {background: #dcfce7 !important; border: 2px solid #86efac !important; border-radius: 18px; padding: 24px; text-align: center; margin: 16px 0;}
+.thankyou-box h3 {font-weight: 900!important; color: #14532d!important; font-size: 1.5rem!important;}
+.red-dot {display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; margin-right: 8px; animation: pulse 1.5s infinite;}
+.green-dot {display: inline-block; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; margin-right: 8px;}
+@keyframes pulse {0%,100%{opacity:1;} 50%{opacity:0.5;}}
+</style>
 """, unsafe_allow_html=True)
+
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "message": "Hello Welcome to the VeriSame what would you like to know?"}]
@@ -405,24 +424,24 @@ if st.session_state.email and st.session_state.plan != "free":
                 if amt_type==STARTER_PRICE: amt_type=PRO_1M
                 if amt_type==PRO_1M:
                     if status=="PENDING":
-                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 month 30 days</div>", unsafe_allow_html=True)
+                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 Month (30 Days)</div>", unsafe_allow_html=True)
                     elif status=="PAID":
                         if days_left<=5 and days_left>=0:
                             st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>✓ "+str(max(0,days_left))+" days left</div>", unsafe_allow_html=True)
                         else:
                             st.sidebar.markdown("<div class='plan-status-box plan-active'><span class='green-dot'></span>✓ "+str(max(0,days_left))+" days left</div>", unsafe_allow_html=True)
                     else:
-                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 month 30 days</div>", unsafe_allow_html=True)
+                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 Month (30 Days)</div>", unsafe_allow_html=True)
                 else:
                     if status=="PENDING":
-                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 months 180 days</div>", unsafe_allow_html=True)
+                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 Months (180 Days)</div>", unsafe_allow_html=True)
                     elif status=="PAID":
                         if days_left<=5 and days_left>=0:
                             st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>✓ "+str(max(0,days_left))+" days left</div>", unsafe_allow_html=True)
                         else:
                             st.sidebar.markdown("<div class='plan-status-box plan-active'><span class='green-dot'></span>✓ "+str(max(0,days_left))+" days left</div>", unsafe_allow_html=True)
                     else:
-                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 months 180 days</div>", unsafe_allow_html=True)
+                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 Months (180 Days)</div>", unsafe_allow_html=True)
         except Exception as e:
             if user.get("status")=="PENDING":
                 st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending</div>", unsafe_allow_html=True)
@@ -501,9 +520,9 @@ if st.session_state.plan is None:
             st.markdown('<div class="pricing-card pricing-card-pro"><p style="background: #9333ea; color:white; padding:10px 18px; border-radius:16px; display:inline-block; font-size:1.0rem; font-weight: 900;">POPULAR - BEST VALUE</p><h3 style="margin-top:12px;">PRO</h3><h1 style="font-size:2.8rem;">Rs299 / Rs1499</h1><p><b>Unlimited Rows</b></p><div style="margin-top:14px; flex-grow:1;"><p>✓ Rs299 = 1 Month (30 Days)</p><p>✓ Rs1499 = 6 Months (180 Days)</p><p>✓ Unlimited Rows</p><p>✓ QR + Direct Pay</p><p>✓ Instant Approval</p></div></div>', unsafe_allow_html=True)
             c_p1,c_p2=st.columns(2)
             with c_p1:
-                if st.button("Rs299 - 30 Days", key="btn_pro_299_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_1M; st.session_state.amt=PRO_1M; st.rerun()
+                if st.button("Rs299 (30 Days)", key="btn_pro_299_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_1M; st.session_state.amt=PRO_1M; st.rerun()
             with c_p2:
-                if st.button("Rs1499 - 180 Days", key="btn_pro_1499_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
+                if st.button("Rs1499 (180 Days)", key="btn_pro_1499_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
         render_chat(is_sidebar=False)
         st.markdown("---")
         st.markdown("<h2 style='font-weight: 900; font-size: 1.7rem; color: #000;'>Feedback - We Value Your Feedback</h2>", unsafe_allow_html=True)
@@ -511,6 +530,22 @@ if st.session_state.plan is None:
         if st.button("Send Feedback", key="fb_front_btn_fv2", type="primary", use_container_width=True):
             if fb_front.strip() and save_feedback(fb_front.strip(), "Guest"): 
                 st.success("Thank you! We value your feedback.")
+
+        # Footer - Black Box - Very Last - Only Front Page Below Feedback
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #0f0f0f 0%, #1f2937 50%, #111827 100%); color: #e5e7eb; padding: 36px 24px; border-radius: 20px; margin-top: 50px; text-align: center; border: 2px solid #2d2d2d; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <h3 style="color: #fff; font-weight: 900; font-size: 1.45rem;">VeriSame - Clean logic. Clear result.</h3>
+            <p style="color: #9ca3af; font-weight: 700; margin-top: 10px; font-size: 1.05rem;">Made by Anugya | The Fastest Way to Clean Your Data</p>
+            <div style="margin-top: 18px; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;">
+                <a href="?page=privacy" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem;">Privacy Policy</a>
+                <a href="?page=terms" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem;">Terms & Conditions</a>
+                <a href="?page=contact" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem;">Contact & Refund</a>
+            </div>
+            <div style="margin-top: 20px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);"></div>
+            <p style="font-size: 0.85rem; margin-top: 16px; color: #6b7280; font-weight: 600;">© 2025 VeriSame | 100% Private - Your files never leave your browser | Free 200 | Starter Rs49 per file | Pro Rs299 (30 Days) / Rs1499 (180 Days)</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         # Footer - Black Box - Last - Only Front Page
         if is_first_page:
             st.markdown("""
@@ -730,7 +765,8 @@ else:
                             st.markdown("<p style='font-size: 1.25rem; color: #000; text-align: center; margin-top: 18px; font-weight: 900;'>Pay by scanning with any payment app<br>GPay | PhonePe | Paytm | BHIM | Amazon Pay</p>", unsafe_allow_html=True)
                         st.markdown("<div class='or-divider'><div class='or-divider-line'></div><div class='or-divider-text'>OR</div><div class='or-divider-line'></div></div>", unsafe_allow_html=True)
                         st.markdown("<p style='font-weight: 900; font-size: 1.4rem; text-align: center; color: #000; margin: 20px 0;'>Pay Directly - Click to open payment app</p>", unsafe_allow_html=True)
-                        st.markdown('<div style="margin: 28px 0;"><a href="'+upi_link+'" class="big-pay-button '+btn_class+'" style="display:block; width:100%; padding:38px 24px; background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 50%, #c4b5fd 100%); color:white; font-weight:900; font-size:2.1rem; text-align:center; border-radius:22px; text-decoration:none; box-shadow: 0 24px 48px rgba(124,58,237,0.35), 0 10px 24px rgba(0,0,0,0.1); transform: perspective(1000px) translateZ(10px); border: 2px solid rgba(255,255,255,0.3);">💳 PAY Rs'+str(amt_to_show)+' - Direct Pay<br><span style="font-size:1.2rem; display:block; margin-top:10px; font-weight:800; opacity:0.95;">👉 Click to Open GPay | PhonePe | Paytm | BHIM | Amazon Pay Directly</span></a></div>', unsafe_allow_html=True)
+                        st.markdown('<a href="'+upi_link+'" class="big-pay-button '+btn_class+'" style="display:block; text-align:center; padding:32px 20px; font-size:2rem; border-radius:20px; background:linear-gradient(135deg,#10b981,#34d399); color:white; font-weight:900; text-decoration:none; box-shadow:0 16px 40px rgba(16,185,129,0.3);">💳 PAY Rs'+str(amt_to_show)+'<br><span style="font-size:1.1rem; display:block; margin-top:10px; font-weight:800;">👉 Direct Pay - Tap to Open GPay | PhonePe | Paytm | BHIM</span></a>', unsafe_allow_html=True)
+                        st.markdown('<div style="text-align:center; margin-top:8px; font-weight:800; color:#334155; font-size:1rem;">Direct Pay Box - Big Box After OR</div>', unsafe_allow_html=True)
                         st.markdown("</div>", unsafe_allow_html=True)
                         st.markdown("<div style='margin-top:24px;'>", unsafe_allow_html=True)
                         st.markdown("<p style='text-align:center; font-weight: 900; color: #000; margin-bottom: 12px; font-size: 1.35rem;'>After payment, click below:</p>", unsafe_allow_html=True)
