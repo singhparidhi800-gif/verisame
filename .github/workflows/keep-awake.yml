@@ -2,16 +2,16 @@ name: Keep VeriSame Awake 24x7 - Always On
 
 on:
   schedule:
-    - cron: '*/20 * * * *'  # har 20 min
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 jobs:
   keep-awake:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping VeriSame App
+      - name: Keep VeriSame Awake
         run: |
-          echo "Pinging VeriSame..."
-          curl -s -o /dev/null -w "%{http_code}" https://verisame.streamlit.app/ || true
-          curl -s -o /dev/null -w "%{http_code}" https://verisame.streamlit.app/_stcore/health || true
-          echo "Done - App is awake"
+          echo "Pinging https://verisame.streamlit.app"
+          curl -s --max-time 30 https://verisame.streamlit.app/ > /dev/null || true
+          curl -s --max-time 30 https://verisame.streamlit.app/_stcore/health > /dev/null || true
+          echo "VeriSame awake - $(date)"
