@@ -345,8 +345,8 @@ def render_chat(is_sidebar=False):
     chat_html+="</div>"
     target.markdown(chat_html, unsafe_allow_html=True)
     s_id="side" if is_sidebar else "main"
-    um=target.text_input("Ask", placeholder="Ask...", key="chat_"+s_id+"_finalfix", label_visibility="collapsed")
-    if target.button("Send", key="btn_chat_"+s_id+"_finalfix", use_container_width=True):
+    um=target.text_input("Ask", placeholder="Ask...", key="chat_"+s_id+"_finalv2", label_visibility="collapsed")
+    if target.button("Send", key="btn_chat_"+s_id+"_finalv2", use_container_width=True):
         if um and um.strip():
             st.session_state.chat_history.append({"role":"user","message":um})
             reply=query_groq(um)
@@ -371,7 +371,6 @@ if st.session_state.email and st.session_state.plan != "free":
             status=user.get("status","")
             
             if plan_type=="starter":
-                # 49 - ONE TIME PER FILE
                 if status=="PENDING":
                     st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - One time per file 49 rupees</div>", unsafe_allow_html=True)
                 elif status=="PAID":
@@ -379,10 +378,8 @@ if st.session_state.email and st.session_state.plan != "free":
                 else:
                     st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>One time per file 49 rupees</div>", unsafe_allow_html=True)
             else:
-                # PRO - 299 and 1499 with days left
-                if amt_type==STARTER_PRICE: amt_type=PRO_1M  # fallback
+                if amt_type==STARTER_PRICE: amt_type=PRO_1M
                 if amt_type==PRO_1M:
-                    # 299 - 30 days
                     if status=="PENDING":
                         st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 month 30 days</div>", unsafe_allow_html=True)
                     elif status=="PAID":
@@ -393,7 +390,6 @@ if st.session_state.email and st.session_state.plan != "free":
                     else:
                         st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 month 30 days</div>", unsafe_allow_html=True)
                 else:
-                    # 1499 - 180 days
                     if status=="PENDING":
                         st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 months 180 days</div>", unsafe_allow_html=True)
                     elif status=="PAID":
@@ -404,7 +400,6 @@ if st.session_state.email and st.session_state.plan != "free":
                     else:
                         st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 months 180 days</div>", unsafe_allow_html=True)
         except Exception as e:
-            # Fallback
             if user.get("status")=="PENDING":
                 st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending</div>", unsafe_allow_html=True)
             else:
@@ -414,17 +409,13 @@ elif st.session_state.plan=="free":
     st.sidebar.markdown("<div class='plan-status-box plan-active' style='font-weight: 900; font-size: 1.1rem;'><span class='green-dot'></span>Free - 200 Rows</div>", unsafe_allow_html=True)
     render_chat(is_sidebar=True)
 
+# ONLY LOGOUT BUTTON - NO BACK BUTTON (USER REQUEST)
 if st.session_state.plan or st.session_state.email_entered:
     st.sidebar.markdown("---")
-    b1,b2=st.sidebar.columns(2)
-    with b1:
-        if st.button("Back", key="nav_back_finalfix", use_container_width=True):
-            st.session_state.selected_plan=None; st.session_state.selected_amt=None; st.session_state.plan=None; st.session_state.email_entered=False; st.session_state.uploaded_files={}; st.session_state.clean_done=False; st.session_state.hundred_done=False; st.session_state.ambiguous_list=None; st.session_state.just_approved=False; st.session_state.demo_loaded=False; st.rerun()
-    with b2:
-        if st.button("Logout", key="nav_logout_finalfix", use_container_width=True):
-            for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','just_approved','demo_loaded']:
-                st.session_state[k]=None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
-            st.session_state.uploaded_files={}; st.session_state.changed_cells=set(); st.session_state.problem_cells=set(); st.query_params.clear(); st.rerun()
+    if st.sidebar.button("Logout", key="nav_logout_finalv2", use_container_width=True):
+        for k in ['plan','email','df_clean','df_original','amt','email_entered','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','clean_done','ambiguous_list','hundred_done','confirm_choices','just_approved','demo_loaded']:
+            st.session_state[k]=None if k in ['plan','email','df_clean','df_original','days','selected_plan','selected_amt','orig_len','empty_fixed','last_upload_sig','hub_report','ambiguous_list','confirm_choices'] else False
+        st.session_state.uploaded_files={}; st.session_state.changed_cells=set(); st.session_state.problem_cells=set(); st.query_params.clear(); st.rerun()
 
 is_first_page=(st.session_state.plan is None and st.session_state.selected_plan is None)
 
@@ -450,10 +441,10 @@ if "admin" in st.query_params:
                 with c1: st.write(email+" - "+info.get('status','')+" - Used "+str(info.get('used',0)))
                 with c2:
                     if info.get("status") in ["PENDING","UNPAID","EXPIRED"]:
-                        if st.button("Approve", key="ap_s_"+email+"_ffix", type="primary", use_container_width=True):
+                        if st.button("Approve", key="ap_s_"+email+"_fv2", type="primary", use_container_width=True):
                             data[email]["status"]="PAID"; data[email]["used"]=0; data[email]["expiry"]=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"); save_db(data); st.balloons(); st.rerun()
                 with c3:
-                    if st.button("Delete", key="del_s_"+email+"_ffix", use_container_width=True): del data[email]; save_db(data); st.rerun()
+                    if st.button("Delete", key="del_s_"+email+"_fv2", use_container_width=True): del data[email]; save_db(data); st.rerun()
         with tab3:
             for email,info in list({k:v for k,v in data.items() if v.get('amt') in [PRO_1M, PRO_6M]}.items()):
                 if "@" not in email: continue
@@ -464,10 +455,10 @@ if "admin" in st.query_params:
                     st.write(email+" - Rs"+str(info.get('amt',''))+" - "+info.get('status','')+" - Days Left: "+str(dl))
                 with c2:
                     if info.get("status") in ["PENDING","UNPAID","EXPIRED"]:
-                        if st.button("Approve", key="ap_p_"+email+"_ffix", type="primary", use_container_width=True):
+                        if st.button("Approve", key="ap_p_"+email+"_fv2", type="primary", use_container_width=True):
                             data[email]["status"]="PAID"; data[email]["expiry"]=(datetime.now()+timedelta(days=180 if data[email].get("amt")==PRO_6M else 30)).strftime("%Y-%m-%d"); save_db(data); st.balloons(); st.rerun()
                 with c3:
-                    if st.button("Delete", key="del_p_"+email+"_ffix", use_container_width=True): del data[email]; save_db(data); st.rerun()
+                    if st.button("Delete", key="del_p_"+email+"_fv2", use_container_width=True): del data[email]; save_db(data); st.rerun()
         with tab4:
             if fbs:
                 for fb in reversed(fbs[-50:]): st.markdown("<div style='background:#fff; border:2.5px solid #9333ea; border-radius:14px; padding:14px; margin:10px 0; font-weight: 800;'><b>"+fb['email']+"</b><br><p>"+fb['feedback'][:500]+"</p><small>"+fb.get('time','')[:19]+"</small></div>", unsafe_allow_html=True)
@@ -478,26 +469,23 @@ if st.session_state.plan is None:
         st.markdown("<h2 style='text-align:center; color:#000; margin-top:24px; font-weight: 900; font-size: 2.2rem;'>Choose Your Plan</h2>", unsafe_allow_html=True)
         col_free, col_starter, col_pro = st.columns(3, gap="medium")
         with col_free:
-            # CLEANED - NO EXTRA TEXT
             st.markdown('<div class="pricing-card pricing-card-free"><h3>FREE FOREVER</h3><h1>FREE</h1><p><b>200 Rows - Lifetime Free</b></p><div style="margin-top:14px; flex-grow:1;"><p>✓ All 10 Advanced Tools</p><p>✓ Super Fast Cleaning</p><p>✓ CSV + Excel + PDF</p><p>✓ 100% Private</p><p>✓ AI Support</p></div></div>', unsafe_allow_html=True)
-            if st.button("Start Free", key="btn_free_ffix", type="primary", use_container_width=True): save_free_clicks(); st.session_state.selected_plan="free"; st.session_state.plan="free"; st.session_state.email="Guest_Free"; st.session_state.email_entered=True; st.balloons(); st.rerun()
+            if st.button("Start Free", key="btn_free_fv2", type="primary", use_container_width=True): save_free_clicks(); st.session_state.selected_plan="free"; st.session_state.plan="free"; st.session_state.email="Guest_Free"; st.session_state.email_entered=True; st.balloons(); st.rerun()
         with col_starter:
-            # CLEANED - REMOVED Big Pay Box + I Paid + Balloon text
             st.markdown('<div class="pricing-card pricing-card-starter"><p style="background: #22c55e; color:white; padding:10px 18px; border-radius:16px; display:inline-block; font-size:1.0rem; font-weight: 900;">ONE TIME PER FILE</p><h3 style="margin-top:12px;">STARTER</h3><h1>Rs49</h1><p><b>One-Time Per File - 2,000 Rows</b></p><div style="margin-top:14px; flex-grow:1;"><p>✓ All 10 Advanced Tools</p><p>✓ Pay Again For Next File</p><p>✓ QR Code + Direct Pay</p><p>✓ Instant Approval</p></div></div>', unsafe_allow_html=True)
-            if st.button("Start with 49", key="btn_starter_ffix", type="primary", use_container_width=True): st.session_state.selected_plan="starter"; st.session_state.selected_amt=STARTER_PRICE; st.session_state.amt=STARTER_PRICE; st.rerun()
+            if st.button("Start with 49", key="btn_starter_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="starter"; st.session_state.selected_amt=STARTER_PRICE; st.session_state.amt=STARTER_PRICE; st.rerun()
         with col_pro:
-            # CLEANED - REMOVED balloon + futuristic text
             st.markdown('<div class="pricing-card pricing-card-pro"><p style="background: #9333ea; color:white; padding:10px 18px; border-radius:16px; display:inline-block; font-size:1.0rem; font-weight: 900;">POPULAR - BEST VALUE</p><h3 style="margin-top:12px;">PRO</h3><h1 style="font-size:2.8rem;">Rs299 / Rs1499</h1><p><b>Unlimited Rows</b></p><div style="margin-top:14px; flex-grow:1;"><p>✓ Rs299 = 1 Month (30 Days)</p><p>✓ Rs1499 = 6 Months (180 Days)</p><p>✓ Unlimited Rows</p><p>✓ QR + Direct Pay</p><p>✓ Instant Approval</p></div></div>', unsafe_allow_html=True)
             c_p1,c_p2=st.columns(2)
             with c_p1:
-                if st.button("Rs299 - 30 Days", key="btn_pro_299_ffix", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_1M; st.session_state.amt=PRO_1M; st.rerun()
+                if st.button("Rs299 - 30 Days", key="btn_pro_299_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_1M; st.session_state.amt=PRO_1M; st.rerun()
             with c_p2:
-                if st.button("Rs1499 - 180 Days", key="btn_pro_1499_ffix", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
+                if st.button("Rs1499 - 180 Days", key="btn_pro_1499_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
         render_chat(is_sidebar=False)
         st.markdown("---")
         st.markdown("<h2 style='font-weight: 900; font-size: 1.7rem; color: #000;'>Feedback - We Value Your Feedback</h2>", unsafe_allow_html=True)
-        fb_front=st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_ffix", height=90, label_visibility="collapsed")
-        if st.button("Send Feedback", key="fb_front_btn_ffix", type="primary", use_container_width=True):
+        fb_front=st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_fv2", height=90, label_visibility="collapsed")
+        if st.button("Send Feedback", key="fb_front_btn_fv2", type="primary", use_container_width=True):
             if fb_front.strip() and save_feedback(fb_front.strip(), "Guest"): st.success("Thank you!"); st.balloons()
     else:
         if st.session_state.selected_plan=="free": st.session_state.plan="free"; st.session_state.email="Guest_Free"; st.session_state.email_entered=True; st.rerun()
@@ -508,19 +496,55 @@ if st.session_state.plan is None:
         st.markdown("<h2 style='text-align:center; margin-top:18px; font-weight: 900; font-size: 1.6rem; color: #000;'>Enter email for "+plan_text+"</h2>", unsafe_allow_html=True)
         _,ce2,_=st.columns([1,2,1])
         with ce2:
-            email_input=st.text_input("Enter email", placeholder="your@email.com", key="email_main_ffix").lower().strip()
+            email_input=st.text_input("Enter email", placeholder="your@email.com", key="email_main_fv2").lower().strip()
             b1,b2=st.columns(2)
             with b1:
-                if st.button("Verify & Continue", key="btn_verify_ffix", type="primary", use_container_width=True):
+                if st.button("Verify & Continue", key="btn_verify_fv2", type="primary", use_container_width=True):
                     if "@" in email_input and "." in email_input:
-                        st.session_state.email=email_input; st.session_state.email_entered=True; data=load_db()
-                        if st.session_state.selected_plan=="starter":
-                            exp=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"); data[email_input]={"plan":"starter","status":"UNPAID","amt":STARTER_PRICE,"expiry":exp,"created":str(datetime.now()),"used":0}; save_db(data); st.session_state.plan="starter"; st.session_state.amt=STARTER_PRICE; st.balloons(); st.rerun()
-                        else:
-                            exact=180 if st.session_state.selected_amt==PRO_6M else 30; exp=(datetime.now()+timedelta(days=exact)).strftime("%Y-%m-%d"); data[email_input]={"plan":"pro","status":"UNPAID","amt":st.session_state.selected_amt,"expiry":exp,"created":str(datetime.now())}; save_db(data); st.session_state.plan="pro"; st.session_state.amt=st.session_state.selected_amt; st.balloons(); st.rerun()
+                        data=load_db()
+                        existing=data.get(email_input)
+                        # === CRITICAL FIX: IF EMAIL ALREADY PAID AND NOT EXPIRED, DON'T OVERWRITE ===
+                        is_existing_valid=False
+                        if existing and existing.get("status")=="PAID":
+                            try:
+                                exp_d=datetime.strptime(existing.get("expiry","2000-01-01"), "%Y-%m-%d").date()
+                                days_left_existing=(exp_d - datetime.now().date()).days
+                                if days_left_existing>=0:
+                                    # Still valid - keep existing PAID status
+                                    is_existing_valid=True
+                                    st.session_state.email=email_input
+                                    st.session_state.email_entered=True
+                                    st.session_state.plan=existing.get("plan","pro")
+                                    st.session_state.amt=existing.get("amt",PRO_1M)
+                                    st.balloons()
+                                    st.rerun()
+                            except:
+                                pass
+                        
+                        if not is_existing_valid:
+                            # New user or expired - create UNPAID
+                            st.session_state.email=email_input
+                            st.session_state.email_entered=True
+                            if st.session_state.selected_plan=="starter":
+                                exp=(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d")
+                                data[email_input]={"plan":"starter","status":"UNPAID","amt":STARTER_PRICE,"expiry":exp,"created":str(datetime.now()),"used":0}
+                                save_db(data)
+                                st.session_state.plan="starter"
+                                st.session_state.amt=STARTER_PRICE
+                                st.balloons()
+                                st.rerun()
+                            else:
+                                exact=180 if st.session_state.selected_amt==PRO_6M else 30
+                                exp=(datetime.now()+timedelta(days=exact)).strftime("%Y-%m-%d")
+                                data[email_input]={"plan":"pro","status":"UNPAID","amt":st.session_state.selected_amt,"expiry":exp,"created":str(datetime.now())}
+                                save_db(data)
+                                st.session_state.plan="pro"
+                                st.session_state.amt=st.session_state.selected_amt
+                                st.balloons()
+                                st.rerun()
                     else: st.error("Enter valid email")
             with b2:
-                if st.button("Back", key="btn_back_ffix2", use_container_width=True): st.session_state.selected_plan=None; st.session_state.selected_amt=None; st.rerun()
+                if st.button("Back to Plans", key="btn_back_fv2_2", use_container_width=True): st.session_state.selected_plan=None; st.session_state.selected_amt=None; st.rerun()
         st.stop()
 else:
     tab1, tab2 = st.tabs(["Upload File", "Try Demo - No File? Test Here"])
@@ -530,7 +554,7 @@ else:
             cur_files=[f.name for f in files]; sheet_sel={}
             for f in files:
                 if f.name.endswith((".xlsx",".xls")):
-                    try: ef=pd.ExcelFile(f); sel=st.selectbox("Sheet for "+f.name, ef.sheet_names, key="sh_"+f.name+"_ffix"); sheet_sel[f.name]=sel
+                    try: ef=pd.ExcelFile(f); sel=st.selectbox("Sheet for "+f.name, ef.sheet_names, key="sh_"+f.name+"_fv2"); sheet_sel[f.name]=sel
                     except: pass
             sig=str(cur_files)+"-"+str(list(sheet_sel.values()))
             db_check=load_db()
@@ -560,7 +584,7 @@ else:
         st.markdown("<h2 style='font-weight: 900; font-size: 1.7rem; color: #000;'>Try Demo - No File? Test Here!</h2>", unsafe_allow_html=True)
         st.markdown("<div style='background:#faf5ff; border:3.5px solid #9333ea; border-radius:18px; padding:20px; font-size: 1.15rem; font-weight: 900; color: #000;'><b>Click below, file will come automatically, then press BIG CLEAN and see cleaned file with what tool cleaned what!</b></div>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("CLICK HERE - Load Demo File Instantly", key="btn_load_demo_ffix", type="primary", use_container_width=True):
+        if st.button("CLICK HERE - Load Demo File Instantly", key="btn_load_demo_fv2", type="primary", use_container_width=True):
             demo_data={
                 "Join Date": ["12/5/2024", "05.06.2024", "15-03-2023", "40000", "12/5/2024", ""],
                 "  Name@  ": ["  RAHUL KUMAR  ", "priya SHARMA", "AMIT @#$ Kumar", "teh custmer", "  RAHUL KUMAR  ", "Amit Kumar"],
@@ -578,14 +602,14 @@ else:
             st.markdown("<div class='hundred-box'><b>Demo file loaded! Go to Upload File tab - Press BIG CLEAN!</b></div>", unsafe_allow_html=True)
 
     if "uploaded_files" in st.session_state and st.session_state.uploaded_files:
-        keys=list(st.session_state.uploaded_files.keys()); sel_file=st.selectbox("Select file:", keys, key="active_file_ffix", label_visibility="collapsed")
+        keys=list(st.session_state.uploaded_files.keys()); sel_file=st.selectbox("Select file:", keys, key="active_file_fv2", label_visibility="collapsed")
         limit=FREE_LIMIT if st.session_state.plan=="free" else STARTER_LIMIT if st.session_state.plan=="starter" else 1000000
         if st.session_state.plan in ["free","starter"] and len(st.session_state.uploaded_files[sel_file]["clean"]) > limit: st.session_state.uploaded_files[sel_file]["clean"]=st.session_state.uploaded_files[sel_file]["clean"].iloc[:limit]
         st.session_state.df_clean=st.session_state.uploaded_files[sel_file]["clean"]; st.session_state.df_original=st.session_state.uploaded_files[sel_file]["original"]; st.session_state.orig_len=len(st.session_state.df_original); st.session_state.empty_fixed=st.session_state.uploaded_files[sel_file]["empty_fixed"]; st.session_state.problem_cells=st.session_state.uploaded_files[sel_file].get("problem_cells",set()); update_changed(); df_clean=st.session_state.df_clean; orig_len=st.session_state.orig_len
 
         if not st.session_state.get("clean_done"):
             st.markdown("<h2 style='font-weight: 900; font-size: 1.6rem; color: #000;'>File: "+sel_file+" - "+str(orig_len)+" rows</h2>", unsafe_allow_html=True)
-            if st.button("BIG CLEAN - 1 Click = 10 Advanced Tools", key="btn_big_clean_ffix", type="primary", use_container_width=True):
+            if st.button("BIG CLEAN - 1 Click = 10 Advanced Tools", key="btn_big_clean_fv2", type="primary", use_container_width=True):
                 try:
                     enforce_delay(); df_curr=st.session_state.df_clean.copy(); st.session_state.problem_cells=set(); st.session_state.changed_cells=set()
                     for col in df_curr.columns:
@@ -626,9 +650,9 @@ else:
                 choices=st.session_state.get("confirm_choices", {})
                 for i, amb in enumerate(ambiguous):
                     st.markdown("<div style='background:#fff; border:3px solid #f59e0b; border-radius:12px; padding:14px; margin:10px 0; font-weight: 900; font-size: 1.1rem; color: #000;'><b>Q"+str(i+1)+": "+amb['question']+"</b><br><small>"+amb['original']+"</small></div>", unsafe_allow_html=True)
-                    selected=st.radio("Choose:", amb['options'], key="amb_"+str(i)+"_ffix", index=0); choices[i]=selected
+                    selected=st.radio("Choose:", amb['options'], key="amb_"+str(i)+"_fv2", index=0); choices[i]=selected
                 st.session_state.confirm_choices=choices
-                if st.button("Apply & Make 100% Clean", key="btn_apply_amb_ffix", type="primary", use_container_width=True):
+                if st.button("Apply & Make 100% Clean", key="btn_apply_amb_fv2", type="primary", use_container_width=True):
                     st.session_state.hundred_done=True; st.session_state.ambiguous_list=[]; st.success("Now 100% Clean!"); st.balloons(); st.rerun()
             st.markdown("<h3 style='font-weight: 900; font-size: 1.35rem; color: #000;'>Preview - Cleaned File - "+percent_text+"</h3>", unsafe_allow_html=True)
             styled=apply_style(df_clean.head(10)); st.dataframe(styled, use_container_width=True, height=420)
@@ -644,12 +668,12 @@ else:
             
             if st.session_state.plan=="free":
                 st.markdown("<h2 style='font-weight: 900; font-size: 1.5rem; color: #000;'>Export - "+percent_text+"</h2>", unsafe_allow_html=True); c1,c2,c3=st.columns(3); safe=sel_file[:30]
-                with c1: csv=df_clean.to_csv(index=False).encode(); st.download_button("CSV - "+percent_text+" - BIG", csv, safe+"_cleaned.csv", mime="text/csv", key="dl_csv_free_ffix", use_container_width=True, type="primary")
+                with c1: csv=df_clean.to_csv(index=False).encode(); st.download_button("CSV - "+percent_text+" - BIG", csv, safe+"_cleaned.csv", mime="text/csv", key="dl_csv_free_fv2", use_container_width=True, type="primary")
                 with c2:
-                    if openpyxl is not None: ex=io.BytesIO(); df_clean.to_excel(ex, index=False, engine='openpyxl'); ex.seek(0); st.download_button("Excel - "+percent_text+" - BIG", ex.getvalue(), safe+"_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_free_ffix", use_container_width=True)
+                    if openpyxl is not None: ex=io.BytesIO(); df_clean.to_excel(ex, index=False, engine='openpyxl'); ex.seek(0); st.download_button("Excel - "+percent_text+" - BIG", ex.getvalue(), safe+"_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_free_fv2", use_container_width=True)
                 with c3: pdf=generate_pdf(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean, st.session_state.get("hub_report")); 
                 with c3:
-                    if pdf: st.download_button("PDF - "+percent_text+" - BIG", pdf, safe+"_audit.pdf", mime="application/pdf", key="dl_pdf_free_ffix", use_container_width=True)
+                    if pdf: st.download_button("PDF - "+percent_text+" - BIG", pdf, safe+"_audit.pdf", mime="application/pdf", key="dl_pdf_free_fv2", use_container_width=True)
             elif st.session_state.plan in ["starter","pro"]:
                 if is_expired: st.markdown("<div class='upgrade-msg'><b>Plan Ended - Pay again</b></div>", unsafe_allow_html=True); is_paid=False
                 
@@ -663,7 +687,7 @@ else:
                     
                     if user_info.get("status")=="PENDING":
                         st.markdown("<div class='verifying-box'><h3>Thank you for your payment</h3><p>Your payment is being verified.<br>Please wait a moment, our team will confirm shortly.</p></div>", unsafe_allow_html=True)
-                        if st.button("Check Status", key="check_status_ffix", type="primary", use_container_width=True): st.rerun()
+                        if st.button("Check Status", key="check_status_fv2", type="primary", use_container_width=True): st.rerun()
                     else:
                         st.markdown("<div class='upgrade-msg'><h3>Your file cleaned "+percent_text+" - "+plan_name+"</h3></div>", unsafe_allow_html=True)
                         st.markdown("<div class='qr-box'>", unsafe_allow_html=True)
@@ -679,7 +703,7 @@ else:
                         st.markdown("</div>", unsafe_allow_html=True)
                         st.markdown("<div style='margin-top:24px;'>", unsafe_allow_html=True)
                         st.markdown("<p style='text-align:center; font-weight: 900; color: #000; margin-bottom: 12px; font-size: 1.35rem;'>After payment, click below:</p>", unsafe_allow_html=True)
-                        if st.button("I Paid Rs"+str(amt_to_show)+" - Confirm Payment - BIG", key="btn_paid_"+str(amt_to_show)+"_ffix", type="primary", use_container_width=True):
+                        if st.button("I Paid Rs"+str(amt_to_show)+" - Confirm Payment - BIG", key="btn_paid_"+str(amt_to_show)+"_fv2", type="primary", use_container_width=True):
                             data=load_db()
                             if amt_to_show==STARTER_PRICE: data[st.session_state.email]={"plan":"starter","amt":STARTER_PRICE,"days":36500,"expiry":(datetime.now()+timedelta(days=36500)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now()),"used":0}
                             elif amt_to_show==PRO_1M: data[st.session_state.email]={"plan":"pro","amt":PRO_1M,"days":30,"expiry":(datetime.now()+timedelta(days=30)).strftime("%Y-%m-%d"),"status":"PENDING","created":str(datetime.now())}
@@ -692,21 +716,21 @@ else:
                     
                     c1,c2,c3=st.columns(3); safe=sel_file[:30]; csv=df_clean.to_csv(index=False).encode()
                     with c1:
-                        if st.download_button("CSV - "+percent_text+" - BIG", csv, safe+"_cleaned.csv", mime="text/csv", key="dl_csv_paid_ffix", use_container_width=True, type="primary"):
+                        if st.download_button("CSV - "+percent_text+" - BIG", csv, safe+"_cleaned.csv", mime="text/csv", key="dl_csv_paid_fv2", use_container_width=True, type="primary"):
                             if st.session_state.plan=="starter":
                                 db_u=load_db()
                                 if st.session_state.email in db_u: db_u[st.session_state.email]["used"]=db_u[st.session_state.email].get("used",0)+1; save_db(db_u)
                     with c2:
                         if openpyxl is not None: ex=io.BytesIO(); df_clean.to_excel(ex, index=False, engine='openpyxl'); ex.seek(0)
                         if openpyxl is not None:
-                            if st.download_button("Excel - "+percent_text+" - BIG", ex.getvalue(), safe+"_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_paid_ffix", use_container_width=True):
+                            if st.download_button("Excel - "+percent_text+" - BIG", ex.getvalue(), safe+"_cleaned.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", key="dl_xlsx_paid_fv2", use_container_width=True):
                                 if st.session_state.plan=="starter":
                                     db_u=load_db()
                                     if st.session_state.email in db_u: db_u[st.session_state.email]["used"]=db_u[st.session_state.email].get("used",0)+1; save_db(db_u)
                     with c3: pdf=generate_pdf(orig_len, len(df_clean), st.session_state.empty_fixed, df_clean, st.session_state.get("hub_report")); 
                     with c3:
                         if pdf:
-                            if st.download_button("PDF - "+percent_text+" - BIG", pdf, safe+"_audit.pdf", mime="application/pdf", key="dl_pdf_paid_ffix", use_container_width=True):
+                            if st.download_button("PDF - "+percent_text+" - BIG", pdf, safe+"_audit.pdf", mime="application/pdf", key="dl_pdf_paid_fv2", use_container_width=True):
                                 if st.session_state.plan=="starter":
                                     db_u=load_db()
                                     if st.session_state.email in db_u: db_u[st.session_state.email]["used"]=db_u[st.session_state.email].get("used",0)+1; save_db(db_u)
