@@ -21,26 +21,7 @@ try:
 except:
     SimpleDocTemplate = None
 
-st.set_page_config(page_title="VeriSame - Clean 10x Faster", page_icon="https://i.postimg.cc/gjWxsmHf/1779366919870.png", layout="wide", initial_sidebar_state="collapsed")
-
-# Footer pages routing - Privacy, Terms, Contact - Black box only front page
-_qp = st.query_params.get("page", "")
-if _qp in ["privacy", "terms", "contact"]:
-    if _qp == "privacy":
-        st.title("Privacy Policy - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:700; color:#000; font-size:1.1rem;">Your files never leave your browser. Only email and payment status stored. No file content saved. Founder Anugya.</div>', unsafe_allow_html=True)
-    elif _qp == "terms":
-        st.title("Terms & Conditions - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:700; color:#000; font-size:1.1rem;">Free 200 rows lifetime. Starter Rs49 one file 2000 rows. Pro Rs299 (30 Days) / Rs1499 (180 Days) unlimited. Refund: Starter no refund after download, Pro 7 days if unused.</div>', unsafe_allow_html=True)
-    else:
-        st.title("Contact & Refund - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:28px; font-weight:700; color:#000; font-size:1.1rem;">Founder Anugya | Contact via feedback form below. We respond within 24 hours. Email stored in secrets.</div>', unsafe_allow_html=True)
-    if st.button("Back to Home"):
-        st.query_params.clear()
-        st.rerun()
-    st.stop()
-
-
+st.set_page_config(page_title="VeriSame - 10 Tools", page_icon="💎", layout="wide", initial_sidebar_state="collapsed")
 
 UPI_ID = st.secrets.get("UPI_ID", st.secrets.get("UPI", "playwithreyansh0@okhdfcbank")) if hasattr(st, 'secrets') else "playwithreyansh0@okhdfcbank"
 STARTER_PRICE, PRO_1M, PRO_6M = 49, 299, 1499
@@ -50,23 +31,6 @@ FEEDBACK_FILE = "feedback_db.json"
 FREE_CLICKS_FILE = "free_clicks.json"
 NTFY_TOPIC = st.secrets.get("NTFY_TOPIC", "verisame-anugya-97949-payments") if hasattr(st, 'secrets') else "verisame-anugya-97949-payments"
 GROQ_MODEL = "openai/gpt-oss-20b"
-
-# Footer pages routing
-_qp = st.query_params.get("page", "")
-if _qp in ["privacy", "terms", "contact"]:
-    if _qp == "privacy":
-        st.title("Privacy Policy - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:700; color:#000;">Your files never leave your browser. Only email and payment status stored. Founder Anugya.</div>', unsafe_allow_html=True)
-    elif _qp == "terms":
-        st.title("Terms & Conditions - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #9333ea; border-radius:18px; padding:28px; font-weight:700; color:#000;">Free 200 rows lifetime. Starter Rs49 one file 2000 rows. Pro Rs299 30 days / Rs1499 180 days unlimited. Refund: Starter no refund, Pro 7 days if unused.</div>', unsafe_allow_html=True)
-    else:
-        st.title("Contact & Refund - VeriSame")
-        st.markdown('<div style="background:#fff; border:3px solid #22c55e; border-radius:18px; padding:28px; font-weight:700; color:#000;">Founder Anugya | Contact via feedback form. Response within 24h.</div>', unsafe_allow_html=True)
-    if st.button("Back to Home"):
-        st.query_params.clear()
-        st.rerun()
-    st.stop()
 
 def send_notification(email, amt, plan_name):
     try:
@@ -285,63 +249,53 @@ def query_groq(user_prompt):
         return comp.choices[0].message.content
     except: return "Hello Welcome to the VeriSame what would you like to know?"
 
-# Beautiful Light 3D UI - Advanced
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800;900&family=Outfit:wght@800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800;900&family=Outfit:wght@900&display=swap');
 html, body, [class*="css"] {font-family: 'Poppins', sans-serif; font-weight: 800 !important;}
-.stApp {
-    background: linear-gradient(135deg, #f8faff 0%, #f0f7ff 25%, #faf5ff 50%, #f0fdfa 75%, #fffbeb 100%);
-}
-.block-container {
-    background: rgba(255,255,255,0.95);
-    border-radius: 28px;
-    padding: 2rem;
-    max-width: 1350px;
-    margin: 1rem auto;
-    box-shadow: 0 20px 60px rgba(124,58,237,0.1), 0 8px 24px rgba(0,0,0,0.04);
-    border: 1px solid rgba(255,255,255,0.8);
-}
-.welcome-black {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 3.8rem!important; background: linear-gradient(135deg, #0f172a 0%, #4c1d95 50%, #7e22ce 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center;}
-.subtitle {color: #334155!important; text-align:center; margin-top: 12px!important; font-size: 1.3rem!important; font-weight: 800!important;}
-.tagline-badge {display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #c084fc, #a78bfa, #7dd3fc); color: #1e1b4b !important; font-weight: 900 !important; border-radius: 22px; font-size: 1.15rem!important; box-shadow: 0 8px 24px rgba(167,139,250,0.25);}
-.logo-container {width: 100%; display: flex; justify-content: center; padding: 8px 0;}
-.logo-container img {width: 100%; max-width: 440px; max-height: 440px; object-fit: contain; filter: drop-shadow(0 16px 32px rgba(124,58,237,0.15));}
-.pricing-card {border-radius: 26px; padding: 2rem; background: #ffffff!important; border: 1.5px solid rgba(255,255,255,0.9); min-height: 440px; display: flex; flex-direction: column; box-shadow: 0 16px 48px rgba(15,23,42,0.06), 0 6px 20px rgba(15,23,42,0.03); transition: all 0.4s ease;}
-.pricing-card:hover {transform: translateY(-8px); box-shadow: 0 28px 70px rgba(15,23,42,0.12), 0 12px 32px rgba(124,58,237,0.08);}
-.pricing-card-free {border-top: 4px solid #a5b4fc !important; background: linear-gradient(180deg, #ffffff 0%, #eef2ff 100%)!important;}
-.pricing-card-starter {border-top: 4px solid #4ade80 !important; background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%)!important;}
-.pricing-card-pro {border-top: 4px solid #a78bfa !important; background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%)!important; transform: scale(1.02);}
-.stButton>button {border-radius: 16px !important; font-weight: 900 !important; background: linear-gradient(135deg, #7c3aed, #a78bfa) !important; color: white !important; border: none !important; width: 100% !important; padding: 16px 24px !important; font-size: 1.15rem!important; box-shadow: 0 10px 24px rgba(124,58,237,0.25) !important;}
-.stButton>button:hover {transform: translateY(-2px) !important; box-shadow: 0 16px 36px rgba(124,58,237,0.32) !important;}
-.pro-banner {background: linear-gradient(135deg, #4c1d95, #7e22ce, #a855f7); padding: 1.8rem; border-radius: 22px; text-align: center; margin: 1.2rem 0; box-shadow: 0 16px 48px rgba(124,58,237,0.2);}
+.stApp {background: radial-gradient(ellipse at top left, #faf5ff 0%, #f5f3ff 20%, #ede9fe 40%, #e9d5ff 60%, #d8b4fe 80%, #c4b5fd 100%); background-attachment: fixed;}
+.block-container {background: rgba(255,255,255,0.98); border-radius: 28px; padding: 2rem; max-width: 1350px; margin: 0 auto; box-shadow: 0 20px 60px rgba(139,92,246,0.22);}
+.welcome-black {font-family: 'Outfit', sans-serif; font-weight: 900!important; font-size: 3.8rem!important; color: #000!important; text-align: center;}
+.subtitle {color: #000!important; text-align:center; margin-top: 12px!important; font-size: 1.35rem!important; font-weight: 900!important;}
+.tagline-badge {display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #7e22ce, #9333ea); color: #fff !important; font-weight: 900 !important; border-radius: 22px; font-size: 1.2rem!important;}
+.logo-container {width: 100%; display: flex; justify-content: center; padding: 5px 0;}
+.logo-container img {width: 100%; max-width: 450px; max-height: 450px; object-fit: contain;}
+.logo-float {animation: float 5s ease-in-out infinite;}
+@keyframes float {0%,100%{transform: translateY(0px);} 50%{transform: translateY(-10px);}}
+.pricing-card {border-radius: 24px; padding: 2rem; background: #ffffff!important; border: 2.5px solid #e9d5ff; min-height: 420px; display: flex; flex-direction: column; box-shadow: 0 10px 24px rgba(147,51,234,0.12);}
+.pricing-card h3 {font-size: 1.5rem!important; font-weight: 900!important; color: #000!important;}
+.pricing-card h1 {font-size: 3.6rem!important; font-weight: 900!important; color: #000!important;}
+.pricing-card p {font-size: 1.12rem!important; font-weight: 800!important; color: #000!important; margin: 6px 0!important;}
+.pricing-card-free {border: 3px solid #c4b5fd !important;}
+.pricing-card-starter {border: 3.5px solid #22c55e !important;}
+.pricing-card-pro {border: 3.5px solid #9333ea !important;}
+.stButton>button {border-radius: 16px !important; font-weight: 900 !important; background: linear-gradient(100deg, #7e22ce, #9333ea) !important; color: white !important; border: none !important; width: 100% !important; padding: 16px 24px !important; font-size: 1.2rem!important; box-shadow: 0 8px 20px rgba(147,51,234,0.35)!important;}
+.big-pay-button {display: block; width: 100%; padding: 32px 22px; background: linear-gradient(100deg, #16a34a, #22c55e, #4ade80); color: white !important; font-weight: 900 !important; font-size: 1.9rem !important; text-align: center; border-radius: 20px; text-decoration: none !important; margin: 20px 0; border: 3px solid #16a34a; box-shadow: 0 16px 36px rgba(34,197,94,0.45);}
+.big-pay-button-pro {background: linear-gradient(100deg, #7e22ce, #9333ea, #a855f7) !important; border: 3px solid #7e22ce !important;}
+.big-pay-sub {font-size: 1.15rem!important; display: block; margin-top: 8px; font-weight: 800!important;}
+.pro-banner {background: linear-gradient(135deg, #4c1d95, #7e22ce, #9333ea, #a855f7); padding: 1.8rem; border-radius: 22px; text-align: center; margin: 1rem 0;}
 .pro-banner h2 {color: white!important; font-size: 1.7rem!important; margin: 0!important; font-weight: 900!important;}
-.pro-banner-small {background: linear-gradient(135deg, #4c1d95, #7e22ce); padding: 1.2rem; border-radius: 18px; text-align: center; margin: 0.8rem 0;}
+.pro-banner-small {background: linear-gradient(135deg, #4c1d95, #7e22ce); padding: 1.2rem; border-radius: 16px; text-align: center; margin: 0.8rem 0;}
 .pro-banner-small h2 {color: white!important; font-size: 1.3rem!important; margin: 0!important; font-weight: 900!important;}
-.tool-chip {display: inline-block; background: #ffffff !important; padding: 11px 16px; border-radius: 20px; margin: 5px; color: #1e293b !important; font-weight: 900 !important; font-size: 1rem !important; border: 1px solid rgba(124,58,237,0.12); box-shadow: 0 4px 14px rgba(15,23,42,0.04);}
-.plan-status-box {padding: 14px 18px; border-radius: 14px; font-weight: 900 !important; margin-bottom: 12px; font-size: 1.1rem!important;}
-.plan-active {background: #dcfce7 !important; border: 1.5px solid #86efac !important; color: #14532d !important;}
-.plan-pending {background: #fef9c3 !important; border: 1.5px solid #fcd34d !important; color: #713f12 !important;}
-.hundred-box {background: #dcfce7 !important; border: 1.5px solid #86efac !important; border-radius: 18px; padding: 20px; margin: 12px 0; text-align: center; font-weight: 900!important; font-size: 1.25rem!important; color: #14532d!important;}
-.qr-box {background: #ffffff !important; border: 2px solid rgba(124,58,237,0.12) !important; border-radius: 26px; padding: 36px; text-align: center; margin: 24px 0; box-shadow: 0 20px 56px rgba(124,58,237,0.1);}
-.upgrade-msg {background: #fef9c3 !important; border: 1.5px solid #fcd34d !important; border-radius: 18px; padding: 20px; text-align: center; margin: 12px 0; font-weight: 900!important; font-size: 1.2rem!important; color: #78350f!important;}
-.tool-report-clean {background: #ffffff !important; border: 1.5px solid #86efac !important; border-radius: 14px; padding: 14px 18px; margin: 8px 0; font-size: 1.1rem!important; font-weight: 900!important; color: #14532d!important; display: flex; justify-content: space-between; align-items: center;}
-.big-pay-button {display: block; width: 100%; padding: 28px 20px; background: linear-gradient(135deg, #10b981, #34d399) !important; color: white !important; font-weight: 900 !important; font-size: 1.8rem !important; text-align: center; border-radius: 20px; text-decoration: none !important; margin: 20px 0; box-shadow: 0 16px 40px rgba(16,185,129,0.28) !important;}
-.big-pay-button-pro {background: linear-gradient(135deg, #7c3aed, #a78bfa) !important;}
-.big-pay-sub {font-size: 1rem; display: block; margin-top: 8px; font-weight: 700; opacity: 0.95;}
-.or-divider {display: flex; align-items: center; justify-content: center; margin: 28px 0; gap: 16px;}
-.or-divider-line {height: 2px; flex: 1; background: linear-gradient(90deg, transparent, #a78bfa, transparent);}
-.or-divider-text {font-size: 1.6rem!important; font-weight: 900!important; color: #4c1d95!important; background: #ffffff; padding: 10px 24px; border-radius: 14px; border: 2px solid rgba(124,58,237,0.15); box-shadow: 0 6px 16px rgba(124,58,237,0.1);}
-.verifying-box {background: #fef9c3 !important; border: 2px solid #fcd34d !important; border-radius: 18px; padding: 28px; text-align: center; margin: 20px 0;}
-.verifying-box h3 {font-weight: 900!important; color: #78350f!important; font-size: 1.5rem!important;}
-.thankyou-box {background: #dcfce7 !important; border: 2px solid #86efac !important; border-radius: 18px; padding: 24px; text-align: center; margin: 16px 0;}
-.thankyou-box h3 {font-weight: 900!important; color: #14532d!important; font-size: 1.5rem!important;}
-.red-dot {display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; margin-right: 8px; animation: pulse 1.5s infinite;}
-.green-dot {display: inline-block; width: 10px; height: 10px; background: #22c55e; border-radius: 50%; margin-right: 8px;}
-@keyframes pulse {0%,100%{opacity:1;} 50%{opacity:0.5;}}
+.tool-chip {display: inline-block; background: #fff !important; padding: 12px 18px; border-radius: 22px; margin: 6px; color: #000 !important; font-weight: 900 !important; font-size: 1.02rem !important; border: 2.5px solid #9333ea;}
+.plan-status-box {padding: 14px 18px; border-radius: 14px; font-weight: 900 !important; margin-bottom: 12px; font-size: 1.1rem!important; line-height: 1.4;}
+.plan-active {background: #dcfce7 !important; border: 3px solid #22c55e !important; color: #000 !important;}
+.plan-pending {background: #fef9c3 !important; border: 3px solid #eab308 !important; color: #000 !important;}
+.red-dot {display: inline-block; width: 12px; height: 12px; background: #ef4444; border-radius: 50%; margin-right: 8px; animation: pulse 1.5s infinite;}
+.green-dot {display: inline-block; width: 12px; height: 12px; background: #22c55e; border-radius: 50%; margin-right: 8px;}
+@keyframes pulse {0%,100%{opacity:1;} 50%{opacity:0.4;}}
+.hundred-box {background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important; border: 3px solid #22c55e !important; border-radius: 18px; padding: 20px; margin: 12px 0; text-align: center; font-weight: 900!important; font-size: 1.25rem!important; color: #000!important;}
+.qr-box {background: #ffffff !important; border: 5px solid #9333ea !important; border-radius: 24px; padding: 36px; text-align: center; margin: 24px 0; box-shadow: 0 16px 40px rgba(147,51,234,0.25);}
+.upgrade-msg {background: linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%) !important; border: 3px solid #eab308 !important; border-radius: 18px; padding: 20px; text-align: center; margin: 12px 0; font-weight: 900!important; font-size: 1.2rem!important; color: #000!important;}
+.tool-report-clean {background: #ffffff !important; border: 2.5px solid #22c55e !important; border-radius: 14px; padding: 14px 18px; margin: 8px 0; font-size: 1.15rem!important; font-weight: 900!important; color: #000!important; display: flex; justify-content: space-between; align-items: center;}
+.verifying-box {background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important; border: 3px solid #3b82f6 !important; border-radius: 20px; padding: 28px; margin: 20px 0; text-align: center; font-weight: 900!important; font-size: 1.2rem!important; color: #000!important;}
+.thankyou-box {background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important; border: 3px solid #22c55e !important; border-radius: 20px; padding: 22px; margin: 16px 0; text-align: center; font-weight: 900!important; font-size: 1.15rem!important; color: #000!important;}
+p, div, span, label, h1, h2, h3, h4, h5 {font-weight: 800!important;}
+.or-divider {display: flex; align-items: center; justify-content: center; margin: 24px 0; gap: 16px;}
+.or-divider-line {height: 3px; flex: 1; background: linear-gradient(90deg, #9333ea, #e9d5ff);}
+.or-divider-text {font-size: 1.8rem!important; font-weight: 900!important; color: #000!important; background: #fff; padding: 8px 24px; border-radius: 12px; border: 3px solid #9333ea;}
 </style>
 """, unsafe_allow_html=True)
-
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [{"role": "assistant", "message": "Hello Welcome to the VeriSame what would you like to know?"}]
@@ -399,6 +353,7 @@ def render_chat(is_sidebar=False):
             st.session_state.chat_history.append({"role":"assistant","message":reply})
             st.rerun()
 
+# SIDEBAR LOGIC - NEW AS PER USER REQUEST
 if st.session_state.email and st.session_state.plan != "free":
     db=load_db(); user=db.get(st.session_state.email,{})
     st.sidebar.markdown("<div style='background: #f5f3ff; padding: 14px; border-radius: 12px; border: 3px solid #9333ea; font-weight: 900; font-size: 1.1rem;'><b>"+st.session_state.email+"</b></div>", unsafe_allow_html=True)
@@ -410,9 +365,11 @@ if st.session_state.email and st.session_state.plan != "free":
             if days_left<0 and user.get("plan")!="starter": 
                 user["status"]="EXPIRED"; save_db(db)
                 days_left=0
+            
             plan_type=user.get("plan","")
             amt_type=user.get("amt",0)
             status=user.get("status","")
+            
             if plan_type=="starter":
                 if status=="PENDING":
                     st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - One time per file 49 rupees</div>", unsafe_allow_html=True)
@@ -424,24 +381,24 @@ if st.session_state.email and st.session_state.plan != "free":
                 if amt_type==STARTER_PRICE: amt_type=PRO_1M
                 if amt_type==PRO_1M:
                     if status=="PENDING":
-                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 Month (30 Days)</div>", unsafe_allow_html=True)
+                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 month 30 days</div>", unsafe_allow_html=True)
                     elif status=="PAID":
                         if days_left<=5 and days_left>=0:
                             st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>✓ "+str(max(0,days_left))+" days left</div>", unsafe_allow_html=True)
                         else:
                             st.sidebar.markdown("<div class='plan-status-box plan-active'><span class='green-dot'></span>✓ "+str(max(0,days_left))+" days left</div>", unsafe_allow_html=True)
                     else:
-                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 Month (30 Days)</div>", unsafe_allow_html=True)
+                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 1 month 30 days</div>", unsafe_allow_html=True)
                 else:
                     if status=="PENDING":
-                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 Months (180 Days)</div>", unsafe_allow_html=True)
+                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 months 180 days</div>", unsafe_allow_html=True)
                     elif status=="PAID":
                         if days_left<=5 and days_left>=0:
                             st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>✓ "+str(max(0,days_left))+" days left</div>", unsafe_allow_html=True)
                         else:
                             st.sidebar.markdown("<div class='plan-status-box plan-active'><span class='green-dot'></span>✓ "+str(max(0,days_left))+" days left</div>", unsafe_allow_html=True)
                     else:
-                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 Months (180 Days)</div>", unsafe_allow_html=True)
+                        st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending - 6 months 180 days</div>", unsafe_allow_html=True)
         except Exception as e:
             if user.get("status")=="PENDING":
                 st.sidebar.markdown("<div class='plan-status-box plan-pending'><span class='red-dot'></span>Pending</div>", unsafe_allow_html=True)
@@ -452,6 +409,7 @@ elif st.session_state.plan=="free":
     st.sidebar.markdown("<div class='plan-status-box plan-active' style='font-weight: 900; font-size: 1.1rem;'><span class='green-dot'></span>Free - 200 Rows</div>", unsafe_allow_html=True)
     render_chat(is_sidebar=True)
 
+# ONLY LOGOUT BUTTON - NO BACK BUTTON (USER REQUEST)
 if st.session_state.plan or st.session_state.email_entered:
     st.sidebar.markdown("---")
     if st.sidebar.button("Logout", key="nav_logout_finalv2", use_container_width=True):
@@ -498,7 +456,7 @@ if "admin" in st.query_params:
                 with c2:
                     if info.get("status") in ["PENDING","UNPAID","EXPIRED"]:
                         if st.button("Approve", key="ap_p_"+email+"_fv2", type="primary", use_container_width=True):
-                            data[email]["status"]="PAID"; data[email]["expiry"]=(datetime.now()+timedelta(days=180 if data[email].get('amt')==PRO_6M else 30)).strftime("%Y-%m-%d"); save_db(data); st.balloons(); st.rerun()
+                            data[email]["status"]="PAID"; data[email]["expiry"]=(datetime.now()+timedelta(days=180 if data[email].get("amt")==PRO_6M else 30)).strftime("%Y-%m-%d"); save_db(data); st.balloons(); st.rerun()
                 with c3:
                     if st.button("Delete", key="del_p_"+email+"_fv2", use_container_width=True): del data[email]; save_db(data); st.rerun()
         with tab4:
@@ -520,53 +478,21 @@ if st.session_state.plan is None:
             st.markdown('<div class="pricing-card pricing-card-pro"><p style="background: #9333ea; color:white; padding:10px 18px; border-radius:16px; display:inline-block; font-size:1.0rem; font-weight: 900;">POPULAR - BEST VALUE</p><h3 style="margin-top:12px;">PRO</h3><h1 style="font-size:2.8rem;">Rs299 / Rs1499</h1><p><b>Unlimited Rows</b></p><div style="margin-top:14px; flex-grow:1;"><p>✓ Rs299 = 1 Month (30 Days)</p><p>✓ Rs1499 = 6 Months (180 Days)</p><p>✓ Unlimited Rows</p><p>✓ QR + Direct Pay</p><p>✓ Instant Approval</p></div></div>', unsafe_allow_html=True)
             c_p1,c_p2=st.columns(2)
             with c_p1:
-                if st.button("Rs299 (30 Days)", key="btn_pro_299_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_1M; st.session_state.amt=PRO_1M; st.rerun()
+                if st.button("Rs299 - 30 Days", key="btn_pro_299_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_1M; st.session_state.amt=PRO_1M; st.rerun()
             with c_p2:
-                if st.button("Rs1499 (180 Days)", key="btn_pro_1499_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
+                if st.button("Rs1499 - 180 Days", key="btn_pro_1499_fv2", type="primary", use_container_width=True): st.session_state.selected_plan="pro"; st.session_state.selected_amt=PRO_6M; st.session_state.amt=PRO_6M; st.rerun()
         render_chat(is_sidebar=False)
         st.markdown("---")
         st.markdown("<h2 style='font-weight: 900; font-size: 1.7rem; color: #000;'>Feedback - We Value Your Feedback</h2>", unsafe_allow_html=True)
         fb_front=st.text_area("Feedback", placeholder="Your feedback...", key="fb_front_fv2", height=90, label_visibility="collapsed")
         if st.button("Send Feedback", key="fb_front_btn_fv2", type="primary", use_container_width=True):
-            if fb_front.strip() and save_feedback(fb_front.strip(), "Guest"): 
-                st.success("Thank you! We value your feedback.")
-
-        # Footer - Black Box - Very Last - Only Front Page Below Feedback
-        st.markdown("""
-        <div style="background: linear-gradient(135deg, #0f0f0f 0%, #1f2937 50%, #111827 100%); color: #e5e7eb; padding: 36px 24px; border-radius: 20px; margin-top: 50px; text-align: center; border: 2px solid #2d2d2d; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-            <h3 style="color: #fff; font-weight: 900; font-size: 1.45rem;">VeriSame - Clean logic. Clear result.</h3>
-            <p style="color: #9ca3af; font-weight: 700; margin-top: 10px; font-size: 1.05rem;">Made by Anugya | The Fastest Way to Clean Your Data</p>
-            <div style="margin-top: 18px; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;">
-                <a href="?page=privacy" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem;">Privacy Policy</a>
-                <a href="?page=terms" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem;">Terms & Conditions</a>
-                <a href="?page=contact" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem;">Contact & Refund</a>
-            </div>
-            <div style="margin-top: 20px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);"></div>
-            <p style="font-size: 0.85rem; margin-top: 16px; color: #6b7280; font-weight: 600;">© 2025 VeriSame | 100% Private - Your files never leave your browser | Free 200 | Starter Rs49 per file | Pro Rs299 (30 Days) / Rs1499 (180 Days)</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Footer - Black Box - Last - Only Front Page
-        if is_first_page:
-            st.markdown("""
-            <div style="background: linear-gradient(135deg, #0f0f0f 0%, #1f2937 50%, #111827 100%); color: #e5e7eb; padding: 36px 24px; border-radius: 22px; margin-top: 60px; text-align: center; border: 2px solid #2d2d2d; box-shadow: 0 24px 64px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);">
-                <h3 style="color: #fff; font-weight: 900; font-size: 1.5rem; letter-spacing: -0.02em;">VeriSame - Clean logic. Clear result.</h3>
-                <p style="color: #9ca3af; font-weight: 700; margin-top: 10px; font-size: 1.05rem;">Made by Anugya | The Fastest Way to Clean Your Data</p>
-                <div style="margin-top: 18px; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;">
-                    <a href="?page=privacy" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem; transition: color 0.2s;">Privacy Policy</a>
-                    <a href="?page=terms" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem;">Terms & Conditions</a>
-                    <a href="?page=contact" style="color: #a78bfa; text-decoration: none; font-weight: 800; font-size: 1.05rem;">Contact & Refund</a>
-                </div>
-                <div style="margin-top: 20px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);"></div>
-                <p style="font-size: 0.85rem; margin-top: 16px; color: #6b7280; font-weight: 600;">© 2025 VeriSame | 100% Private - Your files never leave your browser | Free 200 | Starter Rs49 per file | Pro Rs299 30 days / Rs1499 180 days</p>
-            </div>
-            """, unsafe_allow_html=True)
+            if fb_front.strip() and save_feedback(fb_front.strip(), "Guest"): st.success("Thank you!"); st.balloons()
     else:
         if st.session_state.selected_plan=="free": st.session_state.plan="free"; st.session_state.email="Guest_Free"; st.session_state.email_entered=True; st.rerun()
         if st.session_state.selected_plan=="starter": plan_text="STARTER - Rs49 One-Time Per File"
         else:
-            if st.session_state.selected_amt==PRO_1M: plan_text="PRO - 1 Month (30 Days) Rs299"
-            else: plan_text="PRO - 6 Months (180 Days) Rs1499"
+            if st.session_state.selected_amt==PRO_1M: plan_text="PRO - 1 Month Rs299"
+            else: plan_text="PRO - 6 Months Rs1499"
         st.markdown("<h2 style='text-align:center; margin-top:18px; font-weight: 900; font-size: 1.6rem; color: #000;'>Enter email for "+plan_text+"</h2>", unsafe_allow_html=True)
         _,ce2,_=st.columns([1,2,1])
         with ce2:
@@ -577,12 +503,14 @@ if st.session_state.plan is None:
                     if "@" in email_input and "." in email_input:
                         data=load_db()
                         existing=data.get(email_input)
+                        # === CRITICAL FIX: IF EMAIL ALREADY PAID AND NOT EXPIRED, DON'T OVERWRITE ===
                         is_existing_valid=False
                         if existing and existing.get("status")=="PAID":
                             try:
                                 exp_d=datetime.strptime(existing.get("expiry","2000-01-01"), "%Y-%m-%d").date()
                                 days_left_existing=(exp_d - datetime.now().date()).days
                                 if days_left_existing>=0:
+                                    # Still valid - keep existing PAID status
                                     is_existing_valid=True
                                     st.session_state.email=email_input
                                     st.session_state.email_entered=True
@@ -590,8 +518,11 @@ if st.session_state.plan is None:
                                     st.session_state.amt=existing.get("amt",PRO_1M)
                                     st.balloons()
                                     st.rerun()
-                            except: pass
+                            except:
+                                pass
+                        
                         if not is_existing_valid:
+                            # New user or expired - create UNPAID
                             st.session_state.email=email_input
                             st.session_state.email_entered=True
                             if st.session_state.selected_plan=="starter":
@@ -734,6 +665,7 @@ else:
                     if user_info.get("plan") != "starter" and days_left < 0: is_expired=True
                 except: pass
             if is_paid and not st.session_state.get("just_approved") and user_info.get("plan") in ["starter","pro"]: st.session_state.just_approved=True; st.balloons()
+            
             if st.session_state.plan=="free":
                 st.markdown("<h2 style='font-weight: 900; font-size: 1.5rem; color: #000;'>Export - "+percent_text+"</h2>", unsafe_allow_html=True); c1,c2,c3=st.columns(3); safe=sel_file[:30]
                 with c1: csv=df_clean.to_csv(index=False).encode(); st.download_button("CSV - "+percent_text+" - BIG", csv, safe+"_cleaned.csv", mime="text/csv", key="dl_csv_free_fv2", use_container_width=True, type="primary")
@@ -744,6 +676,7 @@ else:
                     if pdf: st.download_button("PDF - "+percent_text+" - BIG", pdf, safe+"_audit.pdf", mime="application/pdf", key="dl_pdf_free_fv2", use_container_width=True)
             elif st.session_state.plan in ["starter","pro"]:
                 if is_expired: st.markdown("<div class='upgrade-msg'><b>Plan Ended - Pay again</b></div>", unsafe_allow_html=True); is_paid=False
+                
                 if not is_paid:
                     sel_amt=user_info.get("amt", st.session_state.get("selected_amt", 0))
                     if sel_amt in [STARTER_PRICE, PRO_1M, PRO_6M]: amt_to_show=sel_amt
@@ -751,6 +684,7 @@ else:
                     if amt_to_show==STARTER_PRICE: plan_name="Starter Rs49 - ONE TIME per File - 2000 Rows"; upi_link="upi://pay?pa="+UPI_ID+"&pn=VeriSame&am="+str(STARTER_PRICE)+"&cu=INR&tn=VeriSame Starter "+str(STARTER_PRICE); btn_class=""
                     elif amt_to_show==PRO_1M: plan_name="Pro Rs299 - 1 Month 30 Days Unlimited"; upi_link="upi://pay?pa="+UPI_ID+"&pn=VeriSame&am="+str(PRO_1M)+"&cu=INR&tn=VeriSame Pro 299"; btn_class="big-pay-button-pro"
                     else: plan_name="Pro Rs1499 - 6 Months 180 Days Best Value"; upi_link="upi://pay?pa="+UPI_ID+"&pn=VeriSame&am="+str(PRO_6M)+"&cu=INR&tn=VeriSame Pro 1499"; btn_class="big-pay-button-pro"; amt_to_show=PRO_6M
+                    
                     if user_info.get("status")=="PENDING":
                         st.markdown("<div class='verifying-box'><h3>Thank you for your payment</h3><p>Your payment is being verified.<br>Please wait a moment, our team will confirm shortly.</p></div>", unsafe_allow_html=True)
                         if st.button("Check Status", key="check_status_fv2", type="primary", use_container_width=True): st.rerun()
@@ -765,8 +699,7 @@ else:
                             st.markdown("<p style='font-size: 1.25rem; color: #000; text-align: center; margin-top: 18px; font-weight: 900;'>Pay by scanning with any payment app<br>GPay | PhonePe | Paytm | BHIM | Amazon Pay</p>", unsafe_allow_html=True)
                         st.markdown("<div class='or-divider'><div class='or-divider-line'></div><div class='or-divider-text'>OR</div><div class='or-divider-line'></div></div>", unsafe_allow_html=True)
                         st.markdown("<p style='font-weight: 900; font-size: 1.4rem; text-align: center; color: #000; margin: 20px 0;'>Pay Directly - Click to open payment app</p>", unsafe_allow_html=True)
-                        st.markdown('<a href="'+upi_link+'" class="big-pay-button '+btn_class+'" style="display:block; text-align:center; padding:32px 20px; font-size:2rem; border-radius:20px; background:linear-gradient(135deg,#10b981,#34d399); color:white; font-weight:900; text-decoration:none; box-shadow:0 16px 40px rgba(16,185,129,0.3);">💳 PAY Rs'+str(amt_to_show)+'<br><span style="font-size:1.1rem; display:block; margin-top:10px; font-weight:800;">👉 Direct Pay - Tap to Open GPay | PhonePe | Paytm | BHIM</span></a>', unsafe_allow_html=True)
-                        st.markdown('<div style="text-align:center; margin-top:8px; font-weight:800; color:#334155; font-size:1rem;">Direct Pay Box - Big Box After OR</div>', unsafe_allow_html=True)
+                        st.markdown('<a href="'+upi_link+'" class="big-pay-button '+btn_class+'">PAY Rs'+str(amt_to_show)+'<br><span class="big-pay-sub">Direct to Any Payment App - GPay | PhonePe | Paytm | BHIM</span></a>', unsafe_allow_html=True)
                         st.markdown("</div>", unsafe_allow_html=True)
                         st.markdown("<div style='margin-top:24px;'>", unsafe_allow_html=True)
                         st.markdown("<p style='text-align:center; font-weight: 900; color: #000; margin-bottom: 12px; font-size: 1.35rem;'>After payment, click below:</p>", unsafe_allow_html=True)
@@ -780,6 +713,7 @@ else:
                 else:
                     if st.session_state.get("just_approved"): st.balloons(); st.markdown("<div class='thankyou-box'><h3>Thank You! Payment Confirmed! Balloons! 🎉</h3><p>Your download is ready</p></div>", unsafe_allow_html=True)
                     else: st.markdown("<h2 style='font-weight: 900; font-size: 1.6rem; color: #000;'>Export Ready - "+percent_text+" - Balloons! 🎉</h2>", unsafe_allow_html=True)
+                    
                     c1,c2,c3=st.columns(3); safe=sel_file[:30]; csv=df_clean.to_csv(index=False).encode()
                     with c1:
                         if st.download_button("CSV - "+percent_text+" - BIG", csv, safe+"_cleaned.csv", mime="text/csv", key="dl_csv_paid_fv2", use_container_width=True, type="primary"):
@@ -800,3 +734,5 @@ else:
                                 if st.session_state.plan=="starter":
                                     db_u=load_db()
                                     if st.session_state.email in db_u: db_u[st.session_state.email]["used"]=db_u[st.session_state.email].get("used",0)+1; save_db(db_u)
+
+ 
